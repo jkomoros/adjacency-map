@@ -15,6 +15,7 @@ import {
 	selectPageExtra,
 	selectFilename,
 	selectData,
+	selectAdjacencyMap,
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -34,6 +35,10 @@ import {
 	JSONData,
 	RootState,
 } from '../types.js';
+
+import {
+	AdjacencyMap
+} from '../adjacency-map.js';
 
 
 const fetchData = async(filename : string) => {
@@ -65,6 +70,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_data : JSONData | undefined;
+
+	@state()
+	_adjacencyMap : AdjacencyMap | null;
 
 	static override get styles() {
 		return [
@@ -117,6 +125,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._pageExtra = selectPageExtra(state);
 		this._filename = selectFilename(state);
 		this._data = selectData(state);
+		this._adjacencyMap = selectAdjacencyMap(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
