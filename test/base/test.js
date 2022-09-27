@@ -16,7 +16,10 @@ const legalBaseInput = {
 		"engineering": {
 			"value": 3,
 			"weight": 1.0
-		}
+		},
+		"ux": {
+			"value": 4
+		},
 	},
 	"root": {
 		"engineering" : 4.0
@@ -144,4 +147,27 @@ describe('AdjacencyMap validation', () => {
 			assert.doesNotThrow(fn);
 		}
 	});
+});
+
+describe('AdjacencyMap root', () => {
+	it('includes missing types from root', async () => {
+		const input = deepCopy(legalBaseInput);
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+		const map = new AdjacencyMap(input);
+		const actual = map.root;
+		const golden = {
+			"engineering": 4.0,
+			"ux": 0.0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
 });
