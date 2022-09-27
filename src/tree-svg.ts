@@ -17,13 +17,13 @@ export const TreeSVG = (data : TreeGraph) : SVGSVGElement => {
 	// stroke for links
 	const stroke = '#555';
 	// stroke width for links
-	//const strokeWidth = 1.5;
+	const strokeWidth = 1.5;
 	// stroke opacity for links
-	//const strokeOpacity = 0.4;
+	const strokeOpacity = 0.4;
 	// stroke line join for links
-	// const strokeLinejoin = '';
+	const strokeLinejoin = '';
 	// stroke line cap for links
-	// const strokeLinecap = '';
+	const strokeLinecap = '';
 	// color of label halo 
 	const halo = '#fff';
 	// padding around the labels
@@ -61,19 +61,19 @@ export const TreeSVG = (data : TreeGraph) : SVGSVGElement => {
 		.attr("font-family", "sans-serif")
 		.attr("font-size", 10);
   
-	// svg.append("g")
-	// 	.attr("fill", "none")
-	// 	.attr("stroke", stroke)
-	// 	.attr("stroke-opacity", strokeOpacity)
-	// 	.attr("stroke-linecap", strokeLinecap)
-	// 	.attr("stroke-linejoin", strokeLinejoin)
-	// 	.attr("stroke-width", strokeWidth)
-	// 	.selectAll("path")
-	// 	.data(positionedRoot.links())
-	// 	.join("path")
-	// 	.attr("d", d3.linkHorizontal()
-	// 		.x(d => d.y)
-	// 		.y(d => d.x));
+	svg.append("g")
+		.attr("fill", "none")
+		.attr("stroke", stroke)
+		.attr("stroke-opacity", strokeOpacity)
+		.attr("stroke-linecap", strokeLinecap)
+		.attr("stroke-linejoin", strokeLinejoin)
+		.attr("stroke-width", strokeWidth)
+		.selectAll("path")
+		.data(positionedRoot.links())
+		.join("path")
+		.attr("d", d3.linkHorizontal<d3.HierarchyPointLink<TreeGraph>, d3.HierarchyPointNode<TreeGraph>>()
+			.x(d => d.y)
+			.y(d => d.x));
   
 	const node = svg.append("g")
 		.selectAll("a")
