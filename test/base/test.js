@@ -33,7 +33,7 @@ const legalBaseInput = {
 	}
 };
 
-describe('AdjacencyMap', () => {
+describe('AdjacencyMap validation', () => {
 	it('barfs on null data', async () => {
 		const input = null;
 		const errorExpected = true;
