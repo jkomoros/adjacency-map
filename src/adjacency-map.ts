@@ -100,7 +100,6 @@ class AdjacencyMapNode {
 	}
 
 	_computeValues() : NodeValues {
-		//TODO: test this result
 		const result = {...this._map.root};
 		const edgeByType : {[type : EdgeType] : EdgeValue[]} = {};
 		for (const edge of this._data.values) {

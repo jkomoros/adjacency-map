@@ -205,4 +205,16 @@ describe('AdjacencyMap node', () => {
 		assert.throws(fn);
 	});
 
+	it('works for a named node', async () => {
+		const input = deepCopy(legalBaseInput);
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 3,
+			ux: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
 });
