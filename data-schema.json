@@ -37,31 +37,12 @@
       "properties": {
         "nodes": {
           "additionalProperties": {
-            "additionalProperties": false,
-            "properties": {
-              "description": {
-                "type": "string"
-              },
-              "values": {
-                "items": {
-                  "$ref": "#/definitions/EdgeValue"
-                },
-                "type": "array"
-              }
-            },
-            "required": [
-              "description",
-              "values"
-            ],
-            "type": "object"
+            "$ref": "#/definitions/NodeData"
           },
           "type": "object"
         },
         "root": {
-          "additionalProperties": {
-            "type": "number"
-          },
-          "type": "object"
+          "$ref": "#/definitions/NodeValues"
         },
         "types": {
           "additionalProperties": {
@@ -92,8 +73,33 @@
       ],
       "type": "object"
     },
+    "NodeData": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "$ref": "#/definitions/EdgeValue"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "description"
+      ],
+      "type": "object"
+    },
     "NodeID": {
       "type": "string"
+    },
+    "NodeValues": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "description": "The final computed values of all of the values for a node.",
+      "type": "object"
     },
     "ValueDefinition": {
       "type": "number"
