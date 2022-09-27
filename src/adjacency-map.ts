@@ -1,7 +1,8 @@
 import {
 	JSONData,
 	NodeData,
-	NodeID
+	NodeID,
+	NodeValues
 } from './types.js';
 
 export class AdjacencyMap {
@@ -26,9 +27,26 @@ export class AdjacencyMap {
 class AdjacencyMapNode {
 	_map : AdjacencyMap;
 	_data : NodeData;
+	_values : NodeValues;
 
 	constructor(parent : AdjacencyMap, data : NodeData) {
 		this._map = parent;
 		this._data = data;
+		this._values = null;
+	}
+
+	_computeValues() : NodeValues {
+		//TODO: actually implement
+		return null;
+	}
+
+	/**
+	 * The final computed values
+	 */
+	get values() : NodeValues {
+		if (!this._values) {
+			this._values = this._computeValues();
+		}
+		return this._values;
 	}
 }
