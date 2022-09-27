@@ -21,6 +21,10 @@ import {
 	Filename,
 } from '../types.js';
 
+import {
+	unpackConfigJSON
+} from '../util.js';
+
 export const loadData : AppActionCreator = (blob) => (dispatch) => {
 	let data;
 	try {

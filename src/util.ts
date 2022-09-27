@@ -1,6 +1,10 @@
 import {
+	JSONData,
+	JSONDataItem,
 	RandomGenerator
 } from './types.js';
+
+export const unpackConfigJSON = (input : JSONData) : JSONDataItem[] => input.configs;
 
 const randomCharSetNumbers = '0123456789';
 const randomCharSetLetters = 'abcdef';

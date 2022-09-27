@@ -21,6 +21,18 @@ export type Color = {
 
 export type Filename = string;
 
+export type JSONDataItem = {
+    name: string;
+    frameDelay: number;
+    extraFinalFrameCount: number;
+    repeat: boolean;
+}
+
+export type JSONData = {
+    version: number;
+    configs: JSONDataItem[];
+}
+
 export type AppState = {
     page : string;
     pageExtra : string;

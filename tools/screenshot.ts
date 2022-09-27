@@ -13,25 +13,24 @@ import { promisify } from 'util';
 import {imageSize } from 'image-size';
 const sizeOf = promisify(imageSize);
 
+import {
+	JSONData,
+	JSONDataItem
+} from '../src/types.js';
+
 const SCREENSHOT_DIR = 'screenshots';
 
-//rendevous point with screenshot service.
-import {
-	CURRENT_SIMULATION_INDEX_VARIABLE,
-	CURRENT_RUN_INDEX_VARIABLE,
-	CURRENT_FRAME_INDEX_VARIABLE,
-	CURRENT_SIMULATION_NAME_VARIABLE,
-	SETUP_METHOD_VARIABLE,
-	PREVIOUS_FRAME_METHOD_VARIABLE,
-	RENDER_COMPLETE_VARIABLE
-} from '../src/constants.js';
+const CURRENT_SIMULATION_INDEX_VARIABLE = 'current_simulation_index';
+const CURRENT_RUN_INDEX_VARIABLE = 'current_run_index';
+const CURRENT_FRAME_INDEX_VARIABLE = 'current_frame_index';
+const CURRENT_SIMULATION_NAME_VARIABLE = 'current_simulation_name';
+const SETUP_METHOD_VARIABLE = 'setup_method';
+const PREVIOUS_FRAME_METHOD_VARIABLE = 'previous_frame';
+const RENDER_COMPLETE_VARIABLE = 'render_complete';
 
-import {
-	DEFAULT_FRAME_DELAY,
-	DEFAULT_EXTRA_FINAL_FRAME_COUNT,
-	DEFAULT_REPEAT
-} from '../src/constants.js';
-import { PackedRawSimulationConfig, PackedRawSimulationConfigItem } from "../src/types.js";
+const DEFAULT_FRAME_DELAY = 100;
+const DEFAULT_EXTRA_FINAL_FRAME_COUNT = 0;
+const DEFAULT_REPEAT = false;
 
 const clearScreenshotsDir = () => {
 	if (fs.existsSync(SCREENSHOT_DIR)) {
@@ -134,7 +133,7 @@ const DEFAULT_GIF_CONFIG : GifInfo = {
 //TODO: allow specifying a different file
 const CONFIG_DATA_FILE = 'data/default.json';
 
-const configForGif = (configData : PackedRawSimulationConfigItem[], gifName : string) => {
+const configForGif = (configData : JSONDataItem[], gifName : string) => {
 	for (const config of configData) {
 		const safeName = sanitizeSimulationName(config.name || '');
 		if (safeName != gifName) continue;
@@ -178,7 +177,7 @@ const gifInfos = async () => {
 		delete result[name];
 	}
 	const rawConfigData = fs.readFileSync(CONFIG_DATA_FILE).toString();
-	const configData : PackedRawSimulationConfig = JSON.parse(rawConfigData);
+	const configData : JSONData = JSON.parse(rawConfigData);
 	const configs = configData.configs;
 	for (const name of Object.keys(result)) {
 		result[name] = {...result[name], ...configForGif(configs, name)};
