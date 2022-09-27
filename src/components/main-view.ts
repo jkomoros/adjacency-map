@@ -1,4 +1,4 @@
-import { html, css, TemplateResult} from 'lit';
+import { html, css, svg, TemplateResult} from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { PageViewElement } from "./page-view-element.js";
 import { connect } from "pwa-helpers/connect-mixin.js";
@@ -39,6 +39,7 @@ import {
 import {
 	AdjacencyMap
 } from '../adjacency-map.js';
+import { TreeSVG } from '../tree-svg.js';
 
 
 const fetchData = async(filename : string) => {
@@ -115,7 +116,7 @@ class MainView extends connect(store)(PageViewElement) {
 	override render() : TemplateResult {
 		return html`
 			<div class='container'>
-				<pre>${JSON.stringify(this._data, null, '\t')}</pre>
+				${this._svg()}
 			</div>
 		`;
 	}
@@ -132,6 +133,11 @@ class MainView extends connect(store)(PageViewElement) {
 		if (changedProps.has('_filename') && this._filename) {
 			fetchData(this._filename);
 		}
+	}
+
+	_svg() : SVGSVGElement | TemplateResult {
+		if (!this._adjacencyMap) return svg``;
+		return TreeSVG(this._adjacencyMap.treeGraph());
 	}
 }
 
