@@ -9,6 +9,10 @@ import {
 	ValueDefinition
 } from './types.js';
 
+const validateValueDefinition = (definition : ValueDefinition) : void => {
+	if (typeof definition != 'number') throw new Error('Value definition not number');
+};
+
 const validateData = (data : JSONData) : void => {
 	if (!data) throw new Error('No data provided');
 	if (!data.nodes) throw new Error('No nodes provided');
@@ -22,8 +26,14 @@ const validateData = (data : JSONData) : void => {
 			if (!data.types[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
 		}
 	}
+	for(const [type, edgeDefinition] of Object.entries(data.types)) {
+		try {
+			validateValueDefinition(edgeDefinition.value);
+		} catch (err) {
+			throw new Error(type + ' does not have a legal value definition: ' + err);
+		}
+	}
 	//TODO: check the nodes are all a DAG
-	//TODO: check all edge types have a legal value definition
 };
 
 const calculateValue = (definition : ValueDefinition) : number => {

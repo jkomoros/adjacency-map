@@ -147,6 +147,20 @@ describe('AdjacencyMap validation', () => {
 			assert.doesNotThrow(fn);
 		}
 	});
+
+	it('barfs for an edge with an illegal value definition', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = 'invalid';
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
 });
 
 describe('AdjacencyMap root', () => {
