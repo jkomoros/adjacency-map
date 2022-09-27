@@ -119,8 +119,8 @@ export class AdjacencyMap {
 
 	node(id : NodeID) : AdjacencyMapNode {
 		if (!this._nodes[id]) {
-			if (!this._data.nodes[id]) throw new Error('ID ' + id + ' does not exist in input');
-			this._nodes[id] = new AdjacencyMapNode(this, this._data.nodes[id]);
+			if (id != ROOT_ID && !this._data.nodes[id]) throw new Error('ID ' + id + ' does not exist in input');
+			this._nodes[id] = new AdjacencyMapNode(this, this._data.nodes[id], id == ROOT_ID);
 		}
 		return this._nodes[id];
 	}
@@ -140,18 +140,20 @@ export class AdjacencyMap {
 
 class AdjacencyMapNode {
 	_map : AdjacencyMap;
-	_data : NodeData;
+	_data : NodeData | undefined;
 	_values : NodeValues;
+	_isRoot : boolean;
 
-	constructor(parent : AdjacencyMap, data : NodeData) {
+	constructor(parent : AdjacencyMap, data : NodeData | undefined, isRoot = false) {
 		this._map = parent;
 		this._data = data;
+		this._isRoot = isRoot;
 	}
 
 	_computeValues() : NodeValues {
 		const result = {...this._map.root};
 		const edgeByType : {[type : EdgeType] : EdgeValue[]} = {};
-		const values = this._data.values || [];
+		const values = this._data?.values || [];
 		for (const edge of values) {
 			if (!edgeByType[edge.type]) edgeByType[edge.type] = [];
 			edgeByType[edge.type].push(edge);
@@ -163,10 +165,15 @@ class AdjacencyMapNode {
 		return result;
 	}
 
+	get isRoot() : boolean {
+		return this._isRoot;
+	}
+
 	/**
 	 * The final computed values
 	 */
 	get values() : NodeValues {
+		if (this.isRoot) return this._map.root;
 		if (!this._values) {
 			this._values = this._computeValues();
 		}
