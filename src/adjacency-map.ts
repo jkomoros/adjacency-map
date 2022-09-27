@@ -10,7 +10,10 @@ import {
 } from './types.js';
 
 const validateValueDefinition = (definition : ValueDefinition) : void => {
-	if (typeof definition != 'number') throw new Error('Value definition not number');
+	if (typeof definition == 'number') return;
+	const _exhaustiveCheck : never = definition;
+	throw new Error('Illegal value for definition');
+	return _exhaustiveCheck;
 };
 
 const validateData = (data : JSONData) : void => {
