@@ -86,7 +86,7 @@ export const TreeSVG = (data : TreeGraphWithDetails) : SVGSVGElement => {
 		.attr("r", r);
   
 	node.append("title")
-		.text(d => d.data.description);
+		.text(d => d.data.description + '\n\n' + Object.entries(d.data.values).map(entry => entry[0] + ': ' + entry[1]).join('\n'));
   
 	node.append("text")
 		.attr("dy", "0.32em")
