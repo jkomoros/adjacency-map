@@ -42,6 +42,13 @@ export type NodeData = {
     values: EdgeValue[]
 };
 
+/**
+ * The final computed values of all of the values for a node.
+ */
+export type NodeValues = {
+    [type : EdgeType]: number
+};
+
 export type JSONData = {
     version: number,
     types: {
@@ -50,9 +57,7 @@ export type JSONData = {
             [constant : ConstantType]: number
         }
     }
-    root: {
-        [type : EdgeType]: number
-    },
+    root: NodeValues;
     nodes: {
         [id : NodeID] : NodeData
     }
