@@ -362,10 +362,10 @@ describe('tidyLongestTree', () => {
 		const dag = extractSimpleGraph(input);
 		const actual = tidyLongestTree(dag);
 		const golden = {
-			a : {'' : true},
-			b : {a : true},
-			c : {b : true},
-			d : {b : true}
+			a : '',
+			b : 'a',
+			c : 'b',
+			d : 'b'
 		};
 		assert.deepStrictEqual(actual, golden);
 	});

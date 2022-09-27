@@ -43,6 +43,11 @@ export type SimpleGraph = {
     }
 }
 
+//An array of child to singular parent
+export type ParentGraph = {
+    [id : NodeID] : NodeID
+}
+
 export type NodeData = {
     description: string,
     values?: EdgeValue[]
