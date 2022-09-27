@@ -75,7 +75,7 @@ export const treeGraphFromParentGraph = (input : ParentGraph) : TreeGraph => {
 		const parentNode = nodes[parent];
 		const childNode = nodes[child];
 		if (!parentNode.children) parentNode.children = [];
-		parentNode.children.push(childNode);
+		parentNode.children.unshift(childNode);
 	}
 	//Now find the root node. It's the one that isn't a key in input but does
 	//have a node in nodes.

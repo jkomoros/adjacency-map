@@ -6,7 +6,7 @@ import {
 } from '../../src/adjacency-map.js';
 
 import {
-	tidyLongestTree
+	tidyLongestTree, treeGraphFromParentGraph
 } from '../../src/graph.js';
 
 import {
@@ -368,6 +368,29 @@ describe('tidyLongestTree', () => {
 			d : 'b'
 		};
 		assert.deepStrictEqual(actual, golden);
+		const actualTree = treeGraphFromParentGraph(actual);
+		const goldenTree = {
+			name: '',
+			children: [
+				{
+					name: 'a',
+					children: [
+						{
+							name: 'b',
+							children: [
+								{
+									name: 'c'
+								},
+								{
+									name: 'd'
+								}
+							]
+						}
+					]
+				}
+			]
+		};
+		assert.deepStrictEqual(actualTree, goldenTree);
 	});
 
 });
