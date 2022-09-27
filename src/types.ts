@@ -39,7 +39,7 @@ export type EdgeValue = {
 
 export type NodeData = {
     description: string,
-    values: EdgeValue[]
+    values?: EdgeValue[]
 };
 
 /**
