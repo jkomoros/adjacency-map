@@ -48,6 +48,11 @@ export type ParentGraph = {
     [id : NodeID] : NodeID
 }
 
+export type TreeGraph = {
+    name : NodeID,
+    children? : TreeGraph[];
+}
+
 export type NodeData = {
     description: string,
     values?: EdgeValue[]

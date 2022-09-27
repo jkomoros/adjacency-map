@@ -5,7 +5,8 @@ import {
 import {
 	SimpleGraph,
 	NodeID,
-	ParentGraph
+	ParentGraph,
+	TreeGraph
 } from './types.js';
 
 export const incomingGraph = (graph : SimpleGraph) : SimpleGraph => {
@@ -64,4 +65,22 @@ export const tidyLongestTree = (dag : SimpleGraph) : ParentGraph => {
 		}
 	}
 	return parents;
+};
+
+export const treeGraphFromParentGraph = (input : ParentGraph) : TreeGraph => {
+	const nodes : {[id : NodeID] : TreeGraph} = {};
+	for (const [child, parent] of Object.entries(input)) {
+		if (!nodes[parent]) nodes[parent] = {name: parent};
+		if (!nodes[child]) nodes[child] = {name: child};
+		const parentNode = nodes[parent];
+		const childNode = nodes[child];
+		if (!parentNode.children) parentNode.children = [];
+		parentNode.children.push(childNode);
+	}
+	//Now find the root node. It's the one that isn't a key in input but does
+	//have a node in nodes.
+	for (const [id, node] of Object.entries(nodes)) {
+		if (input[id] == undefined) return node;
+	}
+	throw new Error('Couldn\'t find root node unexpectedly');
 };
