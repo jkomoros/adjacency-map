@@ -23,13 +23,15 @@ const validateData = (data : JSONData) : void => {
 export class AdjacencyMap {
 	
 	_data : JSONData;
-	_nodes : {[id : NodeID] : AdjacencyMapNode}
+	_nodes : {[id : NodeID] : AdjacencyMapNode};
+	_cachedRoot : NodeValues;
 
 	constructor(data : JSONData) {
 		//Will throw if it doesn't validate
 		validateData(data);
 		this._data = data;
 		this._nodes = {};
+		this._cachedRoot = null;
 	}
 
 	get edgeTypes() : EdgeType[] {
@@ -37,8 +39,11 @@ export class AdjacencyMap {
 	}
 
 	get root() : NodeValues {
-		//TODO: ensure that every edgeType is set to 0 or overridden.
-		return this._data.root;
+		if (!this._cachedRoot) {
+			const baseObject = Object.fromEntries(this.edgeTypes.map(typ => [typ, 0.0]));
+			this._cachedRoot = {...baseObject, ...this._data.root};
+		}
+		return this._cachedRoot;
 	}
 
 	node(id : NodeID) : AdjacencyMapNode {
