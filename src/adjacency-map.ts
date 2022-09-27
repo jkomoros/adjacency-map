@@ -10,6 +10,8 @@ import {
 	ValueDefinition
 } from './types.js';
 
+const ROOT_ID : NodeID = '';
+
 const validateValueDefinition = (definition : ValueDefinition) : void => {
 	if (typeof definition == 'number') return;
 	const _exhaustiveCheck : never = definition;
@@ -24,7 +26,7 @@ const incomingGraph = (data : JSONData) : SimpleGraph => {
 		if (!result[nodeID]) result[nodeID] = [];
 		const values = nodeValue.values || [];
 		for (const edge of values) {
-			const ref : NodeID = edge.ref || '';
+			const ref : NodeID = edge.ref || ROOT_ID;
 			if (!result[ref]) result[ref] = [];
 			if (result[ref].some(id => id == nodeID)) continue;
 			result[ref].push(nodeID);
@@ -46,7 +48,7 @@ export const topologicalSort = (data : JSONData) : NodeID[] => {
 		removedIDs[id] = true;
 		const outbound = data.nodes[id].values || [];
 		for (const outboundEdge of outbound) {
-			const outboundRef = outboundEdge.ref || '';
+			const outboundRef = outboundEdge.ref || ROOT_ID;
 			if (removedIDs[outboundRef]) continue;
 			const remainingIncomingEdges = incoming[outboundRef].filter(ref => !removedIDs[ref]);
 			if (remainingIncomingEdges.length) continue;
