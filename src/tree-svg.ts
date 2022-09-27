@@ -1,12 +1,12 @@
 import * as d3 from 'd3';
 
 import {
-	TreeGraph
+	TreeGraphWithDetails
 } from './types.js';
 
 //Heavily adapted from https://observablehq.com/@d3/tree
 
-export const TreeSVG = (data : TreeGraph) : SVGSVGElement => {
+export const TreeSVG = (data : TreeGraphWithDetails) : SVGSVGElement => {
 
 	// radius of nodes
 	const r = 3;
@@ -40,7 +40,7 @@ export const TreeSVG = (data : TreeGraph) : SVGSVGElement => {
 	// Compute the layout.
 	const dx = 10;
 	const dy = width / (root.height + padding);
-	const positionedRoot = d3.tree().nodeSize([dx, dy])(root) as d3.HierarchyPointNode<TreeGraph>;
+	const positionedRoot = d3.tree().nodeSize([dx, dy])(root) as d3.HierarchyPointNode<TreeGraphWithDetails>;
   
 	// Center the tree.
 	let x0 = Infinity;
@@ -71,7 +71,7 @@ export const TreeSVG = (data : TreeGraph) : SVGSVGElement => {
 		.selectAll("path")
 		.data(positionedRoot.links())
 		.join("path")
-		.attr("d", d3.linkHorizontal<d3.HierarchyPointLink<TreeGraph>, d3.HierarchyPointNode<TreeGraph>>()
+		.attr("d", d3.linkHorizontal<d3.HierarchyPointLink<TreeGraphWithDetails>, d3.HierarchyPointNode<TreeGraphWithDetails>>()
 			.x(d => d.y)
 			.y(d => d.x));
   
@@ -86,7 +86,7 @@ export const TreeSVG = (data : TreeGraph) : SVGSVGElement => {
 		.attr("r", r);
   
 	node.append("title")
-		.text(d => d.data.name);
+		.text(d => d.data.description);
   
 	node.append("text")
 		.attr("dy", "0.32em")
