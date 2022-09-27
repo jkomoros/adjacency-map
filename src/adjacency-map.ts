@@ -7,11 +7,14 @@ import {
 	NodeValues,
 	NodeValuesMap,
 	SimpleGraph,
+	TreeGraph,
 	ValueDefinition
 } from './types.js';
 
 import {
-	topologicalSort
+	tidyLongestTree,
+	topologicalSort,
+	treeGraphFromParentGraph
 } from './graph.js';
 
 import {
@@ -125,6 +128,13 @@ export class AdjacencyMap {
 	nodeValues() : NodeValuesMap {
 		//TODO: cache. Not a huge deal because the heavy lifting is cached behind node().
 		return Object.fromEntries(Object.keys(this._data.nodes).map(id => [id, this.node(id).values]));
+	}
+
+	treeGraph() : TreeGraph {
+		//TODO: cache
+		const simpleGraph = extractSimpleGraph(this._data);
+		const longestTree = tidyLongestTree(simpleGraph);
+		return treeGraphFromParentGraph(longestTree);
 	}
 }
 
