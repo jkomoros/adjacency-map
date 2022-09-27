@@ -34,7 +34,7 @@ export type NodeID = string;
 export type EdgeValue = {
     type: EdgeType,
     ref? : NodeID,
-    [constant : ConstantType]: number | EdgeType | NodeID;
+    [constant : ConstantType]: undefined | number | EdgeType | NodeID;
 };
 
 export type NodeData = {
@@ -78,7 +78,7 @@ export type AppState = {
 
 export type DataState = {
     filename : Filename;
-    data: JSONData;
+    data?: JSONData;
 }
 
 export type RootState = {

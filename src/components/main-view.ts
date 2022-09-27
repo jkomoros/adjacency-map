@@ -47,6 +47,8 @@ const fetchData = async(filename : string) => {
 		console.warn('Couldn\'t fetch ' + path + ': ' + err);
 	}
 
+	if (!res) throw new Error('No data from ' + path);
+
 	const blob = await res.json();
 
 	store.dispatch(loadData(blob));

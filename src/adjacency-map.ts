@@ -68,7 +68,6 @@ export class AdjacencyMap {
 		//TODO: deep freeze a copy of data
 		this._data = data;
 		this._nodes = {};
-		this._cachedRoot = null;
 	}
 
 	get edgeTypes() : EdgeType[] {
@@ -109,13 +108,13 @@ class AdjacencyMapNode {
 	constructor(parent : AdjacencyMap, data : NodeData) {
 		this._map = parent;
 		this._data = data;
-		this._values = null;
 	}
 
 	_computeValues() : NodeValues {
 		const result = {...this._map.root};
 		const edgeByType : {[type : EdgeType] : EdgeValue[]} = {};
-		for (const edge of this._data.values) {
+		const values = this._data.values || [];
+		for (const edge of values) {
 			if (!edgeByType[edge.type]) edgeByType[edge.type] = [];
 			edgeByType[edge.type].push(edge);
 		}
