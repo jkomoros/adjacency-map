@@ -1,4 +1,5 @@
 import {
+	EdgeType,
 	JSONData,
 	NodeData,
 	NodeID,
@@ -13,6 +14,10 @@ export class AdjacencyMap {
 	constructor(data : JSONData) {
 		this._data = data;
 		this._nodes = {};
+	}
+
+	get edgeTypes() : EdgeType[] {
+		return Object.keys(this._data.types);
 	}
 
 	node(id : NodeID) : AdjacencyMapNode {
