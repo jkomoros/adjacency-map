@@ -14,7 +14,9 @@ import {
 	topologicalSort
 } from './graph.js';
 
-const ROOT_ID : NodeID = '';
+import {
+	ROOT_ID
+} from './constants.js';
 
 const validateValueDefinition = (definition : ValueDefinition) : void => {
 	if (typeof definition == 'number') return;
