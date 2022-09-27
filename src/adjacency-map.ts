@@ -10,6 +10,10 @@ import {
 	ValueDefinition
 } from './types.js';
 
+import {
+	deepCopy
+} from './util.js';
+
 const ROOT_ID : NodeID = '';
 
 const validateValueDefinition = (definition : ValueDefinition) : void => {
@@ -51,18 +55,17 @@ const incomingGraph = (graph : SimpleGraph) : SimpleGraph => {
 export const topologicalSort = (graph : SimpleGraph) : NodeID[] => {
 	//https://stackoverflow.com/questions/4168/graph-serialization/4577#4577
 	const result : NodeID[] = [];
-	const removedIDs : {[id : NodeID] : true} = {};
-	const incoming = incomingGraph(graph);
-	const noIncomingEdges = Object.entries(incoming).filter(entry => entry[1].length).map(entry => entry[0]);
+	const workingGraph = deepCopy(graph);
+	const incoming = incomingGraph(workingGraph);
+	const noIncomingEdges = Object.entries(incoming).filter(entry => Object.keys(entry[1]).length).map(entry => entry[0]);
 	while (noIncomingEdges.length) {
 		const id = noIncomingEdges.shift() as NodeID;
 		result.push(id);
-		removedIDs[id] = true;
-		const outbound = graph[id];
+		const outbound = workingGraph[id];
 		for (const outboundRef of Object.keys(outbound)) {
-			if (removedIDs[outboundRef]) continue;
-			const remainingIncomingEdges = Object.keys(incoming[outboundRef]).filter(ref => !removedIDs[ref]);
-			if (remainingIncomingEdges.length) continue;
+			delete workingGraph[id][outboundRef];
+			const incoming = incomingGraph(workingGraph);
+			if (Object.keys(incoming[outboundRef] || {}).length) continue;
 			noIncomingEdges.push(outboundRef);
 		}
 	}
