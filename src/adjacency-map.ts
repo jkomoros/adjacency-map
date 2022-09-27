@@ -23,8 +23,7 @@ const validateValueDefinition = (definition : ValueDefinition) : void => {
 	return _exhaustiveCheck;
 };
 
-//TODO: unexport
-export const extractSimpleGraph = (data : JSONData) : SimpleGraph => {
+const extractSimpleGraph = (data : JSONData) : SimpleGraph => {
 	const result : SimpleGraph = {};
 	for (const [id, value] of Object.entries(data.nodes)) {
 		const edges : {[id : NodeID] : true} = {};
@@ -51,8 +50,7 @@ const incomingGraph = (graph : SimpleGraph) : SimpleGraph => {
 	return result;
 };
 
-//TODO: unexport, test
-export const topologicalSort = (graph : SimpleGraph) : NodeID[] => {
+const topologicalSort = (graph : SimpleGraph) : NodeID[] => {
 	//https://stackoverflow.com/questions/4168/graph-serialization/4577#4577
 	const result : NodeID[] = [];
 	const workingGraph = deepCopy(graph);
@@ -106,7 +104,11 @@ const validateData = (data : JSONData) : void => {
 			if (!data.types[rootName]) throw new Error('root property ' + rootName + ' is not defined in types');
 		}
 	}
-	//TODO: check the nodes are all a DAG
+	try {
+		topologicalSort(extractSimpleGraph(data));
+	} catch (err) {
+		throw new Error('The edges provided did not form a DAG');
+	}
 };
 
 const calculateValue = (definition : ValueDefinition) : number => {
