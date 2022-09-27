@@ -14,8 +14,7 @@ import {imageSize } from 'image-size';
 const sizeOf = promisify(imageSize);
 
 import {
-	JSONData,
-	JSONDataItem
+	JSONData
 } from '../src/types.js';
 
 const SCREENSHOT_DIR = 'screenshots';
@@ -133,6 +132,14 @@ const DEFAULT_GIF_CONFIG : GifInfo = {
 //TODO: allow specifying a different file
 const CONFIG_DATA_FILE = 'data/default.json';
 
+//Dummy type to get to compile. TODO remove this
+type JSONDataItem = {
+	name: string;
+    frameDelay: number;
+    extraFinalFrameCount: number;
+    repeat: boolean;
+};
+
 const configForGif = (configData : JSONDataItem[], gifName : string) => {
 	for (const config of configData) {
 		const safeName = sanitizeSimulationName(config.name || '');
@@ -178,9 +185,8 @@ const gifInfos = async () => {
 	}
 	const rawConfigData = fs.readFileSync(CONFIG_DATA_FILE).toString();
 	const configData : JSONData = JSON.parse(rawConfigData);
-	const configs = configData.configs;
 	for (const name of Object.keys(result)) {
-		result[name] = {...result[name], ...configForGif(configs, name)};
+		result[name] = {...result[name], ...configForGif(configData ? [] : [], name)};
 	}
 	return result;
 };

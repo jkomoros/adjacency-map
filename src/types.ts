@@ -21,16 +21,39 @@ export type Color = {
 
 export type Filename = string;
 
-export type JSONDataItem = {
-    name: string;
-    frameDelay: number;
-    extraFinalFrameCount: number;
-    repeat: boolean;
-}
+//TODO: tigthen this
+export type EdgeType = string;
+
+export type ConstantType = string;
+
+//TODO: expand this a lot
+export type ValueDefinition = number;
+
+export type NodeID = string;
+
+export type EdgeValue = {
+    type: EdgeType,
+    ref? : NodeID,
+    [constant : ConstantType]: number | EdgeType | NodeID;
+};
 
 export type JSONData = {
-    version: number;
-    configs: JSONDataItem[];
+    version: number,
+    types: {
+        [type : EdgeType]: {
+            value: ValueDefinition,
+            [constant : ConstantType]: number
+        }
+    }
+    root: {
+        [type : EdgeType]: number
+    },
+    nodes: {
+        [id : NodeID] : {
+            description: string,
+            values: EdgeValue[]
+        }
+    }
 }
 
 export type AppState = {
