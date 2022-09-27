@@ -19,14 +19,26 @@ const validateValueDefinition = (definition : ValueDefinition) : void => {
 	return _exhaustiveCheck;
 };
 
-const incomingGraph = (data : JSONData) : SimpleGraph => {
+//TODO: unexport
+export const extractSimpleGraph = (data : JSONData) : SimpleGraph => {
 	const result : SimpleGraph = {};
-	for (const [nodeID, nodeValue] of Object.entries(data.nodes)) {
+	for (const [id, value] of Object.entries(data.nodes)) {
+		const edges : {[id : NodeID] : true} = {};
+		for (const edge of value.values || []) {
+			const ref = edge.ref || ROOT_ID;
+			edges[ref] = true;
+		}
+		result[id] = Object.keys(edges);
+	}
+	return result;
+};
+
+const incomingGraph = (graph : SimpleGraph) : SimpleGraph => {
+	const result : SimpleGraph = {};
+	for (const [nodeID, edges] of Object.entries(graph)) {
 		//Make sure that even nodes with no incoming edges show up in result
 		if (!result[nodeID]) result[nodeID] = [];
-		const values = nodeValue.values || [];
-		for (const edge of values) {
-			const ref : NodeID = edge.ref || ROOT_ID;
+		for (const ref of edges) {
 			if (!result[ref]) result[ref] = [];
 			if (result[ref].some(id => id == nodeID)) continue;
 			result[ref].push(nodeID);
@@ -36,26 +48,25 @@ const incomingGraph = (data : JSONData) : SimpleGraph => {
 };
 
 //TODO: unexport, test
-export const topologicalSort = (data : JSONData) : NodeID[] => {
+export const topologicalSort = (graph : SimpleGraph) : NodeID[] => {
 	//https://stackoverflow.com/questions/4168/graph-serialization/4577#4577
 	const result : NodeID[] = [];
 	const removedIDs : {[id : NodeID] : true} = {};
-	const incoming = incomingGraph(data);
+	const incoming = incomingGraph(graph);
 	const noIncomingEdges = Object.entries(incoming).filter(entry => entry[1].length).map(entry => entry[0]);
 	while (noIncomingEdges.length) {
 		const id = noIncomingEdges.shift() as NodeID;
 		result.push(id);
 		removedIDs[id] = true;
-		const outbound = data.nodes[id].values || [];
-		for (const outboundEdge of outbound) {
-			const outboundRef = outboundEdge.ref || ROOT_ID;
+		const outbound = graph[id];
+		for (const outboundRef of outbound) {
 			if (removedIDs[outboundRef]) continue;
 			const remainingIncomingEdges = incoming[outboundRef].filter(ref => !removedIDs[ref]);
 			if (remainingIncomingEdges.length) continue;
 			noIncomingEdges.push(outboundRef);
 		}
 	}
-	if (result.length < Object.keys(data.nodes).length) throw new Error('Cycle detected');
+	if (result.length < Object.keys(graph).length) throw new Error('Cycle detected');
 	return result;
 };
 
