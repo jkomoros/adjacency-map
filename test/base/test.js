@@ -19,7 +19,16 @@ const legalBaseInput = {
 	},
 	"nodes": {
 		"a": {
-			"description": "Node a"
+			"description": "Node a",
+			"values": [
+				{
+					"type": "engineering",
+					"weight": 4.0
+				},
+				{
+					"type": "engineering"
+				}
+			]
 		}
 	}
 };
