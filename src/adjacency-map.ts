@@ -25,7 +25,7 @@ const validateValueDefinition = (definition : ValueDefinition) : void => {
 	return _exhaustiveCheck;
 };
 
-const extractSimpleGraph = (data : JSONData) : SimpleGraph => {
+export const extractSimpleGraph = (data : JSONData) : SimpleGraph => {
 	const result : SimpleGraph = {};
 	for (const [id, value] of Object.entries(data.nodes)) {
 		const edges : {[id : NodeID] : true} = {};

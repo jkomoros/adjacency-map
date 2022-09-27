@@ -1,8 +1,13 @@
 /*eslint-env node*/
 
 import {
-	AdjacencyMap
+	AdjacencyMap,
+	extractSimpleGraph
 } from '../../src/adjacency-map.js';
+
+import {
+	tidyLongestTree
+} from '../../src/graph.js';
 
 import {
 	deepCopy
@@ -345,6 +350,22 @@ describe('AdjacencyMap node', () => {
 		const golden = {
 			engineering: 3,
 			ux: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+});
+
+describe('tidyLongestTree', () => {
+	it('basic', async () => {
+		const input = deepCopy(legalBaseInput);
+		const dag = extractSimpleGraph(input);
+		const actual = tidyLongestTree(dag);
+		const golden = {
+			a : {'' : true},
+			b : {a : true},
+			c : {b : true},
+			d : {b : true}
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
