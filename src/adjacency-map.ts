@@ -3,7 +3,8 @@ import {
 	JSONData,
 	NodeData,
 	NodeID,
-	NodeValues
+	NodeValues,
+	NodeValuesMap
 } from './types.js';
 
 const validateData = (data : JSONData) : void => {
@@ -53,6 +54,11 @@ export class AdjacencyMap {
 			this._nodes[id] = new AdjacencyMapNode(this, this._data.nodes[id]);
 		}
 		return this._nodes[id];
+	}
+
+	nodeValues() : NodeValuesMap {
+		//TODO: cache
+		return Object.fromEntries(Object.keys(this._data.nodes).map(id => [id, this.node(id).values]));
 	}
 }
 
