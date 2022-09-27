@@ -265,6 +265,34 @@ describe('AdjacencyMap validation', () => {
 			assert.doesNotThrow(fn);
 		}
 	});
+
+	it('barfs for a graph with a direct cycle in it', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.b.values.push({type: 'engineering', ref:'d'});
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a graph with an indirect cycle in it', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.values.push({type: 'engineering', ref:'d'});
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
 });
 
 describe('AdjacencyMap root', () => {
