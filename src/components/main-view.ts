@@ -50,8 +50,8 @@ const fetchData = async(filename : string) => {
 	store.dispatch(loadData(blob));
 };
 
-@customElement('sim-view')
-class SimView extends connect(store)(PageViewElement) {
+@customElement('main-view')
+class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_pageExtra: string;
@@ -111,7 +111,7 @@ class SimView extends connect(store)(PageViewElement) {
 		this._filename = selectFilename(state);
 	}
 
-	override updated(changedProps : Map<string, SimView[keyof SimView]>) {
+	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
 		if (changedProps.has('_filename') && this._filename) {
 			fetchData(this._filename);
 		}
@@ -120,6 +120,6 @@ class SimView extends connect(store)(PageViewElement) {
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'sim-view': SimView;
+		'main-view': MainView;
 	}
 }

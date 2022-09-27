@@ -83,7 +83,7 @@ const generateScreenshots = async () => {
 	const frameLength = currentFrameIndex.toString().length;
 	do {
 		console.log('Working on state #' + currentSimulationName + ' : ' + currentRunIndex + ' : ' + currentFrameIndex);
-		const ele : puppeteer.ElementHandle<Element> = await page.evaluateHandle('document.querySelector("my-app").shadowRoot.querySelector("sim-view").shadowRoot.querySelector("frame-visualization")');
+		const ele : puppeteer.ElementHandle<Element> = await page.evaluateHandle('document.querySelector("my-app").shadowRoot.querySelector("main-view").shadowRoot.querySelector("frame-visualization")');
 		
 		const safeSimulationName = sanitizeSimulationName(currentSimulationName);
 
