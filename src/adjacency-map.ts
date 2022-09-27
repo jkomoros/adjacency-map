@@ -16,6 +16,46 @@ const validateValueDefinition = (definition : ValueDefinition) : void => {
 	return _exhaustiveCheck;
 };
 
+const incomingGraph = (data : JSONData) : {[id : NodeID] : NodeID[]} => {
+	const result : {[id : NodeID] : NodeID[]} = {};
+	for (const [nodeID, nodeValue] of Object.entries(data.nodes)) {
+		//Make sure that even nodes with no incoming edges show up in result
+		if (!result[nodeID]) result[nodeID] = [];
+		const values = nodeValue.values || [];
+		for (const edge of values) {
+			const ref : NodeID = edge.ref || '';
+			if (!result[ref]) result[ref] = [];
+			if (result[ref].some(id => id == nodeID)) continue;
+			result[ref].push(nodeID);
+		}
+	}
+	return result;
+};
+
+//TODO: unexport
+export const topologicalSort = (data : JSONData) : NodeID[] => {
+	//https://stackoverflow.com/questions/4168/graph-serialization/4577#4577
+	const result : NodeID[] = [];
+	const removedIDs : {[id : NodeID] : true} = {};
+	const incoming = incomingGraph(data);
+	const noIncomingEdges = Object.entries(incoming).filter(entry => entry[1].length).map(entry => entry[0]);
+	while (noIncomingEdges.length) {
+		const id = noIncomingEdges.shift() as NodeID;
+		result.push(id);
+		removedIDs[id] = true;
+		const outbound = data.nodes[id].values || [];
+		for (const outboundEdge of outbound) {
+			const outboundRef = outboundEdge.ref || '';
+			if (removedIDs[outboundRef]) continue;
+			const remainingIncomingEdges = incoming[outboundRef].filter(ref => !removedIDs[ref]);
+			if (remainingIncomingEdges.length) continue;
+			noIncomingEdges.push(outboundRef);
+		}
+	}
+	if (result.length < Object.keys(data.nodes).length) throw new Error('Cycle detected');
+	return result;
+};
+
 const validateData = (data : JSONData) : void => {
 	if (!data) throw new Error('No data provided');
 	if (!data.nodes) throw new Error('No nodes provided');
