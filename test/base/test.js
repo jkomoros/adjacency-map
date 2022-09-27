@@ -76,4 +76,17 @@ describe('AdjacencyMap', () => {
 			assert.doesNotThrow(fn);
 		}
 	});
+
+	it('allows base input', async () => {
+		const input = legalBaseInput;
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	}); 
 });
