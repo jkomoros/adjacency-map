@@ -1,92 +1,17 @@
 {
 	"version": 1,
-	"configs": [
-		{
-			"name": "base",
-			"base": true,
-			"seed": "abcde",
-			"width": 800,
-			"height": 450,
-			"runs": 10,
-			"colors": {
-				"primary": "#fb8c00",
-				"secondary": "#51b9a3",
-				"disabled": "#CCCCCC",
-				"background": "white"
-			},
-			"autoGenerate": true,
-			"repeat": true,
-			"extraFinalFrameCount": 10
-		},
-		{
-			"name": "pasture-demo",
-			"description": "A demo of the pasture-demo simulator",
-			"extend": "base",
-			"frameDelay": 1000,
-			"extraFinalFrameCount": 3,
-			"sim": "pasture-demo",
-			"simOptions": null
-		},
-		{
-			"name": "standing-ovation-demo",
-			"description": "A model of whether a theater will erupt into a standing ovation after a performance. The stage is to the left.",
-			"extend": "base",
-			"frameDelay": 1000,
-			"extraFinalFrameCount": 3,
-			"sim": "standing-ovation",
-			"simOptions": null
-		},
-		{
-			"name": "schelling-org-demo",
-			"description": "A demo of the schelling-org simulator",
-			"extend": "base",
-			"sim": "schelling-org",
-			"simOptions": {
-				"communication": 30,
-				"collaborators": {
-					"count": 8,
-					"epsilon": 0.05,
-					"avgConnectionLikelihood": 0.1,
-					"connectionLikelihoodSpread": 0.25,
-					"compelling": 0.5,
-					"communicationStrategy": "max",
-					"individuals": [
-						{
-						"compelling": 1.0,
-						"avgConnectionLikelihood": 1.0,
-						"connectionLikelihoodSpread": 0.0,
-						"broadcastLikelihood": 0.75
-						}
-					]
-				},
-				"projects": {
-					"count": 4,
-					"maxExtraValue": 2.0,
-					"maxErrorValue": 2.0
-				}
-			}
-		},
-		{
-			"name": "dice-demo",
-			"description": "A demo of the dice-roll-demo simulator",
-			"extend": "base",
-			"sim": "dice-roll-demo",
-			"simOptions": null
-		},
-		{
-			"name": "luck-surface-area-demo",
-			"description": "A demo of the luck-surface-area simulator",
-			"extend": "base",
-			"runs": 1,
-			"sim": "luck-surface-area",
-			"simOptions": null
-		},
-		{
-			"name": "free-moving-agents-demo",
-			"description": "A demo of the free-moving-agents simulator",
-			"extend": "base",
-			"sim": "free-moving-agents",
-			"simOptions": null
+	"types": {
+		"engineering": {
+			"value": 3,
+			"weight": 1.0
 		}
-	]
+	},
+	"root": {
+		"engineering" : 4.0
+	},
+	"nodes": {
+		"a": {
+			"description": "Node a"
+		}
+	}
 }
