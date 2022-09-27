@@ -64,7 +64,7 @@ class MainView extends connect(store)(PageViewElement) {
 	_filename: string;
 
 	@state()
-	_data : JSONData;
+	_data : JSONData | undefined;
 
 	static override get styles() {
 		return [
