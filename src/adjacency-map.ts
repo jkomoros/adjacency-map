@@ -6,12 +6,28 @@ import {
 	NodeValues
 } from './types.js';
 
+const validateData = (data : JSONData) : void => {
+	if (!data) throw new Error('No data provided');
+	if (!data.nodes) throw new Error('No nodes provided');
+	//It is allowed for root to be empty.
+	if (!data.types || Object.keys(data.types).length == 0) throw new Error('No edge types provided');
+	for (const [nodeName, nodeData] of Object.entries(data.nodes)) {
+		if (!nodeData.description) throw new Error(nodeName + ' has no description');
+		for (const edge of nodeData.values) {
+			if (!edge.type) throw new Error(nodeName + ' has an edge with no type');
+			if (!data.types[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
+		}
+	}
+};
+
 export class AdjacencyMap {
 	
 	_data : JSONData;
 	_nodes : {[id : NodeID] : AdjacencyMapNode}
 
 	constructor(data : JSONData) {
+		//Will throw if it doesn't validate
+		validateData(data);
 		this._data = data;
 		this._nodes = {};
 	}
@@ -21,6 +37,7 @@ export class AdjacencyMap {
 	}
 
 	get root() : NodeValues {
+		//TODO: ensure that every edgeType is set to 0 or overridden.
 		return this._data.root;
 	}
 
