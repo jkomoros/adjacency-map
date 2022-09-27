@@ -14,7 +14,7 @@ import {
 
 const INITIAL_STATE : DataState = {
 	filename: DEFAULT_FILE_NAME,
-	data: [],
+	data: null,
 };
 
 const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState => {

@@ -64,7 +64,7 @@ export type AppState = {
 
 export type DataState = {
     filename : Filename;
-    data: unknown[];
+    data: JSONData;
 }
 
 export type RootState = {

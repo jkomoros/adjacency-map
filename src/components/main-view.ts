@@ -14,6 +14,7 @@ import {
 import {
 	selectPageExtra,
 	selectFilename,
+	selectData,
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -30,6 +31,7 @@ import {
 } from "./button-shared-styles.js";
 
 import {
+	JSONData,
 	RootState,
 } from '../types.js';
 
@@ -58,6 +60,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_filename: string;
+
+	@state()
+	_data : JSONData;
 
 	static override get styles() {
 		return [
@@ -100,7 +105,7 @@ class MainView extends connect(store)(PageViewElement) {
 	override render() : TemplateResult {
 		return html`
 			<div class='container'>
-				${this._filename}
+				<pre>${JSON.stringify(this._data, null, '\t')}</pre>
 			</div>
 		`;
 	}
@@ -109,6 +114,7 @@ class MainView extends connect(store)(PageViewElement) {
 	override stateChanged(state : RootState) {
 		this._pageExtra = selectPageExtra(state);
 		this._filename = selectFilename(state);
+		this._data = selectData(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
