@@ -30,6 +30,7 @@ export const extractSimpleGraph = (data : JSONData) : SimpleGraph => {
 		}
 		result[id] = Object.keys(edges);
 	}
+	result[ROOT_ID] = [];
 	return result;
 };
 
