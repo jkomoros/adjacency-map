@@ -7,10 +7,7 @@ import {
 
 import {
 	selectPage,
-	selectPageExtra,
-	selectCurrentSimulationName,
-	selectFilename,
-	selectDataIsFullyLoaded
+	selectPageExtra
 } from '../selectors.js';
 
 import {
@@ -36,8 +33,6 @@ export const canonicalizePath : AppActionCreator = () => (dispatch ,getState) =>
 
 	const state = getState();
 
-	//We don't have the necessary information to canonicalize until we have all data loaded
-	if (!selectDataIsFullyLoaded(state)) return;
 	const page = selectPage(state);
 	const pageExtra = selectPageExtra(state);
 
@@ -45,10 +40,6 @@ export const canonicalizePath : AppActionCreator = () => (dispatch ,getState) =>
 	
 	if (page != 'sim') {
 		path.push(pageExtra);
-	} else {
-		const filename = selectFilename(state);
-		const simulationName = selectCurrentSimulationName(state);
-		path.push(filename, simulationName, '');
 	}
 
 	dispatch(navigatePathTo(path.join('/'), true));

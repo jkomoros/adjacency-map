@@ -1,6 +1,5 @@
 import { LitElement, html, css, TemplateResult } from 'lit';
 import { connect } from "pwa-helpers/connect-mixin.js";
-import { installMediaQueryWatcher } from "pwa-helpers/media-query.js";
 import { installOfflineWatcher } from "pwa-helpers/network.js";
 import { installRouter } from "pwa-helpers/router.js";
 import { updateMetadata } from "pwa-helpers/metadata.js";
@@ -16,16 +15,8 @@ import {
 } from "../actions/app.js";
 
 import {
-	updateLayout
-} from "../actions/data.js";
-
-import {
 	RootState
 } from '../types.js';
-
-//Note: also hard-coded in styles() below as --controls-width.
-//You might also want to tweak run-summmary.NO_BORDER threshold values too
-const CONTROLS_WIDTH = '18em';
 
 @customElement('my-app')
 class MyApp extends connect(store)(LitElement) {
@@ -115,9 +106,6 @@ class MyApp extends connect(store)(LitElement) {
 	override firstUpdated() {
 		installRouter((location) => store.dispatch(navigate(decodeURIComponent(location.pathname))));
 		installOfflineWatcher((offline) => store.dispatch(updateOffline(offline)));
-		//Consider the layout to be 'large' (auto expand the simulation controls) if there's at least 2.5x the controls width left over for the stage, and the height is at least 2x the controls width.
-		const query = "(min-width: calc(" + CONTROLS_WIDTH + " + calc(2.5 * " + CONTROLS_WIDTH +"))) and (min-height: calc(" + CONTROLS_WIDTH + " * 2))";
-		installMediaQueryWatcher(query ,(matches) => store.dispatch(updateLayout(matches)));
 	}
 
 	override updated(changedProps : Map<string, MyApp[keyof MyApp]>) {
