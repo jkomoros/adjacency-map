@@ -20,6 +20,10 @@ export class AdjacencyMap {
 		return Object.keys(this._data.types);
 	}
 
+	get root() : NodeValues {
+		return this._data.root;
+	}
+
 	node(id : NodeID) : AdjacencyMapNode {
 		if (!this._nodes[id]) {
 			if (!this._data.nodes[id]) throw new Error('ID ' + id + ' does not exist in input');
