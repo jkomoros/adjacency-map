@@ -61,6 +61,7 @@ export type JSONData = {
             [constant : ConstantType]: number
         }
     }
+    //TODO: root should be optional
     root: NodeValues;
     nodes: {
         [id : NodeID] : NodeData

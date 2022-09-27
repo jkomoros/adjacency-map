@@ -36,6 +36,7 @@ const validateData = (data : JSONData) : void => {
 			throw new Error(type + ' does not have a legal value definition: ' + err);
 		}
 	}
+	//TODO: check that root (if provided) has only keys as enumerated in types
 	//TODO: check the nodes are all a DAG
 };
 
