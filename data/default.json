@@ -3,10 +3,13 @@
 	"types": {
 		"engineering": {
 			"value": 3,
-			"weight": 1.0
+			"constants": {
+				"weight": 1.0
+			}
 		},
 		"ux": {
-			"value": 4
+			"value": 4,
+			"description": "A description of ux"
 		}
 	},
 	"root": {

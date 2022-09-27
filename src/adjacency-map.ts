@@ -35,6 +35,12 @@ const validateData = (data : JSONData) : void => {
 		} catch (err) {
 			throw new Error(type + ' does not have a legal value definition: ' + err);
 		}
+		if (edgeDefinition.description && typeof edgeDefinition.description != 'string') throw new Error(type + ' has a description not of type string');
+		if (edgeDefinition.constants) {
+			for (const [constantName, constantValue] of Object.entries(edgeDefinition.constants)) {
+				if (typeof constantValue != 'number') throw new Error(type + ' constant ' + constantName + ' was not number as expected');
+			}
+		}
 	}
 	//TODO: check that root (if provided) has only keys as enumerated in types
 	//TODO: check the nodes are all a DAG

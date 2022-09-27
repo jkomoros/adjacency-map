@@ -58,7 +58,10 @@ export type JSONData = {
     types: {
         [type : EdgeType]: {
             value: ValueDefinition,
-            [constant : ConstantType]: number
+            description?: string,
+            constants?: {
+                [constant : ConstantType]: number
+            }
         }
     }
     //TODO: root should be optional

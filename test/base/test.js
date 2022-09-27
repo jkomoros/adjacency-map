@@ -15,10 +15,13 @@ const legalBaseInput = {
 	"types": {
 		"engineering": {
 			"value": 3,
-			"weight": 1.0
+			"constants": {
+				"weight": 1.0
+			}
 		},
 		"ux": {
-			"value": 4
+			"value": 4,
+			"description": "A description of ux"
 		}
 	},
 	"root": {
@@ -151,6 +154,34 @@ describe('AdjacencyMap validation', () => {
 	it('barfs for an edge with an illegal value definition', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.value = 'invalid';
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a type with a non-string description', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.ux.description = 5;
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a type with a non-number constant', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.constants.weight = 'invalid';
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
