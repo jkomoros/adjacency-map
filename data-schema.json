@@ -46,10 +46,17 @@
         },
         "types": {
           "additionalProperties": {
-            "additionalProperties": {
-              "type": "number"
-            },
+            "additionalProperties": false,
             "properties": {
+              "constants": {
+                "additionalProperties": {
+                  "type": "number"
+                },
+                "type": "object"
+              },
+              "description": {
+                "type": "string"
+              },
               "value": {
                 "$ref": "#/definitions/ValueDefinition"
               }
@@ -68,7 +75,6 @@
       "required": [
         "version",
         "types",
-        "root",
         "nodes"
       ],
       "type": "object"
