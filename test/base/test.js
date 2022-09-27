@@ -4,6 +4,10 @@ import {
 	AdjacencyMap
 } from '../../src/adjacency-map.js';
 
+import {
+	deepCopy
+} from '../../src/util.js';
+
 import assert from 'assert';
 
 const legalBaseInput = {
@@ -100,7 +104,7 @@ describe('AdjacencyMap validation', () => {
 	});
 
 	it('allows base input with node with no values', async () => {
-		const input = {...legalBaseInput};
+		const input = deepCopy(legalBaseInput);
 		delete input.nodes.a.values;
 		const errorExpected = false;
 		const fn = () => {
