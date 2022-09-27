@@ -1,10 +1,12 @@
 import {
 	EdgeType,
+	EdgeValue,
 	JSONData,
 	NodeData,
 	NodeID,
 	NodeValues,
-	NodeValuesMap
+	NodeValuesMap,
+	ValueDefinition
 } from './types.js';
 
 const validateData = (data : JSONData) : void => {
@@ -21,6 +23,11 @@ const validateData = (data : JSONData) : void => {
 		}
 	}
 	//TODO: check the nodes are all a DAG
+	//TODO: check all edge types have a legal value definition
+};
+
+const calculateValue = (definition : ValueDefinition) : number => {
+	return definition;
 };
 
 export class AdjacencyMap {
@@ -32,6 +39,7 @@ export class AdjacencyMap {
 	constructor(data : JSONData) {
 		//Will throw if it doesn't validate
 		validateData(data);
+		//TODO: deep freeze a copy of data
 		this._data = data;
 		this._nodes = {};
 		this._cachedRoot = null;
@@ -39,6 +47,10 @@ export class AdjacencyMap {
 
 	get edgeTypes() : EdgeType[] {
 		return Object.keys(this._data.types);
+	}
+
+	get data() : JSONData {
+		return this._data;
 	}
 
 	get root() : NodeValues {
@@ -75,8 +87,18 @@ class AdjacencyMapNode {
 	}
 
 	_computeValues() : NodeValues {
-		//TODO: actually implement
-		return null;
+		//TODO: test this result
+		const result = {...this._map.root};
+		const edgeByType : {[type : EdgeType] : EdgeValue[]} = {};
+		for (const edge of this._data.values) {
+			if (!edgeByType[edge.type]) edgeByType[edge.type] = [];
+			edgeByType[edge.type].push(edge);
+		}
+		for (const type of Object.keys(edgeByType)) {
+			const edgeValueDefinition = this._map.data.types[type].value;
+			result[type] = calculateValue(edgeValueDefinition);
+		}
+		return result;
 	}
 
 	/**
