@@ -116,4 +116,32 @@ describe('AdjacencyMap validation', () => {
 			assert.doesNotThrow(fn);
 		}
 	});
+
+	it('barfs for a node with a value without a type', async () => {
+		const input = deepCopy(legalBaseInput);
+		delete input.nodes.a.values[0].type;
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a node with a value with an unenumerated type', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.values[0].type = 'foo';
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
 });
