@@ -40,3 +40,26 @@ export const topologicalSort = (graph : SimpleGraph) : NodeID[] => {
 	if (result.length < Object.keys(graph).length) throw new Error('Cycle detected');
 	return result;
 };
+
+//Given a DAG that might be tangled, return a subset SimpleGraph where each node
+//has precisely one parent and the retained parent is the one that will create
+//the longest path back to root.
+export const tidyLongestTree = (dag : SimpleGraph) : SimpleGraph => {
+	if (Object.keys(dag).length == 0) return dag;
+	//https://www.geeksforgeeks.org/find-longest-path-directed-acyclic-graph/
+	const topo = topologicalSort(dag);
+	const rootID = topo[0];
+	const lengths = Object.fromEntries(topo.map(id => [id, Number.NEGATIVE_INFINITY]));
+	lengths[rootID] = 0;
+	const parents : SimpleGraph = {};
+	const weight = 1;
+	for (const id of topo) {
+		for (const other of Object.keys(dag[id])) {
+			if (lengths[other] < lengths[id] + weight) {
+				lengths[other] = lengths[id] + weight;
+				parents[other] = {[id] : true};
+			}
+		}
+	}
+	return incomingGraph(parents);
+};
