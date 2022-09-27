@@ -37,6 +37,10 @@ export type EdgeValue = {
     [constant : ConstantType]: undefined | number | EdgeType | NodeID;
 };
 
+export type SimpleGraph = {
+    [id : NodeID] : NodeID[]
+}
+
 export type NodeData = {
     description: string,
     values?: EdgeValue[]

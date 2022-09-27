@@ -6,6 +6,7 @@ import {
 	NodeID,
 	NodeValues,
 	NodeValuesMap,
+	SimpleGraph,
 	ValueDefinition
 } from './types.js';
 
@@ -16,8 +17,8 @@ const validateValueDefinition = (definition : ValueDefinition) : void => {
 	return _exhaustiveCheck;
 };
 
-const incomingGraph = (data : JSONData) : {[id : NodeID] : NodeID[]} => {
-	const result : {[id : NodeID] : NodeID[]} = {};
+const incomingGraph = (data : JSONData) : SimpleGraph => {
+	const result : SimpleGraph = {};
 	for (const [nodeID, nodeValue] of Object.entries(data.nodes)) {
 		//Make sure that even nodes with no incoming edges show up in result
 		if (!result[nodeID]) result[nodeID] = [];
@@ -32,7 +33,7 @@ const incomingGraph = (data : JSONData) : {[id : NodeID] : NodeID[]} => {
 	return result;
 };
 
-//TODO: unexport
+//TODO: unexport, test
 export const topologicalSort = (data : JSONData) : NodeID[] => {
 	//https://stackoverflow.com/questions/4168/graph-serialization/4577#4577
 	const result : NodeID[] = [];
