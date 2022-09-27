@@ -92,6 +92,7 @@ export class AdjacencyMap {
 	constructor(data : JSONData) {
 		//Will throw if it doesn't validate
 		validateData(data);
+		if (!data) throw new Error('undefined data');
 		//TODO: deep freeze a copy of data
 		this._data = data;
 		this._nodes = {};
