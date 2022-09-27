@@ -84,7 +84,7 @@ export class AdjacencyMap {
 	}
 
 	nodeValues() : NodeValuesMap {
-		//TODO: cache
+		//TODO: cache. Not a huge deal because the heavy lifting is cached behind node().
 		return Object.fromEntries(Object.keys(this._data.nodes).map(id => [id, this.node(id).values]));
 	}
 }
