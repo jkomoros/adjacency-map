@@ -171,3 +171,24 @@ describe('AdjacencyMap root', () => {
 	});
 
 });
+
+describe('AdjacencyMap node', () => {
+	it('works for a named node', async () => {
+		const input = deepCopy(legalBaseInput);
+		const map = new AdjacencyMap(input);
+		const fn = () => {
+			map.node('a');
+		};
+		assert.doesNotThrow(fn);
+	});
+
+	it('barfs for an unknown node', async () => {
+		const input = deepCopy(legalBaseInput);
+		const map = new AdjacencyMap(input);
+		const fn = () => {
+			map.node('NONEXISTENT');
+		};
+		assert.throws(fn);
+	});
+
+});
