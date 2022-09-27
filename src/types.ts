@@ -37,6 +37,11 @@ export type EdgeValue = {
     [constant : ConstantType]: number | EdgeType | NodeID;
 };
 
+export type NodeData = {
+    description: string,
+    values: EdgeValue[]
+};
+
 export type JSONData = {
     version: number,
     types: {
@@ -49,10 +54,7 @@ export type JSONData = {
         [type : EdgeType]: number
     },
     nodes: {
-        [id : NodeID] : {
-            description: string,
-            values: EdgeValue[]
-        }
+        [id : NodeID] : NodeData
     }
 }
 
