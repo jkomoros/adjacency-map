@@ -39,6 +39,37 @@ const legalBaseInput = {
 					"type": "engineering"
 				}
 			]
+		},
+		"b": {
+			"description": "Node b",
+			"values": [
+				{
+					"type": "ux",
+					"ref": "a"
+				}
+			]
+		},
+		"c": {
+			"description": "Node c",
+			"values": [
+				{
+					"type": "engineering",
+					"ref": "a"
+				},
+				{
+					"type": "ux",
+					"ref": "b"
+				}
+			]
+		},
+		"d": {
+			"description": "Node d",
+			"values": [
+				{
+					"type": "engineering",
+					"ref": "b"
+				}
+			]
 		}
 	}
 };
