@@ -19,7 +19,7 @@ const legalBaseInput = {
 		},
 		"ux": {
 			"value": 4
-		},
+		}
 	},
 	"root": {
 		"engineering" : 4.0

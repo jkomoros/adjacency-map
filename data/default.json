@@ -4,6 +4,9 @@
 		"engineering": {
 			"value": 3,
 			"weight": 1.0
+		},
+		"ux": {
+			"value": 4
 		}
 	},
 	"root": {
@@ -11,7 +14,16 @@
 	},
 	"nodes": {
 		"a": {
-			"description": "Node a"
+			"description": "Node a",
+			"values": [
+				{
+					"type": "engineering",
+					"weight": 4.0
+				},
+				{
+					"type": "engineering"
+				}
+			]
 		}
 	}
 }
