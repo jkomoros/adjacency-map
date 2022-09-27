@@ -20,6 +20,7 @@ const validateData = (data : JSONData) : void => {
 			if (!data.types[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
 		}
 	}
+	//TODO: check the nodes are all a DAG
 };
 
 export class AdjacencyMap {
