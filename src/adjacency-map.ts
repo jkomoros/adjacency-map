@@ -57,7 +57,7 @@ export const topologicalSort = (graph : SimpleGraph) : NodeID[] => {
 	const result : NodeID[] = [];
 	const workingGraph = deepCopy(graph);
 	const incoming = incomingGraph(workingGraph);
-	const noIncomingEdges = Object.entries(incoming).filter(entry => Object.keys(entry[1]).length).map(entry => entry[0]);
+	const noIncomingEdges = Object.entries(incoming).filter(entry => Object.keys(entry[1]).length == 0).map(entry => entry[0]);
 	while (noIncomingEdges.length) {
 		const id = noIncomingEdges.shift() as NodeID;
 		result.push(id);
