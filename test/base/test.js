@@ -1,20 +1,22 @@
 /*eslint-env node*/
 
 import {
-	randomString
-} from '../../src/util.js';
-
-import {
-	makeSeededRandom
-} from '../../src/random.js';
+	AdjacencyMap
+} from '../../src/adjacency-map.js';
 
 import assert from 'assert';
 
-describe('randomString', () => {
-	it('handles 1.0 / 1.0', async () => {
-		const rnd = makeSeededRandom('');
-		const result = randomString(3, rnd);
-		const golden = '270';
-		assert.deepStrictEqual(result, golden);
+describe('AdjacencyMap', () => {
+	it('barfs on null data', async () => {
+		const input = null;
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
 	}); 
 });
