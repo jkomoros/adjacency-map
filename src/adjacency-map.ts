@@ -8,6 +8,7 @@ import {
 	NodeValuesMap,
 	SimpleGraph,
 	TreeGraph,
+	TreeGraphWithDetails,
 	ValueDefinition
 } from './types.js';
 
@@ -86,6 +87,17 @@ const calculateValue = (definition : ValueDefinition) : number => {
 	return definition;
 };
 
+const treeGraphWithDetails = (graph : TreeGraph, map : AdjacencyMap) : TreeGraphWithDetails => {
+	const node = map.node(graph.name);
+	const result : TreeGraphWithDetails = {
+		name: graph.name,
+		description: node.description,
+		values: node.values
+	};
+	if (graph.children) result.children = graph.children.map(child => treeGraphWithDetails(child, map));
+	return result;
+};
+
 export class AdjacencyMap {
 	
 	_data : JSONData;
@@ -130,11 +142,12 @@ export class AdjacencyMap {
 		return Object.fromEntries(Object.keys(this._data.nodes).map(id => [id, this.node(id).values]));
 	}
 
-	treeGraph() : TreeGraph {
+	treeGraph() : TreeGraphWithDetails {
 		//TODO: cache
 		const simpleGraph = extractSimpleGraph(this._data);
 		const longestTree = tidyLongestTree(simpleGraph);
-		return treeGraphFromParentGraph(longestTree);
+		const treeGraph = treeGraphFromParentGraph(longestTree);
+		return treeGraphWithDetails(treeGraph, this);
 	}
 }
 
@@ -167,6 +180,10 @@ class AdjacencyMapNode {
 
 	get isRoot() : boolean {
 		return this._isRoot;
+	}
+
+	get description() : string {
+		return this._data ? this._data.description : '';
 	}
 
 	/**
