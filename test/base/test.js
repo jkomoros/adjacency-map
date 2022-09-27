@@ -97,5 +97,19 @@ describe('AdjacencyMap', () => {
 		} else {
 			assert.doesNotThrow(fn);
 		}
-	}); 
+	});
+
+	it('allows base input with node with no values', async () => {
+		const input = {...legalBaseInput};
+		delete input.nodes.a.values;
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
 });
