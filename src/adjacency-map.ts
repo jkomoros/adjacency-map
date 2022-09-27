@@ -13,7 +13,8 @@ const validateData = (data : JSONData) : void => {
 	if (!data.types || Object.keys(data.types).length == 0) throw new Error('No edge types provided');
 	for (const [nodeName, nodeData] of Object.entries(data.nodes)) {
 		if (!nodeData.description) throw new Error(nodeName + ' has no description');
-		for (const edge of nodeData.values) {
+		const nodeValues = nodeData.values || [];
+		for (const edge of nodeValues) {
 			if (!edge.type) throw new Error(nodeName + ' has an edge with no type');
 			if (!data.types[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
 		}
