@@ -38,7 +38,9 @@ export type EdgeValue = {
 };
 
 export type SimpleGraph = {
-    [id : NodeID] : NodeID[]
+    [id : NodeID] : {
+        [other : NodeID]: true
+    }
 }
 
 export type NodeData = {

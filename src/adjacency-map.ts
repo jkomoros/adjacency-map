@@ -28,9 +28,9 @@ export const extractSimpleGraph = (data : JSONData) : SimpleGraph => {
 			const ref = edge.ref || ROOT_ID;
 			edges[ref] = true;
 		}
-		result[id] = Object.keys(edges);
+		result[id] = edges;
 	}
-	result[ROOT_ID] = [];
+	result[ROOT_ID] = {};
 	return result;
 };
 
@@ -38,11 +38,10 @@ const incomingGraph = (graph : SimpleGraph) : SimpleGraph => {
 	const result : SimpleGraph = {};
 	for (const [nodeID, edges] of Object.entries(graph)) {
 		//Make sure that even nodes with no incoming edges show up in result
-		if (!result[nodeID]) result[nodeID] = [];
-		for (const ref of edges) {
-			if (!result[ref]) result[ref] = [];
-			if (result[ref].some(id => id == nodeID)) continue;
-			result[ref].push(nodeID);
+		if (!result[nodeID]) result[nodeID] = {};
+		for (const ref of Object.keys(edges)) {
+			if (!result[ref]) result[ref] = {};
+			result[ref][nodeID] = true;
 		}
 	}
 	return result;
@@ -60,9 +59,9 @@ export const topologicalSort = (graph : SimpleGraph) : NodeID[] => {
 		result.push(id);
 		removedIDs[id] = true;
 		const outbound = graph[id];
-		for (const outboundRef of outbound) {
+		for (const outboundRef of Object.keys(outbound)) {
 			if (removedIDs[outboundRef]) continue;
-			const remainingIncomingEdges = incoming[outboundRef].filter(ref => !removedIDs[ref]);
+			const remainingIncomingEdges = Object.keys(incoming[outboundRef]).filter(ref => !removedIDs[ref]);
 			if (remainingIncomingEdges.length) continue;
 			noIncomingEdges.push(outboundRef);
 		}
