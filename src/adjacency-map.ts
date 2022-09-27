@@ -42,7 +42,13 @@ const validateData = (data : JSONData) : void => {
 			}
 		}
 	}
-	//TODO: check that root (if provided) has only keys as enumerated in types
+	if (data.root) {
+		if (typeof data.root != 'object') throw new Error('root if provided must be an object');
+		for (const [rootName, rootValue] of Object.entries(data.root)) {
+			if (typeof rootValue != 'number') throw new Error('root property ' + rootName + ' is not a number as expected');
+			if (!data.types[rootName]) throw new Error('root property ' + rootName + ' is not defined in types');
+		}
+	}
 	//TODO: check the nodes are all a DAG
 };
 

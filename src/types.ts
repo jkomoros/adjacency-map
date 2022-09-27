@@ -64,8 +64,7 @@ export type JSONData = {
             }
         }
     }
-    //TODO: root should be optional
-    root: NodeValues;
+    root?: NodeValues;
     nodes: {
         [id : NodeID] : NodeData
     }

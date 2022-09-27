@@ -192,6 +192,48 @@ describe('AdjacencyMap validation', () => {
 			assert.doesNotThrow(fn);
 		}
 	});
+
+	it('allows a missing root', async () => {
+		const input = deepCopy(legalBaseInput);
+		delete input.root;
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a root with a non-number key', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.root.engineering = 'invalid';
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a root with a key not in types', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.root.foo = 3;
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
 });
 
 describe('AdjacencyMap root', () => {
