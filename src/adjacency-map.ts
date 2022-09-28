@@ -34,8 +34,9 @@ const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 	'type': true
 };
 
-const valueDefintionIsEdgeConstant = (definition : ValueDefintionEdgeConstant) : definition is ValueDefintionEdgeConstant => {
+const valueDefintionIsEdgeConstant = (definition : ValueDefinition) : definition is ValueDefintionEdgeConstant => {
 	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
 	return definition.type == 'edge';
 };
 
