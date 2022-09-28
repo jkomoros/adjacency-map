@@ -522,6 +522,21 @@ describe('AdjacencyMap node', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('allows a named node with last reducer', async () => {
+		const input = deepCopy(legalBaseInput);
+		//Give it a more interesting value.
+		input.types.engineering.value = [1,2,10];
+		input.types.engineering.reducer = 'last';
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 10.0,
+			ux: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
 });
 
 describe('tidyLongestTree', () => {

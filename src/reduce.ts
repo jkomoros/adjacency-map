@@ -12,9 +12,15 @@ export const first = (nums : number[]): [number] => {
 	return [nums[0]];
 };
 
+export const last = (nums : number[]): [number] => {
+	if (!nums.length) return [0];
+	return [nums[nums.length - 1]];
+};
+
 export const DEFAULT_REDUCER = mean;
 
 export const REDUCERS = {
 	'mean': mean,
-	'first': first
+	'first': first,
+	'last': last
 } as const;
