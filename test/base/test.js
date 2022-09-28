@@ -341,6 +341,34 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for edge with invalid reducer', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.reducer = 'foo';
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows edge with valid reducer', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.reducer = 'first';
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
@@ -417,6 +445,21 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 2.5,
+			ux: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('allows a named node with non-default reducer', async () => {
+		const input = deepCopy(legalBaseInput);
+		//Give it a more interesting value.
+		input.types.engineering.value = {type : 'edge', property: 'weight'};
+		input.types.engineering.reducer = 'first';
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 4.0,
 			ux: 0
 		};
 		assert.deepStrictEqual(actual, golden);

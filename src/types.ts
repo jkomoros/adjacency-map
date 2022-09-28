@@ -1,3 +1,5 @@
+import { REDUCERS } from "./reduce";
+
 export type RandomGenerator = () => number;
 
 //A string that can be used directly anywhere CSS expects a color. Hex, RGB(),
@@ -83,9 +85,17 @@ export type NodeValues = {
     [type : EdgeType]: number
 };
 
+export type ReducerType = keyof typeof REDUCERS;
+
 export type EdgeDefinition = {
     value: ValueDefinition,
     description?: string,
+    //The intermediate values for ValueDefinition are all arrays of numbers, but
+    //at the end they have to be reduced to a single number. A reducer is a
+    //ValueDefinition that takes an array of numbers and provides an array with
+    //a single number. This reducer will be used for that final reduction, to
+    //produce the final number to use. If not provided, defaults to 'mean'
+    reducer? : ReducerType,
     constants?: {
         [constant : ConstantType]: number
     }

@@ -25,7 +25,8 @@ import {
 } from './constants.js';
 
 import {
-	mean
+	DEFAULT_REDUCER,
+	REDUCERS
 } from './reduce.js';
 
 const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
@@ -84,6 +85,7 @@ const validateData = (data : JSONData) : void => {
 		} catch (err) {
 			throw new Error(type + ' does not have a legal value definition: ' + err);
 		}
+		if (edgeDefinition.reducer && !REDUCERS[edgeDefinition.reducer]) throw new Error('Unknown reducer: ' + edgeDefinition.reducer);
 		if (edgeDefinition.description && typeof edgeDefinition.description != 'string') throw new Error(type + ' has a description not of type string');
 		if (edgeDefinition.constants) {
 			for (const [constantName, constantValue] of Object.entries(edgeDefinition.constants)) {
@@ -211,8 +213,8 @@ class AdjacencyMapNode {
 			const defaultedEdges = rawEdges.map(edge => ({...constants, ...edge}));
 			const values = calculateValue(edgeValueDefinition, defaultedEdges);
 			if (values.length == 0) throw new Error('values was not at least of length 1');
-			//TODO: allow other final reducers, for now just take the mean
-			result[type] = mean(values)[0];
+			const finalReducer = typeDefinition.reducer ? REDUCERS[typeDefinition.reducer] : DEFAULT_REDUCER;
+			result[type] = finalReducer(values)[0];
 		}
 		return result;
 	}

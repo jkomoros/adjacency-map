@@ -11,3 +11,10 @@ export const first = (nums : number[]): [number] => {
 	if (!nums.length) return [0];
 	return [nums[0]];
 };
+
+export const DEFAULT_REDUCER = mean;
+
+export const REDUCERS = {
+	'mean': mean,
+	'first': first
+} as const;
