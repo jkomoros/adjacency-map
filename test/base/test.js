@@ -537,6 +537,36 @@ describe('AdjacencyMap node', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('allows a named node with min reducer', async () => {
+		const input = deepCopy(legalBaseInput);
+		//Give it a more interesting value.
+		input.types.engineering.value = [1,-3,10];
+		input.types.engineering.reducer = 'min';
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: -3.0,
+			ux: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('allows a named node with max reducer', async () => {
+		const input = deepCopy(legalBaseInput);
+		//Give it a more interesting value.
+		input.types.engineering.value = [1,-3,10, 2];
+		input.types.engineering.reducer = 'max';
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 10.0,
+			ux: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
 });
 
 describe('tidyLongestTree', () => {

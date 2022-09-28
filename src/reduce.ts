@@ -17,10 +17,22 @@ export const last = (nums : number[]): [number] => {
 	return [nums[nums.length - 1]];
 };
 
+export const min = (nums : number[]): [number] => {
+	if (!nums.length) return [0];
+	return [Math.min(...nums)];
+};
+
+export const max = (nums : number[]): [number] => {
+	if (!nums.length) return [0];
+	return [Math.max(...nums)];
+};
+
 export const DEFAULT_REDUCER = mean;
 
 export const REDUCERS = {
 	'mean': mean,
 	'first': first,
-	'last': last
+	'last': last,
+	'min': min,
+	'max': max
 } as const;
