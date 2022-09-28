@@ -369,6 +369,49 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('allows value with array of numbers', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = [1,2,3];
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for value with array containing a non-number', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = [1,2,'fail'];
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for value with array of zero length', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = [];
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+
 });
 
 describe('AdjacencyMap root', () => {
@@ -460,6 +503,20 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 4.0,
+			ux: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('allows a named node with array of items', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = [8,9];
+		input.types.engineering.reducer = 'first';
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 8.0,
 			ux: 0
 		};
 		assert.deepStrictEqual(actual, golden);

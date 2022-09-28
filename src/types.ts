@@ -34,7 +34,7 @@ export type ValueDefintionEdgeConstant = {
 };
 
 //TODO: expand this a lot
-export type ValueDefinition = number | ValueDefintionEdgeConstant;
+export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant;
 
 export type NodeID = string;
 

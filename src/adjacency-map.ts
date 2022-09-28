@@ -41,6 +41,11 @@ const valueDefintionIsEdgeConstant = (definition : ValueDefintionEdgeConstant) :
 
 const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : EdgeDefinition) : void => {
 	if (typeof definition == 'number') return;
+	if (typeof definition == 'object' && Array.isArray(definition)) {
+		if (definition.some(item => typeof item != 'number')) throw new Error('An array was provided but some items were not numbers');
+		if (definition.length == 0) throw new Error('If an array of numbers is provided there must be at least one');
+		return;
+	}
 	if (valueDefintionIsEdgeConstant(definition)) {
 		if (RESERVED_VALUE_DEFINITION_PROPERTIES[definition.property]) throw new Error(definition.property + ' is a reserved edge property name');
 		const constants = edgeDefinition.constants || {};
@@ -112,6 +117,8 @@ const validateData = (data : JSONData) : void => {
 //one number?
 const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]) : number[] => {
 	if (typeof definition == 'number') return [definition];
+
+	if (Array.isArray(definition)) return definition;
 
 	if (valueDefintionIsEdgeConstant(definition)) {
 		return edges.map(edge => edge[definition.property] as number);
