@@ -416,7 +416,7 @@ describe('AdjacencyMap node', () => {
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			engineering: 4,
+			engineering: 2.5,
 			ux: 0
 		};
 		assert.deepStrictEqual(actual, golden);

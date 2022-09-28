@@ -24,6 +24,10 @@ import {
 	ROOT_ID
 } from './constants.js';
 
+import {
+	mean
+} from './reduce.js';
+
 const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 	'ref': true,
 	'type': true
@@ -207,8 +211,8 @@ class AdjacencyMapNode {
 			const defaultedEdges = rawEdges.map(edge => ({...constants, ...edge}));
 			const values = calculateValue(edgeValueDefinition, defaultedEdges);
 			if (values.length == 0) throw new Error('values was not at least of length 1');
-			//TODO: allow other final reducers, for now just take the first number.
-			result[type] = values[0];
+			//TODO: allow other final reducers, for now just take the mean
+			result[type] = mean(values)[0];
 		}
 		return result;
 	}
