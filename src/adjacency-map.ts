@@ -83,8 +83,10 @@ const validateData = (data : JSONData) : void => {
 	}
 };
 
-const calculateValue = (definition : ValueDefinition) : number => {
-	return definition;
+//TODO: is there a way to make it clear this must return an array with at least
+//one number?
+const calculateValue = (definition : ValueDefinition) : number[] => {
+	return [definition];
 };
 
 const treeGraphWithDetails = (graph : TreeGraph, map : AdjacencyMap) : TreeGraphWithDetails => {
@@ -173,7 +175,10 @@ class AdjacencyMapNode {
 		}
 		for (const type of Object.keys(edgeByType)) {
 			const edgeValueDefinition = this._map.data.types[type].value;
-			result[type] = calculateValue(edgeValueDefinition);
+			const values = calculateValue(edgeValueDefinition);
+			if (values.length == 0) throw new Error('values was not at least of length 1');
+			//TODO: allow other final reducers, for now just take the first number.
+			result[type] = values[0];
 		}
 		return result;
 	}
