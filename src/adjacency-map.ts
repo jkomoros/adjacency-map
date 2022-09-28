@@ -1,4 +1,5 @@
 import {
+	EdgeDefinition,
 	EdgeType,
 	EdgeValue,
 	JSONData,
@@ -22,7 +23,8 @@ import {
 	ROOT_ID
 } from './constants.js';
 
-const validateValueDefinition = (definition : ValueDefinition) : void => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const validateValueDefinition = (definition : ValueDefinition, _edgeDefinition : EdgeDefinition) : void => {
 	if (typeof definition == 'number') return;
 	const _exhaustiveCheck : never = definition;
 	throw new Error('Illegal value for definition');
@@ -58,7 +60,7 @@ const validateData = (data : JSONData) : void => {
 	}
 	for(const [type, edgeDefinition] of Object.entries(data.types)) {
 		try {
-			validateValueDefinition(edgeDefinition.value);
+			validateValueDefinition(edgeDefinition.value, edgeDefinition);
 		} catch (err) {
 			throw new Error(type + ' does not have a legal value definition: ' + err);
 		}
