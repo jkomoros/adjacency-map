@@ -76,16 +76,18 @@ export type NodeValues = {
     [type : EdgeType]: number
 };
 
+export type EdgeDefinition = {
+    value: ValueDefinition,
+    description?: string,
+    constants?: {
+        [constant : ConstantType]: number
+    }
+}
+
 export type JSONData = {
     version: number,
     types: {
-        [type : EdgeType]: {
-            value: ValueDefinition,
-            description?: string,
-            constants?: {
-                [constant : ConstantType]: number
-            }
-        }
+        [type : EdgeType]: EdgeDefinition
     }
     root?: NodeValues;
     nodes: {
