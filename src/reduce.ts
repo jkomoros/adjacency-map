@@ -6,3 +6,8 @@ export const mean = (nums : number[]) : [number] => {
 	}
 	return [sum / nums.length];
 };
+
+export const first = (nums : number[]): [number] => {
+	if (!nums.length) return [0];
+	return [nums[0]];
+};
