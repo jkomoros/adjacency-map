@@ -10,7 +10,8 @@ import {
 	SimpleGraph,
 	TreeGraph,
 	TreeGraphWithDetails,
-	ValueDefinition
+	ValueDefinition,
+	ValueDefintionEdgeConstant
 } from './types.js';
 
 import {
@@ -23,9 +24,24 @@ import {
 	ROOT_ID
 } from './constants.js';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const validateValueDefinition = (definition : ValueDefinition, _edgeDefinition : EdgeDefinition) : void => {
+const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
+	'ref': true,
+	'type': true
+};
+
+const valueDefintionIsEdgeConstant = (definition : ValueDefintionEdgeConstant) : definition is ValueDefintionEdgeConstant => {
+	if (!definition || typeof definition != 'object') return false;
+	return definition.type == 'edge';
+};
+
+const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : EdgeDefinition) : void => {
 	if (typeof definition == 'number') return;
+	if (valueDefintionIsEdgeConstant(definition)) {
+		if (RESERVED_VALUE_DEFINITION_PROPERTIES[definition.property]) throw new Error(definition.property + ' is a reserved edge property name');
+		const constants = edgeDefinition.constants || {};
+		if (!constants[definition.property]) throw new Error(definition.property + ' for edge type value definition but that constant doesn\'t exist for that type.');
+		return;
+	}
 	const _exhaustiveCheck : never = definition;
 	throw new Error('Illegal value for definition');
 	return _exhaustiveCheck;
@@ -67,6 +83,7 @@ const validateData = (data : JSONData) : void => {
 		if (edgeDefinition.description && typeof edgeDefinition.description != 'string') throw new Error(type + ' has a description not of type string');
 		if (edgeDefinition.constants) {
 			for (const [constantName, constantValue] of Object.entries(edgeDefinition.constants)) {
+				if (RESERVED_VALUE_DEFINITION_PROPERTIES[constantName]) throw new Error(constantName + ' was present in constants for ' + type + ' but is reserved');
 				if (typeof constantValue != 'number') throw new Error(type + ' constant ' + constantName + ' was not number as expected');
 			}
 		}
@@ -87,8 +104,16 @@ const validateData = (data : JSONData) : void => {
 
 //TODO: is there a way to make it clear this must return an array with at least
 //one number?
-const calculateValue = (definition : ValueDefinition) : number[] => {
-	return [definition];
+const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]) : number[] => {
+	if (typeof definition == 'number') return [definition];
+
+	if (valueDefintionIsEdgeConstant(definition)) {
+		return edges.map(edge => edge[definition.property] as number);
+	}
+
+	const _exhaustiveCheck : never = definition;
+	throw new Error('Illegal value for definition');
+	return _exhaustiveCheck;
 };
 
 const treeGraphWithDetails = (graph : TreeGraph, map : AdjacencyMap) : TreeGraphWithDetails => {
@@ -175,9 +200,12 @@ class AdjacencyMapNode {
 			if (!edgeByType[edge.type]) edgeByType[edge.type] = [];
 			edgeByType[edge.type].push(edge);
 		}
-		for (const type of Object.keys(edgeByType)) {
-			const edgeValueDefinition = this._map.data.types[type].value;
-			const values = calculateValue(edgeValueDefinition);
+		for (const [type, rawEdges] of Object.entries(edgeByType)) {
+			const typeDefinition = this._map.data.types[type];
+			const edgeValueDefinition = typeDefinition.value;
+			const constants = typeDefinition.constants || {};
+			const defaultedEdges = rawEdges.map(edge => ({...constants, ...edge}));
+			const values = calculateValue(edgeValueDefinition, defaultedEdges);
 			if (values.length == 0) throw new Error('values was not at least of length 1');
 			//TODO: allow other final reducers, for now just take the first number.
 			result[type] = values[0];

@@ -26,12 +26,19 @@ export type EdgeType = string;
 
 export type ConstantType = string;
 
+export type ValueDefintionEdgeConstant = {
+    type : 'edge',
+    property: ConstantType
+};
+
 //TODO: expand this a lot
-export type ValueDefinition = number;
+export type ValueDefinition = number | ValueDefintionEdgeConstant;
 
 export type NodeID = string;
 
 export type EdgeValue = {
+    //Any of the exlicitly enumerated properties should be added to
+    //RESERVED_VALUE_DEFINITION_PROPERTIES
     type: EdgeType,
     ref? : NodeID,
     [constant : ConstantType]: undefined | number | EdgeType | NodeID;

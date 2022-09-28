@@ -298,6 +298,49 @@ describe('AdjacencyMap validation', () => {
 			assert.doesNotThrow(fn);
 		}
 	});
+
+	it('barfs for an edge with a value of edge with illegal property', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {type: 'edge', property: 'ref'};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for an edge with a value of edge with constant that doesn\'t exist for that type', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {type: 'edge', property: 'foo'};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows edge with a value of edge with constant that does exist for that type', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {type: 'edge', property: 'weight'};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
@@ -358,6 +401,19 @@ describe('AdjacencyMap node', () => {
 		const input = deepCopy(legalBaseInput);
 		const map = new AdjacencyMap(input);
 		const node = map.node('');
+		const actual = node.values;
+		const golden = {
+			engineering: 4,
+			ux: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('allows a named node with edge constant value', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {type: 'edge', property: 'weight'};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
 			engineering: 4,
