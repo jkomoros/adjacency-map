@@ -411,6 +411,34 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for TypeRef with non existing property', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {type: 'ref', property: 'foo'};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows TypeRef with existing property', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {type: 'ref', property: 'engineering'};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 
 });
 
@@ -517,6 +545,19 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 8.0,
+			ux: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('allows a named node with a RefValue', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {type:'ref', property:'engineering'};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 4.0,
 			ux: 0
 		};
 		assert.deepStrictEqual(actual, golden);

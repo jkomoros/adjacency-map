@@ -28,13 +28,20 @@ export type EdgeType = string;
 
 export type ConstantType = string;
 
+//Selects a constant on this edge
 export type ValueDefintionEdgeConstant = {
     type : 'edge',
     property: ConstantType
 };
 
+//Selects the value in the parents of this type
+export type ValueDefinitionRefValue = {
+    type: 'ref',
+    property: EdgeType
+}
+
 //TODO: expand this a lot
-export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant;
+export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant | ValueDefinitionRefValue;
 
 export type NodeID = string;
 

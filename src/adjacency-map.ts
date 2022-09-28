@@ -11,6 +11,7 @@ import {
 	TreeGraph,
 	TreeGraphWithDetails,
 	ValueDefinition,
+	ValueDefinitionRefValue,
 	ValueDefintionEdgeConstant
 } from './types.js';
 
@@ -40,7 +41,13 @@ const valueDefintionIsEdgeConstant = (definition : ValueDefinition) : definition
 	return definition.type == 'edge';
 };
 
-const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : EdgeDefinition) : void => {
+const valueDefintionIsRefValue = (definition : ValueDefinition) : definition is ValueDefinitionRefValue => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return definition.type == 'ref';
+};
+
+const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : EdgeDefinition, exampleValue : NodeValues) : void => {
 	if (typeof definition == 'number') return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {
 		if (definition.some(item => typeof item != 'number')) throw new Error('An array was provided but some items were not numbers');
@@ -51,6 +58,10 @@ const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : 
 		if (RESERVED_VALUE_DEFINITION_PROPERTIES[definition.property]) throw new Error(definition.property + ' is a reserved edge property name');
 		const constants = edgeDefinition.constants || {};
 		if (!constants[definition.property]) throw new Error(definition.property + ' for edge type value definition but that constant doesn\'t exist for that type.');
+		return;
+	}
+	if (valueDefintionIsRefValue(definition)) {
+		if (exampleValue[definition.property] == undefined) throw new Error(definition.property + ' is not a defined edge type');
 		return;
 	}
 	const _exhaustiveCheck : never = definition;
@@ -85,9 +96,10 @@ const validateData = (data : JSONData) : void => {
 			if (!data.types[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
 		}
 	}
+	const exampleValues = Object.fromEntries(Object.keys(data.types).map(typeName => [typeName, 1.0]));
 	for(const [type, edgeDefinition] of Object.entries(data.types)) {
 		try {
-			validateValueDefinition(edgeDefinition.value, edgeDefinition);
+			validateValueDefinition(edgeDefinition.value, edgeDefinition, exampleValues);
 		} catch (err) {
 			throw new Error(type + ' does not have a legal value definition: ' + err);
 		}
@@ -116,13 +128,16 @@ const validateData = (data : JSONData) : void => {
 
 //TODO: is there a way to make it clear this must return an array with at least
 //one number?
-const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]) : number[] => {
+const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs : AdjacencyMapNode[]) : number[] => {
 	if (typeof definition == 'number') return [definition];
 
 	if (Array.isArray(definition)) return definition;
 
 	if (valueDefintionIsEdgeConstant(definition)) {
 		return edges.map(edge => edge[definition.property] as number);
+	}
+	if (valueDefintionIsRefValue(definition)) {
+		return refs.map(ref => ref.values).map(values => values[definition.property]);
 	}
 
 	const _exhaustiveCheck : never = definition;
@@ -219,7 +234,9 @@ class AdjacencyMapNode {
 			const edgeValueDefinition = typeDefinition.value;
 			const constants = typeDefinition.constants || {};
 			const defaultedEdges = rawEdges.map(edge => ({...constants, ...edge}));
-			const values = calculateValue(edgeValueDefinition, defaultedEdges);
+			//TODO: should we make it illegal to have an edge of same type and ref on a node? 
+			const refs = rawEdges.map(edge => this._map.node(edge.ref || ''));
+			const values = calculateValue(edgeValueDefinition, defaultedEdges, refs);
 			if (values.length == 0) throw new Error('values was not at least of length 1');
 			const finalReducer = typeDefinition.reducer ? REDUCERS[typeDefinition.reducer] : DEFAULT_REDUCER;
 			result[type] = finalReducer(values)[0];
