@@ -27,6 +27,20 @@ export const max = (nums : number[]): [number] => {
 	return [Math.max(...nums)];
 };
 
+export const sum = (nums : number[]): [number] => {
+	if (!nums.length) return [0];
+	let result = 0;
+	for (const num of nums) result += num;
+	return [result];
+};
+
+export const product = (nums : number[]): [number] => {
+	if (!nums.length) return [0];
+	let result = 1;
+	for (const num of nums) result *= num;
+	return [result];
+};
+
 export const DEFAULT_REDUCER = mean;
 
 export const REDUCERS = {
@@ -34,5 +48,7 @@ export const REDUCERS = {
 	'first': first,
 	'last': last,
 	'min': min,
-	'max': max
+	'max': max,
+	'sum': sum,
+	'product': product
 } as const;

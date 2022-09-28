@@ -567,6 +567,36 @@ describe('AdjacencyMap node', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('allows a named node with sum reducer', async () => {
+		const input = deepCopy(legalBaseInput);
+		//Give it a more interesting value.
+		input.types.engineering.value = [1.5,-3,10, 2];
+		input.types.engineering.reducer = 'sum';
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 10.5,
+			ux: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('allows a named node with product reducer', async () => {
+		const input = deepCopy(legalBaseInput);
+		//Give it a more interesting value.
+		input.types.engineering.value = [1.5,-3,10, 2];
+		input.types.engineering.reducer = 'product';
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: -90,
+			ux: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
 });
 
 describe('tidyLongestTree', () => {
