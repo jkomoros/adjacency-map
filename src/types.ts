@@ -49,6 +49,7 @@ export type EdgeValue = {
     //Any of the exlicitly enumerated properties should be added to
     //RESERVED_VALUE_DEFINITION_PROPERTIES
     type: EdgeType,
+    //If ref is not provided, it implicitly references the root node.
     ref? : NodeID,
     [constant : ConstantType]: undefined | number | EdgeType | NodeID;
 };
