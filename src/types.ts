@@ -75,7 +75,7 @@ export type TreeGraphWithDetails = {
     children? : TreeGraphWithDetails[];
 }
 
-export type NodeData = {
+export type NodeDefinition = {
     description: string,
     values?: EdgeValue[]
 };
@@ -117,7 +117,7 @@ export type JSONData = {
     }
     root?: NodeValues;
     nodes: {
-        [id : NodeID] : NodeData
+        [id : NodeID] : NodeDefinition
     }
 }
 

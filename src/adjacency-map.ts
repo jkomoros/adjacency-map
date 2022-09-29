@@ -3,7 +3,7 @@ import {
 	EdgeType,
 	EdgeValue,
 	JSONData,
-	NodeData,
+	NodeDefinition,
 	NodeID,
 	NodeValues,
 	NodeValuesMap,
@@ -211,11 +211,11 @@ export class AdjacencyMap {
 
 class AdjacencyMapNode {
 	_map : AdjacencyMap;
-	_data : NodeData | undefined;
+	_data : NodeDefinition | undefined;
 	_values : NodeValues;
 	_isRoot : boolean;
 
-	constructor(parent : AdjacencyMap, data : NodeData | undefined, isRoot = false) {
+	constructor(parent : AdjacencyMap, data : NodeDefinition | undefined, isRoot = false) {
 		this._map = parent;
 		this._data = data;
 		this._isRoot = isRoot;
