@@ -74,7 +74,8 @@ export type LayoutInfo = {
             x : number,
             y : number
         }
-    }
+    },
+    d3Tree: unknown
 }
 
 export type NodeID = string;
