@@ -1,5 +1,5 @@
 {
-  "$ref": "#/definitions/JSONData",
+  "$ref": "#/definitions/MapDefinition",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "ConstantType": {
@@ -13,6 +13,12 @@
             "type": "number"
           },
           "type": "object"
+        },
+        "dependencies": {
+          "items": {
+            "$ref": "#/definitions/EdgeType"
+          },
+          "type": "array"
         },
         "description": {
           "type": "string"
@@ -62,12 +68,12 @@
       ],
       "type": "object"
     },
-    "JSONData": {
+    "MapDefinition": {
       "additionalProperties": false,
       "properties": {
         "nodes": {
           "additionalProperties": {
-            "$ref": "#/definitions/NodeData"
+            "$ref": "#/definitions/NodeDefinition"
           },
           "type": "object"
         },
@@ -91,7 +97,7 @@
       ],
       "type": "object"
     },
-    "NodeData": {
+    "NodeDefinition": {
       "additionalProperties": false,
       "properties": {
         "description": {
@@ -147,40 +153,91 @@
         },
         {
           "$ref": "#/definitions/ValueDefinitionRefValue"
+        },
+        {
+          "$ref": "#/definitions/ValueDefinitionResultValue"
+        },
+        {
+          "$ref": "#/definitions/ValueDefinitionReduce"
+        },
+        {
+          "$ref": "#/definitions/ValueDefinitionArithmetic"
         }
       ]
+    },
+    "ValueDefinitionArithmetic": {
+      "additionalProperties": false,
+      "properties": {
+        "child": {
+          "$ref": "#/definitions/ValueDefinition"
+        },
+        "operator": {
+          "enum": [
+            "+",
+            "*"
+          ],
+          "type": "string"
+        },
+        "term": {
+          "$ref": "#/definitions/ValueDefinition"
+        }
+      },
+      "required": [
+        "operator",
+        "child",
+        "term"
+      ],
+      "type": "object"
+    },
+    "ValueDefinitionReduce": {
+      "additionalProperties": false,
+      "properties": {
+        "child": {
+          "$ref": "#/definitions/ValueDefinition"
+        },
+        "reduce": {
+          "$ref": "#/definitions/ReducerType"
+        }
+      },
+      "required": [
+        "reduce",
+        "child"
+      ],
+      "type": "object"
     },
     "ValueDefinitionRefValue": {
       "additionalProperties": false,
       "properties": {
-        "property": {
+        "ref": {
           "$ref": "#/definitions/EdgeType"
-        },
-        "type": {
-          "const": "ref",
-          "type": "string"
         }
       },
       "required": [
-        "type",
-        "property"
+        "ref"
+      ],
+      "type": "object"
+    },
+    "ValueDefinitionResultValue": {
+      "additionalProperties": false,
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/EdgeType"
+        }
+      },
+      "required": [
+        "result"
       ],
       "type": "object"
     },
     "ValueDefintionEdgeConstant": {
       "additionalProperties": false,
       "properties": {
-        "property": {
+        "constant": {
           "$ref": "#/definitions/ConstantType"
-        },
-        "type": {
-          "const": "edge",
-          "type": "string"
         }
       },
       "required": [
-        "type",
-        "property"
+        "constant"
       ],
       "type": "object"
     }
