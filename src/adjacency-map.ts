@@ -272,7 +272,7 @@ export class AdjacencyMap {
 	node(id : NodeID) : AdjacencyMapNode {
 		if (!this._nodes[id]) {
 			if (id != ROOT_ID && !this._data.nodes[id]) throw new Error('ID ' + id + ' does not exist in input');
-			this._nodes[id] = new AdjacencyMapNode(this, this._data.nodes[id], id == ROOT_ID);
+			this._nodes[id] = new AdjacencyMapNode(id, this, this._data.nodes[id]);
 		}
 		return this._nodes[id];
 	}
@@ -292,15 +292,17 @@ export class AdjacencyMap {
 }
 
 class AdjacencyMapNode {
+	_id : NodeID;
 	_map : AdjacencyMap;
 	_data : NodeDefinition | undefined;
 	_values : NodeValues;
 	_isRoot : boolean;
 
-	constructor(parent : AdjacencyMap, data : NodeDefinition | undefined, isRoot = false) {
+	constructor(id : NodeID, parent : AdjacencyMap, data : NodeDefinition | undefined) {
+		this._id = id;
 		this._map = parent;
 		this._data = data;
-		this._isRoot = isRoot;
+		this._isRoot = id == ROOT_ID;
 	}
 
 	_computeValues() : NodeValues {
@@ -334,6 +336,10 @@ class AdjacencyMapNode {
 		//partialResult now contains a value for every item (including hte ones
 		//that are just default set to root's value).
 		return partialResult;
+	}
+
+	get id() : NodeID {
+		return this._id;
 	}
 
 	get isRoot() : boolean {
