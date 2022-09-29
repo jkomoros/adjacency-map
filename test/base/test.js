@@ -714,7 +714,7 @@ describe('AdjacencyMap root', () => {
 			assert.doesNotThrow(fn);
 		}
 		const map = new AdjacencyMap(input);
-		const actual = map.root;
+		const actual = map.rootValues;
 		const golden = {
 			"engineering": 4.0,
 			"ux": 0.0,
