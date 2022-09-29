@@ -84,14 +84,8 @@ const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : 
 		return;
 	}
 
-	//Past here we assume all definitions have children.
-
-	for (const child of definition.children) {
-		validateValueDefinition(child, edgeDefinition, exampleValue);
-	}
-
 	if (valueDefintionIsReduce(definition)) {
-		if (definition.children.length != 1) throw new Error('reduce expects precisely one child');
+		validateValueDefinition(definition.child, edgeDefinition, exampleValue);
 		if (!REDUCERS[definition.reduce]) throw new Error('Unknown reducer: ' + definition.reduce);
 		return;
 	}
@@ -191,7 +185,7 @@ const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs 
 		return edges.map(() => partialResult[definition.result]);
 	}
 	if (valueDefintionIsReduce(definition)) {
-		const subValues = calculateValue(definition.children[0], edges, refs, partialResult);
+		const subValues = calculateValue(definition.child, edges, refs, partialResult);
 		const reducer = REDUCERS[definition.reduce];
 		return reducer(subValues);
 	}

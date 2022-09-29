@@ -46,8 +46,7 @@ export type ValueDefinitionResultValue = {
 //array of a single value.
 export type ValueDefinitionReduce = {
     reduce: ReducerType;
-    //Note that this takes a SINGLE child to reduce, despite it being an array.
-    children: [ValueDefinition]
+    child: ValueDefinition
 }
 
 //TODO: expand this a lot
