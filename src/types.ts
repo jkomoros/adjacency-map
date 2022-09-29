@@ -105,6 +105,11 @@ export type EdgeDefinition = {
     //a single number. This reducer will be used for that final reduction, to
     //produce the final number to use. If not provided, defaults to 'mean'
     reducer? : ReducerType,
+    //If provided, these are the enumerated set of other edges that this edge's
+    //value can rely on. Note that they may not form a cycle. Only items
+    //enumerated here may be used in this edge's ValueDefinition when it is of
+    //type ValueDefintiionResultValue.
+    dependencies? : EdgeType[],
     constants?: {
         [constant : ConstantType]: number
     }

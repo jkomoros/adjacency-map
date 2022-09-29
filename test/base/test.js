@@ -443,6 +443,93 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for dependency on a non-existent edge', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.dependencies = ['foo'];
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for dependency on self', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.dependencies = ['engineering'];
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a dependency on a thing that depends directly on us', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.dependencies = ['ux'];
+		input.types.ux.dependencies = ['engineering'];
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a dependency on a thing that indirectly directly on us', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.dependencies = ['ux'];
+		input.types.ux.dependencies = ['data'];
+		input.types.data.dependencies = ['engineering'];
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows a dependency on another', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.dependencies = ['ux'];
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows a dependency on another that has a dependency', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.dependencies = ['ux'];
+		input.types.ux.dependencies = ['data'];
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
 
 });
 

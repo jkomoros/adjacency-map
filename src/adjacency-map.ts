@@ -111,6 +111,22 @@ const validateData = (data : MapDefinition) : void => {
 				if (typeof constantValue != 'number') throw new Error(type + ' constant ' + constantName + ' was not number as expected');
 			}
 		}
+		if (edgeDefinition.dependencies) {
+			for (const dependency of edgeDefinition.dependencies) {
+				if (!data.types[dependency]) throw new Error(type + ' declared a dependency on ' + dependency + ' but that is not a valid type');
+			}
+			const seenTypes = {[type]: true};
+			const definitionsToCheck = [edgeDefinition];
+			while (definitionsToCheck.length) {
+				const definitionToCheck = definitionsToCheck.shift();
+				const dependencies = definitionToCheck?.dependencies || [];
+				for (const dependencyToCheck of dependencies) {
+					if (seenTypes[dependencyToCheck]) throw new Error(type + ' declared a dependency whose sub-definitions contain a cycle or self-reference');
+					seenTypes[dependencyToCheck] = true;
+					definitionsToCheck.push(data.types[dependencyToCheck]);
+				}
+			}
+		}
 	}
 	if (data.root) {
 		if (typeof data.root != 'object') throw new Error('root if provided must be an object');
