@@ -547,12 +547,105 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-
 	it('barfs on a value defintion of type ResultValue that does not list the dependency', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.root = {data: 12};
 		input.types.engineering.value = {result: 'data'};
 		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs on a value defintion of type Reducer that has 0 children', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			reduce: 'mean',
+			children: []
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs on a value defintion of type Reducer that has 2 children', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			reduce: 'mean',
+			children: [
+				2,
+				4
+			]
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs on a value defintion of type Reducer that an invalid reducer', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			reduce: 'foo',
+			children: [1]
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs on a value defintion that includes a result ref without declared dependency', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			reduce: 'min',
+			children: [
+				{
+					result: 'ux'
+				}
+			]
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a valid value defintion of type reducer', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			reduce: 'min',
+			children: [
+				[3,4,5]
+			]
+		};
+		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
 		};
@@ -817,6 +910,25 @@ describe('AdjacencyMap node', () => {
 			engineering: 12,
 			ux: 12,
 			data: 12
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Tests a ResultValue ref calculation with a reduce type', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			reduce: 'min',
+			children: [
+				[1, 4, 5]
+			]
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 1,
+			ux: 0,
+			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});

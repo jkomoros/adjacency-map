@@ -11,6 +11,7 @@ import {
 	TreeGraph,
 	TreeGraphWithDetails,
 	ValueDefinition,
+	ValueDefinitionReduce,
 	ValueDefinitionRefValue,
 	ValueDefinitionResultValue,
 	ValueDefintionEdgeConstant
@@ -54,6 +55,12 @@ const valueDefintionIsResultValue = (definition : ValueDefinition) : definition 
 	return 'result' in definition;
 };
 
+const valueDefintionIsReduce = (definition : ValueDefinition) : definition is ValueDefinitionReduce => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'reduce' in definition;
+};
+
 const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : EdgeDefinition, exampleValue : NodeValues) : void => {
 	if (typeof definition == 'number') return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {
@@ -76,6 +83,19 @@ const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : 
 		if (!declaredDependencies.some(dependency => dependency == definition.result)) throw new Error(definition.result + ' is used in a ResultValue definition but it is not declared in dependencies.');
 		return;
 	}
+
+	//Past here we assume all definitions have children.
+
+	for (const child of definition.children) {
+		validateValueDefinition(child, edgeDefinition, exampleValue);
+	}
+
+	if (valueDefintionIsReduce(definition)) {
+		if (definition.children.length != 1) throw new Error('reduce expects precisely one child');
+		if (!REDUCERS[definition.reduce]) throw new Error('Unknown reducer: ' + definition.reduce);
+		return;
+	}
+
 	const _exhaustiveCheck : never = definition;
 	throw new Error('Illegal value for definition');
 	return _exhaustiveCheck;
@@ -169,6 +189,11 @@ const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs 
 	}
 	if (valueDefintionIsResultValue(definition)) {
 		return edges.map(() => partialResult[definition.result]);
+	}
+	if (valueDefintionIsReduce(definition)) {
+		const subValues = calculateValue(definition.children[0], edges, refs, partialResult);
+		const reducer = REDUCERS[definition.reduce];
+		return reducer(subValues);
 	}
 
 	const _exhaustiveCheck : never = definition;

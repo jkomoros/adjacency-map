@@ -42,8 +42,16 @@ export type ValueDefinitionResultValue = {
     result: EdgeType
 }
 
+//Takes the singular child definition and runs the reducer on it, returning an
+//array of a single value.
+export type ValueDefinitionReduce = {
+    reduce: ReducerType;
+    //Note that this takes a SINGLE child to reduce, despite it being an array.
+    children: [ValueDefinition]
+}
+
 //TODO: expand this a lot
-export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant | ValueDefinitionRefValue | ValueDefinitionResultValue;
+export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant | ValueDefinitionRefValue | ValueDefinitionResultValue | ValueDefinitionReduce;
 
 export type NodeID = string;
 
