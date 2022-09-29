@@ -32,6 +32,7 @@ import {
 } from "./button-shared-styles.js";
 
 import {
+	ExpandedEdgeValue,
 	MapDefinition,
 	RootState,
 } from '../types.js';
@@ -39,8 +40,6 @@ import {
 import {
 	AdjacencyMap
 } from '../adjacency-map.js';
-import { TreeSVG } from '../tree-svg.js';
-
 
 const fetchData = async(filename : string) => {
 	let res;
@@ -135,9 +134,58 @@ class MainView extends connect(store)(PageViewElement) {
 		}
 	}
 
-	_svg() : SVGSVGElement | TemplateResult {
+	_pathForEdge(edge : ExpandedEdgeValue, map : AdjacencyMap) : string {
+
+		const sourceNode = map.node(edge.source);
+		const refNode = map.node(edge.ref);
+		const midPoint = (refNode.y + sourceNode.y) / 2;
+		
+		const result = `M ${refNode.y},${refNode.x}C${midPoint},${refNode.x},${midPoint},${sourceNode.x},${sourceNode.y},${sourceNode.x}`;
+		return result;
+	}
+
+	_svg() : TemplateResult {
 		if (!this._adjacencyMap) return svg``;
-		return TreeSVG(this._adjacencyMap.treeGraph());
+
+		const a = this._adjacencyMap;
+		
+		// radius of nodes
+		const r = 3;
+
+		// fill for nodes
+		//const fill = '#999';
+
+		// stroke for links
+		const stroke = '#555';
+		// stroke width for links
+		const strokeWidth = 1.5;
+		// stroke opacity for links
+		const strokeOpacity = 0.4;
+		// stroke line join for links
+		const strokeLinejoin = '';
+		// stroke line cap for links
+		const strokeLinecap = '';
+		// color of label halo 
+		const halo = '#fff';
+		// padding around the labels
+		const haloWidth = 3;
+
+		//TODO: cirlce should have fill = fill if it has no children.
+		//TODO: text x should have -6 if it has children
+		//TODO: text text-anchor should be end if it has children
+
+		return html`<svg class='main' viewBox='${a.viewBox}' width='${a.width}' height='${a.height}' style='max-width: 100%; height: auto; height: intrinsic;' font-family='sans-serif' font-size='10'>
+			<g fill="none" stroke="${stroke}" stroke-opacity="${strokeOpacity}" stroke-linecap="${strokeLinecap}" stroke-linejoin="${strokeLinejoin}" stroke-width="${strokeWidth}">
+				${a.edges.map(edge => svg`<path d="${this._pathForEdge(edge, a)}"></path>`)}
+			</g>
+			<g>
+				${Object.values(a.nodes).map(node => svg`<a transform="translate(${node.y},${node.x})">
+					<circle fill="${stroke}" r="${r}"></circle>
+					<title>${node.description + '\n\n' + Object.entries(node.values).map(entry => entry[0] + ': ' + entry[1]).join('\n')}</title>
+					<text dy="0.32em" x="6" text-anchor="start" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}">${node.id}</text>
+				</a>`)}
+			</g>
+	</svg>`;
 	}
 }
 
