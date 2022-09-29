@@ -1,3 +1,8 @@
+import {
+	ReducerType,
+	Reducer
+} from './types.js';
+
 export const mean = (nums : number[]) : [number] => {
 	if (!nums.length) return [0];
 	let sum = 0;
@@ -43,7 +48,7 @@ export const product = (nums : number[]): [number] => {
 
 export const DEFAULT_REDUCER = mean;
 
-export const REDUCERS = {
+export const REDUCERS : {[reducerType in ReducerType] : Reducer} = {
 	'mean': mean,
 	'first': first,
 	'last': last,
@@ -51,4 +56,4 @@ export const REDUCERS = {
 	'max': max,
 	'sum': sum,
 	'product': product
-} as const;
+};

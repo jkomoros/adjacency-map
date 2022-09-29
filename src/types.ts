@@ -1,5 +1,3 @@
-import { REDUCERS } from "./reduce";
-
 export type RandomGenerator = () => number;
 
 //A string that can be used directly anywhere CSS expects a color. Hex, RGB(),
@@ -93,7 +91,10 @@ export type NodeValues = {
     [type : EdgeType]: number
 };
 
-export type ReducerType = keyof typeof REDUCERS;
+export type Reducer = (nums: number[]) => [number];
+
+//We can't use keyof typeof REDUCERS because `npm run generate:schema` can't handle those types
+export type ReducerType = 'mean' | 'first' | 'last' | 'min' | 'max' | 'sum' | 'product';
 
 export type EdgeDefinition = {
     value: ValueDefinition,
