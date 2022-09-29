@@ -264,7 +264,7 @@ export class AdjacencyMap {
 		return this._data;
 	}
 
-	get root() : NodeValues {
+	get rootValues() : NodeValues {
 		if (!this._cachedRoot) {
 			const baseObject = Object.fromEntries(this.edgeTypes.map(typ => [typ, 0.0]));
 			this._cachedRoot = {...baseObject, ...this._data.root};
@@ -349,7 +349,7 @@ class AdjacencyMapNode {
 		for (const type of this._map.edgeTypes) {
 			//Fill in the partial result as we go so other things htat rely on
 			//our root value can have it.
-			partialResult[type] = this._map.root[type];
+			partialResult[type] = this._map.rootValues[type];
 			const rawEdges = edgeByType[type];
 			if (!rawEdges) continue;
 			const typeDefinition = this._map.data.types[type];
@@ -391,7 +391,7 @@ class AdjacencyMapNode {
 	 * The final computed values
 	 */
 	get values() : NodeValues {
-		if (this.isRoot) return this._map.root;
+		if (this.isRoot) return this._map.rootValues;
 		if (!this._values) {
 			this._values = this._computeValues();
 		}
