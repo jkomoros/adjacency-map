@@ -531,6 +531,38 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('allows a value defintion of type ResultValue that lists the dependency', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.root = {data: 12};
+		input.types.engineering.dependencies = ['data'];
+		input.types.engineering.value = {type: 'result', property: 'data'};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+
+	it('barfs on a value defintion of type ResultValue that does not list the dependency', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.root = {data: 12};
+		input.types.engineering.value = {type: 'result', property: 'data'};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
@@ -748,6 +780,44 @@ describe('AdjacencyMap node', () => {
 		const map = new AdjacencyMap(input);
 		const actual = map.edgeTypes;
 		const golden = ['ux', 'engineering', 'data'];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Tests a ResultValue ref calculation', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.data.dependencies = ['engineering'];
+		input.types.data.value = {type: 'result', property: 'engineering'};
+		input.types.engineering.dependencies = ['ux'];
+		input.types.engineering.value = {type: 'result', property: 'ux'};
+		input.root = {'ux': 12};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 12,
+			ux: 12,
+			//Data is 0 because there is no data edge on node a, so it's just an implicit reference to its root.
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Tests a ResultValue ref calculation with two edges', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.data.dependencies = ['engineering'];
+		input.types.data.value = {type: 'result', property: 'engineering'};
+		input.types.engineering.dependencies = ['ux'];
+		input.types.engineering.value = {type: 'result', property: 'ux'};
+		input.nodes.a.values.push({type: 'data'});
+		input.root = {'ux': 12};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 12,
+			ux: 12,
+			data: 12
+		};
 		assert.deepStrictEqual(actual, golden);
 	});
 

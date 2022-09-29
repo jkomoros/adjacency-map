@@ -12,6 +12,7 @@ import {
 	TreeGraphWithDetails,
 	ValueDefinition,
 	ValueDefinitionRefValue,
+	ValueDefinitionResultValue,
 	ValueDefintionEdgeConstant
 } from './types.js';
 
@@ -47,6 +48,12 @@ const valueDefintionIsRefValue = (definition : ValueDefinition) : definition is 
 	return definition.type == 'ref';
 };
 
+const valueDefintionIsResultValue = (definition : ValueDefinition) : definition is ValueDefinitionResultValue => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return definition.type == 'result';
+};
+
 const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : EdgeDefinition, exampleValue : NodeValues) : void => {
 	if (typeof definition == 'number') return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {
@@ -62,6 +69,11 @@ const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : 
 	}
 	if (valueDefintionIsRefValue(definition)) {
 		if (exampleValue[definition.property] == undefined) throw new Error(definition.property + ' is not a defined edge type');
+		return;
+	}
+	if (valueDefintionIsResultValue(definition)) {
+		const declaredDependencies = edgeDefinition.dependencies || [];
+		if (!declaredDependencies.some(dependency => dependency == definition.property)) throw new Error(definition.property + ' is used in a ResultValue definition but it is not declared in dependencies.');
 		return;
 	}
 	const _exhaustiveCheck : never = definition;
@@ -144,7 +156,7 @@ const validateData = (data : MapDefinition) : void => {
 
 //TODO: is there a way to make it clear this must return an array with at least
 //one number?
-const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs : AdjacencyMapNode[]) : number[] => {
+const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs : AdjacencyMapNode[], partialResult : NodeValues) : number[] => {
 	if (typeof definition == 'number') return [definition];
 
 	if (Array.isArray(definition)) return definition;
@@ -154,6 +166,9 @@ const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs 
 	}
 	if (valueDefintionIsRefValue(definition)) {
 		return refs.map(ref => ref.values).map(values => values[definition.property]);
+	}
+	if (valueDefintionIsResultValue(definition)) {
+		return edges.map(() => partialResult[definition.property]);
 	}
 
 	const _exhaustiveCheck : never = definition;
@@ -260,6 +275,9 @@ class AdjacencyMapNode {
 		//ValueDefinitionResultValue will have the values they already rely on
 		//calculated.
 		for (const type of this._map.edgeTypes) {
+			//Fill in the partial result as we go so other things htat rely on
+			//our root value can have it.
+			partialResult[type] = this._map.root[type];
 			const rawEdges = edgeByType[type];
 			if (!rawEdges) continue;
 			const typeDefinition = this._map.data.types[type];
@@ -268,12 +286,14 @@ class AdjacencyMapNode {
 			const defaultedEdges = rawEdges.map(edge => ({...constants, ...edge}));
 			//TODO: should we make it illegal to have an edge of same type and ref on a node? 
 			const refs = rawEdges.map(edge => this._map.node(edge.ref || ''));
-			const values = calculateValue(edgeValueDefinition, defaultedEdges, refs);
+			const values = calculateValue(edgeValueDefinition, defaultedEdges, refs, partialResult);
 			if (values.length == 0) throw new Error('values was not at least of length 1');
 			const finalReducer = typeDefinition.reducer ? REDUCERS[typeDefinition.reducer] : DEFAULT_REDUCER;
 			partialResult[type] = finalReducer(values)[0];
 		}
-		return {...this._map.root, ...partialResult};
+		//partialResult now contains a value for every item (including hte ones
+		//that are just default set to root's value).
+		return partialResult;
 	}
 
 	get isRoot() : boolean {

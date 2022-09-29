@@ -38,8 +38,15 @@ export type ValueDefinitionRefValue = {
     property: EdgeType
 }
 
+//Selects the value of other edges that go into our own result.
+export type ValueDefinitionResultValue = {
+    type: 'result',
+    //Property must be explicitly enumerated in our EdgeDefinition.dependencies.
+    property: EdgeType
+}
+
 //TODO: expand this a lot
-export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant | ValueDefinitionRefValue;
+export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant | ValueDefinitionRefValue | ValueDefinitionResultValue;
 
 export type NodeID = string;
 
