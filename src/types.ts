@@ -65,6 +65,18 @@ export type ValueDefinitionArithmetic = {
 
 export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant | ValueDefinitionRefValue | ValueDefinitionResultValue | ValueDefinitionCombine | ValueDefinitionArithmetic;
 
+export type LayoutInfo = {
+    width: number,
+    height: number,
+    viewBox: [number, number, number, number],
+    positions: {
+        [id : NodeID]: {
+            x : number,
+            y : number
+        }
+    }
+}
+
 export type NodeID = string;
 
 export type EdgeValue = {

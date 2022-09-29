@@ -2,6 +2,7 @@ import {
 	EdgeDefinition,
 	EdgeType,
 	EdgeValue,
+	LayoutInfo,
 	MapDefinition,
 	NodeDefinition,
 	NodeID,
@@ -233,6 +234,7 @@ export class AdjacencyMap {
 	_nodes : {[id : NodeID] : AdjacencyMapNode};
 	_cachedRoot : NodeValues;
 	_cachedEdgeTypes : EdgeType[];
+	_cachedLayoutInfo : LayoutInfo;
 
 	constructor(data : MapDefinition) {
 		//Will throw if it doesn't validate
@@ -283,12 +285,39 @@ export class AdjacencyMap {
 	}
 
 	treeGraph() : TreeGraphWithDetails {
+		//TODO:SVG remove
 		//TODO: cache
 		const simpleGraph = extractSimpleGraph(this._data);
 		const longestTree = tidyLongestTree(simpleGraph);
 		const treeGraph = treeGraphFromParentGraph(longestTree);
 		return treeGraphWithDetails(treeGraph, this);
 	}
+
+	_ensureLayoutInfo() {
+		if (this._cachedLayoutInfo) return;
+		throw new Error('These methods are not yet supported');
+	}
+
+	get width() : number {
+		this._ensureLayoutInfo();
+		return this._cachedLayoutInfo.width;
+	}
+
+	get height() : number{
+		this._ensureLayoutInfo();
+		return this._cachedLayoutInfo.height;
+	}
+
+	get viewBox() : [number, number, number, number] {
+		this._ensureLayoutInfo();
+		return this._cachedLayoutInfo.viewBox;
+	}
+
+	get nodePositions() : {[id : NodeID] : {x: number, y: number}} {
+		this._ensureLayoutInfo();
+		return this._cachedLayoutInfo.positions;
+	}
+	
 }
 
 class AdjacencyMapNode {
@@ -359,5 +388,17 @@ class AdjacencyMapNode {
 			this._values = this._computeValues();
 		}
 		return this._values;
+	}
+
+	get x() : number {
+		const pos = this._map.nodePositions[this.id];
+		if (!pos) throw new Error(this.id + ' didn\'t exist in parent');
+		return pos.x;
+	}
+
+	get y() : number {
+		const pos = this._map.nodePositions[this.id];
+		if (!pos) throw new Error(this.id + ' didn\'t exist in parent');
+		return pos.y;
 	}
 }
