@@ -33,6 +33,7 @@ import {
 	COMBINERS,
 	DEFAULT_COMBINER
 } from './combine.js';
+import { TreeLayout } from './tree-svg.js';
 
 const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 	'ref': true,
@@ -295,7 +296,7 @@ export class AdjacencyMap {
 
 	_ensureLayoutInfo() {
 		if (this._cachedLayoutInfo) return;
-		throw new Error('These methods are not yet supported');
+		this._cachedLayoutInfo = TreeLayout(this.treeGraph());
 	}
 
 	get width() : number {

@@ -15,8 +15,6 @@ export const TreeLayout = (data : TreeGraphWithDetails) : LayoutInfo => {
 
 	const root = d3.hierarchy(data);
   
-
-  
 	const width = 640;
 
 	// Compute the layout.
