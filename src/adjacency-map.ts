@@ -12,7 +12,7 @@ import {
 	TreeGraphWithDetails,
 	ValueDefinition,
 	ValueDefinitionArithmetic,
-	ValueDefinitionReduce,
+	ValueDefinitionCombine,
 	ValueDefinitionRefValue,
 	ValueDefinitionResultValue,
 	ValueDefintionEdgeConstant
@@ -29,9 +29,9 @@ import {
 } from './constants.js';
 
 import {
-	DEFAULT_REDUCER,
-	REDUCERS
-} from './reduce.js';
+	COMBINERS,
+	DEFAULT_COMBINER
+} from './combine.js';
 
 const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 	'ref': true,
@@ -56,10 +56,10 @@ const valueDefintionIsResultValue = (definition : ValueDefinition) : definition 
 	return 'result' in definition;
 };
 
-const valueDefintionIsReduce = (definition : ValueDefinition) : definition is ValueDefinitionReduce => {
+const valueDefintionIsCombine = (definition : ValueDefinition) : definition is ValueDefinitionCombine => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
-	return 'reduce' in definition;
+	return 'combine' in definition;
 };
 
 const valueDefinitionIsArithmetic = (definition : ValueDefinition): definition is ValueDefinitionArithmetic => {
@@ -91,9 +91,9 @@ const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : 
 		return;
 	}
 
-	if (valueDefintionIsReduce(definition)) {
+	if (valueDefintionIsCombine(definition)) {
 		validateValueDefinition(definition.child, edgeDefinition, exampleValue);
-		if (!REDUCERS[definition.reduce]) throw new Error('Unknown reducer: ' + definition.reduce);
+		if (!COMBINERS[definition.combine]) throw new Error('Unknown combiner: ' + definition.combine);
 		return;
 	}
 
@@ -143,7 +143,7 @@ const validateData = (data : MapDefinition) : void => {
 		} catch (err) {
 			throw new Error(type + ' does not have a legal value definition: ' + err);
 		}
-		if (edgeDefinition.reducer && !REDUCERS[edgeDefinition.reducer]) throw new Error('Unknown reducer: ' + edgeDefinition.reducer);
+		if (edgeDefinition.combine && !COMBINERS[edgeDefinition.combine]) throw new Error('Unknown combiner: ' + edgeDefinition.combine);
 		if (edgeDefinition.description && typeof edgeDefinition.description != 'string') throw new Error(type + ' has a description not of type string');
 		if (edgeDefinition.constants) {
 			for (const [constantName, constantValue] of Object.entries(edgeDefinition.constants)) {
@@ -198,10 +198,10 @@ const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs 
 	if (valueDefintionIsResultValue(definition)) {
 		return edges.map(() => partialResult[definition.result]);
 	}
-	if (valueDefintionIsReduce(definition)) {
+	if (valueDefintionIsCombine(definition)) {
 		const subValues = calculateValue(definition.child, edges, refs, partialResult);
-		const reducer = REDUCERS[definition.reduce];
-		return reducer(subValues);
+		const combiner = COMBINERS[definition.combine];
+		return combiner(subValues);
 	}
 	if (valueDefinitionIsArithmetic(definition)) {
 		const left = calculateValue(definition.child, edges, refs, partialResult);
@@ -328,8 +328,8 @@ class AdjacencyMapNode {
 			const refs = rawEdges.map(edge => this._map.node(edge.ref || ''));
 			const values = calculateValue(edgeValueDefinition, defaultedEdges, refs, partialResult);
 			if (values.length == 0) throw new Error('values was not at least of length 1');
-			const finalReducer = typeDefinition.reducer ? REDUCERS[typeDefinition.reducer] : DEFAULT_REDUCER;
-			partialResult[type] = finalReducer(values)[0];
+			const finalCombiner = typeDefinition.combine ? COMBINERS[typeDefinition.combine] : DEFAULT_COMBINER;
+			partialResult[type] = finalCombiner(values)[0];
 		}
 		//partialResult now contains a value for every item (including hte ones
 		//that are just default set to root's value).

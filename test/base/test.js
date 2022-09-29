@@ -345,9 +345,9 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('barfs for edge with invalid reducer', async () => {
+	it('barfs for edge with invalid combiner', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.reducer = 'foo';
+		input.types.engineering.combine = 'foo';
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -359,9 +359,9 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('allows edge with valid reducer', async () => {
+	it('allows edge with valid combiner', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.reducer = 'first';
+		input.types.engineering.combine = 'first';
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -562,10 +562,10 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('barfs on a value defintion of type Reducer that has 0 children', async () => {
+	it('barfs on a value defintion of type combiner that has 0 children', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.value = {
-			reduce: 'mean'
+			combine: 'mean'
 		};
 		const errorExpected = true;
 		const fn = () => {
@@ -578,10 +578,10 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('barfs on a value defintion of type Reducer that an invalid reducer', async () => {
+	it('barfs on a value defintion of type combiner that an invalid combiner', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.value = {
-			reduce: 'foo',
+			combine: 'foo',
 			child: [1]
 		};
 		const errorExpected = true;
@@ -598,7 +598,7 @@ describe('AdjacencyMap validation', () => {
 	it('barfs on a value defintion that includes a result ref without declared dependency', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.value = {
-			reduce: 'min',
+			combine: 'min',
 			child: { result: 'ux' }
 		};
 		const errorExpected = true;
@@ -612,10 +612,10 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('Allows a valid value defintion of type reducer', async () => {
+	it('Allows a valid value defintion of type combiner', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.value = {
-			reduce: 'min',
+			combine: 'min',
 			child: [3,4,5]
 		};
 		const errorExpected = false;
@@ -784,11 +784,11 @@ describe('AdjacencyMap node', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
-	it('allows a named node with non-default reducer', async () => {
+	it('allows a named node with non-default combiner', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
 		input.types.engineering.value = {constant: 'weight'};
-		input.types.engineering.reducer = 'first';
+		input.types.engineering.combine = 'first';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -803,7 +803,7 @@ describe('AdjacencyMap node', () => {
 	it('allows a named node with array of items', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.value = [8,9];
-		input.types.engineering.reducer = 'first';
+		input.types.engineering.combine = 'first';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -829,11 +829,11 @@ describe('AdjacencyMap node', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
-	it('allows a named node with last reducer', async () => {
+	it('allows a named node with last combiner', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
 		input.types.engineering.value = [1,2,10];
-		input.types.engineering.reducer = 'last';
+		input.types.engineering.combine = 'last';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -845,11 +845,11 @@ describe('AdjacencyMap node', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
-	it('allows a named node with min reducer', async () => {
+	it('allows a named node with min combiner', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
 		input.types.engineering.value = [1,-3,10];
-		input.types.engineering.reducer = 'min';
+		input.types.engineering.combine = 'min';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -861,11 +861,11 @@ describe('AdjacencyMap node', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
-	it('allows a named node with max reducer', async () => {
+	it('allows a named node with max combiner', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
 		input.types.engineering.value = [1,-3,10, 2];
-		input.types.engineering.reducer = 'max';
+		input.types.engineering.combine = 'max';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -877,11 +877,11 @@ describe('AdjacencyMap node', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
-	it('allows a named node with sum reducer', async () => {
+	it('allows a named node with sum combiner', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
 		input.types.engineering.value = [1.5,-3,10, 2];
-		input.types.engineering.reducer = 'sum';
+		input.types.engineering.combine = 'sum';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -893,11 +893,11 @@ describe('AdjacencyMap node', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
-	it('allows a named node with product reducer', async () => {
+	it('allows a named node with product combiner', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
 		input.types.engineering.value = [1.5,-3,10, 2];
-		input.types.engineering.reducer = 'product';
+		input.types.engineering.combine = 'product';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -957,10 +957,10 @@ describe('AdjacencyMap node', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
-	it('Tests a ResultValue ref calculation with a reduce type', async () => {
+	it('Tests a ResultValue ref calculation with a combine type', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.value = {
-			reduce: 'min',
+			combine: 'min',
 			child: [1, 4, 5]
 		};
 		const map = new AdjacencyMap(input);
@@ -976,7 +976,7 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates an arithmetic add type', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.reducer = 'sum';
+		input.types.engineering.combine = 'sum';
 		input.types.engineering.value = {
 			operator: '+',
 			child: [0, 1, 2],

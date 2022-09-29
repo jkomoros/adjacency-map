@@ -1,6 +1,6 @@
 import {
-	ReducerType,
-	Reducer
+	CombinerType,
+	Combiner
 } from './types.js';
 
 export const mean = (nums : number[]) : [number] => {
@@ -46,9 +46,9 @@ export const product = (nums : number[]): [number] => {
 	return [result];
 };
 
-export const DEFAULT_REDUCER = mean;
+export const DEFAULT_COMBINER = mean;
 
-export const REDUCERS : {[reducerType in ReducerType] : Reducer} = {
+export const COMBINERS : {[combinerType in CombinerType] : Combiner} = {
 	'mean': mean,
 	'first': first,
 	'last': last,

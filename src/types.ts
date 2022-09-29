@@ -44,8 +44,8 @@ export type ValueDefinitionResultValue = {
 
 //Takes the singular child definition and runs the reducer on it, returning an
 //array of a single value.
-export type ValueDefinitionReduce = {
-    reduce: ReducerType;
+export type ValueDefinitionCombine = {
+    combine: CombinerType;
     child: ValueDefinition
 }
 
@@ -63,7 +63,7 @@ export type ValueDefinitionArithmetic = {
     term: ValueDefinition
 }
 
-export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant | ValueDefinitionRefValue | ValueDefinitionResultValue | ValueDefinitionReduce | ValueDefinitionArithmetic;
+export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant | ValueDefinitionRefValue | ValueDefinitionResultValue | ValueDefinitionCombine | ValueDefinitionArithmetic;
 
 export type NodeID = string;
 
@@ -115,10 +115,10 @@ export type NodeValues = {
     [type : EdgeType]: number
 };
 
-export type Reducer = (nums: number[]) => [number];
+export type Combiner = (nums: number[]) => [number];
 
 //We can't use keyof typeof REDUCERS because `npm run generate:schema` can't handle those types
-export type ReducerType = 'mean' | 'first' | 'last' | 'min' | 'max' | 'sum' | 'product';
+export type CombinerType = 'mean' | 'first' | 'last' | 'min' | 'max' | 'sum' | 'product';
 
 export type EdgeDefinition = {
     value: ValueDefinition,
@@ -128,7 +128,7 @@ export type EdgeDefinition = {
     //ValueDefinition that takes an array of numbers and provides an array with
     //a single number. This reducer will be used for that final reduction, to
     //produce the final number to use. If not provided, defaults to 'mean'
-    reducer? : ReducerType,
+    combine? : CombinerType,
     //If provided, these are the enumerated set of other edges that this edge's
     //value can rely on. Note that they may not form a cycle. Only items
     //enumerated here may be used in this edge's ValueDefinition when it is of
