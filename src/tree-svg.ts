@@ -52,6 +52,8 @@ export const TreeSVG = (data : TreeGraphWithDetails) : SVGSVGElement => {
   
 	// Compute the default height.
 	const height = x1 - x0 + dx * 2;
+
+	//TODO: should we render out the SVG using LIT, and just use d3 for the layout logic?
 	
 	const svg = d3.create("svg")
 		.attr("viewBox", [-dy * padding / 2, x0 - dx, width, height])
