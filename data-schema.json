@@ -2,12 +2,42 @@
   "$ref": "#/definitions/JSONData",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
+    "ConstantType": {
+      "type": "string"
+    },
+    "EdgeDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "constants": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "type": "object"
+        },
+        "description": {
+          "type": "string"
+        },
+        "reducer": {
+          "$ref": "#/definitions/ReducerType"
+        },
+        "value": {
+          "$ref": "#/definitions/ValueDefinition"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "type": "object"
+    },
     "EdgeType": {
       "type": "string"
     },
     "EdgeValue": {
       "additionalProperties": {
         "anyOf": [
+          {
+            "not": {}
+          },
           {
             "type": "number"
           },
@@ -46,25 +76,7 @@
         },
         "types": {
           "additionalProperties": {
-            "additionalProperties": false,
-            "properties": {
-              "constants": {
-                "additionalProperties": {
-                  "type": "number"
-                },
-                "type": "object"
-              },
-              "description": {
-                "type": "string"
-              },
-              "value": {
-                "$ref": "#/definitions/ValueDefinition"
-              }
-            },
-            "required": [
-              "value"
-            ],
-            "type": "object"
+            "$ref": "#/definitions/EdgeDefinition"
           },
           "type": "object"
         },
@@ -107,8 +119,70 @@
       "description": "The final computed values of all of the values for a node.",
       "type": "object"
     },
+    "ReducerType": {
+      "enum": [
+        "mean",
+        "first",
+        "last",
+        "min",
+        "max",
+        "sum",
+        "product"
+      ],
+      "type": "string"
+    },
     "ValueDefinition": {
-      "type": "number"
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
+        {
+          "$ref": "#/definitions/ValueDefintionEdgeConstant"
+        },
+        {
+          "$ref": "#/definitions/ValueDefinitionRefValue"
+        }
+      ]
+    },
+    "ValueDefinitionRefValue": {
+      "additionalProperties": false,
+      "properties": {
+        "property": {
+          "$ref": "#/definitions/EdgeType"
+        },
+        "type": {
+          "const": "ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "property"
+      ],
+      "type": "object"
+    },
+    "ValueDefintionEdgeConstant": {
+      "additionalProperties": false,
+      "properties": {
+        "property": {
+          "$ref": "#/definitions/ConstantType"
+        },
+        "type": {
+          "const": "edge",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "property"
+      ],
+      "type": "object"
     }
   }
 }
