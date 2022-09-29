@@ -124,10 +124,6 @@ export type NodeDefinition = {
     values?: EdgeValue[]
 };
 
-export type NodeValuesMap = {
-    [id : NodeID] : NodeValues
-};
-
 /**
  * The final computed values of all of the values for a node.
  */
