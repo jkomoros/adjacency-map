@@ -264,6 +264,10 @@ export class AdjacencyMap {
 		return this._data;
 	}
 
+	get root() : AdjacencyMapNode {
+		return this.node(ROOT_ID);
+	}
+
 	get rootValues() : NodeValues {
 		if (!this._cachedRoot) {
 			const baseObject = Object.fromEntries(this.edgeTypes.map(typ => [typ, 0.0]));
