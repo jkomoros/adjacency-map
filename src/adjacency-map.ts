@@ -131,6 +131,7 @@ const validateData = (data : MapDefinition) : void => {
 	//It is allowed for root to be empty.
 	if (!data.types || Object.keys(data.types).length == 0) throw new Error('No edge types provided');
 	for (const [nodeName, nodeData] of Object.entries(data.nodes)) {
+		if (nodeName == ROOT_ID) throw new Error('Nodes may not have the same id as root: "' + ROOT_ID + '"');
 		if (!nodeData.description) throw new Error(nodeName + ' has no description');
 		const nodeValues = nodeData.values || [];
 		for (const edge of nodeValues) {
