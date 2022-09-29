@@ -177,6 +177,7 @@ export class AdjacencyMap {
 	_data : MapDefinition;
 	_nodes : {[id : NodeID] : AdjacencyMapNode};
 	_cachedRoot : NodeValues;
+	_cachedEdgeTypes : EdgeType[];
 
 	constructor(data : MapDefinition) {
 		//Will throw if it doesn't validate
@@ -187,8 +188,18 @@ export class AdjacencyMap {
 		this._nodes = {};
 	}
 
+	//edgeTypes returns the types of edges. It's in topological order of any
+	//edges that take dependencyes on others, so if you iterate through them in
+	//that order then no edgeType that has a dependency on an earlier one will
+	//not have been calculated already.
 	get edgeTypes() : EdgeType[] {
-		return Object.keys(this._data.types);
+		if (!this._cachedEdgeTypes) {
+			const graph = Object.fromEntries(Object.entries(this._data.types).map(entry => [entry[0], entry[1].dependencies ? Object.fromEntries(entry[1].dependencies.map(edgeType => [edgeType, true])) : {}])) as SimpleGraph;
+			const result = topologicalSort(graph) as EdgeType[];
+			result.reverse();
+			this._cachedEdgeTypes = result;
+		}
+		return this._cachedEdgeTypes;
 	}
 
 	get data() : MapDefinition {

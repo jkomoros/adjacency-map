@@ -741,6 +741,18 @@ describe('AdjacencyMap node', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('Correctly sorts edge types', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.data.dependencies = ['engineering'];
+		input.types.engineering.dependencies = ['ux'];
+		const map = new AdjacencyMap(input);
+		const actual = map.edgeTypes;
+		const golden = ['ux', 'engineering', 'data'];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+
+
 });
 
 describe('tidyLongestTree', () => {
