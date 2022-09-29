@@ -110,7 +110,7 @@ export type EdgeDefinition = {
     }
 }
 
-export type JSONData = {
+export type MapDefinition = {
     version: number,
     types: {
         [type : EdgeType]: EdgeDefinition
@@ -129,7 +129,7 @@ export type AppState = {
 
 export type DataState = {
     filename : Filename;
-    data?: JSONData;
+    data?: MapDefinition;
 }
 
 export type RootState = {

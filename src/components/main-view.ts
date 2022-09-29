@@ -32,7 +32,7 @@ import {
 } from "./button-shared-styles.js";
 
 import {
-	JSONData,
+	MapDefinition,
 	RootState,
 } from '../types.js';
 
@@ -70,7 +70,7 @@ class MainView extends connect(store)(PageViewElement) {
 	_filename: string;
 
 	@state()
-	_data : JSONData | undefined;
+	_data : MapDefinition | undefined;
 
 	@state()
 	_adjacencyMap : AdjacencyMap | null;

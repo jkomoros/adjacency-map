@@ -14,7 +14,7 @@ import {imageSize } from 'image-size';
 const sizeOf = promisify(imageSize);
 
 import {
-	JSONData
+	MapDefinition
 } from '../src/types.js';
 
 const SCREENSHOT_DIR = 'screenshots';
@@ -184,7 +184,7 @@ const gifInfos = async () => {
 		delete result[name];
 	}
 	const rawConfigData = fs.readFileSync(CONFIG_DATA_FILE).toString();
-	const configData : JSONData = JSON.parse(rawConfigData);
+	const configData : MapDefinition = JSON.parse(rawConfigData);
 	for (const name of Object.keys(result)) {
 		result[name] = {...result[name], ...configForGif(configData ? [] : [], name)};
 	}

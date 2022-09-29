@@ -2,7 +2,7 @@ import {
 	EdgeDefinition,
 	EdgeType,
 	EdgeValue,
-	JSONData,
+	MapDefinition,
 	NodeDefinition,
 	NodeID,
 	NodeValues,
@@ -69,7 +69,7 @@ const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : 
 	return _exhaustiveCheck;
 };
 
-export const extractSimpleGraph = (data : JSONData) : SimpleGraph => {
+export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 	const result : SimpleGraph = {};
 	for (const [id, value] of Object.entries(data.nodes)) {
 		const edges : {[id : NodeID] : true} = {};
@@ -83,7 +83,7 @@ export const extractSimpleGraph = (data : JSONData) : SimpleGraph => {
 	return result;
 };
 
-const validateData = (data : JSONData) : void => {
+const validateData = (data : MapDefinition) : void => {
 	if (!data) throw new Error('No data provided');
 	if (!data.nodes) throw new Error('No nodes provided');
 	//It is allowed for root to be empty.
@@ -158,11 +158,11 @@ const treeGraphWithDetails = (graph : TreeGraph, map : AdjacencyMap) : TreeGraph
 
 export class AdjacencyMap {
 	
-	_data : JSONData;
+	_data : MapDefinition;
 	_nodes : {[id : NodeID] : AdjacencyMapNode};
 	_cachedRoot : NodeValues;
 
-	constructor(data : JSONData) {
+	constructor(data : MapDefinition) {
 		//Will throw if it doesn't validate
 		validateData(data);
 		if (!data) throw new Error('undefined data');
@@ -175,7 +175,7 @@ export class AdjacencyMap {
 		return Object.keys(this._data.types);
 	}
 
-	get data() : JSONData {
+	get data() : MapDefinition {
 		return this._data;
 	}
 

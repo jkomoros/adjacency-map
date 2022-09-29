@@ -1,10 +1,10 @@
 import {
-	JSONData,
+	MapDefinition,
 	RandomGenerator
 } from './types.js';
 
 //TODO: do more validation
-export const unpackConfigJSON = (input : unknown) : JSONData => input as JSONData;
+export const unpackConfigJSON = (input : unknown) : MapDefinition => input as MapDefinition;
 
 const randomCharSetNumbers = '0123456789';
 const randomCharSetLetters = 'abcdef';
