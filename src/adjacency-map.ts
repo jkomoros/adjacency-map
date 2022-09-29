@@ -39,19 +39,19 @@ const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 const valueDefintionIsEdgeConstant = (definition : ValueDefinition) : definition is ValueDefintionEdgeConstant => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
-	return definition.type == 'edge';
+	return 'constant' in definition;
 };
 
 const valueDefintionIsRefValue = (definition : ValueDefinition) : definition is ValueDefinitionRefValue => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
-	return definition.type == 'ref';
+	return 'ref' in definition;
 };
 
 const valueDefintionIsResultValue = (definition : ValueDefinition) : definition is ValueDefinitionResultValue => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
-	return definition.type == 'result';
+	return 'result' in definition;
 };
 
 const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : EdgeDefinition, exampleValue : NodeValues) : void => {
@@ -62,18 +62,18 @@ const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : 
 		return;
 	}
 	if (valueDefintionIsEdgeConstant(definition)) {
-		if (RESERVED_VALUE_DEFINITION_PROPERTIES[definition.property]) throw new Error(definition.property + ' is a reserved edge property name');
+		if (RESERVED_VALUE_DEFINITION_PROPERTIES[definition.constant]) throw new Error(definition.constant + ' is a reserved edge property name');
 		const constants = edgeDefinition.constants || {};
-		if (!constants[definition.property]) throw new Error(definition.property + ' for edge type value definition but that constant doesn\'t exist for that type.');
+		if (!constants[definition.constant]) throw new Error(definition.constant + ' for edge type value definition but that constant doesn\'t exist for that type.');
 		return;
 	}
 	if (valueDefintionIsRefValue(definition)) {
-		if (exampleValue[definition.property] == undefined) throw new Error(definition.property + ' is not a defined edge type');
+		if (exampleValue[definition.ref] == undefined) throw new Error(definition.ref + ' is not a defined edge type');
 		return;
 	}
 	if (valueDefintionIsResultValue(definition)) {
 		const declaredDependencies = edgeDefinition.dependencies || [];
-		if (!declaredDependencies.some(dependency => dependency == definition.property)) throw new Error(definition.property + ' is used in a ResultValue definition but it is not declared in dependencies.');
+		if (!declaredDependencies.some(dependency => dependency == definition.result)) throw new Error(definition.result + ' is used in a ResultValue definition but it is not declared in dependencies.');
 		return;
 	}
 	const _exhaustiveCheck : never = definition;
@@ -162,13 +162,13 @@ const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs 
 	if (Array.isArray(definition)) return definition;
 
 	if (valueDefintionIsEdgeConstant(definition)) {
-		return edges.map(edge => edge[definition.property] as number);
+		return edges.map(edge => edge[definition.constant] as number);
 	}
 	if (valueDefintionIsRefValue(definition)) {
-		return refs.map(ref => ref.values).map(values => values[definition.property]);
+		return refs.map(ref => ref.values).map(values => values[definition.ref]);
 	}
 	if (valueDefintionIsResultValue(definition)) {
-		return edges.map(() => partialResult[definition.property]);
+		return edges.map(() => partialResult[definition.result]);
 	}
 
 	const _exhaustiveCheck : never = definition;

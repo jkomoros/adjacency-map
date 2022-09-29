@@ -305,7 +305,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for an edge with a value of edge with illegal property', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {type: 'edge', property: 'ref'};
+		input.types.engineering.value = {constant: 'ref'};
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -319,7 +319,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for an edge with a value of edge with constant that doesn\'t exist for that type', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {type: 'edge', property: 'foo'};
+		input.types.engineering.value = {constant: 'foo'};
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -333,7 +333,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows edge with a value of edge with constant that does exist for that type', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {type: 'edge', property: 'weight'};
+		input.types.engineering.value = {constant: 'weight'};
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -417,7 +417,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for TypeRef with non existing property', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {type: 'ref', property: 'foo'};
+		input.types.engineering.value = {ref: 'foo'};
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -431,7 +431,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows TypeRef with existing property', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {type: 'ref', property: 'engineering'};
+		input.types.engineering.value = {ref: 'engineering'};
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -535,7 +535,7 @@ describe('AdjacencyMap validation', () => {
 		const input = deepCopy(legalBaseInput);
 		input.root = {data: 12};
 		input.types.engineering.dependencies = ['data'];
-		input.types.engineering.value = {type: 'result', property: 'data'};
+		input.types.engineering.value = {result: 'data'};
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -551,7 +551,7 @@ describe('AdjacencyMap validation', () => {
 	it('barfs on a value defintion of type ResultValue that does not list the dependency', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.root = {data: 12};
-		input.types.engineering.value = {type: 'result', property: 'data'};
+		input.types.engineering.value = {result: 'data'};
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -636,7 +636,7 @@ describe('AdjacencyMap node', () => {
 
 	it('allows a named node with edge constant value', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {type: 'edge', property: 'weight'};
+		input.types.engineering.value = {constant: 'weight'};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -651,7 +651,7 @@ describe('AdjacencyMap node', () => {
 	it('allows a named node with non-default reducer', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
-		input.types.engineering.value = {type : 'edge', property: 'weight'};
+		input.types.engineering.value = {constant: 'weight'};
 		input.types.engineering.reducer = 'first';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -681,7 +681,7 @@ describe('AdjacencyMap node', () => {
 
 	it('allows a named node with a RefValue', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {type:'ref', property:'engineering'};
+		input.types.engineering.value = {ref:'engineering'};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -786,9 +786,9 @@ describe('AdjacencyMap node', () => {
 	it('Tests a ResultValue ref calculation', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.data.dependencies = ['engineering'];
-		input.types.data.value = {type: 'result', property: 'engineering'};
+		input.types.data.value = {result: 'engineering'};
 		input.types.engineering.dependencies = ['ux'];
-		input.types.engineering.value = {type: 'result', property: 'ux'};
+		input.types.engineering.value = {result: 'ux'};
 		input.root = {'ux': 12};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -805,9 +805,9 @@ describe('AdjacencyMap node', () => {
 	it('Tests a ResultValue ref calculation with two edges', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.data.dependencies = ['engineering'];
-		input.types.data.value = {type: 'result', property: 'engineering'};
+		input.types.data.value = {result: 'engineering'};
 		input.types.engineering.dependencies = ['ux'];
-		input.types.engineering.value = {type: 'result', property: 'ux'};
+		input.types.engineering.value = {result: 'ux'};
 		input.nodes.a.values.push({type: 'data'});
 		input.root = {'ux': 12};
 		const map = new AdjacencyMap(input);

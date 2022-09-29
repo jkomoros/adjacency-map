@@ -28,21 +28,18 @@ export type ConstantType = string;
 
 //Selects a constant on this edge
 export type ValueDefintionEdgeConstant = {
-    type : 'edge',
-    property: ConstantType
+    constant: ConstantType
 };
 
 //Selects the value in the parents of this type
 export type ValueDefinitionRefValue = {
-    type: 'ref',
-    property: EdgeType
+    ref: EdgeType
 }
 
 //Selects the value of other edges that go into our own result.
 export type ValueDefinitionResultValue = {
-    type: 'result',
     //Property must be explicitly enumerated in our EdgeDefinition.dependencies.
-    property: EdgeType
+    result: EdgeType
 }
 
 //TODO: expand this a lot
