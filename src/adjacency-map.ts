@@ -380,6 +380,13 @@ class AdjacencyMapNode {
 		return this._data ? this._data.description : '';
 	}
 
+	//Gets the parents we reference. Note that ROOT_ID is nearly always implied,
+	//but not returned here.
+	get parents() : NodeID[] {
+		if (!this._data || !this._data.values) return [];
+		return this._data.values.map(edge => edge.ref).filter(ref => ref && ref != ROOT_ID) as NodeID[];
+	}
+
 	/**
 	 * The final computed values
 	 */
