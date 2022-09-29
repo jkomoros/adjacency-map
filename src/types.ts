@@ -89,6 +89,13 @@ export type EdgeValue = {
     [constant : ConstantType]: undefined | number | EdgeType | NodeID;
 };
 
+export type ExpandedEdgeValue = EdgeValue & {
+    //Source is the node that links to ref
+    source: NodeID;
+    //Ref is always filled, possibly with ROOT_ID
+    ref: NodeID;
+};
+
 export type SimpleGraph = {
     [id : NodeID] : {
         [other : NodeID]: true

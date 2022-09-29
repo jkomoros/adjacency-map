@@ -2,6 +2,7 @@ import {
 	EdgeDefinition,
 	EdgeType,
 	EdgeValue,
+	ExpandedEdgeValue,
 	LayoutInfo,
 	MapDefinition,
 	NodeDefinition,
@@ -233,6 +234,7 @@ export class AdjacencyMap {
 	
 	_data : MapDefinition;
 	_nodes : {[id : NodeID] : AdjacencyMapNode};
+	_cachedEdges : ExpandedEdgeValue[];
 	_cachedRoot : NodeValues;
 	_cachedEdgeTypes : EdgeType[];
 	_cachedLayoutInfo : LayoutInfo;
@@ -289,6 +291,13 @@ export class AdjacencyMap {
 		return Object.fromEntries(Object.keys(this._data.nodes).map(id => [id, this.node(id).values]));
 	}
 
+	get edges() : ExpandedEdgeValue[] {
+		if (!this._cachedEdges) {
+			this._cachedEdges = Object.keys(this._data.nodes).map(id => this.node(id).edges).flat();
+		}
+		return this._cachedEdges;
+	}
+
 	treeGraph() : TreeGraphWithDetails {
 		//TODO:SVG remove
 		//TODO: cache
@@ -331,6 +340,7 @@ class AdjacencyMapNode {
 	_data : NodeDefinition | undefined;
 	_values : NodeValues;
 	_isRoot : boolean;
+	_cachedEdges : ExpandedEdgeValue[];
 
 	constructor(id : NodeID, parent : AdjacencyMap, data : NodeDefinition | undefined) {
 		this._id = id;
@@ -382,6 +392,17 @@ class AdjacencyMapNode {
 
 	get description() : string {
 		return this._data ? this._data.description : '';
+	}
+
+	get edges() : ExpandedEdgeValue[] {
+		if (!this._cachedEdges) {
+			if (this._data && this._data.values) {
+				this._cachedEdges = this._data.values.map(edge => ({...edge, source: this.id, ref: edge.ref || ROOT_ID}));
+			} else {
+				this._cachedEdges = [];
+			}
+		}
+		return this._cachedEdges;
 	}
 
 	//Gets the parents we reference. Note that ROOT_ID is nearly always implied,

@@ -723,6 +723,48 @@ describe('AdjacencyMap root', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('handles edges correctly', async () => {
+		const input = deepCopy(legalBaseInput);
+		const map = new AdjacencyMap(input);
+		const actual = map.edges;
+		const golden = [
+			{
+				"ref": "",
+				"source": "a",
+				"type": "engineering",
+				"weight": 4,
+			},
+			{
+				"ref": "",
+				"source": "a",
+				"type": "engineering",
+			},
+			{
+				"ref": "a",
+				"source": "b",
+				"type": "ux",
+			},
+			{
+				"ref": "a",
+				"source": "c",
+				"type": "engineering",
+			},
+			{
+				"ref": "b",
+				"source": "c",
+				"type": "ux",
+			},
+			{
+				"ref": "b",
+				"source": "d",
+				"type": "engineering"
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+
+
 });
 
 describe('AdjacencyMap node', () => {
