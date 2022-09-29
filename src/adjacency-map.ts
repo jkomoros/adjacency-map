@@ -286,7 +286,7 @@ export class AdjacencyMap {
 		return this._nodes[id];
 	}
 
-	nodes() : {[id : NodeID] : AdjacencyMapNode} {
+	get nodes() : {[id : NodeID] : AdjacencyMapNode} {
 		//TODO: cache. Not a huge deal because the heavy lifting is cached behind node().
 		const ids = ['',...Object.keys(this._data.nodes)];
 		return Object.fromEntries(ids.map(id => [id, this.node(id)]));
