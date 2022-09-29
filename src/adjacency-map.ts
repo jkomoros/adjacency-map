@@ -11,6 +11,7 @@ import {
 	TreeGraph,
 	TreeGraphWithDetails,
 	ValueDefinition,
+	ValueDefinitionArithmetic,
 	ValueDefinitionReduce,
 	ValueDefinitionRefValue,
 	ValueDefinitionResultValue,
@@ -61,6 +62,12 @@ const valueDefintionIsReduce = (definition : ValueDefinition) : definition is Va
 	return 'reduce' in definition;
 };
 
+const valueDefinitionIsArithmetic = (definition : ValueDefinition): definition is ValueDefinitionArithmetic => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'operator' in definition;
+};
+
 const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : EdgeDefinition, exampleValue : NodeValues) : void => {
 	if (typeof definition == 'number') return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {
@@ -87,6 +94,13 @@ const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : 
 	if (valueDefintionIsReduce(definition)) {
 		validateValueDefinition(definition.child, edgeDefinition, exampleValue);
 		if (!REDUCERS[definition.reduce]) throw new Error('Unknown reducer: ' + definition.reduce);
+		return;
+	}
+
+	if (valueDefinitionIsArithmetic(definition)) {
+		validateValueDefinition(definition.child, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.term, edgeDefinition, exampleValue);
+		if (!['+', '*'].some(operator => operator == definition.operator)) throw new Error('Unknown operator: ' + definition.operator);
 		return;
 	}
 
@@ -188,6 +202,13 @@ const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs 
 		const subValues = calculateValue(definition.child, edges, refs, partialResult);
 		const reducer = REDUCERS[definition.reduce];
 		return reducer(subValues);
+	}
+	if (valueDefinitionIsArithmetic(definition)) {
+		const left = calculateValue(definition.child, edges, refs, partialResult);
+		const right = calculateValue(definition.term, edges, refs, partialResult);
+		const op = definition.operator == '*' ? (one : number, two : number) => one * two : (one : number, two : number) => one + two;
+		//The result is the same length as left, but we loop over and repeat numbers in right if necessary.
+		return left.map((term, i) => op(term, right[i % right.length]));
 	}
 
 	const _exhaustiveCheck : never = definition;

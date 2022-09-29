@@ -629,6 +629,76 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for a value defintion of type arithmetic with invalid operator', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			operator: '&',
+			child: [3, 4, 5],
+			term: [1]
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a value defintion of type arithmetic missing term', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			operator: '+',
+			child: [3, 4, 5],
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a value defintion of type arithmetic missing child', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			operator: '+',
+			term: [1]
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a valid value defintion of type arithmetic', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			operator: '+',
+			child: [3,4,5],
+			term: [1]
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
@@ -898,6 +968,25 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 1,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates an arithmetic add type', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.reducer = 'sum';
+		input.types.engineering.value = {
+			operator: '+',
+			child: [0, 1, 2],
+			term: [0, 1]
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 4,
 			ux: 0,
 			data: 0
 		};

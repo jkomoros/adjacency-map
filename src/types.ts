@@ -49,8 +49,21 @@ export type ValueDefinitionReduce = {
     child: ValueDefinition
 }
 
-//TODO: expand this a lot
-export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant | ValueDefinitionRefValue | ValueDefinitionResultValue | ValueDefinitionReduce;
+//Takes two children, and adds or multiplies the left by the right and returns.
+//The return value will have the same lenght as the first child. The numbers
+//that will be multiplied are the same index; if the second argument is shorter
+//than the first, then the index wraps around. If it is longer than the first,
+//then only part of it is used. This behavior means that you can do a scalar
+//multiplication by having a single-termed second child.
+export type ValueDefinitionArithmetic = {
+    operator: '+' | '*',
+    child: ValueDefinition,
+    //TODO: rename this to whatever the second part of an arithmetic expression
+    //is called.
+    term: ValueDefinition
+}
+
+export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant | ValueDefinitionRefValue | ValueDefinitionResultValue | ValueDefinitionReduce | ValueDefinitionArithmetic;
 
 export type NodeID = string;
 
