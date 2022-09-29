@@ -27,6 +27,10 @@ const legalBaseInput = {
 		"ux": {
 			"value": 4,
 			"description": "A description of ux"
+		},
+		"data": {
+			"value": 2,
+			"description": "Investment in data quality"
 		}
 	},
 	"root": {
@@ -458,7 +462,8 @@ describe('AdjacencyMap root', () => {
 		const actual = map.root;
 		const golden = {
 			"engineering": 4.0,
-			"ux": 0.0
+			"ux": 0.0,
+			"data": 0.0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -491,7 +496,8 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 3,
-			ux: 0
+			ux: 0,
+			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -503,7 +509,8 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 4,
-			ux: 0
+			ux: 0,
+			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -516,7 +523,8 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 2.5,
-			ux: 0
+			ux: 0,
+			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -531,7 +539,8 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 4.0,
-			ux: 0
+			ux: 0,
+			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -545,7 +554,8 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 8.0,
-			ux: 0
+			ux: 0,
+			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -558,7 +568,8 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 4.0,
-			ux: 0
+			ux: 0,
+			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -573,7 +584,8 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 10.0,
-			ux: 0
+			ux: 0,
+			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -588,7 +600,8 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: -3.0,
-			ux: 0
+			ux: 0,
+			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -603,7 +616,8 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 10.0,
-			ux: 0
+			ux: 0,
+			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -618,7 +632,8 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 10.5,
-			ux: 0
+			ux: 0,
+			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -633,7 +648,8 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: -90,
-			ux: 0
+			ux: 0,
+			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
