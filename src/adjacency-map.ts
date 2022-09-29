@@ -256,7 +256,12 @@ class AdjacencyMapNode {
 			if (!edgeByType[edge.type]) edgeByType[edge.type] = [];
 			edgeByType[edge.type].push(edge);
 		}
-		for (const [type, rawEdges] of Object.entries(edgeByType)) {
+		//Iterate through edges in edgeTypes order to make sure that any
+		//ValueDefinitionResultValue will have the values they already rely on
+		//calculated.
+		for (const type of this._map.edgeTypes) {
+			const rawEdges = edgeByType[type];
+			if (!rawEdges) continue;
 			const typeDefinition = this._map.data.types[type];
 			const edgeValueDefinition = typeDefinition.value;
 			const constants = typeDefinition.constants || {};
