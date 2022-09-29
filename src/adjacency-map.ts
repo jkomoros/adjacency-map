@@ -249,7 +249,7 @@ class AdjacencyMapNode {
 	}
 
 	_computeValues() : NodeValues {
-		const result = {...this._map.root};
+		const partialResult : NodeValues = {};
 		const edgeByType : {[type : EdgeType] : EdgeValue[]} = {};
 		const values = this._data?.values || [];
 		for (const edge of values) {
@@ -271,9 +271,9 @@ class AdjacencyMapNode {
 			const values = calculateValue(edgeValueDefinition, defaultedEdges, refs);
 			if (values.length == 0) throw new Error('values was not at least of length 1');
 			const finalReducer = typeDefinition.reducer ? REDUCERS[typeDefinition.reducer] : DEFAULT_REDUCER;
-			result[type] = finalReducer(values)[0];
+			partialResult[type] = finalReducer(values)[0];
 		}
-		return result;
+		return {...this._map.root, ...partialResult};
 	}
 
 	get isRoot() : boolean {
