@@ -23,6 +23,21 @@ export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 	'type': true
 };
 
+/*
+
+	ValueDefinitions exclusively work with numbers, so to represent true/false
+	we need a convention.
+
+*/
+
+//Note: any non-false number value is true, so use isTrue to check if a given
+//number is true.
+export const DEFAULT_TRUE_NUMBER = 1.0;
+export const FALSE_NUMBER = 0.0;
+
+export const isTrue = (input : number) => !isFalse(input);
+export const isFalse = (input : number) => input == FALSE_NUMBER;
+
 type Operator = (one : number, two: number) => number;
 
 const OPERATORS : {[op in ArithmeticOperator] : Operator}  = {
