@@ -13,7 +13,8 @@ import {
 	ValueDefinitionResultValue,
 	ValueDefintionEdgeConstant,
 	ValueDefinitionClip,
-	ArithmeticOperator
+	ArithmeticOperator,
+	ValueDefinitionRange
 } from './types.js';
 
 export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
@@ -66,6 +67,12 @@ const valueDefinitionIsClip = (definition : ValueDefinition): definition is Valu
 	return 'clip' in definition;
 };
 
+const valueDefinitionIsRange = (definition : ValueDefinition): definition is ValueDefinitionRange => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'range' in definition;
+};
+
 export const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : EdgeDefinition, exampleValue : NodeValues) : void => {
 	if (typeof definition == 'number') return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {
@@ -107,6 +114,13 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 		if (definition.low == undefined && definition.high == undefined) throw new Error('Clip expects at least one of low or high');
 		if (definition.low != undefined) validateValueDefinition(definition.low, edgeDefinition, exampleValue);
 		if (definition.high != undefined) validateValueDefinition(definition.high, edgeDefinition, exampleValue);
+		return;
+	}
+
+	if (valueDefinitionIsRange(definition)) {
+		validateValueDefinition(definition.range, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.low, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.high, edgeDefinition, exampleValue);
 		return;
 	}
 
@@ -156,6 +170,21 @@ export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]
 			if (term < low) term = low;
 			if (term > high) term = high;
 			return term;
+		});
+	}
+
+	if (valueDefinitionIsRange(definition)) {
+		const inputArr = calculateValue(definition.range, edges, refs, partialResult);
+		const lowArr = calculateValue(definition.low, edges, refs, partialResult);
+		const highArr = calculateValue(definition.high, edges, refs, partialResult);
+
+		return inputArr.map((term, i) => {
+			let low = lowArr[i % lowArr.length];
+			let high = highArr[i % highArr.length];
+			if (high < low) [low, high] = [high, low];
+			if (term < low) term = low;
+			if (term > high) term = high;
+			return (term - low) / (high - low);
 		});
 	}
 

@@ -78,7 +78,18 @@ export type ValueDefinitionClip = {
     high: ValueDefinition
 }
 
-export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant | ValueDefinitionRefValue | ValueDefinitionResultValue | ValueDefinitionCombine | ValueDefinitionArithmetic | ValueDefinitionClip;
+//Range takes a number between low and high and returns the percentage of the
+//way from low to high. (If low is higher than high, they are swapped). If the
+//range input value is lower than low or higher than high it will be clipped to
+//those.
+export type ValueDefinitionRange = {
+    //The input value
+    range: ValueDefinition,
+    low: ValueDefinition,
+    high: ValueDefinition
+}
+
+export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant | ValueDefinitionRefValue | ValueDefinitionResultValue | ValueDefinitionCombine | ValueDefinitionArithmetic | ValueDefinitionClip | ValueDefinitionRange;
 
 export type LayoutInfo = {
     width: number,
