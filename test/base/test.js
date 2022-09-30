@@ -713,6 +713,23 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('Allows a valid value defintion of type arithmetic unary missing term', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			operator: '!',
+			child: [3,4,5]
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('barfs for a value defintion of type compare missing term', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.value = {
@@ -1506,6 +1523,24 @@ describe('AdjacencyMap node', () => {
 			operator: '||',
 			child: [0, 2, 0, 0],
 			term: [2, 0]
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 3.0,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates an arithmetic not type', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.combine = 'sum';
+		input.types.engineering.value = {
+			operator: '!',
+			child: [0, 2, 0, 0],
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');

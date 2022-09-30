@@ -49,7 +49,23 @@ export type ValueDefinitionCombine = {
     child: ValueDefinition
 }
 
-export type ArithmeticOperator =  '+' | '*' | '-' | '/' | '&&' | '||';
+type ArithmeticOperatorBinary =  '+' | '*' | '-' | '/' | '&&' | '||';
+type ArithmeticOperatorUnary = '!';
+
+export type ArithmeticOperator = ArithmeticOperatorBinary | ArithmeticOperatorUnary;
+
+export type ValueDefinitionArithmeticBinary = {
+    operator:ArithmeticOperatorBinary,
+    child: ValueDefinition,
+    //TODO: rename this to whatever the second part of an arithmetic expression
+    //is called.
+    term: ValueDefinition
+};
+
+export type ValueDefinitionArithmeticUnary = {
+    operator: ArithmeticOperatorUnary,
+    child: ValueDefinition
+}
 
 //Takes two children, and adds or multiplies the left by the right and returns.
 //The return value will have the same lenght as the first child. The numbers
@@ -57,13 +73,7 @@ export type ArithmeticOperator =  '+' | '*' | '-' | '/' | '&&' | '||';
 //than the first, then the index wraps around. If it is longer than the first,
 //then only part of it is used. This behavior means that you can do a scalar
 //multiplication by having a single-termed second child.
-export type ValueDefinitionArithmetic = {
-    operator:ArithmeticOperator,
-    child: ValueDefinition,
-    //TODO: rename this to whatever the second part of an arithmetic expression
-    //is called.
-    term: ValueDefinition
-}
+export type ValueDefinitionArithmetic = ValueDefinitionArithmeticBinary | ValueDefinitionArithmeticUnary;
 
 export type CompareOperator = '==' | '!=' | '<' | '>' | '<=' | '>=';
 

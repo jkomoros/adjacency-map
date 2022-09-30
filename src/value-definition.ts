@@ -18,7 +18,8 @@ import {
 	ValueDefinitionPercent,
 	CompareOperator,
 	ValueDefinitionCompare,
-	ValueDefinitionIf
+	ValueDefinitionIf,
+	ValueDefinitionArithmeticUnary
 } from './types.js';
 
 import {
@@ -40,7 +41,12 @@ const OPERATORS : {[op in ArithmeticOperator] : Operator}  = {
 	'-': (one, two) => one - two,
 	'/': (one, two) => one / two,
 	'&&': (one, two) => isTrue(one) && isTrue(two) ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER,
-	'||': (one, two) => isTrue(one) || isTrue(two) ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER
+	'||': (one, two) => isTrue(one) || isTrue(two) ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER,
+	'!': (one) => isTrue(one) ? FALSE_NUMBER : DEFAULT_TRUE_NUMBER
+};
+
+const UNARY_OPERATORS : {[op in ArithmeticOperator]+?: true} = {
+	'!': true
 };
 
 type Comparer = (one : number, two : number) => typeof DEFAULT_TRUE_NUMBER | typeof FALSE_NUMBER;
@@ -82,6 +88,10 @@ const valueDefinitionIsArithmetic = (definition : ValueDefinition): definition i
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
 	return 'operator' in definition;
+};
+
+const arithmeticIsUnary = (definition : ValueDefinitionArithmetic): definition is ValueDefinitionArithmeticUnary => {
+	return UNARY_OPERATORS[definition.operator] || false;
 };
 
 const valueDefinitionIsCompare = (definition : ValueDefinition): definition is ValueDefinitionCompare => {
@@ -145,8 +155,8 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 
 	if (valueDefinitionIsArithmetic(definition)) {
 		validateValueDefinition(definition.child, edgeDefinition, exampleValue);
-		validateValueDefinition(definition.term, edgeDefinition, exampleValue);
 		if (!Object.keys(OPERATORS).some(operator => operator == definition.operator)) throw new Error('Unknown operator: ' + definition.operator);
+		if (!arithmeticIsUnary(definition)) validateValueDefinition(definition.term, edgeDefinition, exampleValue);
 		return;
 	}
 
@@ -214,7 +224,7 @@ export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]
 	}
 	if (valueDefinitionIsArithmetic(definition)) {
 		const left = calculateValue(definition.child, edges, refs, partialResult);
-		const right = calculateValue(definition.term, edges, refs, partialResult);
+		const right = arithmeticIsUnary(definition) ? [0] : calculateValue(definition.term, edges, refs, partialResult);
 		const op = OPERATORS[definition.operator];
 		if (!op) throw new Error('No such operator: ' + definition.operator);
 		//The result is the same length as left, but we loop over and repeat numbers in right if necessary.
