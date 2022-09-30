@@ -23,6 +23,7 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 				constants: {
 					'radius': -1
 				},
+				combine: 'max',
 				hide: true
 			}
 		},
