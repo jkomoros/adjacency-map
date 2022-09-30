@@ -79,6 +79,15 @@ export type ValueDefinitionCompare= {
     term: ValueDefinition
 }
 
+/**
+ * For the test 'if', returns then if the value isTrue(), and else otherwise.
+ */
+export type ValueDefinitionIf = {
+    if: ValueDefinition,
+    then: ValueDefinition,
+    else: ValueDefinition
+}
+
 //Clip returns a value like input, but where each number if it's lower than low,
 //clips to low, and if it's higher than high clips to high. Either low or high
 //may be omitted, but not both.
@@ -121,6 +130,7 @@ export type ValueDefinition = number |
     ValueDefinitionResultValue |
     ValueDefinitionCombine |
     ValueDefinitionArithmetic |
+    ValueDefinitionIf |
     ValueDefinitionCompare |
     ValueDefinitionClip |
     ValueDefinitionRange |

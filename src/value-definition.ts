@@ -17,7 +17,8 @@ import {
 	ValueDefinitionRange,
 	ValueDefinitionPercent,
 	CompareOperator,
-	ValueDefinitionCompare
+	ValueDefinitionCompare,
+	ValueDefinitionIf
 } from './types.js';
 
 export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
@@ -96,6 +97,12 @@ const valueDefinitionIsCompare = (definition : ValueDefinition): definition is V
 	return 'compare' in definition;
 };
 
+const valueDefinitionIsIf = (definition : ValueDefinition): definition is ValueDefinitionIf => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'if' in definition;
+};
+
 const valueDefinitionIsClip = (definition : ValueDefinition): definition is ValueDefinitionClip => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
@@ -154,6 +161,13 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 		validateValueDefinition(definition.child, edgeDefinition, exampleValue);
 		validateValueDefinition(definition.term, edgeDefinition, exampleValue);
 		if (!Object.keys(COMPARE_OPERATORS).some(operator => operator == definition.compare)) throw new Error('Unknown compare operator: ' + definition.compare);
+		return;
+	}
+
+	if (valueDefinitionIsIf(definition)) {
+		validateValueDefinition(definition.if, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.then, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.else, edgeDefinition, exampleValue);
 		return;
 	}
 
@@ -221,6 +235,13 @@ export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]
 		if (!op) throw new Error('No such comparison operator: ' + definition.compare);
 		//The result is the same length as left, but we loop over and repeat numbers in right if necessary.
 		return left.map((term, i) => op(term, right[i % right.length]));
+	}
+
+	if (valueDefinitionIsIf(definition)) {
+		const ifVal = calculateValue(definition.if, edges, refs, partialResult);
+		const thenVal = calculateValue(definition.then, edges, refs, partialResult);
+		const elseVal = calculateValue(definition.else, edges, refs, partialResult);
+		return ifVal.map((term, i) => isTrue(term) ? thenVal[i % thenVal.length] : elseVal[i & elseVal.length]);
 	}
 
 	if (valueDefinitionIsClip(definition)) {

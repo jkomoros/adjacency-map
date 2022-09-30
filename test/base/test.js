@@ -783,6 +783,58 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for defintion of type if missing then', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			if: [0, 1, 0],
+			else: [5]
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for defintion of type if missing else', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			if: [0, 1, 0],
+			then: [5]
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a valid value defintion of type if', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			if: [0, 1, 0],
+			then: [3, 4],
+			else: [5]
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('barfs for a value defintion of type clip missing input', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.value = {
@@ -1472,6 +1524,25 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 2.0,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates an if', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.combine = 'sum';
+		input.types.engineering.value = {
+			if: [0, 2, 0],
+			then: [3, 4],
+			else: [7]
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 18,
 			ux: 0,
 			data: 0
 		};
