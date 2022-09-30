@@ -31,7 +31,10 @@ import {
 	COMBINERS,
 	DEFAULT_COMBINER
 } from './combine.js';
-import { TreeLayout } from './tree-svg.js';
+
+import {
+	TreeLayout
+} from './tree-svg.js';
 
 const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 	'ref': true,
