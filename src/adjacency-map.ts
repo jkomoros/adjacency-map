@@ -379,6 +379,6 @@ class AdjacencyMapNode {
 	}
 
 	get radius() : number {
-		return 3;
+		return this.values['core:radius'];
 	}
 }
