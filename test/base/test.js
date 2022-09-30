@@ -713,6 +713,76 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for a value defintion of type compare missing term', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			compare: '<=',
+			child: [3, 4, 5]
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a value defintion of type compare missing child', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			compare: '<=',
+			term: [4]
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a value defintion of type compare with invalid operator', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			compare: '===',
+			child: [3, 4, 5],
+			term: [4]
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a valid value defintion of type compare', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			compare: '<=',
+			child: [3,4,5],
+			term: [4]
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('barfs for a value defintion of type clip missing input', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.value = {
@@ -1288,6 +1358,120 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 3.5,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates an compare type ==', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.combine = 'sum';
+		input.types.engineering.value = {
+			compare: '==',
+			child: [3, 4, 5],
+			term: [4]
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 1.0,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates an compare type !=', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.combine = 'sum';
+		input.types.engineering.value = {
+			compare: '!=',
+			child: [3, 4, 5],
+			term: [4]
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 2.0,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates an compare type <', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.combine = 'sum';
+		input.types.engineering.value = {
+			compare: '<',
+			child: [3, 4, 5],
+			term: [4]
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 1.0,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates an compare type >', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.combine = 'sum';
+		input.types.engineering.value = {
+			compare: '>',
+			child: [3, 4, 5],
+			term: [4]
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 1.0,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates an compare type <=', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.combine = 'sum';
+		input.types.engineering.value = {
+			compare: '<=',
+			child: [3, 4, 5],
+			term: [4]
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 2.0,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates an compare type >=', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.combine = 'sum';
+		input.types.engineering.value = {
+			compare: '>=',
+			child: [3, 4, 5],
+			term: [4]
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 2.0,
 			ux: 0,
 			data: 0
 		};

@@ -15,7 +15,9 @@ import {
 	ValueDefinitionClip,
 	ArithmeticOperator,
 	ValueDefinitionRange,
-	ValueDefinitionPercent
+	ValueDefinitionPercent,
+	CompareOperator,
+	ValueDefinitionCompare
 } from './types.js';
 
 export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
@@ -47,6 +49,17 @@ const OPERATORS : {[op in ArithmeticOperator] : Operator}  = {
 	'/': (one, two) => one / two
 };
 
+type Comparer = (one : number, two : number) => typeof DEFAULT_TRUE_NUMBER | typeof FALSE_NUMBER;
+
+const COMPARE_OPERATORS : {[op in CompareOperator]: Comparer} = {
+	'==': (one, two) => one == two ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER,
+	'!=': (one, two) => one != two ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER,
+	'<': (one, two) => one < two ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER,
+	'>': (one, two) => one > two ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER,
+	'<=': (one, two) => one <= two ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER,
+	'>=': (one, two) => one >= two ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER,
+};
+
 const valueDefintionIsEdgeConstant = (definition : ValueDefinition) : definition is ValueDefintionEdgeConstant => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
@@ -75,6 +88,12 @@ const valueDefinitionIsArithmetic = (definition : ValueDefinition): definition i
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
 	return 'operator' in definition;
+};
+
+const valueDefinitionIsCompare = (definition : ValueDefinition): definition is ValueDefinitionCompare => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'compare' in definition;
 };
 
 const valueDefinitionIsClip = (definition : ValueDefinition): definition is ValueDefinitionClip => {
@@ -131,6 +150,13 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 		return;
 	}
 
+	if (valueDefinitionIsCompare(definition)) {
+		validateValueDefinition(definition.child, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.term, edgeDefinition, exampleValue);
+		if (!Object.keys(COMPARE_OPERATORS).some(operator => operator == definition.compare)) throw new Error('Unknown compare operator: ' + definition.compare);
+		return;
+	}
+
 	if (valueDefinitionIsClip(definition)) {
 		validateValueDefinition(definition.clip, edgeDefinition, exampleValue);
 		if (definition.low == undefined && definition.high == undefined) throw new Error('Clip expects at least one of low or high');
@@ -184,6 +210,15 @@ export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]
 		const right = calculateValue(definition.term, edges, refs, partialResult);
 		const op = OPERATORS[definition.operator];
 		if (!op) throw new Error('No such operator: ' + definition.operator);
+		//The result is the same length as left, but we loop over and repeat numbers in right if necessary.
+		return left.map((term, i) => op(term, right[i % right.length]));
+	}
+
+	if (valueDefinitionIsCompare(definition)) {
+		const left = calculateValue(definition.child, edges, refs, partialResult);
+		const right = calculateValue(definition.term, edges, refs, partialResult);
+		const op = COMPARE_OPERATORS[definition.compare];
+		if (!op) throw new Error('No such comparison operator: ' + definition.compare);
 		//The result is the same length as left, but we loop over and repeat numbers in right if necessary.
 		return left.map((term, i) => op(term, right[i % right.length]));
 	}

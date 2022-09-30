@@ -65,6 +65,20 @@ export type ValueDefinitionArithmetic = {
     term: ValueDefinition
 }
 
+export type CompareOperator = '==' | '!=' | '<' | '>' | '<=' | '>=';
+
+/**
+ * Takes two children and applies the comparison to them, returning
+ * DEFAULT_TRUE_NUMBER or FALSE_NUMBER.
+ */
+export type ValueDefinitionCompare= {
+    compare:CompareOperator,
+    child: ValueDefinition,
+    //TODO: rename this to whatever the second part of an arithmetic expression
+    //is called.
+    term: ValueDefinition
+}
+
 //Clip returns a value like input, but where each number if it's lower than low,
 //clips to low, and if it's higher than high clips to high. Either low or high
 //may be omitted, but not both.
@@ -107,6 +121,7 @@ export type ValueDefinition = number |
     ValueDefinitionResultValue |
     ValueDefinitionCombine |
     ValueDefinitionArithmetic |
+    ValueDefinitionCompare |
     ValueDefinitionClip |
     ValueDefinitionRange |
     ValueDefinitionPercent;
