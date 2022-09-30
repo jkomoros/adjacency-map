@@ -112,6 +112,40 @@ const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : 
 	return _exhaustiveCheck;
 };
 
+//TODO: is there a way to make it clear this must return an array with at least
+//one number?
+const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs : AdjacencyMapNode[], partialResult : NodeValues) : number[] => {
+	if (typeof definition == 'number') return [definition];
+
+	if (Array.isArray(definition)) return definition;
+
+	if (valueDefintionIsEdgeConstant(definition)) {
+		return edges.map(edge => edge[definition.constant] as number);
+	}
+	if (valueDefintionIsRefValue(definition)) {
+		return refs.map(ref => ref.values).map(values => values[definition.ref]);
+	}
+	if (valueDefintionIsResultValue(definition)) {
+		return edges.map(() => partialResult[definition.result]);
+	}
+	if (valueDefintionIsCombine(definition)) {
+		const subValues = calculateValue(definition.child, edges, refs, partialResult);
+		const combiner = COMBINERS[definition.combine];
+		return combiner(subValues);
+	}
+	if (valueDefinitionIsArithmetic(definition)) {
+		const left = calculateValue(definition.child, edges, refs, partialResult);
+		const right = calculateValue(definition.term, edges, refs, partialResult);
+		const op = definition.operator == '*' ? (one : number, two : number) => one * two : (one : number, two : number) => one + two;
+		//The result is the same length as left, but we loop over and repeat numbers in right if necessary.
+		return left.map((term, i) => op(term, right[i % right.length]));
+	}
+
+	const _exhaustiveCheck : never = definition;
+	throw new Error('Illegal value for definition');
+	return _exhaustiveCheck;
+};
+
 export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 	const result : SimpleGraph = {};
 	for (const [id, value] of Object.entries(data.nodes)) {
@@ -184,40 +218,6 @@ const validateData = (data : MapDefinition) : void => {
 	} catch (err) {
 		throw new Error('The edges provided did not form a DAG');
 	}
-};
-
-//TODO: is there a way to make it clear this must return an array with at least
-//one number?
-const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs : AdjacencyMapNode[], partialResult : NodeValues) : number[] => {
-	if (typeof definition == 'number') return [definition];
-
-	if (Array.isArray(definition)) return definition;
-
-	if (valueDefintionIsEdgeConstant(definition)) {
-		return edges.map(edge => edge[definition.constant] as number);
-	}
-	if (valueDefintionIsRefValue(definition)) {
-		return refs.map(ref => ref.values).map(values => values[definition.ref]);
-	}
-	if (valueDefintionIsResultValue(definition)) {
-		return edges.map(() => partialResult[definition.result]);
-	}
-	if (valueDefintionIsCombine(definition)) {
-		const subValues = calculateValue(definition.child, edges, refs, partialResult);
-		const combiner = COMBINERS[definition.combine];
-		return combiner(subValues);
-	}
-	if (valueDefinitionIsArithmetic(definition)) {
-		const left = calculateValue(definition.child, edges, refs, partialResult);
-		const right = calculateValue(definition.term, edges, refs, partialResult);
-		const op = definition.operator == '*' ? (one : number, two : number) => one * two : (one : number, two : number) => one + two;
-		//The result is the same length as left, but we loop over and repeat numbers in right if necessary.
-		return left.map((term, i) => op(term, right[i % right.length]));
-	}
-
-	const _exhaustiveCheck : never = definition;
-	throw new Error('Illegal value for definition');
-	return _exhaustiveCheck;
 };
 
 export class AdjacencyMap {
