@@ -114,7 +114,7 @@ const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : 
 
 //TODO: is there a way to make it clear this must return an array with at least
 //one number?
-const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs : AdjacencyMapNode[], partialResult : NodeValues) : number[] => {
+const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs : NodeValues[], partialResult : NodeValues) : number[] => {
 	if (typeof definition == 'number') return [definition];
 
 	if (Array.isArray(definition)) return definition;
@@ -123,7 +123,7 @@ const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs 
 		return edges.map(edge => edge[definition.constant] as number);
 	}
 	if (valueDefintionIsRefValue(definition)) {
-		return refs.map(ref => ref.values).map(values => values[definition.ref]);
+		return refs.map(values => values[definition.ref]);
 	}
 	if (valueDefintionIsResultValue(definition)) {
 		return edges.map(() => partialResult[definition.result]);
@@ -371,7 +371,7 @@ class AdjacencyMapNode {
 			const constants = typeDefinition.constants || {};
 			const defaultedEdges = rawEdges.map(edge => ({...constants, ...edge}));
 			//TODO: should we make it illegal to have an edge of same type and ref on a node? 
-			const refs = rawEdges.map(edge => this._map.node(edge.ref || ''));
+			const refs = rawEdges.map(edge => this._map.node(edge.ref || '').values);
 			const values = calculateValue(edgeValueDefinition, defaultedEdges, refs, partialResult);
 			if (values.length == 0) throw new Error('values was not at least of length 1');
 			const finalCombiner = typeDefinition.combine ? COMBINERS[typeDefinition.combine] : DEFAULT_COMBINER;
