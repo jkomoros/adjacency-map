@@ -430,7 +430,7 @@ class AdjacencyMapNode {
 
 	//Gets the children we are directly referenced by.
 	get children() : NodeID[] {
-		return this._map._children(this.id);
+		return this._map._children(this.id) || [];
 	}
 
 	/**
