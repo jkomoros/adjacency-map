@@ -153,8 +153,7 @@ class MainView extends connect(store)(PageViewElement) {
 		const r = 3;
 
 		// fill for nodes
-		//const fill = '#999';
-
+		const fill = '#999';
 		// stroke for links
 		const stroke = '#555';
 		// stroke width for links
@@ -170,7 +169,6 @@ class MainView extends connect(store)(PageViewElement) {
 		// padding around the labels
 		const haloWidth = 3;
 
-		//TODO: cirlce should have fill = fill if it has no children.
 		//TODO: text x should have -6 if it has children
 		//TODO: text text-anchor should be end if it has children
 
@@ -180,7 +178,7 @@ class MainView extends connect(store)(PageViewElement) {
 			</g>
 			<g>
 				${Object.values(a.nodes).map(node => svg`<a transform="translate(${node.y},${node.x})">
-					<circle fill="${stroke}" r="${r}"></circle>
+					<circle fill="${node.children.length == 0 ? fill : stroke}" r="${r}"></circle>
 					<title>${node.description + '\n\n' + Object.entries(node.values).map(entry => entry[0] + ': ' + entry[1]).join('\n')}</title>
 					<text dy="0.32em" x="6" text-anchor="start" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}">${node.id}</text>
 				</a>`)}
