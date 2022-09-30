@@ -1152,6 +1152,44 @@ describe('AdjacencyMap node', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('Correctly calculates an arithmetic subtract type', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.combine = 'sum';
+		input.types.engineering.value = {
+			operator: '-',
+			child: [0, 1, 2],
+			term: [0, 1]
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 2,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates an arithmetic divide type', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.combine = 'sum';
+		input.types.engineering.value = {
+			operator: '/',
+			child: [0, 2, 6],
+			term: [2, 4]
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 3.5,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
 	it('Correctly calculates a clip with only low', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.combine = 'sum';

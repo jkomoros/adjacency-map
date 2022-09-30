@@ -21,12 +21,13 @@ export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 	'type': true
 };
 
-
 type Operator = (one : number, two: number) => number;
 
 const OPERATORS : {[op in ArithmeticOperator] : Operator}  = {
 	'*': (one, two) => one * two,
-	'+': (one, two) => one + two
+	'+': (one, two) => one + two,
+	'-': (one, two) => one - two,
+	'/': (one, two) => one / two
 };
 
 const valueDefintionIsEdgeConstant = (definition : ValueDefinition) : definition is ValueDefintionEdgeConstant => {

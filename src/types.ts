@@ -49,7 +49,7 @@ export type ValueDefinitionCombine = {
     child: ValueDefinition
 }
 
-export type ArithmeticOperator =  '+' | '*';
+export type ArithmeticOperator =  '+' | '*' | '-' | '/';
 
 //Takes two children, and adds or multiplies the left by the right and returns.
 //The return value will have the same lenght as the first child. The numbers
