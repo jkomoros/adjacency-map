@@ -324,6 +324,10 @@ class AdjacencyMapNode {
 		return this._data ? this._data.description : 'Root node';
 	}
 
+	fullDescription() : string {
+		return this.description + '\n\n' + Object.entries(this.values).map(entry => entry[0] + ': ' + entry[1]).join('\n');
+	}
+
 	get edges() : ExpandedEdgeValue[] {
 		if (!this._cachedEdges) {
 			if (this._data && this._data.values) {

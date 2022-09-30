@@ -1188,6 +1188,20 @@ describe('AdjacencyMap node', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('fullDescription works for a named node', async () => {
+		const input = deepCopy(legalBaseInput);
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.fullDescription();
+		const golden = `Node a
+
+data: 0
+ux: 0
+engineering: 3`;
+
+		assert.deepStrictEqual(actual, golden);
+	});
+
 	it('children for a named node', async () => {
 		const input = deepCopy(legalBaseInput);
 		const map = new AdjacencyMap(input);
