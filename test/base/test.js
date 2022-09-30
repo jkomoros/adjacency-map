@@ -1873,14 +1873,14 @@ engineering: 3`;
 	it('Correctly handles libraries', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.import = '_test_b_';
-		input.nodes.a.values.push({
-			type: '_test_a_:one'
-		});
 		LIBRARIES['_test_a_'] = {
 			properties: {
 				'_test_a_:one': {
 					value: 1
 				}
+			},
+			root: {
+				'_test_a_:one': 3
 			}
 		};
 		LIBRARIES['_test_b_'] = {
@@ -1889,15 +1889,17 @@ engineering: 3`;
 				'_test_b_:two': {
 					value: 2,
 				}
+			},
+			root: {
+				'_test_b_:two': 4,
 			}
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'_test_a_:one': 1,
-			//Remember, only ones with an edge will set the non default value
-			'_test_b_:two': 0,
+			'_test_a_:one': 3,
+			'_test_b_:two': 4,
 			engineering: 3,
 			ux: 0,
 			data: 0

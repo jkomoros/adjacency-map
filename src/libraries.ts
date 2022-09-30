@@ -11,6 +11,9 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 				value: 3,
 				hide: true
 			}
+		},
+		root: {
+			'core:radius': 3
 		}
 	}
 };

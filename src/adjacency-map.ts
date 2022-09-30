@@ -75,15 +75,17 @@ const includeLibraries = (data : RawMapDefinition) : MapDefinition => {
 		importsToProcess.push(...(library.import || []));
 	}
 	let baseTypes : {[name : PropertyName] : EdgeDefinition} = {};
+	let baseRoot : NodeValues = {};
 	for (const library of Object.values(importsMap)) {
 		baseTypes = {...baseTypes, ...library.properties};
+		baseRoot = {...baseRoot, ...library.root};
 	}
 	const dataTypes = data.properties || {};
 	const dataRoot = data.root || {};
 	return {
 		...data,
 		processed: true,
-		root: {...dataRoot},
+		root: {...baseRoot, ...dataRoot},
 		properties: {...baseTypes, ...dataTypes}
 	};
 };

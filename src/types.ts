@@ -241,7 +241,10 @@ export type Library = {
     //Types names should be `${libraryName}:${typeName}`
     properties: {
         [type : PropertyName]: EdgeDefinition
-    }
+    },
+    //Typically a library will provide default values for all of the types it
+    //defines
+    root: NodeValues
 }
 
 export type RawMapDefinition = {
