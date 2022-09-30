@@ -245,7 +245,7 @@ export type Library = {
 export type RawMapDefinition = {
     version: number,
     //Imports lists libraries to base types on
-    import?: LibraryType[],
+    import?: LibraryType | LibraryType[],
     types?: {
         [type : EdgeType]: EdgeDefinition
     }

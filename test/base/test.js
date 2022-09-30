@@ -1843,7 +1843,7 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly handles libraries', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.import = ['_test_b_'];
+		input.import = '_test_b_';
 		input.nodes.a.values.push({
 			type: '_test_a_:one'
 		});

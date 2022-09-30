@@ -129,10 +129,17 @@
       "additionalProperties": false,
       "properties": {
         "import": {
-          "items": {
-            "$ref": "#/definitions/LibraryType"
-          },
-          "type": "array"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LibraryType"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/LibraryType"
+              },
+              "type": "array"
+            }
+          ]
         },
         "nodes": {
           "additionalProperties": {

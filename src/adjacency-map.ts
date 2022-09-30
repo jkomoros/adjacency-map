@@ -55,7 +55,15 @@ export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 };
 
 const includeLibraries = (data : RawMapDefinition) : MapDefinition => {
-	const importsToProcess = data.import || [];
+	let baseImports : LibraryType[] = [];
+	if (data.import) {
+		if (typeof data.import == 'string') {
+			baseImports = [data.import as LibraryType];
+		} else {
+			baseImports = data.import;
+		}
+	}
+	const importsToProcess = baseImports;
 	const importsMap : {[name in LibraryType]+?: Library} = {};
 	while (importsToProcess.length) {
 		const importName = importsToProcess.shift() as LibraryType;
