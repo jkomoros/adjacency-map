@@ -49,6 +49,8 @@ export type ValueDefinitionCombine = {
     child: ValueDefinition
 }
 
+export type ArithmeticOperator =  '+' | '*';
+
 //Takes two children, and adds or multiplies the left by the right and returns.
 //The return value will have the same lenght as the first child. The numbers
 //that will be multiplied are the same index; if the second argument is shorter
@@ -56,7 +58,7 @@ export type ValueDefinitionCombine = {
 //then only part of it is used. This behavior means that you can do a scalar
 //multiplication by having a single-termed second child.
 export type ValueDefinitionArithmetic = {
-    operator: '+' | '*',
+    operator:ArithmeticOperator,
     child: ValueDefinition,
     //TODO: rename this to whatever the second part of an arithmetic expression
     //is called.

@@ -12,12 +12,21 @@ import {
 	ValueDefinitionRefValue,
 	ValueDefinitionResultValue,
 	ValueDefintionEdgeConstant,
-	ValueDefinitionClip
+	ValueDefinitionClip,
+	ArithmeticOperator
 } from './types.js';
 
 export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 	'ref': true,
 	'type': true
+};
+
+
+type Operator = (one : number, two: number) => number;
+
+const OPERATORS : {[op in ArithmeticOperator] : Operator}  = {
+	'*': (one, two) => one * two,
+	'+': (one, two) => one + two
 };
 
 const valueDefintionIsEdgeConstant = (definition : ValueDefinition) : definition is ValueDefintionEdgeConstant => {
@@ -88,7 +97,7 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 	if (valueDefinitionIsArithmetic(definition)) {
 		validateValueDefinition(definition.child, edgeDefinition, exampleValue);
 		validateValueDefinition(definition.term, edgeDefinition, exampleValue);
-		if (!['+', '*'].some(operator => operator == definition.operator)) throw new Error('Unknown operator: ' + definition.operator);
+		if (!Object.keys(OPERATORS).some(operator => operator == definition.operator)) throw new Error('Unknown operator: ' + definition.operator);
 		return;
 	}
 
@@ -129,7 +138,8 @@ export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]
 	if (valueDefinitionIsArithmetic(definition)) {
 		const left = calculateValue(definition.child, edges, refs, partialResult);
 		const right = calculateValue(definition.term, edges, refs, partialResult);
-		const op = definition.operator == '*' ? (one : number, two : number) => one * two : (one : number, two : number) => one + two;
+		const op = OPERATORS[definition.operator];
+		if (!op) throw new Error('No such operator: ' + definition.operator);
 		//The result is the same length as left, but we loop over and repeat numbers in right if necessary.
 		return left.map((term, i) => op(term, right[i % right.length]));
 	}
