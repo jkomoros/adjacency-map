@@ -280,7 +280,7 @@ class AdjacencyMapNode {
 	}
 
 	get description() : string {
-		return this._data ? this._data.description : '';
+		return this._data ? this._data.description : 'Root node';
 	}
 
 	get edges() : ExpandedEdgeValue[] {
