@@ -63,7 +63,7 @@ const valueDefinitionIsArithmetic = (definition : ValueDefinition): definition i
 const valueDefinitionIsClip = (definition : ValueDefinition): definition is ValueDefinitionClip => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
-	return 'clip' in definition && ('low' in definition || 'high' in definition);
+	return 'clip' in definition;
 };
 
 export const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : EdgeDefinition, exampleValue : NodeValues) : void => {
