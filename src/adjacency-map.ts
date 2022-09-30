@@ -1,6 +1,6 @@
 import {
 	EdgeDefinition,
-	EdgeType,
+	PropertyName,
 	EdgeValue,
 	ExpandedEdgeValue,
 	LayoutInfo,
@@ -74,17 +74,17 @@ const includeLibraries = (data : RawMapDefinition) : MapDefinition => {
 		importsMap[importName]= library;
 		importsToProcess.push(...(library.import || []));
 	}
-	let baseTypes : {[name : EdgeType] : EdgeDefinition} = {};
+	let baseTypes : {[name : PropertyName] : EdgeDefinition} = {};
 	for (const library of Object.values(importsMap)) {
-		baseTypes = {...baseTypes, ...library.types};
+		baseTypes = {...baseTypes, ...library.properties};
 	}
-	const dataTypes = data.types || {};
+	const dataTypes = data.properties || {};
 	const dataRoot = data.root || {};
 	return {
 		...data,
 		processed: true,
 		root: {...dataRoot},
-		types: {...baseTypes, ...dataTypes}
+		properties: {...baseTypes, ...dataTypes}
 	};
 };
 
@@ -92,18 +92,18 @@ const validateData = (data : MapDefinition) : void => {
 	if (!data) throw new Error('No data provided');
 	if (!data.nodes) throw new Error('No nodes provided');
 	//It is allowed for root to be empty.
-	if (!data.types || Object.keys(data.types).length == 0) throw new Error('No edge types provided');
+	if (!data.properties || Object.keys(data.properties).length == 0) throw new Error('No properties provided');
 	for (const [nodeName, nodeData] of Object.entries(data.nodes)) {
 		if (nodeName == ROOT_ID) throw new Error('Nodes may not have the same id as root: "' + ROOT_ID + '"');
 		if (!nodeData.description) throw new Error(nodeName + ' has no description');
 		const nodeValues = nodeData.values || [];
 		for (const edge of nodeValues) {
 			if (!edge.type) throw new Error(nodeName + ' has an edge with no type');
-			if (!data.types[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
+			if (!data.properties[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
 		}
 	}
-	const exampleValues = Object.fromEntries(Object.keys(data.types).map(typeName => [typeName, 1.0]));
-	for(const [type, edgeDefinition] of Object.entries(data.types)) {
+	const exampleValues = Object.fromEntries(Object.keys(data.properties).map(typeName => [typeName, 1.0]));
+	for(const [type, edgeDefinition] of Object.entries(data.properties)) {
 		try {
 			validateValueDefinition(edgeDefinition.value, edgeDefinition, exampleValues);
 		} catch (err) {
@@ -119,7 +119,7 @@ const validateData = (data : MapDefinition) : void => {
 		}
 		if (edgeDefinition.dependencies) {
 			for (const dependency of edgeDefinition.dependencies) {
-				if (!data.types[dependency]) throw new Error(type + ' declared a dependency on ' + dependency + ' but that is not a valid type');
+				if (!data.properties[dependency]) throw new Error(type + ' declared a dependency on ' + dependency + ' but that is not a valid type');
 			}
 			const seenTypes = {[type]: true};
 			const definitionsToCheck = [edgeDefinition];
@@ -129,7 +129,7 @@ const validateData = (data : MapDefinition) : void => {
 				for (const dependencyToCheck of dependencies) {
 					if (seenTypes[dependencyToCheck]) throw new Error(type + ' declared a dependency whose sub-definitions contain a cycle or self-reference');
 					seenTypes[dependencyToCheck] = true;
-					definitionsToCheck.push(data.types[dependencyToCheck]);
+					definitionsToCheck.push(data.properties[dependencyToCheck]);
 				}
 			}
 		}
@@ -138,7 +138,7 @@ const validateData = (data : MapDefinition) : void => {
 		if (typeof data.root != 'object') throw new Error('root if provided must be an object');
 		for (const [rootName, rootValue] of Object.entries(data.root)) {
 			if (typeof rootValue != 'number') throw new Error('root property ' + rootName + ' is not a number as expected');
-			if (!data.types[rootName]) throw new Error('root property ' + rootName + ' is not defined in types');
+			if (!data.properties[rootName]) throw new Error('root property ' + rootName + ' is not defined in properties');
 		}
 	}
 	try {
@@ -155,7 +155,7 @@ export class AdjacencyMap {
 	_cachedChildren : {[id : NodeID] : NodeID[]};
 	_cachedEdges : ExpandedEdgeValue[];
 	_cachedRoot : NodeValues;
-	_cachedEdgeTypes : EdgeType[];
+	_cachedPropertyNames : PropertyName[];
 	_cachedLayoutInfo : LayoutInfo;
 
 	constructor(rawData : RawMapDefinition) {
@@ -183,14 +183,14 @@ export class AdjacencyMap {
 	//edges that take dependencyes on others, so if you iterate through them in
 	//that order then no edgeType that has a dependency on an earlier one will
 	//not have been calculated already.
-	get edgeTypes() : EdgeType[] {
-		if (!this._cachedEdgeTypes) {
-			const graph = Object.fromEntries(Object.entries(this._data.types).map(entry => [entry[0], entry[1].dependencies ? Object.fromEntries(entry[1].dependencies.map(edgeType => [edgeType, true])) : {}])) as SimpleGraph;
-			const result = topologicalSort(graph) as EdgeType[];
+	get propertyNames() : PropertyName[] {
+		if (!this._cachedPropertyNames) {
+			const graph = Object.fromEntries(Object.entries(this._data.properties).map(entry => [entry[0], entry[1].dependencies ? Object.fromEntries(entry[1].dependencies.map(edgeType => [edgeType, true])) : {}])) as SimpleGraph;
+			const result = topologicalSort(graph) as PropertyName[];
 			result.reverse();
-			this._cachedEdgeTypes = result;
+			this._cachedPropertyNames = result;
 		}
-		return this._cachedEdgeTypes;
+		return this._cachedPropertyNames;
 	}
 
 	get data() : MapDefinition {
@@ -203,7 +203,7 @@ export class AdjacencyMap {
 
 	get rootValues() : NodeValues {
 		if (!this._cachedRoot) {
-			const baseObject = Object.fromEntries(this.edgeTypes.map(typ => [typ, 0.0]));
+			const baseObject = Object.fromEntries(this.propertyNames.map(typ => [typ, 0.0]));
 			this._cachedRoot = {...baseObject, ...this._data.root};
 		}
 		return this._cachedRoot;
@@ -281,22 +281,22 @@ class AdjacencyMapNode {
 
 	_computeValues() : NodeValues {
 		const partialResult : NodeValues = {};
-		const edgeByType : {[type : EdgeType] : EdgeValue[]} = {};
+		const edgeByType : {[type : PropertyName] : EdgeValue[]} = {};
 		const values = this._data?.values || [];
 		for (const edge of values) {
 			if (!edgeByType[edge.type]) edgeByType[edge.type] = [];
 			edgeByType[edge.type].push(edge);
 		}
-		//Iterate through edges in edgeTypes order to make sure that any
+		//Iterate through edges in propertyNames order to make sure that any
 		//ValueDefinitionResultValue will have the values they already rely on
 		//calculated.
-		for (const type of this._map.edgeTypes) {
+		for (const type of this._map.propertyNames) {
 			//Fill in the partial result as we go so other things htat rely on
 			//our root value can have it.
 			partialResult[type] = this._map.rootValues[type];
 			const rawEdges = edgeByType[type];
 			if (!rawEdges) continue;
-			const typeDefinition = this._map.data.types[type];
+			const typeDefinition = this._map.data.properties[type];
 			const edgeValueDefinition = typeDefinition.value;
 			const constants = typeDefinition.constants || {};
 			const defaultedEdges = rawEdges.map(edge => ({...constants, ...edge}));

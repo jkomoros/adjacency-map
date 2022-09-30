@@ -5,7 +5,7 @@ import {
 
 export const LIBRARIES : {[type in LibraryType] : Library} = {
 	core: {
-		types: {
+		properties: {
 			'core:radius': {
 				description: 'The radius to use to render the node',
 				value: 3

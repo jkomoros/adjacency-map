@@ -22,7 +22,7 @@ export type Color = {
 export type Filename = string;
 
 //TODO: tigthen this
-export type EdgeType = string;
+export type PropertyName = string;
 
 export type ConstantType = string;
 
@@ -33,13 +33,13 @@ export type ValueDefintionEdgeConstant = {
 
 //Selects the value in the parents of this type
 export type ValueDefinitionRefValue = {
-    ref: EdgeType
+    ref: PropertyName
 }
 
 //Selects the value of other edges that go into our own result.
 export type ValueDefinitionResultValue = {
     //Property must be explicitly enumerated in our EdgeDefinition.dependencies.
-    result: EdgeType
+    result: PropertyName
 }
 
 //Takes the singular child definition and runs the reducer on it, returning an
@@ -167,10 +167,10 @@ export type NodeID = string;
 export type EdgeValue = {
     //Any of the exlicitly enumerated properties should be added to
     //RESERVED_VALUE_DEFINITION_PROPERTIES
-    type: EdgeType,
+    type: PropertyName,
     //If ref is not provided, it implicitly references the root node.
     ref? : NodeID,
-    [constant : ConstantType]: undefined | number | EdgeType | NodeID;
+    [constant : ConstantType]: undefined | number | PropertyName | NodeID;
 };
 
 export type ExpandedEdgeValue = EdgeValue & {
@@ -205,7 +205,7 @@ export type NodeDefinition = {
  * The final computed values of all of the values for a node.
  */
 export type NodeValues = {
-    [type : EdgeType]: number
+    [type : PropertyName]: number
 };
 
 export type Combiner = (nums: number[]) => [number];
@@ -226,7 +226,7 @@ export type EdgeDefinition = {
     //value can rely on. Note that they may not form a cycle. Only items
     //enumerated here may be used in this edge's ValueDefinition when it is of
     //type ValueDefintiionResultValue.
-    dependencies? : EdgeType[],
+    dependencies? : PropertyName[],
     constants?: {
         [constant : ConstantType]: number
     }
@@ -237,8 +237,8 @@ export type LibraryType = 'core';
 export type Library = {
     import?: LibraryType[],
     //Types names should be `${libraryName}:${typeName}`
-    types: {
-        [type : EdgeType]: EdgeDefinition
+    properties: {
+        [type : PropertyName]: EdgeDefinition
     }
 }
 
@@ -246,8 +246,8 @@ export type RawMapDefinition = {
     version: number,
     //Imports lists libraries to base types on
     import?: LibraryType | LibraryType[],
-    types?: {
-        [type : EdgeType]: EdgeDefinition
+    properties?: {
+        [type : PropertyName]: EdgeDefinition
     }
     root?: NodeValues;
     nodes: {

@@ -44,7 +44,7 @@
         },
         "dependencies": {
           "items": {
-            "$ref": "#/definitions/EdgeType"
+            "$ref": "#/definitions/PropertyName"
           },
           "type": "array"
         },
@@ -60,9 +60,6 @@
       ],
       "type": "object"
     },
-    "EdgeType": {
-      "type": "string"
-    },
     "EdgeValue": {
       "additionalProperties": {
         "anyOf": [
@@ -73,7 +70,7 @@
             "type": "number"
           },
           {
-            "$ref": "#/definitions/EdgeType"
+            "$ref": "#/definitions/PropertyName"
           },
           {
             "$ref": "#/definitions/NodeID"
@@ -85,7 +82,7 @@
           "$ref": "#/definitions/NodeID"
         },
         "type": {
-          "$ref": "#/definitions/EdgeType"
+          "$ref": "#/definitions/PropertyName"
         }
       },
       "required": [
@@ -125,6 +122,9 @@
       "description": "The final computed values of all of the values for a node.",
       "type": "object"
     },
+    "PropertyName": {
+      "type": "string"
+    },
     "RawMapDefinition": {
       "additionalProperties": false,
       "properties": {
@@ -147,14 +147,14 @@
           },
           "type": "object"
         },
-        "root": {
-          "$ref": "#/definitions/NodeValues"
-        },
-        "types": {
+        "properties": {
           "additionalProperties": {
             "$ref": "#/definitions/EdgeDefinition"
           },
           "type": "object"
+        },
+        "root": {
+          "$ref": "#/definitions/NodeValues"
         },
         "version": {
           "type": "number"
@@ -414,7 +414,7 @@
       "additionalProperties": false,
       "properties": {
         "ref": {
-          "$ref": "#/definitions/EdgeType"
+          "$ref": "#/definitions/PropertyName"
         }
       },
       "required": [
@@ -426,7 +426,7 @@
       "additionalProperties": false,
       "properties": {
         "result": {
-          "$ref": "#/definitions/EdgeType"
+          "$ref": "#/definitions/PropertyName"
         }
       },
       "required": [

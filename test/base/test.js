@@ -22,7 +22,7 @@ import assert from 'assert';
 
 const legalBaseInput = {
 	"version": 1,
-	"types": {
+	"properties": {
 		"engineering": {
 			"value": 3,
 			"constants": {
@@ -116,7 +116,7 @@ describe('AdjacencyMap validation', () => {
 	});
 
 	it('barfs on undefined types', async () => {
-		const input = Object.fromEntries(Object.entries(legalBaseInput).filter(entry => entry[0] != 'types'));
+		const input = Object.fromEntries(Object.entries(legalBaseInput).filter(entry => entry[0] != 'properties'));
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -128,8 +128,8 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('barfs on empty types', async () => {
-		const input = {...legalBaseInput, types: {}};
+	it('barfs on empty properties', async () => {
+		const input = {...legalBaseInput, properties: {}};
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -212,7 +212,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for an edge with an illegal value definition', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = 'invalid';
+		input.properties.engineering.value = 'invalid';
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -226,7 +226,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a type with a non-string description', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.ux.description = 5;
+		input.properties.ux.description = 5;
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -240,7 +240,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a type with a non-number constant', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.constants.weight = 'invalid';
+		input.properties.engineering.constants.weight = 'invalid';
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -280,7 +280,7 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('barfs for a root with a key not in types', async () => {
+	it('barfs for a root with a key not in properties', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.root.foo = 3;
 		const errorExpected = true;
@@ -324,7 +324,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for an edge with a value of edge with illegal property', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {constant: 'ref'};
+		input.properties.engineering.value = {constant: 'ref'};
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -338,7 +338,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for an edge with a value of edge with constant that doesn\'t exist for that type', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {constant: 'foo'};
+		input.properties.engineering.value = {constant: 'foo'};
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -352,7 +352,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows edge with a value of edge with constant that does exist for that type', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {constant: 'weight'};
+		input.properties.engineering.value = {constant: 'weight'};
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -366,7 +366,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for edge with invalid combiner', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'foo';
+		input.properties.engineering.combine = 'foo';
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -380,7 +380,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows edge with valid combiner', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'first';
+		input.properties.engineering.combine = 'first';
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -394,7 +394,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows value with array of numbers', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = [1,2,3];
+		input.properties.engineering.value = [1,2,3];
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -408,7 +408,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('Allows passing true directly as ValueDefinition', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = true;
+		input.properties.engineering.value = true;
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -422,7 +422,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('Allows passing false directly as ValueDefinition', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = false;
+		input.properties.engineering.value = false;
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -436,7 +436,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('Allows passing true and false in arrays as ValueDefinition', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = [true, false, 3.0];
+		input.properties.engineering.value = [true, false, 3.0];
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -450,7 +450,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for value with array containing a non-number', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = [1,2,'fail'];
+		input.properties.engineering.value = [1,2,'fail'];
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -464,7 +464,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for value with array of zero length', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = [];
+		input.properties.engineering.value = [];
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -478,7 +478,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for TypeRef with non existing property', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {ref: 'foo'};
+		input.properties.engineering.value = {ref: 'foo'};
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -492,7 +492,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows TypeRef with existing property', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {ref: 'engineering'};
+		input.properties.engineering.value = {ref: 'engineering'};
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -506,7 +506,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for dependency on a non-existent edge', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.dependencies = ['foo'];
+		input.properties.engineering.dependencies = ['foo'];
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -520,7 +520,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for dependency on self', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.dependencies = ['engineering'];
+		input.properties.engineering.dependencies = ['engineering'];
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -534,8 +534,8 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a dependency on a thing that depends directly on us', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.dependencies = ['ux'];
-		input.types.ux.dependencies = ['engineering'];
+		input.properties.engineering.dependencies = ['ux'];
+		input.properties.ux.dependencies = ['engineering'];
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -549,9 +549,9 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a dependency on a thing that indirectly directly on us', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.dependencies = ['ux'];
-		input.types.ux.dependencies = ['data'];
-		input.types.data.dependencies = ['engineering'];
+		input.properties.engineering.dependencies = ['ux'];
+		input.properties.ux.dependencies = ['data'];
+		input.properties.data.dependencies = ['engineering'];
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -565,7 +565,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows a dependency on another', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.dependencies = ['ux'];
+		input.properties.engineering.dependencies = ['ux'];
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -579,8 +579,8 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows a dependency on another that has a dependency', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.dependencies = ['ux'];
-		input.types.ux.dependencies = ['data'];
+		input.properties.engineering.dependencies = ['ux'];
+		input.properties.ux.dependencies = ['data'];
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -595,8 +595,8 @@ describe('AdjacencyMap validation', () => {
 	it('allows a value defintion of type ResultValue that lists the dependency', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.root = {data: 12};
-		input.types.engineering.dependencies = ['data'];
-		input.types.engineering.value = {result: 'data'};
+		input.properties.engineering.dependencies = ['data'];
+		input.properties.engineering.value = {result: 'data'};
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -611,7 +611,7 @@ describe('AdjacencyMap validation', () => {
 	it('barfs on a value defintion of type ResultValue that does not list the dependency', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.root = {data: 12};
-		input.types.engineering.value = {result: 'data'};
+		input.properties.engineering.value = {result: 'data'};
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -625,7 +625,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs on a value defintion of type combiner that has 0 children', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			combine: 'mean'
 		};
 		const errorExpected = true;
@@ -641,7 +641,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs on a value defintion of type combiner that an invalid combiner', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			combine: 'foo',
 			child: [1]
 		};
@@ -658,7 +658,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs on a value defintion that includes a result ref without declared dependency', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			combine: 'min',
 			child: { result: 'ux' }
 		};
@@ -675,7 +675,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('Allows a valid value defintion of type combiner', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			combine: 'min',
 			child: [3,4,5]
 		};
@@ -692,7 +692,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a value defintion of type arithmetic with invalid operator', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			operator: '&',
 			child: [3, 4, 5],
 			term: [1]
@@ -710,7 +710,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a value defintion of type arithmetic missing term', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			operator: '+',
 			child: [3, 4, 5],
 		};
@@ -727,7 +727,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a value defintion of type arithmetic missing child', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			operator: '+',
 			term: [1]
 		};
@@ -744,7 +744,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('Allows a valid value defintion of type arithmetic', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			operator: '+',
 			child: [3,4,5],
 			term: [1]
@@ -762,7 +762,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('Allows a valid value defintion of type arithmetic unary missing term', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			operator: '!',
 			child: [3,4,5]
 		};
@@ -779,7 +779,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a value defintion of type compare missing term', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			compare: '<=',
 			child: [3, 4, 5]
 		};
@@ -796,7 +796,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a value defintion of type compare missing child', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			compare: '<=',
 			term: [4]
 		};
@@ -813,7 +813,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a value defintion of type compare with invalid operator', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			compare: '===',
 			child: [3, 4, 5],
 			term: [4]
@@ -831,7 +831,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('Allows a valid value defintion of type compare', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			compare: '<=',
 			child: [3,4,5],
 			term: [4]
@@ -849,7 +849,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for defintion of type if missing then', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			if: [0, 1, 0],
 			else: [5]
 		};
@@ -866,7 +866,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for defintion of type if missing else', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			if: [0, 1, 0],
 			then: [5]
 		};
@@ -883,7 +883,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('Allows a valid value defintion of type if', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			if: [0, 1, 0],
 			then: [3, 4],
 			else: [5]
@@ -901,7 +901,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a value defintion of type clip missing input', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			low: 3,
 			high: 10
 		};
@@ -918,7 +918,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a value defintion of type clip with niether low nor high', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			clip: [-10, 3, 100]
 		};
 		const errorExpected = true;
@@ -934,7 +934,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows a value defintion of type clip with only low', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			clip: [-10, 3, 100],
 			low: 0
 		};
@@ -951,7 +951,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows a value defintion of type clip with only high', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			clip: [-10, 3, 100],
 			high: 50
 		};
@@ -968,7 +968,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows a value defintion of type clip with low and high', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			clip: [-10, 3, 100],
 			low: 0,
 			high: 50
@@ -986,7 +986,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a value defintion of type clip with no high', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			range: [-10, 3, 100],
 			low: 3
 		};
@@ -1003,7 +1003,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a value defintion of type clip with no low', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			range: [-10, 3, 100],
 			high: 50
 		};
@@ -1020,7 +1020,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows a value defintion of type range with low and high', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			range: [-10, 3, 100],
 			low: 0,
 			high: 50
@@ -1038,7 +1038,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a value defintion of type percent with no high', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			percent: [-10, 3, 100],
 			low: 50
 		};
@@ -1055,7 +1055,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a value defintion of type percent with no low', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			percent: [-10, 3, 100],
 			high: 50
 		};
@@ -1072,7 +1072,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows a value defintion of type percent with low and high', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			percent: [-10, 3, 100],
 			low: 0,
 			high: 50
@@ -1091,7 +1091,7 @@ describe('AdjacencyMap validation', () => {
 });
 
 describe('AdjacencyMap root', () => {
-	it('includes missing types from root', async () => {
+	it('includes missing properties from root', async () => {
 		const input = deepCopy(legalBaseInput);
 		const errorExpected = false;
 		const fn = () => {
@@ -1221,7 +1221,7 @@ describe('AdjacencyMap node', () => {
 
 	it('allows a named node with edge constant value', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {constant: 'weight'};
+		input.properties.engineering.value = {constant: 'weight'};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -1235,8 +1235,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly handles literal booleans', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = [true, false, 3.0];
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = [true, false, 3.0];
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -1251,8 +1251,8 @@ describe('AdjacencyMap node', () => {
 	it('allows a named node with non-default combiner', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
-		input.types.engineering.value = {constant: 'weight'};
-		input.types.engineering.combine = 'first';
+		input.properties.engineering.value = {constant: 'weight'};
+		input.properties.engineering.combine = 'first';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -1266,8 +1266,8 @@ describe('AdjacencyMap node', () => {
 
 	it('allows a named node with array of items', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = [8,9];
-		input.types.engineering.combine = 'first';
+		input.properties.engineering.value = [8,9];
+		input.properties.engineering.combine = 'first';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -1281,7 +1281,7 @@ describe('AdjacencyMap node', () => {
 
 	it('allows a named node with a RefValue', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {ref:'engineering'};
+		input.properties.engineering.value = {ref:'engineering'};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -1296,8 +1296,8 @@ describe('AdjacencyMap node', () => {
 	it('allows a named node with last combiner', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
-		input.types.engineering.value = [1,2,10];
-		input.types.engineering.combine = 'last';
+		input.properties.engineering.value = [1,2,10];
+		input.properties.engineering.combine = 'last';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -1312,8 +1312,8 @@ describe('AdjacencyMap node', () => {
 	it('allows a named node with min combiner', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
-		input.types.engineering.value = [1,-3,10];
-		input.types.engineering.combine = 'min';
+		input.properties.engineering.value = [1,-3,10];
+		input.properties.engineering.combine = 'min';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -1328,8 +1328,8 @@ describe('AdjacencyMap node', () => {
 	it('allows a named node with max combiner', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
-		input.types.engineering.value = [1,-3,10, 2];
-		input.types.engineering.combine = 'max';
+		input.properties.engineering.value = [1,-3,10, 2];
+		input.properties.engineering.combine = 'max';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -1344,8 +1344,8 @@ describe('AdjacencyMap node', () => {
 	it('allows a named node with sum combiner', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
-		input.types.engineering.value = [1.5,-3,10, 2];
-		input.types.engineering.combine = 'sum';
+		input.properties.engineering.value = [1.5,-3,10, 2];
+		input.properties.engineering.combine = 'sum';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -1360,8 +1360,8 @@ describe('AdjacencyMap node', () => {
 	it('allows a named node with product combiner', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
-		input.types.engineering.value = [1.5,-3,10, 2];
-		input.types.engineering.combine = 'product';
+		input.properties.engineering.value = [1.5,-3,10, 2];
+		input.properties.engineering.combine = 'product';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -1376,8 +1376,8 @@ describe('AdjacencyMap node', () => {
 	it('allows a named node with and combiner all true', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
-		input.types.engineering.value = [2.0, 1.0];
-		input.types.engineering.combine = 'and';
+		input.properties.engineering.value = [2.0, 1.0];
+		input.properties.engineering.combine = 'and';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -1392,8 +1392,8 @@ describe('AdjacencyMap node', () => {
 	it('allows a named node with and combiner some true', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
-		input.types.engineering.value = [2.0, 1.0, 0.0];
-		input.types.engineering.combine = 'and';
+		input.properties.engineering.value = [2.0, 1.0, 0.0];
+		input.properties.engineering.combine = 'and';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -1408,8 +1408,8 @@ describe('AdjacencyMap node', () => {
 	it('allows a named node with or combiner some true', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
-		input.types.engineering.value = [0.0, 1.0];
-		input.types.engineering.combine = 'or';
+		input.properties.engineering.value = [0.0, 1.0];
+		input.properties.engineering.combine = 'or';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -1424,8 +1424,8 @@ describe('AdjacencyMap node', () => {
 	it('allows a named node with or combiner none true', async () => {
 		const input = deepCopy(legalBaseInput);
 		//Give it a more interesting value.
-		input.types.engineering.value = [0.0, 0.0];
-		input.types.engineering.combine = 'or';
+		input.properties.engineering.value = [0.0, 0.0];
+		input.properties.engineering.combine = 'or';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -1437,22 +1437,22 @@ describe('AdjacencyMap node', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
-	it('Correctly sorts edge types', async () => {
+	it('Correctly sorts propertyNames', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.data.dependencies = ['engineering'];
-		input.types.engineering.dependencies = ['ux'];
+		input.properties.data.dependencies = ['engineering'];
+		input.properties.engineering.dependencies = ['ux'];
 		const map = new AdjacencyMap(input);
-		const actual = map.edgeTypes;
+		const actual = map.propertyNames;
 		const golden = ['ux', 'engineering', 'data'];
 		assert.deepStrictEqual(actual, golden);
 	});
 
 	it('Tests a ResultValue ref calculation', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.data.dependencies = ['engineering'];
-		input.types.data.value = {result: 'engineering'};
-		input.types.engineering.dependencies = ['ux'];
-		input.types.engineering.value = {result: 'ux'};
+		input.properties.data.dependencies = ['engineering'];
+		input.properties.data.value = {result: 'engineering'};
+		input.properties.engineering.dependencies = ['ux'];
+		input.properties.engineering.value = {result: 'ux'};
 		input.root = {'ux': 12};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -1468,10 +1468,10 @@ describe('AdjacencyMap node', () => {
 
 	it('Tests a ResultValue ref calculation with two edges', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.data.dependencies = ['engineering'];
-		input.types.data.value = {result: 'engineering'};
-		input.types.engineering.dependencies = ['ux'];
-		input.types.engineering.value = {result: 'ux'};
+		input.properties.data.dependencies = ['engineering'];
+		input.properties.data.value = {result: 'engineering'};
+		input.properties.engineering.dependencies = ['ux'];
+		input.properties.engineering.value = {result: 'ux'};
 		input.nodes.a.values.push({type: 'data'});
 		input.root = {'ux': 12};
 		const map = new AdjacencyMap(input);
@@ -1487,7 +1487,7 @@ describe('AdjacencyMap node', () => {
 
 	it('Tests a ResultValue ref calculation with a combine type', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.value = {
+		input.properties.engineering.value = {
 			combine: 'min',
 			child: [1, 4, 5]
 		};
@@ -1504,8 +1504,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates an arithmetic add type', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			operator: '+',
 			child: [0, 1, 2],
 			term: [0, 1]
@@ -1523,8 +1523,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates an arithmetic subtract type', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			operator: '-',
 			child: [0, 1, 2],
 			term: [0, 1]
@@ -1542,8 +1542,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates an arithmetic divide type', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			operator: '/',
 			child: [0, 2, 6],
 			term: [2, 4]
@@ -1561,8 +1561,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates an arithmetic and type', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			operator: '&&',
 			child: [0, 2, 6],
 			term: [2, 0]
@@ -1580,8 +1580,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates an arithmetic or type', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			operator: '||',
 			child: [0, 2, 0, 0],
 			term: [2, 0]
@@ -1599,8 +1599,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates an arithmetic not type', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			operator: '!',
 			child: [0, 2, 0, 0],
 		};
@@ -1617,8 +1617,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates an compare type ==', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			compare: '==',
 			child: [3, 4, 5],
 			term: [4]
@@ -1636,8 +1636,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates an compare type !=', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			compare: '!=',
 			child: [3, 4, 5],
 			term: [4]
@@ -1655,8 +1655,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates an compare type <', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			compare: '<',
 			child: [3, 4, 5],
 			term: [4]
@@ -1674,8 +1674,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates an compare type >', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			compare: '>',
 			child: [3, 4, 5],
 			term: [4]
@@ -1693,8 +1693,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates an compare type <=', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			compare: '<=',
 			child: [3, 4, 5],
 			term: [4]
@@ -1712,8 +1712,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates an compare type >=', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			compare: '>=',
 			child: [3, 4, 5],
 			term: [4]
@@ -1731,8 +1731,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates an if', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			if: [0, 2, 0],
 			then: [3, 4],
 			else: [7]
@@ -1750,8 +1750,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates a clip with only low', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			clip: [-10, 3, 100],
 			low: 0,
 		};
@@ -1768,8 +1768,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates a clip with only high', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			clip: [-10, 3, 100],
 			high: 50,
 		};
@@ -1786,8 +1786,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates a clip with both low and high', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			clip: [-10, 3, 100],
 			low: 0,
 			high: 50,
@@ -1805,8 +1805,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates a range with both low and high', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			range: [-10, 3, 100],
 			low: 0,
 			high: 50,
@@ -1824,8 +1824,8 @@ describe('AdjacencyMap node', () => {
 
 	it('Correctly calculates a percent with both low and high', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.types.engineering.combine = 'sum';
-		input.types.engineering.value = {
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
 			percent: [-0.5, 0.06, 1.1],
 			low: 5,
 			high: 50,
@@ -1848,7 +1848,7 @@ describe('AdjacencyMap node', () => {
 			type: '_test_a_:one'
 		});
 		LIBRARIES['_test_a_'] = {
-			types: {
+			properties: {
 				'_test_a_:one': {
 					value: 1
 				}
@@ -1856,7 +1856,7 @@ describe('AdjacencyMap node', () => {
 		};
 		LIBRARIES['_test_b_'] = {
 			import: ['_test_a_'],
-			types: {
+			properties: {
 				'_test_b_:two': {
 					value: 2,
 				}
