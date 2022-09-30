@@ -1867,6 +1867,7 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			'_test_a_:one': 1,
+			//Remember, only ones with an edge will set the non default value
 			'_test_b_:two': 0,
 			engineering: 3,
 			ux: 0,
