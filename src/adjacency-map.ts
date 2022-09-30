@@ -436,4 +436,8 @@ class AdjacencyMapNode {
 		if (!pos) throw new Error(this.id + ' didn\'t exist in parent');
 		return pos.y;
 	}
+
+	get radius() : number {
+		return 3;
+	}
 }
