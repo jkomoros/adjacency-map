@@ -49,7 +49,6 @@ export const TreeLayout = (data : TreeGraph) : LayoutInfo => {
 		width,
 		height,
 		viewBox,
-		positions,
-		d3Tree: positionedRoot
+		positions
 	};
 };
