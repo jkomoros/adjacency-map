@@ -138,9 +138,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 		const sourceNode = map.node(edge.source);
 		const refNode = map.node(edge.ref);
-		const midPoint = (refNode.y + sourceNode.y) / 2;
+		const midPoint = (refNode.x + sourceNode.x) / 2;
 		
-		const result = `M ${refNode.y},${refNode.x}C${midPoint},${refNode.x},${midPoint},${sourceNode.x},${sourceNode.y},${sourceNode.x}`;
+		const result = `M ${refNode.x},${refNode.y}C${midPoint},${refNode.y},${midPoint},${sourceNode.y},${sourceNode.x},${sourceNode.y}`;
 		return result;
 	}
 
@@ -174,7 +174,7 @@ class MainView extends connect(store)(PageViewElement) {
 				${a.edges.map(edge => svg`<path d="${this._pathForEdge(edge, a)}"></path>`)}
 			</g>
 			<g>
-				${Object.values(a.nodes).map(node => svg`<a transform="translate(${node.y},${node.x})">
+				${Object.values(a.nodes).map(node => svg`<a transform="translate(${node.x},${node.y})">
 					<circle fill="${node.children.length == 0 ? fill : stroke}" r="${r}"></circle>
 					<title>${node.description + '\n\n' + Object.entries(node.values).map(entry => entry[0] + ': ' + entry[1]).join('\n')}</title>
 					<text dy="0.32em" x="${(node.children.length == 0 ? 1 : -1) * r * 2}" text-anchor="${node.children.length == 0 ? 'start' : 'end'}" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}">${node.id}</text>
