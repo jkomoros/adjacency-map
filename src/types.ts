@@ -216,6 +216,8 @@ export type CombinerType = 'mean' | 'first' | 'last' | 'min' | 'max' | 'sum' | '
 export type EdgeDefinition = {
     value: ValueDefinition,
     description?: string,
+    //A message for how to use this property. Useful for libraries.
+    usage?: string,
     //The intermediate values for ValueDefinition are all arrays of numbers, but
     //at the end they have to be reduced to a single number. A reducer is a
     //ValueDefinition that takes an array of numbers and provides an array with
