@@ -2,6 +2,15 @@
   "$ref": "#/definitions/MapDefinition",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
+    "ArithmeticOperator": {
+      "enum": [
+        "+",
+        "*",
+        "-",
+        "/"
+      ],
+      "type": "string"
+    },
     "CombinerType": {
       "enum": [
         "mean",
@@ -162,6 +171,15 @@
         },
         {
           "$ref": "#/definitions/ValueDefinitionArithmetic"
+        },
+        {
+          "$ref": "#/definitions/ValueDefinitionClip"
+        },
+        {
+          "$ref": "#/definitions/ValueDefinitionRange"
+        },
+        {
+          "$ref": "#/definitions/ValueDefinitionPercent"
         }
       ]
     },
@@ -172,11 +190,7 @@
           "$ref": "#/definitions/ValueDefinition"
         },
         "operator": {
-          "enum": [
-            "+",
-            "*"
-          ],
-          "type": "string"
+          "$ref": "#/definitions/ArithmeticOperator"
         },
         "term": {
           "$ref": "#/definitions/ValueDefinition"
@@ -188,6 +202,48 @@
         "term"
       ],
       "type": "object"
+    },
+    "ValueDefinitionClip": {
+      "anyOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "clip": {
+              "$ref": "#/definitions/ValueDefinition"
+            },
+            "high": {
+              "$ref": "#/definitions/ValueDefinition"
+            },
+            "low": {
+              "$ref": "#/definitions/ValueDefinition"
+            }
+          },
+          "required": [
+            "clip",
+            "low"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "clip": {
+              "$ref": "#/definitions/ValueDefinition"
+            },
+            "high": {
+              "$ref": "#/definitions/ValueDefinition"
+            },
+            "low": {
+              "$ref": "#/definitions/ValueDefinition"
+            }
+          },
+          "required": [
+            "clip",
+            "high"
+          ],
+          "type": "object"
+        }
+      ]
     },
     "ValueDefinitionCombine": {
       "additionalProperties": false,
@@ -202,6 +258,46 @@
       "required": [
         "combine",
         "child"
+      ],
+      "type": "object"
+    },
+    "ValueDefinitionPercent": {
+      "additionalProperties": false,
+      "properties": {
+        "high": {
+          "$ref": "#/definitions/ValueDefinition"
+        },
+        "low": {
+          "$ref": "#/definitions/ValueDefinition"
+        },
+        "percent": {
+          "$ref": "#/definitions/ValueDefinition"
+        }
+      },
+      "required": [
+        "percent",
+        "low",
+        "high"
+      ],
+      "type": "object"
+    },
+    "ValueDefinitionRange": {
+      "additionalProperties": false,
+      "properties": {
+        "high": {
+          "$ref": "#/definitions/ValueDefinition"
+        },
+        "low": {
+          "$ref": "#/definitions/ValueDefinition"
+        },
+        "range": {
+          "$ref": "#/definitions/ValueDefinition"
+        }
+      },
+      "required": [
+        "range",
+        "low",
+        "high"
       ],
       "type": "object"
     },
