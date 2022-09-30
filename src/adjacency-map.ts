@@ -9,8 +9,6 @@ import {
 	NodeID,
 	NodeValues,
 	SimpleGraph,
-	TreeGraph,
-	TreeGraphWithDetails,
 	ValueDefinition,
 	ValueDefinitionArithmetic,
 	ValueDefinitionCombine,
@@ -219,17 +217,6 @@ const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs 
 	return _exhaustiveCheck;
 };
 
-const treeGraphWithDetails = (graph : TreeGraph, map : AdjacencyMap) : TreeGraphWithDetails => {
-	const node = map.node(graph.name);
-	const result : TreeGraphWithDetails = {
-		name: graph.name,
-		description: node.description,
-		values: node.values
-	};
-	if (graph.children) result.children = graph.children.map(child => treeGraphWithDetails(child, map));
-	return result;
-};
-
 export class AdjacencyMap {
 	
 	_data : MapDefinition;
@@ -314,18 +301,12 @@ export class AdjacencyMap {
 		return this._cachedEdges;
 	}
 
-	treeGraph() : TreeGraphWithDetails {
-		//TODO:SVG remove
-		//TODO: cache
+	_ensureLayoutInfo() {
+		if (this._cachedLayoutInfo) return;
 		const simpleGraph = extractSimpleGraph(this._data);
 		const longestTree = tidyLongestTree(simpleGraph);
 		const treeGraph = treeGraphFromParentGraph(longestTree);
-		return treeGraphWithDetails(treeGraph, this);
-	}
-
-	_ensureLayoutInfo() {
-		if (this._cachedLayoutInfo) return;
-		this._cachedLayoutInfo = TreeLayout(this.treeGraph());
+		this._cachedLayoutInfo = TreeLayout(treeGraph);
 	}
 
 	get width() : number {

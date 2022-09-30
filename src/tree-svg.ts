@@ -3,12 +3,12 @@ import * as d3 from 'd3';
 import {
 	NodeID,
 	LayoutInfo,
-	TreeGraphWithDetails
+	TreeGraph
 } from './types.js';
 
 //Heavily adapted from https://observablehq.com/@d3/tree
 
-export const TreeLayout = (data : TreeGraphWithDetails) : LayoutInfo => {
+export const TreeLayout = (data : TreeGraph) : LayoutInfo => {
 
 	// horizontal padding for first and last column
 	const padding = 1;
@@ -23,7 +23,7 @@ export const TreeLayout = (data : TreeGraphWithDetails) : LayoutInfo => {
 
 	//Note that d3.tree() lays out from top to bottom so we rotate 90.
 
-	const positionedRoot = d3.tree().nodeSize([dx, dy])(root) as d3.HierarchyPointNode<TreeGraphWithDetails>;
+	const positionedRoot = d3.tree().nodeSize([dx, dy])(root) as d3.HierarchyPointNode<TreeGraph>;
   
 	const positions : {[id : NodeID] : {x: number, y: number}} = {};
 

@@ -112,13 +112,6 @@ export type TreeGraph = {
     children? : TreeGraph[];
 }
 
-export type TreeGraphWithDetails = {
-    name: NodeID;
-    description: string;
-    values: NodeValues;
-    children? : TreeGraphWithDetails[];
-}
-
 export type NodeDefinition = {
     description: string,
     values?: EdgeValue[]
