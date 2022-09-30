@@ -1,6 +1,7 @@
 import {
 	Color,
 	CSSColor,
+	PackedColor,
 	RGBAColor,
 	RGBColor
 } from './types.js';
@@ -155,6 +156,23 @@ const NAMED_COLORS : {[namedColor : CSSColor] : CSSColor} = {
 	"whitesmoke": "#f5f5f5",
 	"yellow": "#ffff00",
 	"yellowgreen": "#9acd32"
+};
+
+export const packColor = (c : Color): PackedColor => {
+	//Based on https://stackoverflow.com/a/4801397
+	let packed = c.r;
+	packed = (packed << 8) + c.g;
+	packed = (packed << 8) + c.b;
+	packed = (packed << 8) + (c.a * 255);
+	return packed;
+};
+
+export const unpackColor = (packedColor: PackedColor): Color => {
+	const r = (packedColor >> 24) & 0xFF;
+	const g = (packedColor >> 16) & 0xFF;
+	const b = (packedColor >> 8) & 0xFF;
+	const a = (packedColor & 0xFF) / 255;
+	return color([r, g, b, a]);
 };
 
 export const gradient = (one : CSSColor | Color, two : CSSColor | Color, percentage : number) : CSSColor => {

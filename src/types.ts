@@ -4,6 +4,10 @@ export type RandomGenerator = () => number;
 //RGBA(), and named colors all work.
 export type CSSColor = string;
 
+//Packed colors are just a color that has been packed into an integer via
+//color.packColor. It can be unpacked to a Color via unpackColor.
+export type PackedColor = number;
+
 export type RGBColor = [r : number, g : number, b : number];
 export type RGBAColor = [r : number, g : number, b : number, a : number];
 

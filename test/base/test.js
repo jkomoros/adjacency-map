@@ -15,6 +15,12 @@ import {
 } from '../../src/libraries.js';
 
 import {
+	color,
+	packColor,
+	unpackColor
+} from '../../src/color.js';
+
+import {
 	deepCopy
 } from '../../src/util.js';
 
@@ -2029,6 +2035,26 @@ describe('tidyLongestTree', () => {
 			]
 		};
 		assert.deepStrictEqual(actualTree, goldenTree);
+	});
+
+});
+
+describe('packColor', () => {
+	it('roundtrip', async () => {
+		const input = ['blue', '#FF00FF33', '#FF00FF', 'rgb(32,28,28)', 'rgba(32, 28, 28, 0.1)'];
+		for (const test of input) {
+			const golden = color(test);
+			const actual = unpackColor(packColor(golden));
+			assert.deepStrictEqual(actual, golden, input);
+		}
+	});
+
+	it('overflow clips', async() => {
+		//Very large number
+		const input = 0xFFFFFFFFFF;
+		const actual = unpackColor(input);
+		const golden = color([255, 255, 255, 1]);
+		assert.deepStrictEqual(actual, golden);
 	});
 
 });
