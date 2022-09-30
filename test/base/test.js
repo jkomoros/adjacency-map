@@ -401,6 +401,48 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('Allows passing true directly as ValueDefinition', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = true;
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows passing false directly as ValueDefinition', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = false;
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows passing true and false in arrays as ValueDefinition', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = [true, false, 3.0];
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('barfs for value with array containing a non-number', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.value = [1,2,'fail'];
@@ -1180,6 +1222,21 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 2.5,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly handles literal booleans', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.combine = 'sum';
+		input.types.engineering.value = [true, false, 3.0];
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 4.0,
 			ux: 0,
 			data: 0
 		};

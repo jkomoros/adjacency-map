@@ -133,8 +133,12 @@ export type ValueDefinitionPercent = {
     high: ValueDefinition
 }
 
-export type ValueDefinition = number |
-    number[] |
+//The actual values are all numbers, but for convenience raw inputs can also
+//literally be true or false, which are expanded to DEFAULT_TRUE_NUMBER and FALSE_NUMBER.
+export type ValueDefinitionLeaf = number | boolean;
+
+export type ValueDefinition = ValueDefinitionLeaf |
+    ValueDefinitionLeaf[] |
     ValueDefintionEdgeConstant |
     ValueDefinitionRefValue |
     ValueDefinitionResultValue |

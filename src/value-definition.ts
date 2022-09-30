@@ -125,9 +125,10 @@ const valueDefinitionIsPercent = (definition : ValueDefinition): definition is V
 };
 
 export const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : EdgeDefinition, exampleValue : NodeValues) : void => {
+	if (typeof definition == 'boolean') return;
 	if (typeof definition == 'number') return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {
-		if (definition.some(item => typeof item != 'number')) throw new Error('An array was provided but some items were not numbers');
+		if (definition.some(item => typeof item != 'number' && typeof item != 'boolean')) throw new Error('An array was provided but some items were not numbers or booleans');
 		if (definition.length == 0) throw new Error('If an array of numbers is provided there must be at least one');
 		return;
 	}
@@ -204,9 +205,11 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 //TODO: is there a way to make it clear this must return an array with at least
 //one number?
 export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs : NodeValues[], partialResult : NodeValues) : number[] => {
+	if (typeof definition == 'boolean') return [definition ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER];
+	
 	if (typeof definition == 'number') return [definition];
 
-	if (Array.isArray(definition)) return definition;
+	if (Array.isArray(definition)) return definition.map(input => typeof input == 'boolean' ? (input ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER): input);
 
 	if (valueDefintionIsEdgeConstant(definition)) {
 		return edges.map(edge => edge[definition.constant] as number);
