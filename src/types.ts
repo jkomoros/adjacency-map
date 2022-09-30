@@ -239,6 +239,7 @@ export type EdgeDefinition = {
 export type LibraryType = 'core';
 
 export type Library = {
+    //Libraries can import other libraries
     import?: LibraryType[],
     //Types names should be `${libraryName}:${typeName}`
     properties: {

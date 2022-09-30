@@ -10,7 +10,19 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 		properties: {
 			'core:radius': {
 				description: 'The radius to use to render the node',
-				value: 3,
+				usage: "If you want to set the default radius, set root.core:radius If you want to override just one node's radius, add an edge of type 'core:radius' with a constant of radius of the value you want.",
+				value: {
+					if: {
+						compare: '<',
+						child: {constant: 'radius'},
+						term: 0
+					},
+					then: {ref: 'core:radius'},
+					else: {constant: 'radius'}
+				},
+				constants: {
+					'radius': -1
+				},
 				hide: true
 			}
 		},
