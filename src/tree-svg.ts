@@ -11,19 +11,17 @@ import {
 export const TreeLayout = (data : TreeGraph) : LayoutInfo => {
 
 	// horizontal padding for first and last column
-	const padding = 1;
+	//const padding = 1;
 
 	const root = d3.hierarchy(data);
   
+	//Remember, these are transposed
 	const width = 640;
-
-	// Compute the layout.
-	const dx = 10;
-	const dy = width / (root.height + padding);
+	const height = 480;
 
 	//Note that d3.tree() lays out from top to bottom so we rotate 90.
 
-	const positionedRoot = d3.tree().nodeSize([dx, dy])(root) as d3.HierarchyPointNode<TreeGraph>;
+	const positionedRoot = d3.tree().size([width, height])(root) as d3.HierarchyPointNode<TreeGraph>;
   
 	const positions : {[id : NodeID] : {x: number, y: number}} = {};
 
@@ -40,10 +38,7 @@ export const TreeLayout = (data : TreeGraph) : LayoutInfo => {
 		};
 	});
   
-	// Compute the default height.
-	const height = x1 - x0 + dx * 2;
-
-	const viewBox = [-dy * padding / 2, x0 - dx, width, height] as [number, number, number, number];
+	const viewBox = [0, 0, height, width] as [number, number, number, number];
 
 	return {
 		width,
