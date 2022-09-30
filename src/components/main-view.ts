@@ -177,7 +177,7 @@ class MainView extends connect(store)(PageViewElement) {
 				${Object.values(a.nodes).map(node => svg`<a transform="translate(${node.y},${node.x})">
 					<circle fill="${node.children.length == 0 ? fill : stroke}" r="${r}"></circle>
 					<title>${node.description + '\n\n' + Object.entries(node.values).map(entry => entry[0] + ': ' + entry[1]).join('\n')}</title>
-					<text dy="0.32em" x="${node.children.length == 0 ? 6 : -6}" text-anchor="${node.children.length == 0 ? 'start' : 'end'}" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}">${node.id}</text>
+					<text dy="0.32em" x="${(node.children.length == 0 ? 1 : -1) * r * 2}" text-anchor="${node.children.length == 0 ? 'start' : 'end'}" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}">${node.id}</text>
 				</a>`)}
 			</g>
 	</svg>`;
