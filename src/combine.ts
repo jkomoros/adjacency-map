@@ -3,6 +3,12 @@ import {
 	Combiner
 } from './types.js';
 
+import {
+	DEFAULT_TRUE_NUMBER,
+	FALSE_NUMBER,
+	isTrue
+} from './constants.js';
+
 export const mean = (nums : number[]) : [number] => {
 	if (!nums.length) return [0];
 	let sum = 0;
@@ -46,6 +52,16 @@ export const product = (nums : number[]): [number] => {
 	return [result];
 };
 
+export const and = (nums : number[]): [number] => {
+	if (!nums.length) return [0];
+	return nums.every(num => isTrue(num)) ? [DEFAULT_TRUE_NUMBER] : [FALSE_NUMBER];
+};
+
+export const or = (nums : number[]): [number] => {
+	if (!nums.length) return [0];
+	return nums.some(num => isTrue(num)) ? [DEFAULT_TRUE_NUMBER] : [FALSE_NUMBER];
+};
+
 export const DEFAULT_COMBINER = mean;
 
 export const COMBINERS : {[combinerType in CombinerType] : Combiner} = {
@@ -55,5 +71,7 @@ export const COMBINERS : {[combinerType in CombinerType] : Combiner} = {
 	'min': min,
 	'max': max,
 	'sum': sum,
-	'product': product
+	'product': product,
+	'and': and,
+	'or': or
 };

@@ -1294,6 +1294,70 @@ describe('AdjacencyMap node', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('allows a named node with and combiner all true', async () => {
+		const input = deepCopy(legalBaseInput);
+		//Give it a more interesting value.
+		input.types.engineering.value = [2.0, 1.0];
+		input.types.engineering.combine = 'and';
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 1.0,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('allows a named node with and combiner some true', async () => {
+		const input = deepCopy(legalBaseInput);
+		//Give it a more interesting value.
+		input.types.engineering.value = [2.0, 1.0, 0.0];
+		input.types.engineering.combine = 'and';
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 0.0,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('allows a named node with or combiner some true', async () => {
+		const input = deepCopy(legalBaseInput);
+		//Give it a more interesting value.
+		input.types.engineering.value = [0.0, 1.0];
+		input.types.engineering.combine = 'or';
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 1.0,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('allows a named node with or combiner none true', async () => {
+		const input = deepCopy(legalBaseInput);
+		//Give it a more interesting value.
+		input.types.engineering.value = [0.0, 0.0];
+		input.types.engineering.combine = 'or';
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 0.0,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
 	it('Correctly sorts edge types', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.data.dependencies = ['engineering'];
