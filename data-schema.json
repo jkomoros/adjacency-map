@@ -30,36 +30,6 @@
     "ConstantType": {
       "type": "string"
     },
-    "EdgeDefinition": {
-      "additionalProperties": false,
-      "properties": {
-        "combine": {
-          "$ref": "#/definitions/CombinerType"
-        },
-        "constants": {
-          "additionalProperties": {
-            "type": "number"
-          },
-          "type": "object"
-        },
-        "dependencies": {
-          "items": {
-            "$ref": "#/definitions/PropertyName"
-          },
-          "type": "array"
-        },
-        "description": {
-          "type": "string"
-        },
-        "value": {
-          "$ref": "#/definitions/ValueDefinition"
-        }
-      },
-      "required": [
-        "value"
-      ],
-      "type": "object"
-    },
     "EdgeValue": {
       "additionalProperties": {
         "anyOf": [
@@ -122,6 +92,43 @@
       "description": "The final computed values of all of the values for a node.",
       "type": "object"
     },
+    "PropertyDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "combine": {
+          "$ref": "#/definitions/CombinerType"
+        },
+        "constants": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "type": "object"
+        },
+        "dependencies": {
+          "items": {
+            "$ref": "#/definitions/PropertyName"
+          },
+          "type": "array"
+        },
+        "description": {
+          "type": "string"
+        },
+        "hide": {
+          "const": true,
+          "type": "boolean"
+        },
+        "usage": {
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/definitions/ValueDefinition"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "type": "object"
+    },
     "PropertyName": {
       "type": "string"
     },
@@ -149,7 +156,7 @@
         },
         "properties": {
           "additionalProperties": {
-            "$ref": "#/definitions/EdgeDefinition"
+            "$ref": "#/definitions/PropertyDefinition"
           },
           "type": "object"
         },
