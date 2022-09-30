@@ -6,8 +6,13 @@ import {
 } from '../../src/adjacency-map.js';
 
 import {
-	tidyLongestTree, treeGraphFromParentGraph
+	tidyLongestTree,
+	treeGraphFromParentGraph
 } from '../../src/graph.js';
+
+import {
+	LIBRARIES
+} from '../../src/libraries.js';
 
 import {
 	deepCopy
@@ -1836,6 +1841,39 @@ describe('AdjacencyMap node', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('Correctly handles libraries', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.import = ['_test_b_'];
+		input.nodes.a.values.push({
+			type: '_test_a_:one'
+		});
+		LIBRARIES['_test_a_'] = {
+			types: {
+				'_test_a_:one': {
+					value: 1
+				}
+			}
+		};
+		LIBRARIES['_test_b_'] = {
+			import: ['_test_a_'],
+			types: {
+				'_test_b_:two': {
+					value: 2,
+				}
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			'_test_a_:one': 1,
+			'_test_b_:two': 0,
+			engineering: 3,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
 
 
 });

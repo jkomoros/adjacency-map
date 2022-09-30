@@ -232,9 +232,21 @@ export type EdgeDefinition = {
     }
 }
 
-export type MapDefinition = {
-    version: number,
+export type LibraryType = 'core';
+
+export type Library = {
+    import?: LibraryType[],
+    //Types names should be `${libraryName}:${typeName}`
     types: {
+        [type : EdgeType]: EdgeDefinition
+    }
+}
+
+export type RawMapDefinition = {
+    version: number,
+    //Imports lists libraries to base types on
+    import?: LibraryType[],
+    types?: {
         [type : EdgeType]: EdgeDefinition
     }
     root?: NodeValues;
@@ -242,6 +254,13 @@ export type MapDefinition = {
         [id : NodeID] : NodeDefinition
     }
 }
+
+//MapDefinition is RawMapDefinition, but with any imports expanded.
+export type MapDefinition = Required<Omit<RawMapDefinition, "import">> & {
+    //have a flag variable so MapDefinition is not just a subset of
+    //RawMapDefinition and typescript will complain if the wrong one is passed.
+    processed: true
+};
 
 export type AppState = {
     page : string;
@@ -251,7 +270,7 @@ export type AppState = {
 
 export type DataState = {
     filename : Filename;
-    data?: MapDefinition;
+    data?: RawMapDefinition;
 }
 
 export type RootState = {

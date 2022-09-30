@@ -1,12 +1,16 @@
 import {
+	EdgeDefinition,
 	EdgeType,
 	EdgeValue,
 	ExpandedEdgeValue,
 	LayoutInfo,
+	Library,
+	LibraryType,
 	MapDefinition,
 	NodeDefinition,
 	NodeID,
 	NodeValues,
+	RawMapDefinition,
 	SimpleGraph
 } from './types.js';
 
@@ -34,6 +38,7 @@ import {
 	RESERVED_VALUE_DEFINITION_PROPERTIES, 
 	validateValueDefinition
 } from './value-definition.js';
+import { LIBRARIES } from './libraries.js';
 
 export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 	const result : SimpleGraph = {};
@@ -47,6 +52,32 @@ export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 	}
 	result[ROOT_ID] = {};
 	return result;
+};
+
+const includeLibraries = (data : RawMapDefinition) : MapDefinition => {
+	const importsToProcess = data.import || [];
+	const importsMap : {[name in LibraryType]+?: Library} = {};
+	while (importsToProcess.length) {
+		const importName = importsToProcess.shift() as LibraryType;
+		//Skip ones we've already processed
+		if (importsMap[importName]) continue;
+		const library = LIBRARIES[importName];
+		if (!library) throw new Error('Unknown library: ' + importName);
+		importsMap[importName]= library;
+		importsToProcess.push(...(library.import || []));
+	}
+	let baseTypes : {[name : EdgeType] : EdgeDefinition} = {};
+	for (const library of Object.values(importsMap)) {
+		baseTypes = {...baseTypes, ...library.types};
+	}
+	const dataTypes = data.types || {};
+	const dataRoot = data.root || {};
+	return {
+		...data,
+		processed: true,
+		root: {...dataRoot},
+		types: {...baseTypes, ...dataTypes}
+	};
 };
 
 const validateData = (data : MapDefinition) : void => {
@@ -119,7 +150,9 @@ export class AdjacencyMap {
 	_cachedEdgeTypes : EdgeType[];
 	_cachedLayoutInfo : LayoutInfo;
 
-	constructor(data : MapDefinition) {
+	constructor(rawData : RawMapDefinition) {
+		//will throw if invalid library is included
+		const data = includeLibraries(rawData);
 		//Will throw if it doesn't validate
 		validateData(data);
 		if (!data) throw new Error('undefined data');

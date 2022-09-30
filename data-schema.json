@@ -1,16 +1,7 @@
 {
-  "$ref": "#/definitions/MapDefinition",
+  "$ref": "#/definitions/RawMapDefinition",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "ArithmeticOperator": {
-      "enum": [
-        "+",
-        "*",
-        "-",
-        "/"
-      ],
-      "type": "string"
-    },
     "CombinerType": {
       "enum": [
         "mean",
@@ -19,7 +10,9 @@
         "min",
         "max",
         "sum",
-        "product"
+        "product",
+        "and",
+        "or"
       ],
       "type": "string"
     },
@@ -100,34 +93,9 @@
       ],
       "type": "object"
     },
-    "MapDefinition": {
-      "additionalProperties": false,
-      "properties": {
-        "nodes": {
-          "additionalProperties": {
-            "$ref": "#/definitions/NodeDefinition"
-          },
-          "type": "object"
-        },
-        "root": {
-          "$ref": "#/definitions/NodeValues"
-        },
-        "types": {
-          "additionalProperties": {
-            "$ref": "#/definitions/EdgeDefinition"
-          },
-          "type": "object"
-        },
-        "version": {
-          "type": "number"
-        }
-      },
-      "required": [
-        "version",
-        "types",
-        "nodes"
-      ],
-      "type": "object"
+    "LibraryType": {
+      "const": "core",
+      "type": "string"
     },
     "NodeDefinition": {
       "additionalProperties": false,
@@ -157,14 +125,48 @@
       "description": "The final computed values of all of the values for a node.",
       "type": "object"
     },
+    "RawMapDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "import": {
+          "items": {
+            "$ref": "#/definitions/LibraryType"
+          },
+          "type": "array"
+        },
+        "nodes": {
+          "additionalProperties": {
+            "$ref": "#/definitions/NodeDefinition"
+          },
+          "type": "object"
+        },
+        "root": {
+          "$ref": "#/definitions/NodeValues"
+        },
+        "types": {
+          "additionalProperties": {
+            "$ref": "#/definitions/EdgeDefinition"
+          },
+          "type": "object"
+        },
+        "version": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "version",
+        "nodes"
+      ],
+      "type": "object"
+    },
     "ValueDefinition": {
       "anyOf": [
         {
-          "type": "number"
+          "$ref": "#/definitions/ValueDefinitionLeaf"
         },
         {
           "items": {
-            "type": "number"
+            "$ref": "#/definitions/ValueDefinitionLeaf"
           },
           "type": "array"
         },
@@ -184,6 +186,9 @@
           "$ref": "#/definitions/ValueDefinitionArithmetic"
         },
         {
+          "$ref": "#/definitions/ValueDefinitionIf"
+        },
+        {
           "$ref": "#/definitions/ValueDefinitionCompare"
         },
         {
@@ -198,13 +203,31 @@
       ]
     },
     "ValueDefinitionArithmetic": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ValueDefinitionArithmeticBinary"
+        },
+        {
+          "$ref": "#/definitions/ValueDefinitionArithmeticUnary"
+        }
+      ]
+    },
+    "ValueDefinitionArithmeticBinary": {
       "additionalProperties": false,
       "properties": {
         "child": {
           "$ref": "#/definitions/ValueDefinition"
         },
         "operator": {
-          "$ref": "#/definitions/ArithmeticOperator"
+          "enum": [
+            "+",
+            "*",
+            "-",
+            "/",
+            "&&",
+            "||"
+          ],
+          "type": "string"
         },
         "term": {
           "$ref": "#/definitions/ValueDefinition"
@@ -214,6 +237,23 @@
         "operator",
         "child",
         "term"
+      ],
+      "type": "object"
+    },
+    "ValueDefinitionArithmeticUnary": {
+      "additionalProperties": false,
+      "properties": {
+        "child": {
+          "$ref": "#/definitions/ValueDefinition"
+        },
+        "operator": {
+          "const": "!",
+          "type": "string"
+        }
+      },
+      "required": [
+        "operator",
+        "child"
       ],
       "type": "object"
     },
@@ -295,6 +335,33 @@
         "term"
       ],
       "type": "object"
+    },
+    "ValueDefinitionIf": {
+      "additionalProperties": false,
+      "description": "For the test 'if', returns then if the value isTrue(), and else otherwise.",
+      "properties": {
+        "else": {
+          "$ref": "#/definitions/ValueDefinition"
+        },
+        "if": {
+          "$ref": "#/definitions/ValueDefinition"
+        },
+        "then": {
+          "$ref": "#/definitions/ValueDefinition"
+        }
+      },
+      "required": [
+        "if",
+        "then",
+        "else"
+      ],
+      "type": "object"
+    },
+    "ValueDefinitionLeaf": {
+      "type": [
+        "number",
+        "boolean"
+      ]
     },
     "ValueDefinitionPercent": {
       "additionalProperties": false,

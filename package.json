@@ -21,7 +21,7 @@
     "build:rollup": "rollup -c",
     "build:typescript": "tsc",
     "generate": "npm run generate:config",
-    "generate:schema": "ts-json-schema-generator --type 'MapDefinition' --tsconfig tsconfig.json > data-schema.json",
+    "generate:schema": "ts-json-schema-generator --type 'RawMapDefinition' --tsconfig tsconfig.json > data-schema.json",
     "generate:config": "npx ts-node-esm tools/config.ts",
     "screenshots": "npx ts-node-esm tools/screenshot.ts",
     "screenshots:png": "npx ts-node-esm tools/screenshot.ts png",

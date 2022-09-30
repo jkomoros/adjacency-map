@@ -14,7 +14,6 @@ import {
 import {
 	selectPageExtra,
 	selectFilename,
-	selectData,
 	selectAdjacencyMap,
 } from "../selectors.js";
 
@@ -33,7 +32,6 @@ import {
 
 import {
 	ExpandedEdgeValue,
-	MapDefinition,
 	RootState,
 } from '../types.js';
 
@@ -67,9 +65,6 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_filename: string;
-
-	@state()
-	_data : MapDefinition | undefined;
 
 	@state()
 	_adjacencyMap : AdjacencyMap | null;
@@ -124,7 +119,6 @@ class MainView extends connect(store)(PageViewElement) {
 	override stateChanged(state : RootState) {
 		this._pageExtra = selectPageExtra(state);
 		this._filename = selectFilename(state);
-		this._data = selectData(state);
 		this._adjacencyMap = selectAdjacencyMap(state);
 	}
 
