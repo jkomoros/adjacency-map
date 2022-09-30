@@ -234,6 +234,7 @@ export class AdjacencyMap {
 	
 	_data : MapDefinition;
 	_nodes : {[id : NodeID] : AdjacencyMapNode};
+	_cachedChildren : {[id : NodeID] : NodeID[]};
 	_cachedEdges : ExpandedEdgeValue[];
 	_cachedRoot : NodeValues;
 	_cachedEdgeTypes : EdgeType[];
@@ -246,6 +247,16 @@ export class AdjacencyMap {
 		//TODO: deep freeze a copy of data
 		this._data = data;
 		this._nodes = {};
+		const children : SimpleGraph = {};
+		for (const [child, definition] of Object.entries(this._data.nodes)) {
+			const values = definition.values || [];
+			for (const edge of values) {
+				const parent = edge.ref || ROOT_ID;
+				if (!children[parent]) children[parent] = {};
+				children[parent][child] = true;
+			}
+		}
+		this._cachedChildren = Object.fromEntries(Object.entries(children).map(entry => [entry[0], Object.keys(entry[1])]));
 	}
 
 	//edgeTypes returns the types of edges. It's in topological order of any
@@ -284,6 +295,10 @@ export class AdjacencyMap {
 			this._nodes[id] = new AdjacencyMapNode(id, this, this._data.nodes[id]);
 		}
 		return this._nodes[id];
+	}
+
+	_children(id : NodeID) : NodeID[] {
+		return this._cachedChildren[id];
 	}
 
 	get nodes() : {[id : NodeID] : AdjacencyMapNode} {
@@ -411,6 +426,11 @@ class AdjacencyMapNode {
 	get parents() : NodeID[] {
 		if (!this._data || !this._data.values) return [];
 		return this._data.values.map(edge => edge.ref).filter(ref => ref && ref != ROOT_ID) as NodeID[];
+	}
+
+	//Gets the children we are directly referenced by.
+	get children() : NodeID[] {
+		return this._map._children(this.id);
 	}
 
 	/**

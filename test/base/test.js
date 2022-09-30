@@ -800,7 +800,7 @@ describe('AdjacencyMap node', () => {
 		assert.throws(fn);
 	});
 
-	it('works for a named node', async () => {
+	it('values works for a named node', async () => {
 		const input = deepCopy(legalBaseInput);
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -810,6 +810,24 @@ describe('AdjacencyMap node', () => {
 			ux: 0,
 			data: 0
 		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('children for a named node', async () => {
+		const input = deepCopy(legalBaseInput);
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.children;
+		const golden = ['b', 'c'];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('children for root node', async () => {
+		const input = deepCopy(legalBaseInput);
+		const map = new AdjacencyMap(input);
+		const node = map.node('');
+		const actual = node.children;
+		const golden = ['a'];
 		assert.deepStrictEqual(actual, golden);
 	});
 
