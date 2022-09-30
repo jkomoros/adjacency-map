@@ -38,7 +38,9 @@ const OPERATORS : {[op in ArithmeticOperator] : Operator}  = {
 	'*': (one, two) => one * two,
 	'+': (one, two) => one + two,
 	'-': (one, two) => one - two,
-	'/': (one, two) => one / two
+	'/': (one, two) => one / two,
+	'&&': (one, two) => isTrue(one) && isTrue(two) ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER,
+	'||': (one, two) => isTrue(one) || isTrue(two) ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER
 };
 
 type Comparer = (one : number, two : number) => typeof DEFAULT_TRUE_NUMBER | typeof FALSE_NUMBER;
