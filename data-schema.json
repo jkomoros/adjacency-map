@@ -23,6 +23,17 @@
       ],
       "type": "string"
     },
+    "CompareOperator": {
+      "enum": [
+        "==",
+        "!=",
+        "<",
+        ">",
+        "<=",
+        ">="
+      ],
+      "type": "string"
+    },
     "ConstantType": {
       "type": "string"
     },
@@ -173,6 +184,9 @@
           "$ref": "#/definitions/ValueDefinitionArithmetic"
         },
         {
+          "$ref": "#/definitions/ValueDefinitionCompare"
+        },
+        {
           "$ref": "#/definitions/ValueDefinitionClip"
         },
         {
@@ -258,6 +272,27 @@
       "required": [
         "combine",
         "child"
+      ],
+      "type": "object"
+    },
+    "ValueDefinitionCompare": {
+      "additionalProperties": false,
+      "description": "Takes two children and applies the comparison to them, returning DEFAULT_TRUE_NUMBER or FALSE_NUMBER.",
+      "properties": {
+        "child": {
+          "$ref": "#/definitions/ValueDefinition"
+        },
+        "compare": {
+          "$ref": "#/definitions/CompareOperator"
+        },
+        "term": {
+          "$ref": "#/definitions/ValueDefinition"
+        }
+      },
+      "required": [
+        "compare",
+        "child",
+        "term"
       ],
       "type": "object"
     },
