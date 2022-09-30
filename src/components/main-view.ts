@@ -169,9 +169,6 @@ class MainView extends connect(store)(PageViewElement) {
 		// padding around the labels
 		const haloWidth = 3;
 
-		//TODO: text x should have -6 if it has children
-		//TODO: text text-anchor should be end if it has children
-
 		return html`<svg class='main' viewBox='${a.viewBox}' width='${a.width}' height='${a.height}' style='max-width: 100%; height: auto; height: intrinsic;' font-family='sans-serif' font-size='10'>
 			<g fill="none" stroke="${stroke}" stroke-opacity="${strokeOpacity}" stroke-linecap="${strokeLinecap}" stroke-linejoin="${strokeLinejoin}" stroke-width="${strokeWidth}">
 				${a.edges.map(edge => svg`<path d="${this._pathForEdge(edge, a)}"></path>`)}
@@ -180,7 +177,7 @@ class MainView extends connect(store)(PageViewElement) {
 				${Object.values(a.nodes).map(node => svg`<a transform="translate(${node.y},${node.x})">
 					<circle fill="${node.children.length == 0 ? fill : stroke}" r="${r}"></circle>
 					<title>${node.description + '\n\n' + Object.entries(node.values).map(entry => entry[0] + ': ' + entry[1]).join('\n')}</title>
-					<text dy="0.32em" x="6" text-anchor="start" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}">${node.id}</text>
+					<text dy="0.32em" x="${node.children.length == 0 ? 6 : -6}" text-anchor="${node.children.length == 0 ? 'start' : 'end'}" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}">${node.id}</text>
 				</a>`)}
 			</g>
 	</svg>`;
