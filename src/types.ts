@@ -227,6 +227,8 @@ export type EdgeDefinition = {
     //enumerated here may be used in this edge's ValueDefinition when it is of
     //type ValueDefintiionResultValue.
     dependencies? : PropertyName[],
+    //Some properties (especially in libraries don't make sense to print out in e.g. AdjacencyMapNode.description)
+    hide? : true,
     constants?: {
         [constant : ConstantType]: number
     }

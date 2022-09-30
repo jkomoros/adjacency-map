@@ -8,7 +8,8 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 		properties: {
 			'core:radius': {
 				description: 'The radius to use to render the node',
-				value: 3
+				value: 3,
+				hide: true
 			}
 		}
 	}
