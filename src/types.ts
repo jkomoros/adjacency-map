@@ -63,7 +63,20 @@ export type ValueDefinitionArithmetic = {
     term: ValueDefinition
 }
 
-export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant | ValueDefinitionRefValue | ValueDefinitionResultValue | ValueDefinitionCombine | ValueDefinitionArithmetic;
+//Clip returns a value like input, but where each number if it's lower than low,
+//clips to low, and if it's higher than high clips to high. Either low or high
+//may be omitted, but not both.
+export type ValueDefinitionClip = {
+    input: ValueDefinition
+    low: ValueDefinition,
+    high?: ValueDefinition
+} | {
+    input: ValueDefinition
+    low?: ValueDefinition,
+    high: ValueDefinition
+}
+
+export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant | ValueDefinitionRefValue | ValueDefinitionResultValue | ValueDefinitionCombine | ValueDefinitionArithmetic | ValueDefinitionClip;
 
 export type LayoutInfo = {
     width: number,

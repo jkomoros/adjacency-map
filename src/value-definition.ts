@@ -11,7 +11,8 @@ import {
 	ValueDefinitionCombine,
 	ValueDefinitionRefValue,
 	ValueDefinitionResultValue,
-	ValueDefintionEdgeConstant
+	ValueDefintionEdgeConstant,
+	ValueDefinitionClip
 } from './types.js';
 
 export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
@@ -47,6 +48,12 @@ const valueDefinitionIsArithmetic = (definition : ValueDefinition): definition i
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
 	return 'operator' in definition;
+};
+
+const valueDefinitionIsClip = (definition : ValueDefinition): definition is ValueDefinitionClip => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'input' in definition && ('low' in definition || 'high' in definition);
 };
 
 export const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : EdgeDefinition, exampleValue : NodeValues) : void => {
@@ -85,6 +92,14 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 		return;
 	}
 
+	if (valueDefinitionIsClip(definition)) {
+		validateValueDefinition(definition.input, edgeDefinition, exampleValue);
+		if (definition.low == undefined && definition.high == undefined) throw new Error('Clip expects at least one of low or high');
+		if (definition.low != undefined) validateValueDefinition(definition.low, edgeDefinition, exampleValue);
+		if (definition.high != undefined) validateValueDefinition(definition.high, edgeDefinition, exampleValue);
+		return;
+	}
+
 	const _exhaustiveCheck : never = definition;
 	throw new Error('Illegal value for definition');
 	return _exhaustiveCheck;
@@ -117,6 +132,20 @@ export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]
 		const op = definition.operator == '*' ? (one : number, two : number) => one * two : (one : number, two : number) => one + two;
 		//The result is the same length as left, but we loop over and repeat numbers in right if necessary.
 		return left.map((term, i) => op(term, right[i % right.length]));
+	}
+
+	if (valueDefinitionIsClip(definition)) {
+		const inputArr = calculateValue(definition.input, edges, refs, partialResult);
+		const lowArr = definition.low != undefined ? calculateValue(definition.low, edges, refs, partialResult) : [Number.NEGATIVE_INFINITY];
+		const highArr = definition.high != undefined ? calculateValue(definition.high, edges, refs, partialResult) : [Number.POSITIVE_INFINITY];
+
+		return inputArr.map((term, i) => {
+			const low = lowArr[i % lowArr.length];
+			const high = highArr[i % highArr.length];
+			if (term < low) term = low;
+			if (term > high) term = high;
+			return term;
+		});
 	}
 
 	const _exhaustiveCheck : never = definition;

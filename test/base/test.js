@@ -713,6 +713,91 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for a value defintion of type clip missing input', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			low: 3,
+			high: 10
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a value defintion of type clip with niether low nor high', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			input: [-10, 3, 100]
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows a value defintion of type clip with only low', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			input: [-10, 3, 100],
+			low: 0
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows a value defintion of type clip with only high', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			input: [-10, 3, 100],
+			high: 50
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows a value defintion of type clip with low and high', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.value = {
+			input: [-10, 3, 100],
+			low: 0,
+			high: 50
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
@@ -1061,6 +1146,61 @@ describe('AdjacencyMap node', () => {
 		const actual = node.values;
 		const golden = {
 			engineering: 4,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a clip with only low', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.combine = 'sum';
+		input.types.engineering.value = {
+			input: [-10, 3, 100],
+			low: 0,
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 103,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a clip with only high', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.combine = 'sum';
+		input.types.engineering.value = {
+			input: [-10, 3, 100],
+			high: 50,
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 43,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a clip with both low and high', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.types.engineering.combine = 'sum';
+		input.types.engineering.value = {
+			input: [-10, 3, 100],
+			low: 0,
+			high: 50,
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			engineering: 53,
 			ux: 0,
 			data: 0
 		};
