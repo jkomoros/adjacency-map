@@ -89,7 +89,15 @@ export type ValueDefinitionRange = {
     high: ValueDefinition
 }
 
-export type ValueDefinition = number | number[] | ValueDefintionEdgeConstant | ValueDefinitionRefValue | ValueDefinitionResultValue | ValueDefinitionCombine | ValueDefinitionArithmetic | ValueDefinitionClip | ValueDefinitionRange;
+export type ValueDefinition = number |
+    number[] |
+    ValueDefintionEdgeConstant |
+    ValueDefinitionRefValue |
+    ValueDefinitionResultValue |
+    ValueDefinitionCombine |
+    ValueDefinitionArithmetic |
+    ValueDefinitionClip |
+    ValueDefinitionRange;
 
 export type LayoutInfo = {
     width: number,
