@@ -2,12 +2,27 @@
   "$ref": "#/definitions/MapDefinition",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
+    "CombinerType": {
+      "enum": [
+        "mean",
+        "first",
+        "last",
+        "min",
+        "max",
+        "sum",
+        "product"
+      ],
+      "type": "string"
+    },
     "ConstantType": {
       "type": "string"
     },
     "EdgeDefinition": {
       "additionalProperties": false,
       "properties": {
+        "combine": {
+          "$ref": "#/definitions/CombinerType"
+        },
         "constants": {
           "additionalProperties": {
             "type": "number"
@@ -22,9 +37,6 @@
         },
         "description": {
           "type": "string"
-        },
-        "reducer": {
-          "$ref": "#/definitions/ReducerType"
         },
         "value": {
           "$ref": "#/definitions/ValueDefinition"
@@ -125,18 +137,6 @@
       "description": "The final computed values of all of the values for a node.",
       "type": "object"
     },
-    "ReducerType": {
-      "enum": [
-        "mean",
-        "first",
-        "last",
-        "min",
-        "max",
-        "sum",
-        "product"
-      ],
-      "type": "string"
-    },
     "ValueDefinition": {
       "anyOf": [
         {
@@ -158,7 +158,7 @@
           "$ref": "#/definitions/ValueDefinitionResultValue"
         },
         {
-          "$ref": "#/definitions/ValueDefinitionReduce"
+          "$ref": "#/definitions/ValueDefinitionCombine"
         },
         {
           "$ref": "#/definitions/ValueDefinitionArithmetic"
@@ -189,18 +189,18 @@
       ],
       "type": "object"
     },
-    "ValueDefinitionReduce": {
+    "ValueDefinitionCombine": {
       "additionalProperties": false,
       "properties": {
         "child": {
           "$ref": "#/definitions/ValueDefinition"
         },
-        "reduce": {
-          "$ref": "#/definitions/ReducerType"
+        "combine": {
+          "$ref": "#/definitions/CombinerType"
         }
       },
       "required": [
-        "reduce",
+        "combine",
         "child"
       ],
       "type": "object"
