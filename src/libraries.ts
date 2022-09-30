@@ -17,7 +17,7 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 						child: {constant: 'radius'},
 						term: 0
 					},
-					then: {ref: 'core:radius'},
+					then: {root: 'core:radius'},
 					else: {constant: 'radius'}
 				},
 				constants: {
