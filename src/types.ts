@@ -36,6 +36,11 @@ export type ValueDefinitionRefValue = {
     ref: PropertyName
 }
 
+//Selects the value in the root of this type
+export type ValueDefinitionRootValue = {
+    root: PropertyName
+}
+
 //Selects the value of other edges that go into our own result.
 export type ValueDefinitionResultValue = {
     //Property must be explicitly enumerated in our EdgeDefinition.dependencies.
@@ -141,6 +146,7 @@ export type ValueDefinition = ValueDefinitionLeaf |
     ValueDefinitionLeaf[] |
     ValueDefintionEdgeConstant |
     ValueDefinitionRefValue |
+    ValueDefinitionRootValue |
     ValueDefinitionResultValue |
     ValueDefinitionCombine |
     ValueDefinitionArithmetic |

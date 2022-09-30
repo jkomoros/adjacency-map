@@ -364,6 +364,34 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('allows value with legal edge type for root', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {root: 'engineering'};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for value with illegal edge type for root', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {root: 'foo'};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('barfs for edge with invalid combiner', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.combine = 'foo';
@@ -1326,6 +1354,22 @@ core:radius: 3`;
 			'core:radius': 3,
 			engineering: 4.0,
 			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('allows a named node with a root value', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {root:'engineering'};
+		input.root.engineering = 5.0;
+		const map = new AdjacencyMap(input);
+		const node = map.node('b');
+		const actual = node.values;
+		const golden = {
+			'core:radius': 3,
+			engineering: 5.0,
+			ux: 4,
 			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
