@@ -69,11 +69,11 @@ export type ValueDefinitionArithmetic = {
 //clips to low, and if it's higher than high clips to high. Either low or high
 //may be omitted, but not both.
 export type ValueDefinitionClip = {
-    input: ValueDefinition
+    clip: ValueDefinition
     low: ValueDefinition,
     high?: ValueDefinition
 } | {
-    input: ValueDefinition
+    clip: ValueDefinition
     low?: ValueDefinition,
     high: ValueDefinition
 }

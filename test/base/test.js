@@ -733,7 +733,7 @@ describe('AdjacencyMap validation', () => {
 	it('barfs for a value defintion of type clip with niether low nor high', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.value = {
-			input: [-10, 3, 100]
+			clip: [-10, 3, 100]
 		};
 		const errorExpected = true;
 		const fn = () => {
@@ -749,7 +749,7 @@ describe('AdjacencyMap validation', () => {
 	it('allows a value defintion of type clip with only low', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.value = {
-			input: [-10, 3, 100],
+			clip: [-10, 3, 100],
 			low: 0
 		};
 		const errorExpected = false;
@@ -766,7 +766,7 @@ describe('AdjacencyMap validation', () => {
 	it('allows a value defintion of type clip with only high', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.value = {
-			input: [-10, 3, 100],
+			clip: [-10, 3, 100],
 			high: 50
 		};
 		const errorExpected = false;
@@ -783,7 +783,7 @@ describe('AdjacencyMap validation', () => {
 	it('allows a value defintion of type clip with low and high', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.value = {
-			input: [-10, 3, 100],
+			clip: [-10, 3, 100],
 			low: 0,
 			high: 50
 		};
@@ -1194,7 +1194,7 @@ describe('AdjacencyMap node', () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.combine = 'sum';
 		input.types.engineering.value = {
-			input: [-10, 3, 100],
+			clip: [-10, 3, 100],
 			low: 0,
 		};
 		const map = new AdjacencyMap(input);
@@ -1212,7 +1212,7 @@ describe('AdjacencyMap node', () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.combine = 'sum';
 		input.types.engineering.value = {
-			input: [-10, 3, 100],
+			clip: [-10, 3, 100],
 			high: 50,
 		};
 		const map = new AdjacencyMap(input);
@@ -1230,7 +1230,7 @@ describe('AdjacencyMap node', () => {
 		const input = deepCopy(legalBaseInput);
 		input.types.engineering.combine = 'sum';
 		input.types.engineering.value = {
-			input: [-10, 3, 100],
+			clip: [-10, 3, 100],
 			low: 0,
 			high: 50,
 		};

@@ -63,7 +63,7 @@ const valueDefinitionIsArithmetic = (definition : ValueDefinition): definition i
 const valueDefinitionIsClip = (definition : ValueDefinition): definition is ValueDefinitionClip => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
-	return 'input' in definition && ('low' in definition || 'high' in definition);
+	return 'clip' in definition && ('low' in definition || 'high' in definition);
 };
 
 export const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : EdgeDefinition, exampleValue : NodeValues) : void => {
@@ -103,7 +103,7 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 	}
 
 	if (valueDefinitionIsClip(definition)) {
-		validateValueDefinition(definition.input, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.clip, edgeDefinition, exampleValue);
 		if (definition.low == undefined && definition.high == undefined) throw new Error('Clip expects at least one of low or high');
 		if (definition.low != undefined) validateValueDefinition(definition.low, edgeDefinition, exampleValue);
 		if (definition.high != undefined) validateValueDefinition(definition.high, edgeDefinition, exampleValue);
@@ -146,7 +146,7 @@ export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]
 	}
 
 	if (valueDefinitionIsClip(definition)) {
-		const inputArr = calculateValue(definition.input, edges, refs, partialResult);
+		const inputArr = calculateValue(definition.clip, edges, refs, partialResult);
 		const lowArr = definition.low != undefined ? calculateValue(definition.low, edges, refs, partialResult) : [Number.NEGATIVE_INFINITY];
 		const highArr = definition.high != undefined ? calculateValue(definition.high, edges, refs, partialResult) : [Number.POSITIVE_INFINITY];
 
