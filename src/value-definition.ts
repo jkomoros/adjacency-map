@@ -3,7 +3,7 @@ import {
 } from './combine.js';
 
 import {
-	EdgeDefinition,
+	PropertyDefinition,
 	EdgeValue,
 	NodeValues,
 	ValueDefinition,
@@ -124,7 +124,7 @@ const valueDefinitionIsPercent = (definition : ValueDefinition): definition is V
 	return 'percent' in definition;
 };
 
-export const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : EdgeDefinition, exampleValue : NodeValues) : void => {
+export const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : PropertyDefinition, exampleValue : NodeValues) : void => {
 	if (typeof definition == 'boolean') return;
 	if (typeof definition == 'number') return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {

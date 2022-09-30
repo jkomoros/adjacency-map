@@ -213,7 +213,7 @@ export type Combiner = (nums: number[]) => [number];
 //We can't use keyof typeof REDUCERS because `npm run generate:schema` can't handle those types
 export type CombinerType = 'mean' | 'first' | 'last' | 'min' | 'max' | 'sum' | 'product' | 'and' | 'or';
 
-export type EdgeDefinition = {
+export type PropertyDefinition = {
     value: ValueDefinition,
     description?: string,
     //A message for how to use this property. Useful for libraries.
@@ -243,7 +243,7 @@ export type Library = {
     import?: LibraryType[],
     //Types names should be `${libraryName}:${typeName}`
     properties: {
-        [type : PropertyName]: EdgeDefinition
+        [type : PropertyName]: PropertyDefinition
     },
     //Typically a library will provide default values for all of the types it
     //defines
@@ -256,7 +256,7 @@ export type RawMapDefinition = {
     //always imported.
     import?: LibraryType | LibraryType[],
     properties?: {
-        [type : PropertyName]: EdgeDefinition
+        [type : PropertyName]: PropertyDefinition
     }
     root?: NodeValues;
     nodes: {

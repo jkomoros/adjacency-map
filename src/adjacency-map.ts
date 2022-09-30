@@ -1,5 +1,5 @@
 import {
-	EdgeDefinition,
+	PropertyDefinition,
 	PropertyName,
 	EdgeValue,
 	ExpandedEdgeValue,
@@ -75,7 +75,7 @@ const includeLibraries = (data : RawMapDefinition) : MapDefinition => {
 		importsMap[importName]= library;
 		importsToProcess.push(...(library.import || []));
 	}
-	let baseTypes : {[name : PropertyName] : EdgeDefinition} = {};
+	let baseTypes : {[name : PropertyName] : PropertyDefinition} = {};
 	let baseRoot : NodeValues = {};
 	for (const library of Object.values(importsMap)) {
 		baseTypes = {...baseTypes, ...library.properties};
@@ -106,26 +106,26 @@ const validateData = (data : MapDefinition) : void => {
 		}
 	}
 	const exampleValues = Object.fromEntries(Object.keys(data.properties).map(typeName => [typeName, 1.0]));
-	for(const [type, edgeDefinition] of Object.entries(data.properties)) {
+	for(const [type, propertyDefinition] of Object.entries(data.properties)) {
 		try {
-			validateValueDefinition(edgeDefinition.value, edgeDefinition, exampleValues);
+			validateValueDefinition(propertyDefinition.value, propertyDefinition, exampleValues);
 		} catch (err) {
 			throw new Error(type + ' does not have a legal value definition: ' + err);
 		}
-		if (edgeDefinition.combine && !COMBINERS[edgeDefinition.combine]) throw new Error('Unknown combiner: ' + edgeDefinition.combine);
-		if (edgeDefinition.description && typeof edgeDefinition.description != 'string') throw new Error(type + ' has a description not of type string');
-		if (edgeDefinition.constants) {
-			for (const [constantName, constantValue] of Object.entries(edgeDefinition.constants)) {
+		if (propertyDefinition.combine && !COMBINERS[propertyDefinition.combine]) throw new Error('Unknown combiner: ' + propertyDefinition.combine);
+		if (propertyDefinition.description && typeof propertyDefinition.description != 'string') throw new Error(type + ' has a description not of type string');
+		if (propertyDefinition.constants) {
+			for (const [constantName, constantValue] of Object.entries(propertyDefinition.constants)) {
 				if (RESERVED_VALUE_DEFINITION_PROPERTIES[constantName]) throw new Error(constantName + ' was present in constants for ' + type + ' but is reserved');
 				if (typeof constantValue != 'number') throw new Error(type + ' constant ' + constantName + ' was not number as expected');
 			}
 		}
-		if (edgeDefinition.dependencies) {
-			for (const dependency of edgeDefinition.dependencies) {
+		if (propertyDefinition.dependencies) {
+			for (const dependency of propertyDefinition.dependencies) {
 				if (!data.properties[dependency]) throw new Error(type + ' declared a dependency on ' + dependency + ' but that is not a valid type');
 			}
 			const seenTypes = {[type]: true};
-			const definitionsToCheck = [edgeDefinition];
+			const definitionsToCheck = [propertyDefinition];
 			while (definitionsToCheck.length) {
 				const definitionToCheck = definitionsToCheck.shift();
 				const dependencies = definitionToCheck?.dependencies || [];
