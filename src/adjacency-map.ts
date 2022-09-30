@@ -38,7 +38,7 @@ import {
 	RESERVED_VALUE_DEFINITION_PROPERTIES, 
 	validateValueDefinition
 } from './value-definition.js';
-import { LIBRARIES } from './libraries.js';
+import { CORE_LIBRARY_NAME, LIBRARIES } from './libraries.js';
 
 export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 	const result : SimpleGraph = {};
@@ -60,9 +60,10 @@ const includeLibraries = (data : RawMapDefinition) : MapDefinition => {
 		if (typeof data.import == 'string') {
 			baseImports = [data.import as LibraryType];
 		} else {
-			baseImports = data.import;
+			baseImports = [...data.import];
 		}
 	}
+	baseImports.push(CORE_LIBRARY_NAME);
 	const importsToProcess = baseImports;
 	const importsMap : {[name in LibraryType]+?: Library} = {};
 	while (importsToProcess.length) {

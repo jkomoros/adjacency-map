@@ -1105,6 +1105,7 @@ describe('AdjacencyMap root', () => {
 		const map = new AdjacencyMap(input);
 		const actual = map.rootValues;
 		const golden = {
+			"core:radius": 3.0,
 			"engineering": 4.0,
 			"ux": 0.0,
 			"data": 0.0
@@ -1181,6 +1182,7 @@ describe('AdjacencyMap node', () => {
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 3,
 			ux: 0,
 			data: 0
@@ -1212,7 +1214,8 @@ engineering: 3`;
 
 data: 0
 ux: 0
-engineering: 3`;
+engineering: 3
+core:radius: 3`;
 
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1241,6 +1244,7 @@ engineering: 3`;
 		const node = map.node('');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 4,
 			ux: 0,
 			data: 0
@@ -1255,6 +1259,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 2.5,
 			ux: 0,
 			data: 0
@@ -1270,6 +1275,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 4.0,
 			ux: 0,
 			data: 0
@@ -1286,6 +1292,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 4.0,
 			ux: 0,
 			data: 0
@@ -1301,6 +1308,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 8.0,
 			ux: 0,
 			data: 0
@@ -1315,6 +1323,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 4.0,
 			ux: 0,
 			data: 0
@@ -1331,6 +1340,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 10.0,
 			ux: 0,
 			data: 0
@@ -1347,6 +1357,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: -3.0,
 			ux: 0,
 			data: 0
@@ -1363,6 +1374,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 10.0,
 			ux: 0,
 			data: 0
@@ -1379,6 +1391,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 10.5,
 			ux: 0,
 			data: 0
@@ -1395,6 +1408,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: -90,
 			ux: 0,
 			data: 0
@@ -1411,6 +1425,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 1.0,
 			ux: 0,
 			data: 0
@@ -1427,6 +1442,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 0.0,
 			ux: 0,
 			data: 0
@@ -1443,6 +1459,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 1.0,
 			ux: 0,
 			data: 0
@@ -1459,6 +1476,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 0.0,
 			ux: 0,
 			data: 0
@@ -1472,7 +1490,7 @@ engineering: 3`;
 		input.properties.engineering.dependencies = ['ux'];
 		const map = new AdjacencyMap(input);
 		const actual = map.propertyNames;
-		const golden = ['ux', 'engineering', 'data'];
+		const golden = ['ux', 'engineering', 'data', 'core:radius'];
 		assert.deepStrictEqual(actual, golden);
 	});
 
@@ -1487,6 +1505,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 12,
 			ux: 12,
 			//Data is 0 because there is no data edge on node a, so it's just an implicit reference to its root.
@@ -1507,6 +1526,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 12,
 			ux: 12,
 			data: 12
@@ -1524,6 +1544,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 1,
 			ux: 0,
 			data: 0
@@ -1543,6 +1564,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 4,
 			ux: 0,
 			data: 0
@@ -1562,6 +1584,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 2,
 			ux: 0,
 			data: 0
@@ -1581,6 +1604,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 3.5,
 			ux: 0,
 			data: 0
@@ -1600,6 +1624,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 1.0,
 			ux: 0,
 			data: 0
@@ -1619,6 +1644,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 3.0,
 			ux: 0,
 			data: 0
@@ -1637,6 +1663,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 3.0,
 			ux: 0,
 			data: 0
@@ -1656,6 +1683,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 1.0,
 			ux: 0,
 			data: 0
@@ -1675,6 +1703,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 2.0,
 			ux: 0,
 			data: 0
@@ -1694,6 +1723,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 1.0,
 			ux: 0,
 			data: 0
@@ -1713,6 +1743,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 1.0,
 			ux: 0,
 			data: 0
@@ -1732,6 +1763,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 2.0,
 			ux: 0,
 			data: 0
@@ -1751,6 +1783,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 2.0,
 			ux: 0,
 			data: 0
@@ -1770,6 +1803,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 18,
 			ux: 0,
 			data: 0
@@ -1788,6 +1822,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 103,
 			ux: 0,
 			data: 0
@@ -1806,6 +1841,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 43,
 			ux: 0,
 			data: 0
@@ -1825,6 +1861,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 53,
 			ux: 0,
 			data: 0
@@ -1844,6 +1881,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 1.06,
 			ux: 0,
 			data: 0
@@ -1863,6 +1901,7 @@ engineering: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			'core:radius': 3,
 			engineering: 62.7,
 			ux: 0,
 			data: 0
@@ -1900,6 +1939,7 @@ engineering: 3`;
 		const golden = {
 			'_test_a_:one': 3,
 			'_test_b_:two': 4,
+			'core:radius': 3,
 			engineering: 3,
 			ux: 0,
 			data: 0

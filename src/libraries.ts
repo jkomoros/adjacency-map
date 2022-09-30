@@ -3,6 +3,8 @@ import {
 	LibraryType
 } from './types.js';
 
+export const CORE_LIBRARY_NAME = 'core';
+
 export const LIBRARIES : {[type in LibraryType] : Library} = {
 	core: {
 		properties: {
