@@ -89,6 +89,17 @@ export type ValueDefinitionRange = {
     high: ValueDefinition
 }
 
+
+//Percent takes a percentage (0.0 to 1.0) and returns (high - low) * percentage
+//+ low. If percent is lower than 0 or higher than 1 it is clipped. If high is
+//  lower than low, they are flipped.
+export type ValueDefinitionPercent = {
+    //The input value
+    percent: ValueDefinition,
+    low: ValueDefinition,
+    high: ValueDefinition
+}
+
 export type ValueDefinition = number |
     number[] |
     ValueDefintionEdgeConstant |
@@ -97,7 +108,8 @@ export type ValueDefinition = number |
     ValueDefinitionCombine |
     ValueDefinitionArithmetic |
     ValueDefinitionClip |
-    ValueDefinitionRange;
+    ValueDefinitionRange |
+    ValueDefinitionPercent;
 
 export type LayoutInfo = {
     width: number,

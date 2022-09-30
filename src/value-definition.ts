@@ -14,7 +14,8 @@ import {
 	ValueDefintionEdgeConstant,
 	ValueDefinitionClip,
 	ArithmeticOperator,
-	ValueDefinitionRange
+	ValueDefinitionRange,
+	ValueDefinitionPercent
 } from './types.js';
 
 export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
@@ -73,6 +74,12 @@ const valueDefinitionIsRange = (definition : ValueDefinition): definition is Val
 	return 'range' in definition;
 };
 
+const valueDefinitionIsPercent = (definition : ValueDefinition): definition is ValueDefinitionPercent => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'percent' in definition;
+};
+
 export const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : EdgeDefinition, exampleValue : NodeValues) : void => {
 	if (typeof definition == 'number') return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {
@@ -119,6 +126,13 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 
 	if (valueDefinitionIsRange(definition)) {
 		validateValueDefinition(definition.range, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.low, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.high, edgeDefinition, exampleValue);
+		return;
+	}
+
+	if (valueDefinitionIsPercent(definition)) {
+		validateValueDefinition(definition.percent, edgeDefinition, exampleValue);
 		validateValueDefinition(definition.low, edgeDefinition, exampleValue);
 		validateValueDefinition(definition.high, edgeDefinition, exampleValue);
 		return;
@@ -185,6 +199,21 @@ export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]
 			if (term < low) term = low;
 			if (term > high) term = high;
 			return (term - low) / (high - low);
+		});
+	}
+
+	if (valueDefinitionIsPercent(definition)) {
+		const inputArr = calculateValue(definition.percent, edges, refs, partialResult);
+		const lowArr = calculateValue(definition.low, edges, refs, partialResult);
+		const highArr = calculateValue(definition.high, edges, refs, partialResult);
+
+		return inputArr.map((term, i) => {
+			let low = lowArr[i % lowArr.length];
+			let high = highArr[i % highArr.length];
+			if (high < low) [low, high] = [high, low];
+			if (term < 0.0) term = 0.0;
+			if (term > 1.0) term = 1.0;
+			return term * (high - low) + low;
 		});
 	}
 
