@@ -1122,6 +1122,38 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barsf for a value defintion of type collect with no children', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			collect: 'foo'
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows a value defintion of type collect with children', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			collect: [{root: 'engineering'}, 3]
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
@@ -1953,6 +1985,27 @@ core:radius: 3`;
 		const golden = {
 			'core:radius': 3,
 			engineering: 62.7,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a collect', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
+			collect: [
+				{root:'engineering'},
+				3
+			]
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			'core:radius': 3,
+			engineering: 7.0,
 			ux: 0,
 			data: 0
 		};

@@ -142,6 +142,12 @@ export type ValueDefinitionPercent = {
     high: ValueDefinition
 }
 
+//Collect takes 1 or more children and returns an array that is the
+//concatenation of all of their valeus.
+export type ValueDefinitionCollect = {
+    collect: ValueDefinition[]
+}
+
 //The actual values are all numbers, but for convenience raw inputs can also
 //literally be true or false, which are expanded to DEFAULT_TRUE_NUMBER and FALSE_NUMBER.
 export type ValueDefinitionLeaf = number | boolean;
@@ -158,7 +164,8 @@ export type ValueDefinition = ValueDefinitionLeaf |
     ValueDefinitionCompare |
     ValueDefinitionClip |
     ValueDefinitionRange |
-    ValueDefinitionPercent;
+    ValueDefinitionPercent |
+    ValueDefinitionCollect;
 
 export type LayoutInfo = {
     width: number,

@@ -20,7 +20,8 @@ import {
 	ValueDefinitionCompare,
 	ValueDefinitionIf,
 	ValueDefinitionArithmeticUnary,
-	ValueDefinitionRootValue
+	ValueDefinitionRootValue,
+	ValueDefinitionCollect
 } from './types.js';
 
 import {
@@ -131,6 +132,12 @@ const valueDefinitionIsPercent = (definition : ValueDefinition): definition is V
 	return 'percent' in definition;
 };
 
+const valueDefinitionIsCollect = (definition : ValueDefinition): definition is ValueDefinitionCollect => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'collect' in definition;
+};
+
 export const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : PropertyDefinition, exampleValue : NodeValues) : void => {
 	if (typeof definition == 'boolean') return;
 	if (typeof definition == 'number') return;
@@ -205,6 +212,14 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 		validateValueDefinition(definition.percent, edgeDefinition, exampleValue);
 		validateValueDefinition(definition.low, edgeDefinition, exampleValue);
 		validateValueDefinition(definition.high, edgeDefinition, exampleValue);
+		return;
+	}
+
+	if (valueDefinitionIsCollect(definition)) {
+		if (!definition.collect || definition.collect.length == 0) throw new Error('collect requires at least one child');
+		for (const child of definition.collect) {
+			validateValueDefinition(child, edgeDefinition, exampleValue);
+		}
 		return;
 	}
 
@@ -306,6 +321,10 @@ export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]
 			if (term > 1.0) term = 1.0;
 			return term * (high - low) + low;
 		});
+	}
+
+	if (valueDefinitionIsCollect(definition)) {
+		return definition.collect.map(child => calculateValue(child, edges, refs, partialResult, rootValue)).flat();
 	}
 
 	const _exhaustiveCheck : never = definition;
