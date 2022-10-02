@@ -21,7 +21,8 @@ import {
 	ValueDefinitionIf,
 	ValueDefinitionArithmeticUnary,
 	ValueDefinitionRootValue,
-	ValueDefinitionCollect
+	ValueDefinitionCollect,
+	ValueDefinitionLeaf
 } from './types.js';
 
 import {
@@ -60,6 +61,12 @@ const COMPARE_OPERATORS : {[op in CompareOperator]: Comparer} = {
 	'>': (one, two) => one > two ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER,
 	'<=': (one, two) => one <= two ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER,
 	'>=': (one, two) => one >= two ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER,
+};
+
+const valueDefinitionIsLeaf = (definition : ValueDefinition) : definition is ValueDefinitionLeaf => {
+	if (typeof definition == 'number') return true;
+	if (typeof definition == 'boolean') return true;
+	return false;
 };
 
 const valueDefintionIsEdgeConstant = (definition : ValueDefinition) : definition is ValueDefintionEdgeConstant => {
@@ -139,10 +146,9 @@ const valueDefinitionIsCollect = (definition : ValueDefinition): definition is V
 };
 
 export const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : PropertyDefinition, exampleValue : NodeValues) : void => {
-	if (typeof definition == 'boolean') return;
-	if (typeof definition == 'number') return;
+	if (valueDefinitionIsLeaf(definition)) return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {
-		if (definition.some(item => typeof item != 'number' && typeof item != 'boolean')) throw new Error('An array was provided but some items were not numbers or booleans');
+		if (definition.some(leaf => !valueDefinitionIsLeaf(leaf))) throw new Error('If an array is provided it msut contain only numbers, booleans, or null');
 		if (definition.length == 0) throw new Error('If an array of numbers is provided there must be at least one');
 		return;
 	}
@@ -228,14 +234,24 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 	return _exhaustiveCheck;
 };
 
+const calculateValueLeaf = (definition : ValueDefinitionLeaf) : [number] =>  {
+	if (typeof definition == 'boolean') return [definition ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER];
+
+	if (typeof definition == 'number') return [definition];
+
+	const _exhaustiveCheck : never = definition;
+	throw new Error('Illegal value for definition');
+	return _exhaustiveCheck;
+};
+
+
 //TODO: is there a way to make it clear this must return an array with at least
 //one number?
 export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs : NodeValues[], partialResult : NodeValues, rootValue : NodeValues) : number[] => {
-	if (typeof definition == 'boolean') return [definition ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER];
-	
-	if (typeof definition == 'number') return [definition];
 
-	if (Array.isArray(definition)) return definition.map(input => typeof input == 'boolean' ? (input ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER): input);
+	if (valueDefinitionIsLeaf(definition)) return calculateValueLeaf(definition);
+
+	if (Array.isArray(definition)) return definition.map(leaf => calculateValueLeaf(leaf)[0]);
 
 	if (valueDefintionIsEdgeConstant(definition)) {
 		return edges.map(edge => edge[definition.constant] as number);
