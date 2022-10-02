@@ -13,4 +13,4 @@ export type DataFilename = 'default';
 
 export const DATA : {[filename in DataFilename]: RawMapDefinition} = {
 	'default': defaultData
-} as const;
+};

@@ -29,7 +29,7 @@ export type DataFilename = ${datafiles.map(filename => `'${filename}'`).join(' |
 
 export const DATA : {[filename in DataFilename]: RawMapDefinition} = {
 ${datafiles.map(filename => `\t'${filename}': ${camelCaseFilename(filename) + 'Data'}`).join(',\n')}
-} as const;
+};
 `;
 
 	fs.writeFileSync(DYNAMIC_TYPES_FILE, data);
