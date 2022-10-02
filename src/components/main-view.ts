@@ -46,6 +46,7 @@ import {
 	SVG_HEIGHT,
 	SVG_WIDTH
 } from '../constants.js';
+import { canonicalizePath } from '../actions/app.js';
 
 const fetchData = async(filename : string) => {
 	let res;
@@ -147,6 +148,7 @@ class MainView extends connect(store)(PageViewElement) {
 	override firstUpdated() {
 		window.addEventListener('resize', () => this.resizeVisualization());
 		this.resizeVisualization();
+		store.dispatch(canonicalizePath());
 	}
 
 	//Should be called any time the scale of visualization might need to change.
