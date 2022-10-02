@@ -12,6 +12,7 @@ export const selectFilename = (state : RootState) => state.data ? state.data.fil
 export const selectPage = (state : RootState) => state.app ? state.app.page : '';
 export const selectPageExtra = (state : RootState) => state.app ? state.app.pageExtra : '';
 export const selectData = (state : RootState) => state.data?.data;
+export const selectScale = (state : RootState) => state.data ? state.data.scale : 1.0;
 
 export const selectAdjacencyMap = createSelector(
 	selectData,

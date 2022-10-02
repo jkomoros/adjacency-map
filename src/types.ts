@@ -297,6 +297,7 @@ export type AppState = {
 export type DataState = {
     filename : Filename;
     data?: RawMapDefinition;
+    scale: number;
 }
 
 export type RootState = {

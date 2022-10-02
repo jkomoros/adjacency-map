@@ -5,7 +5,8 @@ import {
 import {
 	LOAD_DATA,
 	UPDATE_FILENAME,
-	DEFAULT_FILE_NAME
+	DEFAULT_FILE_NAME,
+	UPDATE_SCALE
 } from "../actions/data.js";
 
 import {
@@ -15,6 +16,7 @@ import {
 const INITIAL_STATE : DataState = {
 	filename: DEFAULT_FILE_NAME,
 	data: undefined,
+	scale: 1.0
 };
 
 const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState => {
@@ -28,6 +30,11 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			filename: action.filename
+		};
+	case UPDATE_SCALE:
+		return {
+			...state,
+			scale: action.scale
 		};
 	default:
 		return state;

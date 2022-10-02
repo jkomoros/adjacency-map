@@ -1,5 +1,6 @@
 export const LOAD_DATA = "LOAD_DATA";
 export const UPDATE_FILENAME = 'UPDATE_FILENAME';
+export const UPDATE_SCALE = 'UPDATE_SCALE';
 
 export const DEFAULT_FILE_NAME = 'default';
 //Also in tools/config.ts
@@ -11,6 +12,7 @@ import {
 
 import {
 	selectFilename,
+	selectScale
 } from '../selectors.js';
 
 import {
@@ -48,4 +50,12 @@ export const updateFilename : AppActionCreator = (filename : Filename, skipCanon
 		filename,
 	});
 	if (!skipCanonicalize) dispatch(canonicalizePath());
+};
+
+export const updateScale : AppActionCreator = (scale) => (dispatch, getState) => {
+	if (scale == selectScale(getState())) return;
+	dispatch({
+		type: UPDATE_SCALE,
+		scale,
+	});
 };

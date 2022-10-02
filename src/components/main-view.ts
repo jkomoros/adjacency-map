@@ -8,6 +8,7 @@ import { store } from "../store.js";
 
 import {
 	loadData,
+	updateScale,
 	DATA_DIRECTORY
 } from "../actions/data.js";
 
@@ -15,6 +16,7 @@ import {
 	selectPageExtra,
 	selectFilename,
 	selectAdjacencyMap,
+	selectScale,
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -38,6 +40,15 @@ import {
 import {
 	AdjacencyMap
 } from '../adjacency-map.js';
+
+import {
+	SVG_HEIGHT,
+	SVG_WIDTH
+} from '../constants.js';
+
+//Size in px that we want to allow around the visualization edge. Pixels per 100
+//px of width.
+const VISUALIZATION_PADDING = 8;
 
 const fetchData = async(filename : string) => {
 	let res;
@@ -68,6 +79,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_adjacencyMap : AdjacencyMap | null;
+
+	@state()
+	_scale : number;
 
 	static override get styles() {
 		return [
@@ -120,12 +134,43 @@ class MainView extends connect(store)(PageViewElement) {
 		this._pageExtra = selectPageExtra(state);
 		this._filename = selectFilename(state);
 		this._adjacencyMap = selectAdjacencyMap(state);
+		this._scale = selectScale(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
 		if (changedProps.has('_filename') && this._filename) {
 			fetchData(this._filename);
 		}
+	}
+
+	override firstUpdated() {
+		window.addEventListener('resize', () => this.resizeVisualization());
+		this.resizeVisualization();
+	}
+
+	//Should be called any time the scale of visualization might need to change.
+	//width, height, configurationExpanded, descriptionExpanded or page resizes
+	resizeVisualization() {
+
+
+
+		const pageRect = this.getBoundingClientRect();
+		let availableWidth = pageRect.width;
+		let availableHeight = pageRect.height;
+
+		const effectivePadding = VISUALIZATION_PADDING * (pageRect.width / 100);
+
+		availableWidth -= (2 * effectivePadding);
+		availableHeight -= (2 * effectivePadding);
+
+		const heightScale = availableHeight / SVG_HEIGHT;
+		const widthScale = availableWidth / SVG_WIDTH;
+
+		const scale =  Math.min(heightScale, widthScale);
+		if (!Number.isFinite(scale)) return;
+
+		store.dispatch(updateScale(scale));
+
 	}
 
 	_pathForEdge(edge : ExpandedEdgeValue, map : AdjacencyMap) : string {
@@ -160,7 +205,7 @@ class MainView extends connect(store)(PageViewElement) {
 		// padding around the labels
 		const haloWidth = 3;
 
-		return html`<svg class='main' viewBox='${a.viewBox}' width='${a.width}' height='${a.height}' style='max-width: 100%; height: auto; height: intrinsic;' font-family='sans-serif' font-size='10'>
+		return html`<svg class='main' viewBox='${a.viewBox}' width='${a.width * this._scale}' height='${a.height * this._scale}' style='max-width: 100%; height: auto; height: intrinsic;' font-family='sans-serif' font-size='10'>
 			<g fill="none" stroke="${stroke}" stroke-opacity="${strokeOpacity}" stroke-linecap="${strokeLinecap}" stroke-linejoin="${strokeLinejoin}" stroke-width="${strokeWidth}">
 				${a.edges.map(edge => svg`<path d="${this._pathForEdge(edge, a)}"></path>`)}
 			</g>
