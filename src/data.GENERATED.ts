@@ -3,8 +3,8 @@
 //We import all data files directly into the build because they aren't that big
 //and this way we can get direct typescript type checking at compile time.
 
-import defaultData from '../data/default.json' assert { type: "json" };
+import defaultData from '../data/default.js';
 
 export const DATA = {
 	'default': defaultData
-} as const;
+};
