@@ -7,6 +7,7 @@ import { connect } from "pwa-helpers/connect-mixin.js";
 import { store } from "../store.js";
 
 import {
+	updateFilename,
 	updateScale,
 	updateWithMainPageExtra
 } from "../actions/data.js";
@@ -16,6 +17,7 @@ import {
 	selectFilename,
 	selectAdjacencyMap,
 	selectScale,
+	selectLegalFilenames,
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -65,6 +67,9 @@ class MainView extends connect(store)(PageViewElement) {
 	@state()
 	_scale : number;
 
+	@state()
+	_legalFilenames : DataFilename[];
+
 	static override get styles() {
 		return [
 			SharedStyles,
@@ -76,6 +81,12 @@ class MainView extends connect(store)(PageViewElement) {
 					width: 100vw;
 					background-color: var(--override-app-background-color, var(--app-background-color, #356F9E));
 					overflow:scroll;
+				}
+
+				.controls {
+					position: absolute;
+					top: 0;
+					left: 0;
 				}
 
 				.container {
@@ -105,6 +116,13 @@ class MainView extends connect(store)(PageViewElement) {
 
 	override render() : TemplateResult {
 		return html`
+			<div class='controls'>
+				${this._legalFilenames && this._legalFilenames.length > 1 ? html`
+				<label for='filenames'>File</label>
+				<select id='filenames' .value=${this._filename} @change=${this._handleFilenameChanged}>
+					${this._legalFilenames.map(filename => html`<option .value=${filename}>${filename}</option>`)}
+				</select>` : ''}
+			</div>
 			<div class='container'>
 				${this._svg()}
 			</div>
@@ -117,6 +135,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._filename = selectFilename(state);
 		this._adjacencyMap = selectAdjacencyMap(state);
 		this._scale = selectScale(state);
+		this._legalFilenames = selectLegalFilenames(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
@@ -130,6 +149,12 @@ class MainView extends connect(store)(PageViewElement) {
 		window.addEventListener('resize', () => this.resizeVisualization());
 		this.resizeVisualization();
 		store.dispatch(canonicalizePath());
+	}
+
+	_handleFilenameChanged(e : Event) {
+		const ele = e.composedPath()[0];
+		if (!(ele instanceof HTMLSelectElement)) throw new Error('not a select element');
+		store.dispatch(updateFilename(ele.value));
 	}
 
 	//Should be called any time the scale of visualization might need to change.
