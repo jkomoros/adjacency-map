@@ -163,7 +163,7 @@ export const packColor = (c : Color): PackedColor => {
 	let packed = c.r;
 	packed = (packed << 8) + c.g;
 	packed = (packed << 8) + c.b;
-	packed = (packed << 8) + (c.a * 255);
+	packed = (packed << 8) + Math.floor(c.a * 255);
 	return packed;
 };
 
