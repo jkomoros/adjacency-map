@@ -3,8 +3,8 @@ import {
 } from '../src/types.js';
 
 const data : RawMapDefinition = {
-	"version": 1,
-	"nodes": {}
+	version: 1,
+	nodes: {}
 };
 
 export default data;
