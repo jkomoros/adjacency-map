@@ -21,6 +21,10 @@ import {
 } from '../../src/color.js';
 
 import {
+	NULL_SENTINEL
+} from '../../src/constants.js';
+
+import {
 	deepCopy
 } from '../../src/util.js';
 
@@ -457,6 +461,20 @@ describe('AdjacencyMap validation', () => {
 	it('Allows passing false directly as ValueDefinition', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = false;
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows passing null directly as ValueDefinition', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = null;
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -1343,6 +1361,22 @@ core:radius: 3`;
 		const golden = {
 			'core:radius': 3,
 			engineering: 4.0,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly handles literal null', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = [null, 3.0];
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			'core:radius': 3,
+			engineering: NULL_SENTINEL + 3.0,
 			ux: 0,
 			data: 0
 		};

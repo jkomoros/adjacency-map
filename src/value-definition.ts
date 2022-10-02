@@ -28,7 +28,8 @@ import {
 import {
 	DEFAULT_TRUE_NUMBER,
 	FALSE_NUMBER,
-	isTrue
+	isTrue,
+	NULL_SENTINEL
 } from './constants.js';
 
 export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
@@ -66,6 +67,7 @@ const COMPARE_OPERATORS : {[op in CompareOperator]: Comparer} = {
 const valueDefinitionIsLeaf = (definition : ValueDefinition) : definition is ValueDefinitionLeaf => {
 	if (typeof definition == 'number') return true;
 	if (typeof definition == 'boolean') return true;
+	if (definition === null) return true;
 	return false;
 };
 
@@ -238,6 +240,8 @@ const calculateValueLeaf = (definition : ValueDefinitionLeaf) : [number] =>  {
 	if (typeof definition == 'boolean') return [definition ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER];
 
 	if (typeof definition == 'number') return [definition];
+
+	if (definition === null) return [NULL_SENTINEL];
 
 	const _exhaustiveCheck : never = definition;
 	throw new Error('Illegal value for definition');

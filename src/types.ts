@@ -154,7 +154,7 @@ export type ValueDefinitionCollect = {
 
 //The actual values are all numbers, but for convenience raw inputs can also
 //literally be true or false, which are expanded to DEFAULT_TRUE_NUMBER and FALSE_NUMBER.
-export type ValueDefinitionLeaf = number | boolean;
+export type ValueDefinitionLeaf = number | boolean | null;
 
 export type ValueDefinition = ValueDefinitionLeaf |
 	ValueDefinitionLeaf[] |
