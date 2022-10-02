@@ -21,7 +21,9 @@ import {
 } from './graph.js';
 
 import {
-	ROOT_ID
+	ROOT_ID,
+	SVG_HEIGHT,
+	SVG_WIDTH
 } from './constants.js';
 
 import {
@@ -242,7 +244,7 @@ export class AdjacencyMap {
 		const simpleGraph = extractSimpleGraph(this._data);
 		const longestTree = tidyLongestTree(simpleGraph);
 		const treeGraph = treeGraphFromParentGraph(longestTree);
-		this._cachedLayoutInfo = TreeLayout(treeGraph);
+		this._cachedLayoutInfo = TreeLayout(treeGraph, SVG_WIDTH, SVG_HEIGHT);
 	}
 
 	get width() : number {

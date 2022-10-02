@@ -8,16 +8,14 @@ import {
 
 //Heavily adapted from https://observablehq.com/@d3/tree
 
-export const TreeLayout = (data : TreeGraph) : LayoutInfo => {
+export const TreeLayout = (data : TreeGraph, width : number, height : number) : LayoutInfo => {
 
 	// horizontal padding for first and last column
 	//const padding = 1;
 
 	const root = d3.hierarchy(data);
   
-	//Remember, these are transposed
-	const width = 640;
-	const height = 480;
+	//Remember, width and height are transposed
 
 	//Note that d3.tree() lays out from top to bottom so we rotate 90.
 

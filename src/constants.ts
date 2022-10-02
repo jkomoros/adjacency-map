@@ -18,3 +18,6 @@ export const FALSE_NUMBER = 0.0;
 
 export const isTrue = (input : number) => !isFalse(input);
 export const isFalse = (input : number) => input == FALSE_NUMBER;
+
+export const SVG_WIDTH = 640;
+export const SVG_HEIGHT = 480;
