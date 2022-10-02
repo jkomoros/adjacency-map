@@ -7,7 +7,7 @@ import {
 export const unpackConfigJSON = (input : unknown) : MapDefinition => input as MapDefinition;
 
 export const camelCaseFilename = (name : string) : string => {
-	return name.split('-').map(piece => piece[0].toUpperCase() + piece.slice(1)).join('');
+	return name.split('-').map((piece, index) => index == 0 ? piece : piece[0].toUpperCase() + piece.slice(1)).join('');
 };
 
 const randomCharSetNumbers = '0123456789';
