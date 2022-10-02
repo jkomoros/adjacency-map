@@ -1,10 +1,6 @@
 import {
-	MapDefinition,
 	RandomGenerator
 } from './types.js';
-
-//TODO: do more validation
-export const unpackConfigJSON = (input : unknown) : MapDefinition => input as MapDefinition;
 
 export const camelCaseFilename = (name : string) : string => {
 	return name.split('-').map((piece, index) => index == 0 ? piece : piece[0].toUpperCase() + piece.slice(1)).join('');

@@ -1,4 +1,3 @@
-export const LOAD_DATA = "LOAD_DATA";
 export const UPDATE_FILENAME = 'UPDATE_FILENAME';
 export const UPDATE_SCALE = 'UPDATE_SCALE';
 
@@ -22,24 +21,6 @@ import {
 import {
 	DataFilename,
 } from '../types.js';
-
-import {
-	unpackConfigJSON
-} from '../util.js';
-
-export const loadData : AppActionCreator = (blob) => (dispatch) => {
-	let data;
-	try {
-		data = unpackConfigJSON(blob);
-	} catch(err) {
-		console.warn('Couldn\'t load data:' + err);
-		return;
-	}
-	dispatch({
-		type: LOAD_DATA,
-		data,
-	});
-};
 
 export const updateFilename : AppActionCreator = (filename : DataFilename, skipCanonicalize = false) => (dispatch, getState) => {
 	const state = getState();

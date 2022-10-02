@@ -7,7 +7,6 @@ import { connect } from "pwa-helpers/connect-mixin.js";
 import { store } from "../store.js";
 
 import {
-	loadData,
 	updateScale,
 	updateWithMainPageExtra
 } from "../actions/data.js";
@@ -50,14 +49,6 @@ import {
 import {
 	canonicalizePath
 } from '../actions/app.js';
-
-import {
-	DATA
-} from '../data.GENERATED.js';
-
-const fetchData = async(filename : DataFilename) => {
-	store.dispatch(loadData(DATA[filename]));
-};
 
 @customElement('main-view')
 class MainView extends connect(store)(PageViewElement) {
@@ -129,9 +120,6 @@ class MainView extends connect(store)(PageViewElement) {
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
-		if (changedProps.has('_filename') && this._filename) {
-			fetchData(this._filename);
-		}
 		//We're responsible for calling updateWithSimPageExtra
 		if ((changedProps.has('_pageExtra')) && this._pageExtra) {
 			store.dispatch(updateWithMainPageExtra(this._pageExtra));

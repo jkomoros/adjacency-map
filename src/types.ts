@@ -300,7 +300,6 @@ export type AppState = {
 
 export type DataState = {
 	filename : DataFilename;
-	data?: RawMapDefinition;
 	scale: number;
 }
 
