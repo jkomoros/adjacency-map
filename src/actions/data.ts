@@ -59,3 +59,14 @@ export const updateScale : AppActionCreator = (scale) => (dispatch, getState) =>
 		scale,
 	});
 };
+
+export const updateWithMainPageExtra : AppActionCreator = (pageExtra) => (dispatch) => {
+	const parts = pageExtra.split('/');
+	//The last piece is the trailing slash
+	//TODO: handle malformed URLs better
+	if (parts.length != 1) return;
+	const filename = parts[0];
+
+	//Each of these will return if a no op
+	dispatch(updateFilename(filename, true));
+};
