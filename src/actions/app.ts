@@ -7,7 +7,8 @@ import {
 
 import {
 	selectPage,
-	selectPageExtra
+	selectPageExtra,
+	selectFilename
 } from '../selectors.js';
 
 import {
@@ -40,6 +41,9 @@ export const canonicalizePath : AppActionCreator = () => (dispatch ,getState) =>
 	
 	if (page != 'main') {
 		path.push(pageExtra);
+	} else {
+		const filename = selectFilename(state);
+		path.push(filename, '');
 	}
 
 	dispatch(navigatePathTo(path.join('/'), true));
