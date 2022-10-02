@@ -20,7 +20,7 @@ import {
 } from '../store.js';
 
 import {
-	Filename,
+	DataFilename,
 } from '../types.js';
 
 import {
@@ -41,7 +41,7 @@ export const loadData : AppActionCreator = (blob) => (dispatch) => {
 	});
 };
 
-export const updateFilename : AppActionCreator = (filename : Filename, skipCanonicalize = false) => (dispatch, getState) => {
+export const updateFilename : AppActionCreator = (filename : DataFilename, skipCanonicalize = false) => (dispatch, getState) => {
 	const state = getState();
 	const currentFilename = selectFilename(state);
 	if (currentFilename == filename) return;

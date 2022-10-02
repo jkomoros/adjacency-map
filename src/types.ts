@@ -23,7 +23,7 @@ export type Color = {
 	rgbaStr : CSSColor;
 }
 
-export type Filename = string;
+export type DataFilename = string;
 
 //TODO: tigthen this
 export type PropertyName = string;
@@ -295,7 +295,7 @@ export type AppState = {
 };
 
 export type DataState = {
-	filename : Filename;
+	filename : DataFilename;
 	data?: RawMapDefinition;
 	scale: number;
 }
