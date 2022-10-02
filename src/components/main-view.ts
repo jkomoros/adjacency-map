@@ -46,10 +46,6 @@ import {
 	SVG_WIDTH
 } from '../constants.js';
 
-//Size in px that we want to allow around the visualization edge. Pixels per 100
-//px of width.
-const VISUALIZATION_PADDING = 8;
-
 const fetchData = async(filename : string) => {
 	let res;
 	filename = ('' + filename).toLowerCase();
@@ -155,13 +151,8 @@ class MainView extends connect(store)(PageViewElement) {
 
 
 		const pageRect = this.getBoundingClientRect();
-		let availableWidth = pageRect.width;
-		let availableHeight = pageRect.height;
-
-		const effectivePadding = VISUALIZATION_PADDING * (pageRect.width / 100);
-
-		availableWidth -= (2 * effectivePadding);
-		availableHeight -= (2 * effectivePadding);
+		const availableWidth = pageRect.width;
+		const availableHeight = pageRect.height;
 
 		const heightScale = availableHeight / SVG_HEIGHT;
 		const widthScale = availableWidth / SVG_WIDTH;
