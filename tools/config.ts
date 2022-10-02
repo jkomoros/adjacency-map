@@ -19,7 +19,8 @@ const generateConfig = () => {
 //We import all data files directly into the build because they aren't that big
 //and this way we can get direct typescript type checking at compile time.
 
-${datafiles.map(filename => `import ${camelCaseFilename(filename) + 'Data'} from '../data/${filename}.json' assert { type: "json" };\n`)}
+${datafiles.map(filename => `import ${camelCaseFilename(filename) + 'Data'} from '../data/${filename}.json' assert { type: "json" };`).join('\n')}
+
 export const DATA = {
 ${datafiles.map(filename => `\t'${filename}': ${camelCaseFilename(filename) + 'Data'}`).join(',\n')}
 } as const;
