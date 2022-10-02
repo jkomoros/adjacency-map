@@ -6,6 +6,10 @@ import {
 //TODO: do more validation
 export const unpackConfigJSON = (input : unknown) : MapDefinition => input as MapDefinition;
 
+export const camelCaseFilename = (name : string) : string => {
+	return name.split('-').map(piece => piece[0].toUpperCase() + piece.slice(1)).join('');
+};
+
 const randomCharSetNumbers = '0123456789';
 const randomCharSetLetters = 'abcdef';
 const randomCharSet = randomCharSetNumbers + randomCharSetLetters;
