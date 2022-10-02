@@ -236,12 +236,12 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 	return _exhaustiveCheck;
 };
 
-const calculateValueLeaf = (definition : ValueDefinitionLeaf) : [number] =>  {
-	if (typeof definition == 'boolean') return [definition ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER];
+const calculateValueLeaf = (definition : ValueDefinitionLeaf) : number =>  {
+	if (typeof definition == 'boolean') return definition ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER;
 
-	if (typeof definition == 'number') return [definition];
+	if (typeof definition == 'number') return definition;
 
-	if (definition === null) return [NULL_SENTINEL];
+	if (definition === null) return NULL_SENTINEL;
 
 	const _exhaustiveCheck : never = definition;
 	throw new Error('Illegal value for definition');
@@ -253,9 +253,9 @@ const calculateValueLeaf = (definition : ValueDefinitionLeaf) : [number] =>  {
 //one number?
 export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs : NodeValues[], partialResult : NodeValues, rootValue : NodeValues) : number[] => {
 
-	if (valueDefinitionIsLeaf(definition)) return calculateValueLeaf(definition);
+	if (valueDefinitionIsLeaf(definition)) return [calculateValueLeaf(definition)];
 
-	if (Array.isArray(definition)) return definition.map(leaf => calculateValueLeaf(leaf)[0]);
+	if (Array.isArray(definition)) return definition.map(leaf => calculateValueLeaf(leaf));
 
 	if (valueDefintionIsEdgeConstant(definition)) {
 		return edges.map(edge => edge[definition.constant] as number);
