@@ -1,3 +1,7 @@
+import {
+	DATA
+} from './data.GENERATED.js';
+
 export type RandomGenerator = () => number;
 
 //A string that can be used directly anywhere CSS expects a color. Hex, RGB(),
@@ -23,7 +27,7 @@ export type Color = {
 	rgbaStr : CSSColor;
 }
 
-export type DataFilename = string;
+export type DataFilename = keyof typeof DATA;
 
 //TODO: tigthen this
 export type PropertyName = string;

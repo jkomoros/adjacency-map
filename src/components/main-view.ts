@@ -9,7 +9,6 @@ import { store } from "../store.js";
 import {
 	loadData,
 	updateScale,
-	DATA_DIRECTORY,
 	updateWithMainPageExtra
 } from "../actions/data.js";
 
@@ -34,6 +33,7 @@ import {
 } from "./button-shared-styles.js";
 
 import {
+	DataFilename,
 	ExpandedEdgeValue,
 	RootState,
 } from '../types.js';
@@ -46,24 +46,17 @@ import {
 	SVG_HEIGHT,
 	SVG_WIDTH
 } from '../constants.js';
-import { canonicalizePath } from '../actions/app.js';
 
-const fetchData = async(filename : string) => {
-	let res;
-	filename = ('' + filename).toLowerCase();
-	filename = filename.split('/')[0];
-	const path = '/' + DATA_DIRECTORY + '/' + filename + '.json';
-	try {
-		res = await fetch(path);
-	} catch (err) {
-		console.warn('Couldn\'t fetch ' + path + ': ' + err);
-	}
+import {
+	canonicalizePath
+} from '../actions/app.js';
 
-	if (!res) throw new Error('No data from ' + path);
+import {
+	DATA
+} from '../data.GENERATED.js';
 
-	const blob = await res.json();
-
-	store.dispatch(loadData(blob));
+const fetchData = async(filename : DataFilename) => {
+	store.dispatch(loadData(DATA[filename]));
 };
 
 @customElement('main-view')
@@ -73,7 +66,7 @@ class MainView extends connect(store)(PageViewElement) {
 	_pageExtra: string;
 
 	@state()
-	_filename: string;
+	_filename: DataFilename;
 
 	@state()
 	_adjacencyMap : AdjacencyMap | null;
