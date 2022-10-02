@@ -1,5 +1,7 @@
+export { DataFilename } from './data.GENERATED.js';
+
 import {
-	DATA
+	DataFilename
 } from './data.GENERATED.js';
 
 export type RandomGenerator = () => number;
@@ -26,8 +28,6 @@ export type Color = {
 	rgbStr : CSSColor;
 	rgbaStr : CSSColor;
 }
-
-export type DataFilename = keyof typeof DATA;
 
 //TODO: tigthen this
 export type PropertyName = string;

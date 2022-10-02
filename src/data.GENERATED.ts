@@ -3,8 +3,14 @@
 //We import all data files directly into the build because they aren't that big
 //and this way we can get direct typescript type checking at compile time.
 
+import {
+	RawMapDefinition
+} from './types.js';
+
 import defaultData from '../data/default.json' assert { type: "json" };
 
-export const DATA = {
+export type DataFilename = 'default';
+
+export const DATA : {[filename in DataFilename]: RawMapDefinition} = {
 	'default': defaultData
 } as const;
