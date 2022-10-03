@@ -29,6 +29,10 @@ const data : RawMapDefinition = {
 				},
 				{
 					type: "engineering"
+				},
+				{
+					type: "core:radius",
+					radius: 12
 				}
 			]
 		},

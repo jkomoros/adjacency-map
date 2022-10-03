@@ -13,15 +13,15 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 				usage: "If you want to set the default radius, set root.core:radius If you want to override just one node's radius, add an edge of type 'core:radius' with a constant of radius of the value you want.",
 				value: {
 					if: {
-						compare: '<',
+						compare: '!=',
 						child: {constant: 'radius'},
-						term: 0
+						term: null
 					},
-					then: {root: 'core:radius'},
-					else: {constant: 'radius'}
+					then: {constant: 'radius'},
+					else: {root: 'core:radius'}
 				},
 				constants: {
-					'radius': -1
+					'radius': null
 				},
 				combine: 'max',
 				hide: true
