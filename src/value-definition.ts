@@ -64,7 +64,7 @@ const COMPARE_OPERATORS : {[op in CompareOperator]: Comparer} = {
 	'>=': (one, two) => one >= two ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER,
 };
 
-const valueDefinitionIsLeaf = (definition : ValueDefinition) : definition is ValueDefinitionLeaf => {
+export const valueDefinitionIsLeaf = (definition : ValueDefinition) : definition is ValueDefinitionLeaf => {
 	if (typeof definition == 'number') return true;
 	if (typeof definition == 'boolean') return true;
 	if (definition === null) return true;
@@ -236,7 +236,7 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 	return _exhaustiveCheck;
 };
 
-const calculateValueLeaf = (definition : ValueDefinitionLeaf) : number =>  {
+export const calculateValueLeaf = (definition : ValueDefinitionLeaf) : number =>  {
 	if (typeof definition == 'boolean') return definition ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER;
 
 	if (typeof definition == 'number') return definition;

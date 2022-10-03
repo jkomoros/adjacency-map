@@ -290,6 +290,48 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('allows a root with a true key', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.root.engineering = true;
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows a root with a false key', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.root.engineering = false;
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows a root with a null key', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.root.engineering = null;
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('barfs for a root with a key not in properties', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.root.foo = 3;
@@ -331,6 +373,91 @@ describe('AdjacencyMap validation', () => {
 			assert.doesNotThrow(fn);
 		}
 	});
+
+	it('allows an edge with a constants of type true', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.constants.weight = true;
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows an edge with a constants of type false', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.constants.weight = false;
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows an edge with a constants of type null', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.constants.weight = null;
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows a node with an edge with a weight of type false', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.values[0].weight = false;
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows a node with an edge with a weight of type true', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.values[0].weight = true;
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows a node with an edge with a weight of type null', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.values[0].weight = null;
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 
 	it('barfs for an edge with a value of edge with illegal property', async () => {
 		const input = deepCopy(legalBaseInput);
@@ -1629,6 +1756,9 @@ core:radius: 3`;
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
+
+	//TODO: test that having a true/false/null in edge constants, node values,
+	//etc all work.
 
 	it('Tests a ResultValue ref calculation with two edges', async () => {
 		const input = deepCopy(legalBaseInput);

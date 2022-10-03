@@ -185,6 +185,15 @@ export type LayoutInfo = {
 
 export type NodeID = string;
 
+export type RawEdgeValue = {
+	//Any of the exlicitly enumerated properties should be added to
+	//RESERVED_VALUE_DEFINITION_PROPERTIES
+	type: PropertyName,
+	//If ref is not provided, it implicitly references the root node.
+	ref? : NodeID,
+	[constant : ConstantType]: undefined | ValueDefinitionLeaf | PropertyName | NodeID;
+};
+
 export type EdgeValue = {
 	//Any of the exlicitly enumerated properties should be added to
 	//RESERVED_VALUE_DEFINITION_PROPERTIES
@@ -217,9 +226,18 @@ export type TreeGraph = {
 	children? : TreeGraph[];
 }
 
+export type RawNodeDefinition = {
+	description: string,
+	values?: RawEdgeValue[]
+};
+
 export type NodeDefinition = {
 	description: string,
-	values?: EdgeValue[]
+	values: EdgeValue[]
+};
+
+export type RawNodeValues = {
+	[type : PropertyName]: ValueDefinitionLeaf
 };
 
 /**
@@ -234,7 +252,7 @@ export type Combiner = (nums: number[]) => [number];
 //We can't use keyof typeof REDUCERS because `npm run generate:schema` can't handle those types
 export type CombinerType = 'mean' | 'first' | 'last' | 'min' | 'max' | 'sum' | 'product' | 'and' | 'or';
 
-export type PropertyDefinition = {
+export type RawPropertyDefinition = {
 	value: ValueDefinition,
 	description?: string,
 	//A message for how to use this property. Useful for libraries.
@@ -253,6 +271,18 @@ export type PropertyDefinition = {
 	//Some properties (especially in libraries don't make sense to print out in e.g. AdjacencyMapNode.description)
 	hide? : true,
 	constants?: {
+		[constant : ConstantType]: ValueDefinitionLeaf
+	}
+}
+
+export type PropertyDefinition = {
+	value: ValueDefinition,
+	description?: string,
+	usage?: string,
+	combine?: CombinerType,
+	dependencies? : PropertyName[],
+	hide? : true,
+	constants?: {
 		[constant : ConstantType]: number
 	}
 }
@@ -264,11 +294,11 @@ export type Library = {
 	import?: LibraryType[],
 	//Types names should be `${libraryName}:${typeName}`
 	properties: {
-		[type : PropertyName]: PropertyDefinition
+		[type : PropertyName]: RawPropertyDefinition
 	},
 	//Typically a library will provide default values for all of the types it
 	//defines
-	root: NodeValues
+	root: RawNodeValues
 }
 
 export type RawMapDefinition = {
@@ -277,19 +307,23 @@ export type RawMapDefinition = {
 	//always imported.
 	import?: LibraryType | LibraryType[],
 	properties?: {
-		[type : PropertyName]: PropertyDefinition
+		[type : PropertyName]: RawPropertyDefinition
 	}
-	root?: NodeValues;
+	root?: RawNodeValues;
 	nodes: {
-		[id : NodeID] : NodeDefinition
+		[id : NodeID] : RawNodeDefinition
 	}
 }
 
 //MapDefinition is RawMapDefinition, but with any imports expanded.
-export type MapDefinition = Required<Omit<RawMapDefinition, "import">> & {
-	//have a flag variable so MapDefinition is not just a subset of
-	//RawMapDefinition and typescript will complain if the wrong one is passed.
-	processed: true
+export type MapDefinition = {
+	properties: {
+		[type : PropertyName]: PropertyDefinition
+	}
+	root: NodeValues,
+	nodes: {
+		[id : NodeID]: NodeDefinition
+	}
 };
 
 export type AppState = {

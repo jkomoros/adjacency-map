@@ -11,7 +11,10 @@ import {
 	NodeID,
 	NodeValues,
 	RawMapDefinition,
-	SimpleGraph
+	SimpleGraph,
+	RawNodeValues,
+	ValueDefinition,
+	RawPropertyDefinition
 } from './types.js';
 
 import {
@@ -37,10 +40,16 @@ import {
 
 import {
 	calculateValue, 
+	calculateValueLeaf, 
 	RESERVED_VALUE_DEFINITION_PROPERTIES, 
-	validateValueDefinition
+	validateValueDefinition,
+	valueDefinitionIsLeaf
 } from './value-definition.js';
-import { CORE_LIBRARY_NAME, LIBRARIES } from './libraries.js';
+
+import {
+	CORE_LIBRARY_NAME,
+	LIBRARIES
+} from './libraries.js';
 
 export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 	const result : SimpleGraph = {};
@@ -56,7 +65,9 @@ export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 	return result;
 };
 
-const includeLibraries = (data : RawMapDefinition) : MapDefinition => {
+//Does things like include libraries, convert Raw* to * (by calculateValueLeaf
+//on any constants, etc)
+const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 	let baseImports : LibraryType[] = [];
 	if (data.import) {
 		if (typeof data.import == 'string') {
@@ -77,19 +88,53 @@ const includeLibraries = (data : RawMapDefinition) : MapDefinition => {
 		importsMap[importName]= library;
 		importsToProcess.push(...(library.import || []));
 	}
-	let baseTypes : {[name : PropertyName] : PropertyDefinition} = {};
-	let baseRoot : NodeValues = {};
+	let baseTypes : {[name : PropertyName] : RawPropertyDefinition} = {};
+	let baseRoot : RawNodeValues = {};
 	for (const library of Object.values(importsMap)) {
 		baseTypes = {...baseTypes, ...library.properties};
 		baseRoot = {...baseRoot, ...library.root};
 	}
 	const dataTypes = data.properties || {};
 	const dataRoot = data.root || {};
+
+	const rawCombinedRoot = {...baseRoot, ...dataRoot};
+	const root = Object.fromEntries(Object.entries(rawCombinedRoot).map(entry => [entry[0], calculateValueLeaf(entry[1])]));
+
+	const combinedProperties = {...baseTypes, ...dataTypes};
+	const properties : {[name : PropertyName] : PropertyDefinition} = {};
+	for (const [name, rawDefinition] of Object.entries(combinedProperties)) {
+		const definition = {
+			...rawDefinition,
+			constants: Object.fromEntries(Object.entries(rawDefinition.constants || {}).map(entry => [entry[0], calculateValueLeaf(entry[1])]))
+		};
+		properties[name] = definition;
+	}
+	const nodes : {[id : NodeID]: NodeDefinition} = {};
+	for (const [id, rawNode] of Object.entries(data.nodes)) {
+		const values : EdgeValue[] = [];
+		if (rawNode.values) {
+			for (const rawValue of rawNode.values) {
+				const value : EdgeValue = {type: rawValue.type};
+				if (rawValue.ref != undefined) value.ref = rawValue.ref;
+				for (const entry of Object.entries(rawValue)) {
+					if (RESERVED_VALUE_DEFINITION_PROPERTIES[entry[0]]) continue;
+					const val = entry[1] as ValueDefinition;
+					if (!valueDefinitionIsLeaf(val)) continue;
+					value[entry[0]] = calculateValueLeaf(val);
+				}
+				values.push(value);
+			}
+		}
+		nodes[id] = {
+			...rawNode,
+			values
+		};
+	}
 	return {
 		...data,
-		processed: true,
-		root: {...baseRoot, ...dataRoot},
-		properties: {...baseTypes, ...dataTypes}
+		root,
+		properties,
+		nodes
 	};
 };
 
@@ -165,7 +210,7 @@ export class AdjacencyMap {
 
 	constructor(rawData : RawMapDefinition) {
 		//will throw if invalid library is included
-		const data = includeLibraries(rawData);
+		const data = processMapDefinition(rawData);
 		//Will throw if it doesn't validate
 		validateData(data);
 		if (!data) throw new Error('undefined data');
