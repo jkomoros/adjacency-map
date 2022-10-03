@@ -5,8 +5,6 @@ import copy from 'rollup-plugin-copy';
 import commonjs from '@rollup/plugin-commonjs';
 import summary from 'rollup-plugin-summary';
 import dynamicImportVars from '@rollup/plugin-dynamic-import-vars';
-import { importAssertionsPlugin } from 'rollup-plugin-import-assert';
-import { importAssertions } from 'acorn-import-assertions';
 
 export default {
 	input: 'src/components/my-app.js',
@@ -14,10 +12,8 @@ export default {
 		dir: 'build/src/components',
 		format: 'es',
 	},
-	acornInjectPlugins: [ importAssertions ],
 	plugins: [
 		minifyHTML(),
-		importAssertionsPlugin(),
 		dynamicImportVars(),
 		copy({
 			targets: [

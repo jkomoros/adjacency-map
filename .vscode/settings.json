@@ -5,14 +5,9 @@
         "src/**/*.map": true,
         "tools/**/*.d.ts": true,
         "tools/**/*.map": true,
-        "tools/**/*.js": true
-    },
-    "json.schemas": [
-        {
-            "fileMatch": [
-                "/data/*.json"
-            ],
-            "url": "./data-schema.json"
-        }
-    ]
+        "tools/**/*.js": true,
+        "data/**/*.d.ts": true,
+        "data/**/*.map": true,
+        "data/**/*.js": true
+    }
 }

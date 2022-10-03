@@ -14,3 +14,6 @@ src/**/*.map
 tools/**/*.d.ts
 tools/**/*.map
 tools/**/*.js
+data/**/*.d.ts
+data/**/*.map
+data/**/*.js

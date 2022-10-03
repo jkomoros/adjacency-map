@@ -7,7 +7,7 @@ import {
 	RawMapDefinition
 } from './types.js';
 
-import defaultData from '../data/default.json' assert { type: "json" };
+import defaultData from '../data/default.js';
 
 export type DataFilename = 'default';
 
