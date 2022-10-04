@@ -171,8 +171,9 @@ const validateData = (data : MapDefinition) : void => {
 			if (!edge.type) throw new Error(nodeName + ' has an edge with no type');
 			if (!data.properties[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
 		}
-		if (nodeData.display.radius) validateValueDefinition(nodeData.display.radius, exampleValues);
-		if (nodeData.display.opacity) validateValueDefinition(nodeData.display.opacity, exampleValues);
+		for (const displayValue of Object.values(nodeData.display)) {
+			validateValueDefinition(displayValue, exampleValues);
+		}
 	}
 	for(const [type, propertyDefinition] of Object.entries(data.properties)) {
 		try {
@@ -212,8 +213,9 @@ const validateData = (data : MapDefinition) : void => {
 			if (!data.properties[rootName]) throw new Error('root property ' + rootName + ' is not defined in properties');
 		}
 	}
-	validateValueDefinition(data.display.node.radius, exampleValues);
-	validateValueDefinition(data.display.node.opacity, exampleValues);
+	for (const displayValue of Object.values(data.display.node)) {
+		validateValueDefinition(displayValue, exampleValues);
+	}
 	try {
 		topologicalSort(extractSimpleGraph(data));
 	} catch (err) {
