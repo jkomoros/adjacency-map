@@ -353,6 +353,8 @@ export type EdgeDisplay = {
 	color: ValueDefinition
 	//The opacity of the stroke
 	opacity: ValueDefinition
+	//If truth-y, these edges will all render distinctly.
+	distinct: ValueDefinition
 }
 
 export type RawMapDisplay = {

@@ -88,7 +88,8 @@ const BASE_EDGE_DISPLAY : EdgeDisplay = {
 	color: {
 		color: '#555'
 	},
-	opacity: 0.4
+	opacity: 0.4,
+	distinct: false
 };
 
 //Does things like include libraries, convert Raw* to * (by calculateValueLeaf

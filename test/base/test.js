@@ -1745,6 +1745,61 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for an invalid distinct on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edge: {
+				distinct: 'invalid'
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Barfs for invalid distinct on engineering', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.display = {
+			distinct: 'invalid'
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows distinct on node and map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edge: {
+				distinct: false
+			}
+		};
+		input.properties.engineering.display = {
+			distinct: false
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
