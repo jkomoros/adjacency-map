@@ -237,7 +237,9 @@ export type RenderEdgeValue = {
 	ref: NodeID,
 	width: number,
 	opacity: number,
-	color: Color
+	color: Color,
+	//A value from 0 to 1, where 0.5 is the normal bump
+	bump: number
 }
 
 export type SimpleGraph = {

@@ -443,7 +443,7 @@ class AdjacencyMapNode {
 	get renderEdges(): RenderEdgeValue[] {
 		if (!this._cachedRenderEdges) {
 			//TODO: actually calculate these
-			this._cachedRenderEdges = this.edges.map(edge => ({source: edge.source, ref: edge.ref, width: 1.5, opacity: 0.4, color: color('#555')}));
+			this._cachedRenderEdges = this.edges.map(edge => ({source: edge.source, ref: edge.ref, width: 1.5, opacity: 0.4, color: color('#555'), bump: 0.5}));
 		}
 		return this._cachedRenderEdges;
 	}

@@ -181,8 +181,8 @@ class MainView extends connect(store)(PageViewElement) {
 
 		const sourceNode = map.node(edge.source);
 		const refNode = map.node(edge.ref);
-		const midPoint = (refNode.x + sourceNode.x) / 2;
-		
+		const midPoint = (sourceNode.x - refNode.x) * edge.bump + refNode.x;
+
 		const result = `M ${refNode.x},${refNode.y}C${midPoint},${refNode.y},${midPoint},${sourceNode.y},${sourceNode.x},${sourceNode.y}`;
 		return result;
 	}
