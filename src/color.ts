@@ -159,7 +159,10 @@ const NAMED_COLORS : {[namedColor : CSSColor] : CSSColor} = {
 };
 
 export const packColor = (c : Color): PackedColor => {
-	//Based on https://stackoverflow.com/a/4801397
+	//Based on https://stackoverflow.com/a/4801397 TODO: ideally we'd packColor
+	//and include a distinctive sentinel so we could sanity check that an input
+	//is a color easily, but we're using all 32 bits for the color components so
+	//there's no more space.
 	let packed = c.r;
 	packed = (packed << 8) + c.g;
 	packed = (packed << 8) + c.b;
