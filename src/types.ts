@@ -328,6 +328,8 @@ export type NodeDisplay = {
 	radius: ValueDefinition,
 	//Values will be clipped to between 0 and 1
 	opacity: ValueDefinition
+	//Should return a color
+	color: ValueDefinition
 }
 
 export type RawMapDisplay = {

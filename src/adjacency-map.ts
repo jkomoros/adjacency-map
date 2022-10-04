@@ -16,7 +16,8 @@ import {
 	ValueDefinition,
 	RawPropertyDefinition,
 	NodeDisplay,
-	MapDisplay
+	MapDisplay,
+	Color
 } from './types.js';
 
 import {
@@ -53,6 +54,10 @@ import {
 	LIBRARIES
 } from './libraries.js';
 
+import {
+	unpackColor
+} from './color.js';
+
 export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 	const result : SimpleGraph = {};
 	for (const [id, value] of Object.entries(data.nodes)) {
@@ -69,7 +74,10 @@ export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 
 const BASE_NODE_DISPLAY : NodeDisplay = {
 	radius: 6,
-	opacity: 1.0
+	opacity: 1.0,
+	color: {
+		color: '#333'
+	}
 };
 
 //Does things like include libraries, convert Raw* to * (by calculateValueLeaf
@@ -487,5 +495,12 @@ class AdjacencyMapNode {
 			high: 1.0
 		};
 		return this._valueDefinitionHelper(clippedDefinition);
+	}
+
+	get color(): Color {
+		//TODO: cache
+		const definition = this._data?.display?.color || this._map.data.display.node.color;
+		const num = this._valueDefinitionHelper(definition);
+		return unpackColor(num);
 	}
 }

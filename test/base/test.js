@@ -1521,6 +1521,61 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for an invalid color on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				color: 'invalid'
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Barfs for invalid color on a', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			color: 'invalid'
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows color on node and map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				color: 3,
+			}
+		};
+		input.nodes.a.display = {
+			color: -1.0
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
@@ -2434,6 +2489,37 @@ engineering: 3`;
 		const actual = node.opacity;
 		//We expect it to be clipped
 		const golden = 1.0;
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a color set on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				color: {
+					color: '#CCC'
+				}
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.color;
+		const golden = color('#CCC');
+		assert.deepStrictEqual(actual, golden);
+	});
+
+
+	it('Correctly calculates an opacity set on node', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			color: {
+				color: '#CCC'
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.color;
+		const golden = color('#CCC');
 		assert.deepStrictEqual(actual, golden);
 	});
 
