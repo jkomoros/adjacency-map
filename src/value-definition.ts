@@ -181,15 +181,15 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 	}
 
 	if (valueDefinitionIsArithmetic(definition)) {
-		validateValueDefinition(definition.child, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.a, edgeDefinition, exampleValue);
 		if (!Object.keys(OPERATORS).some(operator => operator == definition.operator)) throw new Error('Unknown operator: ' + definition.operator);
-		if (!arithmeticIsUnary(definition)) validateValueDefinition(definition.term, edgeDefinition, exampleValue);
+		if (!arithmeticIsUnary(definition)) validateValueDefinition(definition.b, edgeDefinition, exampleValue);
 		return;
 	}
 
 	if (valueDefinitionIsCompare(definition)) {
-		validateValueDefinition(definition.child, edgeDefinition, exampleValue);
-		validateValueDefinition(definition.term, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.a, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.b, edgeDefinition, exampleValue);
 		if (!Object.keys(COMPARE_OPERATORS).some(operator => operator == definition.compare)) throw new Error('Unknown compare operator: ' + definition.compare);
 		return;
 	}
@@ -275,8 +275,8 @@ export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]
 		return combiner(subValues);
 	}
 	if (valueDefinitionIsArithmetic(definition)) {
-		const left = calculateValue(definition.child, edges, refs, partialResult, rootValue);
-		const right = arithmeticIsUnary(definition) ? [0] : calculateValue(definition.term, edges, refs, partialResult, rootValue);
+		const left = calculateValue(definition.a, edges, refs, partialResult, rootValue);
+		const right = arithmeticIsUnary(definition) ? [0] : calculateValue(definition.b, edges, refs, partialResult, rootValue);
 		const op = OPERATORS[definition.operator];
 		if (!op) throw new Error('No such operator: ' + definition.operator);
 		//The result is the same length as left, but we loop over and repeat numbers in right if necessary.
@@ -284,8 +284,8 @@ export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]
 	}
 
 	if (valueDefinitionIsCompare(definition)) {
-		const left = calculateValue(definition.child, edges, refs, partialResult, rootValue);
-		const right = calculateValue(definition.term, edges, refs, partialResult, rootValue);
+		const left = calculateValue(definition.a, edges, refs, partialResult, rootValue);
+		const right = calculateValue(definition.b, edges, refs, partialResult, rootValue);
 		const op = COMPARE_OPERATORS[definition.compare];
 		if (!op) throw new Error('No such comparison operator: ' + definition.compare);
 		//The result is the same length as left, but we loop over and repeat numbers in right if necessary.

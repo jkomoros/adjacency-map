@@ -873,8 +873,8 @@ describe('AdjacencyMap validation', () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
 			operator: '&',
-			child: [3, 4, 5],
-			term: [1]
+			a: [3, 4, 5],
+			b: [1]
 		};
 		const errorExpected = true;
 		const fn = () => {
@@ -887,11 +887,11 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('barfs for a value defintion of type arithmetic missing term', async () => {
+	it('barfs for a value defintion of type arithmetic missing b', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
 			operator: '+',
-			child: [3, 4, 5],
+			b: [3, 4, 5],
 		};
 		const errorExpected = true;
 		const fn = () => {
@@ -904,11 +904,11 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('barfs for a value defintion of type arithmetic missing child', async () => {
+	it('barfs for a value defintion of type arithmetic missing a', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
 			operator: '+',
-			term: [1]
+			a: [1]
 		};
 		const errorExpected = true;
 		const fn = () => {
@@ -925,8 +925,8 @@ describe('AdjacencyMap validation', () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
 			operator: '+',
-			child: [3,4,5],
-			term: [1]
+			a: [3,4,5],
+			b: [1]
 		};
 		const errorExpected = false;
 		const fn = () => {
@@ -939,11 +939,11 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('Allows a valid value defintion of type arithmetic unary missing term', async () => {
+	it('Allows a valid value defintion of type arithmetic unary missing b', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
 			operator: '!',
-			child: [3,4,5]
+			a: [3,4,5]
 		};
 		const errorExpected = false;
 		const fn = () => {
@@ -956,11 +956,11 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('barfs for a value defintion of type compare missing term', async () => {
+	it('barfs for a value defintion of type compare missing b', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
 			compare: '<=',
-			child: [3, 4, 5]
+			a: [3, 4, 5]
 		};
 		const errorExpected = true;
 		const fn = () => {
@@ -973,11 +973,11 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('barfs for a value defintion of type compare missing child', async () => {
+	it('barfs for a value defintion of type compare missing a', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
 			compare: '<=',
-			term: [4]
+			a: [4]
 		};
 		const errorExpected = true;
 		const fn = () => {
@@ -994,8 +994,8 @@ describe('AdjacencyMap validation', () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
 			compare: '===',
-			child: [3, 4, 5],
-			term: [4]
+			a: [3, 4, 5],
+			b: [4]
 		};
 		const errorExpected = true;
 		const fn = () => {
@@ -1012,8 +1012,8 @@ describe('AdjacencyMap validation', () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
 			compare: '<=',
-			child: [3,4,5],
-			term: [4]
+			a: [3,4,5],
+			b: [4]
 		};
 		const errorExpected = false;
 		const fn = () => {
@@ -1803,8 +1803,8 @@ core:radius: 3`;
 		input.properties.engineering.combine = 'sum';
 		input.properties.engineering.value = {
 			operator: '+',
-			child: [0, 1, 2],
-			term: [0, 1]
+			a: [0, 1, 2],
+			b: [0, 1]
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -1823,8 +1823,8 @@ core:radius: 3`;
 		input.properties.engineering.combine = 'sum';
 		input.properties.engineering.value = {
 			operator: '-',
-			child: [0, 1, 2],
-			term: [0, 1]
+			a: [0, 1, 2],
+			b: [0, 1]
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -1843,8 +1843,8 @@ core:radius: 3`;
 		input.properties.engineering.combine = 'sum';
 		input.properties.engineering.value = {
 			operator: '/',
-			child: [0, 2, 6],
-			term: [2, 4]
+			a: [0, 2, 6],
+			b: [2, 4]
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -1863,8 +1863,8 @@ core:radius: 3`;
 		input.properties.engineering.combine = 'sum';
 		input.properties.engineering.value = {
 			operator: '&&',
-			child: [0, 2, 6],
-			term: [2, 0]
+			a: [0, 2, 6],
+			b: [2, 0]
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -1883,8 +1883,8 @@ core:radius: 3`;
 		input.properties.engineering.combine = 'sum';
 		input.properties.engineering.value = {
 			operator: '||',
-			child: [0, 2, 0, 0],
-			term: [2, 0]
+			a: [0, 2, 0, 0],
+			b: [2, 0]
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -1903,7 +1903,7 @@ core:radius: 3`;
 		input.properties.engineering.combine = 'sum';
 		input.properties.engineering.value = {
 			operator: '!',
-			child: [0, 2, 0, 0],
+			a: [0, 2, 0, 0],
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -1922,8 +1922,8 @@ core:radius: 3`;
 		input.properties.engineering.combine = 'sum';
 		input.properties.engineering.value = {
 			compare: '==',
-			child: [3, 4, 5],
-			term: [4]
+			a: [3, 4, 5],
+			b: [4]
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -1942,8 +1942,8 @@ core:radius: 3`;
 		input.properties.engineering.combine = 'sum';
 		input.properties.engineering.value = {
 			compare: '!=',
-			child: [3, 4, 5],
-			term: [4]
+			a: [3, 4, 5],
+			b: [4]
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -1962,8 +1962,8 @@ core:radius: 3`;
 		input.properties.engineering.combine = 'sum';
 		input.properties.engineering.value = {
 			compare: '<',
-			child: [3, 4, 5],
-			term: [4]
+			a: [3, 4, 5],
+			b: [4]
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -1982,8 +1982,8 @@ core:radius: 3`;
 		input.properties.engineering.combine = 'sum';
 		input.properties.engineering.value = {
 			compare: '>',
-			child: [3, 4, 5],
-			term: [4]
+			a: [3, 4, 5],
+			b: [4]
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -2002,8 +2002,8 @@ core:radius: 3`;
 		input.properties.engineering.combine = 'sum';
 		input.properties.engineering.value = {
 			compare: '<=',
-			child: [3, 4, 5],
-			term: [4]
+			a: [3, 4, 5],
+			b: [4]
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -2022,8 +2022,8 @@ core:radius: 3`;
 		input.properties.engineering.combine = 'sum';
 		input.properties.engineering.value = {
 			compare: '>=',
-			child: [3, 4, 5],
-			term: [4]
+			a: [3, 4, 5],
+			b: [4]
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');

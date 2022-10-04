@@ -14,8 +14,8 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 				value: {
 					if: {
 						compare: '!=',
-						child: {constant: 'radius'},
-						term: null
+						a: {constant: 'radius'},
+						b: null
 					},
 					then: {constant: 'radius'},
 					else: {root: 'core:radius'}

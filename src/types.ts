@@ -69,15 +69,13 @@ export type ArithmeticOperator = ArithmeticOperatorBinary | ArithmeticOperatorUn
 
 export type ValueDefinitionArithmeticBinary = {
 	operator:ArithmeticOperatorBinary,
-	child: ValueDefinition,
-	//TODO: rename this to whatever the second part of an arithmetic expression
-	//is called.
-	term: ValueDefinition
+	a: ValueDefinition,
+	b: ValueDefinition
 };
 
 export type ValueDefinitionArithmeticUnary = {
 	operator: ArithmeticOperatorUnary,
-	child: ValueDefinition
+	a: ValueDefinition
 }
 
 //Takes two children, and adds or multiplies the left by the right and returns.
@@ -96,10 +94,10 @@ export type CompareOperator = '==' | '!=' | '<' | '>' | '<=' | '>=';
  */
 export type ValueDefinitionCompare= {
 	compare:CompareOperator,
-	child: ValueDefinition,
+	a: ValueDefinition,
 	//TODO: rename this to whatever the second part of an arithmetic expression
 	//is called.
-	term: ValueDefinition
+	b: ValueDefinition
 }
 
 /**
