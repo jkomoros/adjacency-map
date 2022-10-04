@@ -434,4 +434,8 @@ class AdjacencyMapNode {
 	get radius() : number {
 		return this.values['core:radius'];
 	}
+
+	get opacity() : number {
+		return this.values['core:opacity'];
+	}
 }
