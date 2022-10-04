@@ -1538,8 +1538,6 @@ describe('AdjacencyMap root', () => {
 		const map = new AdjacencyMap(input);
 		const actual = map.rootValues;
 		const golden = {
-			"core:radius": 6.0,
-			"core:opacity": 1.0,
 			"engineering": 4.0,
 			"ux": 0.0,
 			"data": 0.0
@@ -1592,8 +1590,6 @@ describe('AdjacencyMap root', () => {
 });
 
 const NODE_A_BASE_VALUES = {
-	'core:radius': 6.0,
-	'core:opacity': 1.0,
 	engineering: 3,
 	ux: 0,
 	data: 0
@@ -1653,9 +1649,7 @@ engineering: 3`;
 
 data: 0
 ux: 0
-engineering: 3
-core:opacity: 1
-core:radius: 6`;
+engineering: 3`;
 
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1929,7 +1923,7 @@ core:radius: 6`;
 		input.properties.engineering.dependencies = ['ux'];
 		const map = new AdjacencyMap(input);
 		const actual = map.propertyNames;
-		const golden = ['ux', 'engineering', 'data', 'core:opacity', 'core:radius'];
+		const golden = ['ux', 'engineering', 'data'];
 		assert.deepStrictEqual(actual, golden);
 	});
 
