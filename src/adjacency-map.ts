@@ -155,7 +155,7 @@ const validateData = (data : MapDefinition) : void => {
 	const exampleValues = Object.fromEntries(Object.keys(data.properties).map(typeName => [typeName, 1.0]));
 	for(const [type, propertyDefinition] of Object.entries(data.properties)) {
 		try {
-			validateValueDefinition(propertyDefinition.value, propertyDefinition, exampleValues);
+			validateValueDefinition(propertyDefinition.value, exampleValues, propertyDefinition);
 		} catch (err) {
 			throw new Error(type + ' does not have a legal value definition: ' + err);
 		}

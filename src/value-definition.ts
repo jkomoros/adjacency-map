@@ -155,7 +155,7 @@ const valueDefinitionIsCollect = (definition : ValueDefinition): definition is V
 	return 'collect' in definition;
 };
 
-export const validateValueDefinition = (definition : ValueDefinition, edgeDefinition : PropertyDefinition, exampleValue : NodeValues) : void => {
+export const validateValueDefinition = (definition : ValueDefinition, exampleValue : NodeValues, edgeDefinition? : PropertyDefinition) : void => {
 	if (valueDefinitionIsLeaf(definition)) return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {
 		if (definition.some(leaf => !valueDefinitionIsLeaf(leaf))) throw new Error('If an array is provided it msut contain only numbers, booleans, or null');
@@ -164,7 +164,7 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 	}
 	if (valueDefintionIsEdgeConstant(definition)) {
 		if (RESERVED_VALUE_DEFINITION_PROPERTIES[definition.constant]) throw new Error(definition.constant + ' is a reserved edge property name');
-		const constants = edgeDefinition.constants || {};
+		const constants = edgeDefinition?.constants || {};
 		if (!constants[definition.constant]) throw new Error(definition.constant + ' for edge type value definition but that constant doesn\'t exist for that type.');
 		return;
 	}
@@ -177,13 +177,15 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 		return;
 	}
 	if (valueDefintionIsResultValue(definition)) {
-		const declaredDependencies = edgeDefinition.dependencies || [];
-		if (!declaredDependencies.some(dependency => dependency == definition.result)) throw new Error(definition.result + ' is used in a ResultValue definition but it is not declared in dependencies.');
+		if (edgeDefinition) {
+			const declaredDependencies = edgeDefinition.dependencies || [];
+			if (!declaredDependencies.some(dependency => dependency == definition.result)) throw new Error(definition.result + ' is used in a ResultValue definition but it is not declared in dependencies.');
+		}
 		return;
 	}
 
 	if (valueDefintionIsCombine(definition)) {
-		validateValueDefinition(definition.child, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.child, exampleValue, edgeDefinition);
 		if (!COMBINERS[definition.combine]) throw new Error('Unknown combiner: ' + definition.combine);
 		return;
 	}
@@ -199,52 +201,52 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 	}
 
 	if (valueDefinitionIsArithmetic(definition)) {
-		validateValueDefinition(definition.a, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.a, exampleValue, edgeDefinition);
 		if (!Object.keys(OPERATORS).some(operator => operator == definition.operator)) throw new Error('Unknown operator: ' + definition.operator);
-		if (!arithmeticIsUnary(definition)) validateValueDefinition(definition.b, edgeDefinition, exampleValue);
+		if (!arithmeticIsUnary(definition)) validateValueDefinition(definition.b, exampleValue, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsCompare(definition)) {
-		validateValueDefinition(definition.a, edgeDefinition, exampleValue);
-		validateValueDefinition(definition.b, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.a, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.b, exampleValue, edgeDefinition);
 		if (!Object.keys(COMPARE_OPERATORS).some(operator => operator == definition.compare)) throw new Error('Unknown compare operator: ' + definition.compare);
 		return;
 	}
 
 	if (valueDefinitionIsIf(definition)) {
-		validateValueDefinition(definition.if, edgeDefinition, exampleValue);
-		validateValueDefinition(definition.then, edgeDefinition, exampleValue);
-		validateValueDefinition(definition.else, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.if, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.then, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.else, exampleValue, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsClip(definition)) {
-		validateValueDefinition(definition.clip, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.clip, exampleValue, edgeDefinition);
 		if (definition.low == undefined && definition.high == undefined) throw new Error('Clip expects at least one of low or high');
-		if (definition.low != undefined) validateValueDefinition(definition.low, edgeDefinition, exampleValue);
-		if (definition.high != undefined) validateValueDefinition(definition.high, edgeDefinition, exampleValue);
+		if (definition.low != undefined) validateValueDefinition(definition.low, exampleValue, edgeDefinition);
+		if (definition.high != undefined) validateValueDefinition(definition.high, exampleValue, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsRange(definition)) {
-		validateValueDefinition(definition.range, edgeDefinition, exampleValue);
-		validateValueDefinition(definition.low, edgeDefinition, exampleValue);
-		validateValueDefinition(definition.high, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.range, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.low, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.high, exampleValue, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsPercent(definition)) {
-		validateValueDefinition(definition.percent, edgeDefinition, exampleValue);
-		validateValueDefinition(definition.low, edgeDefinition, exampleValue);
-		validateValueDefinition(definition.high, edgeDefinition, exampleValue);
+		validateValueDefinition(definition.percent, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.low, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.high, exampleValue, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsCollect(definition)) {
 		if (!definition.collect || definition.collect.length == 0) throw new Error('collect requires at least one child');
 		for (const child of definition.collect) {
-			validateValueDefinition(child, edgeDefinition, exampleValue);
+			validateValueDefinition(child, exampleValue, edgeDefinition);
 		}
 		return;
 	}
