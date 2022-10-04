@@ -17,7 +17,8 @@ import {
 	RawPropertyDefinition,
 	NodeDisplay,
 	MapDisplay,
-	Color
+	Color,
+	RenderEdgeValue
 } from './types.js';
 
 import {
@@ -237,6 +238,7 @@ export class AdjacencyMap {
 	_nodes : {[id : NodeID] : AdjacencyMapNode};
 	_cachedChildren : {[id : NodeID] : NodeID[]};
 	_cachedEdges : ExpandedEdgeValue[];
+	_cachedRenderEdges : RenderEdgeValue[];
 	_cachedRoot : NodeValues;
 	_cachedPropertyNames : PropertyName[];
 	_cachedLayoutInfo : LayoutInfo;
@@ -317,6 +319,13 @@ export class AdjacencyMap {
 		return this._cachedEdges;
 	}
 
+	get renderEdges() : RenderEdgeValue[] {
+		if (!this._cachedRenderEdges) {
+			this._cachedRenderEdges = Object.keys(this._data.nodes).map(id => this.node(id).renderEdges).flat();
+		}
+		return this._cachedRenderEdges;
+	}
+
 	_ensureLayoutInfo() {
 		if (this._cachedLayoutInfo) return;
 		const simpleGraph = extractSimpleGraph(this._data);
@@ -354,6 +363,7 @@ class AdjacencyMapNode {
 	_values : NodeValues;
 	_isRoot : boolean;
 	_cachedEdges : ExpandedEdgeValue[];
+	_cachedRenderEdges : RenderEdgeValue[];
 
 	constructor(id : NodeID, parent : AdjacencyMap, data : NodeDefinition | undefined) {
 		this._id = id;
@@ -427,6 +437,14 @@ class AdjacencyMapNode {
 			}
 		}
 		return this._cachedEdges;
+	}
+
+	get renderEdges(): RenderEdgeValue[] {
+		if (!this._cachedRenderEdges) {
+			//TODO: actually calculate these
+			this._cachedRenderEdges = this.edges.map(edge => ({source: edge.source, ref: edge.ref, width: 1.5, opacity: 0.4}));
+		}
+		return this._cachedRenderEdges;
 	}
 
 	//Gets the parents we reference. Note that ROOT_ID is nearly always implied,

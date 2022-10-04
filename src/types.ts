@@ -230,6 +230,15 @@ export type ExpandedEdgeValue = EdgeValue & {
 	ref: NodeID;
 };
 
+//The final edges to actually render, based on processing the EdgeValues for a
+//node.
+export type RenderEdgeValue = {
+	source: NodeID,
+	ref: NodeID,
+	width: number,
+	opacity: number
+}
+
 export type SimpleGraph = {
 	[id : NodeID] : {
 		[other : NodeID]: true

@@ -35,7 +35,7 @@ import {
 
 import {
 	DataFilename,
-	ExpandedEdgeValue,
+	RenderEdgeValue,
 	RootState,
 } from '../types.js';
 
@@ -177,7 +177,7 @@ class MainView extends connect(store)(PageViewElement) {
 
 	}
 
-	_pathForEdge(edge : ExpandedEdgeValue, map : AdjacencyMap) : string {
+	_pathForEdge(edge : RenderEdgeValue, map : AdjacencyMap) : string {
 
 		const sourceNode = map.node(edge.source);
 		const refNode = map.node(edge.ref);
@@ -194,10 +194,6 @@ class MainView extends connect(store)(PageViewElement) {
 		
 		// stroke for links
 		const stroke = '#555';
-		// stroke width for links
-		const strokeWidth = 1.5;
-		// stroke opacity for links
-		const strokeOpacity = 0.4;
 		// stroke line join for links
 		const strokeLinejoin = '';
 		// stroke line cap for links
@@ -208,8 +204,8 @@ class MainView extends connect(store)(PageViewElement) {
 		const haloWidth = 3;
 
 		return html`<svg class='main' viewBox='${a.viewBox}' width='${a.width * this._scale}' height='${a.height * this._scale}' style='max-width: 100%; height: auto; height: intrinsic;' font-family='sans-serif' font-size='10'>
-			<g fill="none" stroke="${stroke}" stroke-opacity="${strokeOpacity}" stroke-linecap="${strokeLinecap}" stroke-linejoin="${strokeLinejoin}" stroke-width="${strokeWidth}">
-				${a.edges.map(edge => svg`<path d="${this._pathForEdge(edge, a)}"></path>`)}
+			<g fill="none" stroke="${stroke}" stroke-linecap="${strokeLinecap}" stroke-linejoin="${strokeLinejoin}">
+				${a.renderEdges.map(edge => svg`<path d="${this._pathForEdge(edge, a)}" stroke-width='${edge.width}' stroke-opacity='${edge.opacity}'></path>`)}
 			</g>
 			<g>
 				${Object.values(a.nodes).map(node => svg`<a transform="translate(${node.x},${node.y})">
