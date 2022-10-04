@@ -351,6 +351,8 @@ export type EdgeDisplay = {
 	width: ValueDefinition,
 	//The color of the stroke
 	color: ValueDefinition
+	//The opacity of the stroke
+	opacity: ValueDefinition
 }
 
 export type RawMapDisplay = {
