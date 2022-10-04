@@ -25,10 +25,29 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 				},
 				combine: 'max',
 				hide: true
+			},
+			'core:opacity': {
+				description: 'The percentage opacity to use for a node',
+				usage: "If you want to set the default opacity, set root.core:opacity If you want to override just one node's opacity, add an edge of type 'core:opacity' with a constant of opacity of the value you want.",
+				value: {
+					if: {
+						compare: '!=',
+						a: {constant: 'opacity'},
+						b: null
+					},
+					then: {constant: 'opacity'},
+					else: {root: 'core:opacity'}
+				},
+				constants: {
+					'opacity': null
+				},
+				combine: 'mean',
+				hide: true
 			}
 		},
 		root: {
-			'core:radius': 3
+			'core:radius': 3,
+			'core:opacity': 1.0,
 		}
 	}
 };
