@@ -46,7 +46,7 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 			}
 		},
 		root: {
-			'core:radius': 3,
+			'core:radius': 6.0,
 			'core:opacity': 1.0,
 		}
 	}
