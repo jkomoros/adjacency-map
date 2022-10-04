@@ -179,9 +179,15 @@ export type ValueDefinition = ValueDefinitionLeaf |
 	ValueDefinitionCollect;
 
 export type ValueDefinitionCalculationArgs = {
+	//All of the edges that are being calculated together, all of the same type
 	edges : EdgeValue[], 
+	//An array of nodeValues, one per parent ref
 	refs : NodeValues[], 
+	//The results that are being calculated for this node. The only properties
+	//that are guaranteed to be there and in their final state are ones that the
+	//property enumerated in dependencies.
 	partialResult : NodeValues, 
+	//The values of root.
 	rootValue : NodeValues
 };
 
