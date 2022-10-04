@@ -18,7 +18,8 @@ import {
 	NodeDisplay,
 	MapDisplay,
 	Color,
-	RenderEdgeValue
+	RenderEdgeValue,
+	EdgeDisplay
 } from './types.js';
 
 import {
@@ -82,6 +83,10 @@ const BASE_NODE_DISPLAY : NodeDisplay = {
 	}
 };
 
+const BASE_EDGE_DISPLAY : EdgeDisplay = {
+	width: 1.5
+};
+
 //Does things like include libraries, convert Raw* to * (by calculateValueLeaf
 //on any constants, etc)
 const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
@@ -120,8 +125,12 @@ const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 	const combinedProperties = {...baseTypes, ...dataTypes};
 	const properties : {[name : PropertyName] : PropertyDefinition} = {};
 	for (const [name, rawDefinition] of Object.entries(combinedProperties)) {
+		const rawEdgeDisplay = rawDefinition.display || {};
 		const definition = {
 			...rawDefinition,
+			display: {
+				...rawEdgeDisplay
+			},
 			constants: Object.fromEntries(Object.entries(rawDefinition.constants || {}).map(entry => [entry[0], calculateValueLeaf(entry[1])]))
 		};
 		properties[name] = definition;
@@ -152,10 +161,15 @@ const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 		};
 	}
 	const rawNodeDisplay = data.display?.node || {};
+	const rawEdgeDisplay = data.display?.edge || {};
 	const display : MapDisplay = {
 		node: {
 			...BASE_NODE_DISPLAY,
 			...rawNodeDisplay
+		},
+		edge: {
+			...BASE_EDGE_DISPLAY,
+			...rawEdgeDisplay
 		}
 	};
 	return {
@@ -199,6 +213,9 @@ const validateData = (data : MapDefinition) : void => {
 				if (typeof constantValue != 'number') throw new Error(type + ' constant ' + constantName + ' was not number as expected');
 			}
 		}
+		for (const displayValue of Object.values(propertyDefinition.display)) {
+			validateValueDefinition(displayValue, exampleValues, propertyDefinition);
+		}
 		if (propertyDefinition.dependencies) {
 			for (const dependency of propertyDefinition.dependencies) {
 				if (!data.properties[dependency]) throw new Error(type + ' declared a dependency on ' + dependency + ' but that is not a valid type');
@@ -224,6 +241,9 @@ const validateData = (data : MapDefinition) : void => {
 		}
 	}
 	for (const displayValue of Object.values(data.display.node)) {
+		validateValueDefinition(displayValue, exampleValues);
+	}
+	for (const displayValue of Object.values(data.display.edge)) {
 		validateValueDefinition(displayValue, exampleValues);
 	}
 	try {

@@ -1576,6 +1576,61 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for an invalid width on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edge: {
+				width: 'invalid'
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Barfs for invalid width on engineering', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.display = {
+			width: 'invalid'
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows width on node and map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edge: {
+				width: 3,
+			}
+		};
+		input.properties.engineering.display = {
+			width: 4
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {

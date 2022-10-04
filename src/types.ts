@@ -304,6 +304,7 @@ export type RawPropertyDefinition = {
 	dependencies? : PropertyName[],
 	//Some properties (especially in libraries don't make sense to print out in e.g. AdjacencyMapNode.description)
 	hide? : true,
+	display? : Partial<EdgeDisplay>,
 	constants?: {
 		[constant : ConstantType]: ValueDefinitionLeaf
 	}
@@ -316,6 +317,7 @@ export type PropertyDefinition = {
 	combine?: CombinerType,
 	dependencies? : PropertyName[],
 	hide? : true,
+	display: Partial<EdgeDisplay>,
 	constants?: {
 		[constant : ConstantType]: number
 	}
@@ -344,12 +346,18 @@ export type NodeDisplay = {
 	color: ValueDefinition
 }
 
+export type EdgeDisplay = {
+	width: ValueDefinition
+}
+
 export type RawMapDisplay = {
-	node?: Partial<NodeDisplay>
+	node?: Partial<NodeDisplay>,
+	edge?: Partial<EdgeDisplay>
 };
 
 export type MapDisplay = {
 	node: NodeDisplay;
+	edge: EdgeDisplay;
 }
 
 export type RawMapDefinition = {
