@@ -2375,6 +2375,18 @@ core:radius: 6`;
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('Correctly calculates a radius set on node below 0', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			radius: -1
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.radius;
+		const golden = 0;
+		assert.deepStrictEqual(actual, golden);
+	});
+
 	it('Correctly calculates a radius set on node that relies on a value', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.nodes.a.display = {

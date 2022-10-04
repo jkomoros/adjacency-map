@@ -324,6 +324,7 @@ export type Library = {
 }
 
 export type NodeDisplay = {
+	//Values below 0.0 will be clipped to 0
 	radius: ValueDefinition,
 	//Values will be clipped to between 0 and 1
 	opacity: ValueDefinition

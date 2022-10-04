@@ -469,7 +469,11 @@ class AdjacencyMapNode {
 	get radius() : number {
 		//TODO: cache
 		const definition = this._data?.display?.radius || this._map.data.display.node.radius;
-		return this._valueDefinitionHelper(definition);
+		const clippedDefinition : ValueDefinition = {
+			clip: definition,
+			low: 0.0
+		};
+		return this._valueDefinitionHelper(clippedDefinition);
 	}
 
 	get opacity() : number {
