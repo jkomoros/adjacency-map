@@ -62,6 +62,14 @@ export type ValueDefinitionCombine = {
 	child: ValueDefinition
 }
 
+//Takes a color constant to turn into a color for items that expect it. Note
+//that a color is packed into an integer for use in the calculation engine; if
+//the packed color is used in other calculations it might return weird results.
+export type ValueDefinitionColor = {
+	//Same signature as color() (but without importing color)
+	color: CSSColor | RGBColor | RGBAColor
+}
+
 type ArithmeticOperatorBinary =  '+' | '*' | '-' | '/' | '&&' | '||';
 type ArithmeticOperatorUnary = '!';
 
@@ -161,6 +169,7 @@ export type ValueDefinition = ValueDefinitionLeaf |
 	ValueDefinitionRootValue |
 	ValueDefinitionResultValue |
 	ValueDefinitionCombine |
+	ValueDefinitionColor |
 	ValueDefinitionArithmetic |
 	ValueDefinitionIf |
 	ValueDefinitionCompare |

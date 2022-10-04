@@ -22,7 +22,8 @@ import {
 	ValueDefinitionRootValue,
 	ValueDefinitionCollect,
 	ValueDefinitionLeaf,
-	ValueDefinitionCalculationArgs
+	ValueDefinitionCalculationArgs,
+	ValueDefinitionColor
 } from './types.js';
 
 import {
@@ -31,6 +32,7 @@ import {
 	isTrue,
 	NULL_SENTINEL
 } from './constants.js';
+import { color, packColor } from './color.js';
 
 export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 	'ref': true,
@@ -99,6 +101,12 @@ const valueDefintionIsCombine = (definition : ValueDefinition) : definition is V
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
 	return 'combine' in definition;
+};
+
+const valueDefintionIsColor = (definition : ValueDefinition) : definition is ValueDefinitionColor => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'color' in definition;
 };
 
 const valueDefinitionIsArithmetic = (definition : ValueDefinition): definition is ValueDefinitionArithmetic => {
@@ -177,6 +185,16 @@ export const validateValueDefinition = (definition : ValueDefinition, edgeDefini
 	if (valueDefintionIsCombine(definition)) {
 		validateValueDefinition(definition.child, edgeDefinition, exampleValue);
 		if (!COMBINERS[definition.combine]) throw new Error('Unknown combiner: ' + definition.combine);
+		return;
+	}
+
+	if (valueDefintionIsColor(definition)) {
+		if (!definition.color) throw new Error('No color provided');
+		try {
+			color(definition.color);
+		} catch(er) {
+			throw new Error('Invalid color definition: ' + er);
+		}
 		return;
 	}
 
@@ -274,6 +292,11 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 		const combiner = COMBINERS[definition.combine];
 		return combiner(subValues);
 	}
+
+	if (valueDefintionIsColor(definition)) {
+		return [packColor(color(definition.color))];
+	}
+
 	if (valueDefinitionIsArithmetic(definition)) {
 		const left = calculateValue(definition.a, args);
 		const right = arithmeticIsUnary(definition) ? [0] : calculateValue(definition.b, args);

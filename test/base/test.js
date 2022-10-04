@@ -869,6 +869,118 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('Allows a valid named color', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			color: 'blue',
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a valid rgb triple color', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			color: [255, 0, 0],
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a valid rgba quad color', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			color: [255, 0, 0, 0.5],
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a valid string rgb color', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			color: 'rgb(255,0,255)',
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for an unknown named color', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			color: 'invalid',
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for an rgb color with too few items', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			color: [255,255],
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for an rgb string with too few items', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			color: 'rgb(255,0)',
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('barfs for a value defintion of type arithmetic with invalid operator', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
@@ -2170,6 +2282,24 @@ core:radius: 3`;
 		const golden = {
 			'core:radius': 3,
 			engineering: 7.0,
+			ux: 0,
+			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a color', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.combine = 'max';
+		input.properties.engineering.value = {
+			color: 'blue'
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			'core:radius': 3,
+			engineering: packColor(color('blue')),
 			ux: 0,
 			data: 0
 		};
