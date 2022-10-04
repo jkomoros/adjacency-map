@@ -324,7 +324,9 @@ export type Library = {
 }
 
 export type NodeDisplay = {
-	radius: ValueDefinition
+	radius: ValueDefinition,
+	//Values will be clipped to between 0 and 1
+	opacity: ValueDefinition
 }
 
 export type RawMapDisplay = {
@@ -332,7 +334,7 @@ export type RawMapDisplay = {
 };
 
 export type MapDisplay = {
-	node: Required<NodeDisplay>;
+	node: NodeDisplay;
 }
 
 export type RawMapDefinition = {

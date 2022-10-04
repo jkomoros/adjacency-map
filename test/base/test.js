@@ -1466,6 +1466,61 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for an invalid opacity on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				opacity: 'invalid'
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Barfs for invalid opacity on a', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			opacity: 'invalid'
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows opacity on node and map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				opacity: 3,
+			}
+		};
+		input.nodes.a.display = {
+			opacity: -1.0
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
@@ -2331,6 +2386,48 @@ core:radius: 6`;
 		const node = map.node('a');
 		const actual = node.radius;
 		const golden = NODE_A_BASE_VALUES.engineering;
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates an opacity set on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				opacity: 0.8
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.opacity;
+		const golden = 0.8;
+		assert.deepStrictEqual(actual, golden);
+	});
+
+
+	it('Correctly calculates an opacity set on node', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			opacity: 0.8
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.opacity;
+		const golden = 0.8;
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a opacity set on node that relies on a value', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			opacity: {
+				result: 'engineering'
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.opacity;
+		//We expect it to be clipped
+		const golden = 1.0;
 		assert.deepStrictEqual(actual, golden);
 	});
 

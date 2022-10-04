@@ -68,7 +68,8 @@ export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 };
 
 const BASE_NODE_DISPLAY : NodeDisplay = {
-	radius: 6
+	radius: 6,
+	opacity: 1.0
 };
 
 //Does things like include libraries, convert Raw* to * (by calculateValueLeaf
@@ -171,6 +172,7 @@ const validateData = (data : MapDefinition) : void => {
 			if (!data.properties[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
 		}
 		if (nodeData.display.radius) validateValueDefinition(nodeData.display.radius, exampleValues);
+		if (nodeData.display.opacity) validateValueDefinition(nodeData.display.opacity, exampleValues);
 	}
 	for(const [type, propertyDefinition] of Object.entries(data.properties)) {
 		try {
@@ -211,6 +213,7 @@ const validateData = (data : MapDefinition) : void => {
 		}
 	}
 	validateValueDefinition(data.display.node.radius, exampleValues);
+	validateValueDefinition(data.display.node.opacity, exampleValues);
 	try {
 		topologicalSort(extractSimpleGraph(data));
 	} catch (err) {
@@ -451,9 +454,7 @@ class AdjacencyMapNode {
 		return pos.y;
 	}
 
-	get radius() : number {
-		//TODO: cache
-		const definition = this._data?.display?.radius || this._map.data.display.node.radius;
+	_valueDefinitionHelper(definition : ValueDefinition) : number {
 		const result = calculateValue(definition, {
 			edges: this.edges,
 			//TODO: this.parents omits expliti root references
@@ -461,11 +462,24 @@ class AdjacencyMapNode {
 			partialResult: this.values,
 			rootValue: this._map.rootValues
 		});
-		if (result.length < 1) throw new Error('Value definition for radius returned an empty array');
+		if (result.length < 1) throw new Error('Value definition returned an empty array');
 		return result[0];
 	}
 
+	get radius() : number {
+		//TODO: cache
+		const definition = this._data?.display?.radius || this._map.data.display.node.radius;
+		return this._valueDefinitionHelper(definition);
+	}
+
 	get opacity() : number {
-		return this.values['core:opacity'];
+		//TODO: cache
+		const definition = this._data?.display?.opacity || this._map.data.display.node.opacity;
+		const clippedDefinition : ValueDefinition = {
+			clip: definition,
+			low: 0.0,
+			high: 1.0
+		};
+		return this._valueDefinitionHelper(clippedDefinition);
 	}
 }
