@@ -192,8 +192,6 @@ class MainView extends connect(store)(PageViewElement) {
 
 		const a = this._adjacencyMap;
 		
-		// stroke for links
-		const stroke = '#555';
 		// stroke line join for links
 		const strokeLinejoin = '';
 		// stroke line cap for links
@@ -204,8 +202,8 @@ class MainView extends connect(store)(PageViewElement) {
 		const haloWidth = 3;
 
 		return html`<svg class='main' viewBox='${a.viewBox}' width='${a.width * this._scale}' height='${a.height * this._scale}' style='max-width: 100%; height: auto; height: intrinsic;' font-family='sans-serif' font-size='10'>
-			<g fill="none" stroke="${stroke}" stroke-linecap="${strokeLinecap}" stroke-linejoin="${strokeLinejoin}">
-				${a.renderEdges.map(edge => svg`<path d="${this._pathForEdge(edge, a)}" stroke-width='${edge.width}' stroke-opacity='${edge.opacity}'></path>`)}
+			<g fill="none" stroke-linecap="${strokeLinecap}" stroke-linejoin="${strokeLinejoin}">
+				${a.renderEdges.map(edge => svg`<path d="${this._pathForEdge(edge, a)}" stroke-width='${edge.width}' stroke-opacity='${edge.opacity}' stroke='${edge.color.rgbaStr}'></path>`)}
 			</g>
 			<g>
 				${Object.values(a.nodes).map(node => svg`<a transform="translate(${node.x},${node.y})">

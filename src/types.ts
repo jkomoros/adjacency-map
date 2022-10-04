@@ -236,7 +236,8 @@ export type RenderEdgeValue = {
 	source: NodeID,
 	ref: NodeID,
 	width: number,
-	opacity: number
+	opacity: number,
+	color: Color
 }
 
 export type SimpleGraph = {
