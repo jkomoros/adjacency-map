@@ -352,7 +352,13 @@ class AdjacencyMapNode {
 			const defaultedEdges = rawEdges.map(edge => ({...constants, ...edge}));
 			//TODO: should we make it illegal to have an edge of same type and ref on a node? 
 			const refs = rawEdges.map(edge => this._map.node(edge.ref || '').values);
-			const values = calculateValue(edgeValueDefinition, defaultedEdges, refs, partialResult, this._map.rootValues);
+			const args = {
+				edges: defaultedEdges,
+				refs,
+				partialResult,
+				rootValue: this._map.rootValues
+			};
+			const values = calculateValue(edgeValueDefinition, args);
 			if (values.length == 0) throw new Error('values was not at least of length 1');
 			const finalCombiner = typeDefinition.combine ? COMBINERS[typeDefinition.combine] : DEFAULT_COMBINER;
 			partialResult[type] = finalCombiner(values)[0];

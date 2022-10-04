@@ -4,7 +4,6 @@ import {
 
 import {
 	PropertyDefinition,
-	EdgeValue,
 	NodeValues,
 	ValueDefinition,
 	ValueDefinitionArithmetic,
@@ -22,7 +21,8 @@ import {
 	ValueDefinitionArithmeticUnary,
 	ValueDefinitionRootValue,
 	ValueDefinitionCollect,
-	ValueDefinitionLeaf
+	ValueDefinitionLeaf,
+	ValueDefinitionCalculationArgs
 } from './types.js';
 
 import {
@@ -251,32 +251,32 @@ export const calculateValueLeaf = (definition : ValueDefinitionLeaf) : number =>
 
 //TODO: is there a way to make it clear this must return an array with at least
 //one number?
-export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[], refs : NodeValues[], partialResult : NodeValues, rootValue : NodeValues) : number[] => {
+export const calculateValue = (definition : ValueDefinition, args : ValueDefinitionCalculationArgs) : number[] => {
 
 	if (valueDefinitionIsLeaf(definition)) return [calculateValueLeaf(definition)];
 
 	if (Array.isArray(definition)) return definition.map(leaf => calculateValueLeaf(leaf));
 
 	if (valueDefintionIsEdgeConstant(definition)) {
-		return edges.map(edge => edge[definition.constant] as number);
+		return args.edges.map(edge => edge[definition.constant] as number);
 	}
 	if (valueDefintionIsRefValue(definition)) {
-		return refs.map(values => values[definition.ref]);
+		return args.refs.map(values => values[definition.ref]);
 	}
 	if (valueDefintionIsRootValue(definition)) {
-		return [rootValue[definition.root]];
+		return [args.rootValue[definition.root]];
 	}
 	if (valueDefintionIsResultValue(definition)) {
-		return edges.map(() => partialResult[definition.result]);
+		return args.edges.map(() => args.partialResult[definition.result]);
 	}
 	if (valueDefintionIsCombine(definition)) {
-		const subValues = calculateValue(definition.child, edges, refs, partialResult, rootValue);
+		const subValues = calculateValue(definition.child, args);
 		const combiner = COMBINERS[definition.combine];
 		return combiner(subValues);
 	}
 	if (valueDefinitionIsArithmetic(definition)) {
-		const left = calculateValue(definition.a, edges, refs, partialResult, rootValue);
-		const right = arithmeticIsUnary(definition) ? [0] : calculateValue(definition.b, edges, refs, partialResult, rootValue);
+		const left = calculateValue(definition.a, args);
+		const right = arithmeticIsUnary(definition) ? [0] : calculateValue(definition.b, args);
 		const op = OPERATORS[definition.operator];
 		if (!op) throw new Error('No such operator: ' + definition.operator);
 		//The result is the same length as left, but we loop over and repeat numbers in right if necessary.
@@ -284,8 +284,8 @@ export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]
 	}
 
 	if (valueDefinitionIsCompare(definition)) {
-		const left = calculateValue(definition.a, edges, refs, partialResult, rootValue);
-		const right = calculateValue(definition.b, edges, refs, partialResult, rootValue);
+		const left = calculateValue(definition.a, args);
+		const right = calculateValue(definition.b, args);
 		const op = COMPARE_OPERATORS[definition.compare];
 		if (!op) throw new Error('No such comparison operator: ' + definition.compare);
 		//The result is the same length as left, but we loop over and repeat numbers in right if necessary.
@@ -293,16 +293,16 @@ export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]
 	}
 
 	if (valueDefinitionIsIf(definition)) {
-		const ifVal = calculateValue(definition.if, edges, refs, partialResult, rootValue);
-		const thenVal = calculateValue(definition.then, edges, refs, partialResult, rootValue);
-		const elseVal = calculateValue(definition.else, edges, refs, partialResult, rootValue);
+		const ifVal = calculateValue(definition.if, args);
+		const thenVal = calculateValue(definition.then, args);
+		const elseVal = calculateValue(definition.else, args);
 		return ifVal.map((term, i) => isTrue(term) ? thenVal[i % thenVal.length] : elseVal[i & elseVal.length]);
 	}
 
 	if (valueDefinitionIsClip(definition)) {
-		const inputArr = calculateValue(definition.clip, edges, refs, partialResult, rootValue);
-		const lowArr = definition.low != undefined ? calculateValue(definition.low, edges, refs, partialResult, rootValue) : [Number.NEGATIVE_INFINITY];
-		const highArr = definition.high != undefined ? calculateValue(definition.high, edges, refs, partialResult, rootValue) : [Number.POSITIVE_INFINITY];
+		const inputArr = calculateValue(definition.clip, args);
+		const lowArr = definition.low != undefined ? calculateValue(definition.low, args) : [Number.NEGATIVE_INFINITY];
+		const highArr = definition.high != undefined ? calculateValue(definition.high, args) : [Number.POSITIVE_INFINITY];
 
 		return inputArr.map((term, i) => {
 			const low = lowArr[i % lowArr.length];
@@ -314,9 +314,9 @@ export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]
 	}
 
 	if (valueDefinitionIsRange(definition)) {
-		const inputArr = calculateValue(definition.range, edges, refs, partialResult, rootValue);
-		const lowArr = calculateValue(definition.low, edges, refs, partialResult, rootValue);
-		const highArr = calculateValue(definition.high, edges, refs, partialResult, rootValue);
+		const inputArr = calculateValue(definition.range, args);
+		const lowArr = calculateValue(definition.low, args);
+		const highArr = calculateValue(definition.high, args);
 
 		return inputArr.map((term, i) => {
 			let low = lowArr[i % lowArr.length];
@@ -329,9 +329,9 @@ export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]
 	}
 
 	if (valueDefinitionIsPercent(definition)) {
-		const inputArr = calculateValue(definition.percent, edges, refs, partialResult, rootValue);
-		const lowArr = calculateValue(definition.low, edges, refs, partialResult, rootValue);
-		const highArr = calculateValue(definition.high, edges, refs, partialResult, rootValue);
+		const inputArr = calculateValue(definition.percent, args);
+		const lowArr = calculateValue(definition.low, args);
+		const highArr = calculateValue(definition.high, args);
 
 		return inputArr.map((term, i) => {
 			let low = lowArr[i % lowArr.length];
@@ -344,7 +344,7 @@ export const calculateValue = (definition : ValueDefinition, edges : EdgeValue[]
 	}
 
 	if (valueDefinitionIsCollect(definition)) {
-		return definition.collect.map(child => calculateValue(child, edges, refs, partialResult, rootValue)).flat();
+		return definition.collect.map(child => calculateValue(child, args)).flat();
 	}
 
 	const _exhaustiveCheck : never = definition;

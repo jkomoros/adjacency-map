@@ -169,6 +169,13 @@ export type ValueDefinition = ValueDefinitionLeaf |
 	ValueDefinitionPercent |
 	ValueDefinitionCollect;
 
+export type ValueDefinitionCalculationArgs = {
+	edges : EdgeValue[], 
+	refs : NodeValues[], 
+	partialResult : NodeValues, 
+	rootValue : NodeValues
+};
+
 export type LayoutInfo = {
 	width: number,
 	height: number,
