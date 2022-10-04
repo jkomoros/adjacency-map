@@ -1411,6 +1411,61 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for an invalid radius on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				radius: 'invalid'
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Barfs for invalid radius on a', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			radius: 'invalid'
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows radius on node and map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				radius: 3,
+			}
+		};
+		input.nodes.a.display = {
+			radius: 5
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
@@ -2235,6 +2290,47 @@ core:radius: 6`;
 			...NODE_A_BASE_VALUES,
 			engineering: packColor(color('blue')),
 		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a radius set on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				radius: 10
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.radius;
+		const golden = 10;
+		assert.deepStrictEqual(actual, golden);
+	});
+
+
+	it('Correctly calculates a radius set on node', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			radius: 10
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.radius;
+		const golden = 10;
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a radius set on node that relies on a value', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			radius: {
+				result: 'engineering'
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.radius;
+		const golden = NODE_A_BASE_VALUES.engineering;
 		assert.deepStrictEqual(actual, golden);
 	});
 

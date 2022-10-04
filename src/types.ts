@@ -248,11 +248,13 @@ export type TreeGraph = {
 
 export type RawNodeDefinition = {
 	description: string,
+	display?: Partial<NodeDisplay>,
 	values?: RawEdgeValue[]
 };
 
 export type NodeDefinition = {
 	description: string,
+	display: Partial<NodeDisplay>,
 	values: EdgeValue[]
 };
 
@@ -321,11 +323,24 @@ export type Library = {
 	root: RawNodeValues
 }
 
+export type NodeDisplay = {
+	radius: ValueDefinition
+}
+
+export type RawMapDisplay = {
+	node?: Partial<NodeDisplay>
+};
+
+export type MapDisplay = {
+	node: Required<NodeDisplay>;
+}
+
 export type RawMapDefinition = {
 	version: number,
 	//Imports lists libraries to base types on. The library 'core' is implicitly
 	//always imported.
 	import?: LibraryType | LibraryType[],
+	display?: RawMapDisplay,
 	properties?: {
 		[type : PropertyName]: RawPropertyDefinition
 	}
@@ -340,6 +355,7 @@ export type MapDefinition = {
 	properties: {
 		[type : PropertyName]: PropertyDefinition
 	}
+	display: MapDisplay,
 	root: NodeValues,
 	nodes: {
 		[id : NodeID]: NodeDefinition

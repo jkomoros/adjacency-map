@@ -14,7 +14,9 @@ import {
 	SimpleGraph,
 	RawNodeValues,
 	ValueDefinition,
-	RawPropertyDefinition
+	RawPropertyDefinition,
+	NodeDisplay,
+	MapDisplay
 } from './types.js';
 
 import {
@@ -63,6 +65,10 @@ export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 	}
 	result[ROOT_ID] = {};
 	return result;
+};
+
+const BASE_NODE_DISPLAY : NodeDisplay = {
+	radius: 6
 };
 
 //Does things like include libraries, convert Raw* to * (by calculateValueLeaf
@@ -125,14 +131,26 @@ const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 				values.push(value);
 			}
 		}
+		const rawNodeDisplay = rawNode.display || {};
 		nodes[id] = {
 			...rawNode,
-			values
+			values,
+			display: {
+				...rawNodeDisplay
+			}
 		};
 	}
+	const rawNodeDisplay = data.display?.node || {};
+	const display : MapDisplay = {
+		node: {
+			...BASE_NODE_DISPLAY,
+			...rawNodeDisplay
+		}
+	};
 	return {
 		...data,
 		root,
+		display,
 		properties,
 		nodes
 	};
@@ -143,6 +161,7 @@ const validateData = (data : MapDefinition) : void => {
 	if (!data.nodes) throw new Error('No nodes provided');
 	//It is allowed for root to be empty.
 	if (!data.properties || Object.keys(data.properties).length == 0) throw new Error('No properties provided');
+	const exampleValues = Object.fromEntries(Object.keys(data.properties).map(typeName => [typeName, 1.0]));
 	for (const [nodeName, nodeData] of Object.entries(data.nodes)) {
 		if (nodeName == ROOT_ID) throw new Error('Nodes may not have the same id as root: "' + ROOT_ID + '"');
 		if (!nodeData.description) throw new Error(nodeName + ' has no description');
@@ -151,8 +170,8 @@ const validateData = (data : MapDefinition) : void => {
 			if (!edge.type) throw new Error(nodeName + ' has an edge with no type');
 			if (!data.properties[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
 		}
+		if (nodeData.display.radius) validateValueDefinition(nodeData.display.radius, exampleValues);
 	}
-	const exampleValues = Object.fromEntries(Object.keys(data.properties).map(typeName => [typeName, 1.0]));
 	for(const [type, propertyDefinition] of Object.entries(data.properties)) {
 		try {
 			validateValueDefinition(propertyDefinition.value, exampleValues, propertyDefinition);
@@ -191,6 +210,7 @@ const validateData = (data : MapDefinition) : void => {
 			if (!data.properties[rootName]) throw new Error('root property ' + rootName + ' is not defined in properties');
 		}
 	}
+	validateValueDefinition(data.display.node.radius, exampleValues);
 	try {
 		topologicalSort(extractSimpleGraph(data));
 	} catch (err) {
@@ -432,7 +452,17 @@ class AdjacencyMapNode {
 	}
 
 	get radius() : number {
-		return this.values['core:radius'];
+		//TODO: cache
+		const definition = this._data?.display?.radius || this._map.data.display.node.radius;
+		const result = calculateValue(definition, {
+			edges: this.edges,
+			//TODO: this.parents omits expliti root references
+			refs: this.parents.map(id => this._map.node(id).values),
+			partialResult: this.values,
+			rootValue: this._map.rootValues
+		});
+		if (result.length < 1) throw new Error('Value definition for radius returned an empty array');
+		return result[0];
 	}
 
 	get opacity() : number {
