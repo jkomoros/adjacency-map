@@ -465,6 +465,17 @@ class AdjacencyMapNode {
 		return this._cachedEdges;
 	}
 
+	_edgeDefinitionHelper(definition : ValueDefinition, edges : ExpandedEdgeValue[]) : number[] {
+		const result = calculateValue(definition, {
+			edges: edges,
+			//TODO: this.parents omits expliti root references
+			refs: this.parents.map(id => this._map.node(id).values),
+			partialResult: this.values,
+			rootValue: this._map.rootValues
+		});
+		return result;
+	}
+
 	_calculateRenderEdges() : RenderEdgeValue[] {
 		
 		const defaultWidth = 1.5;
@@ -482,6 +493,19 @@ class AdjacencyMapNode {
 		}
 		for (const [source, edgeMap] of Object.entries(edgesBySource)) {
 			for (const [edgeType, edges] of Object.entries(edgeMap)){
+				const edgeDefinition = this._map.data.properties[edgeType];
+				const colorDefinition = edgeDefinition.display.color || this._map.data.display.edge.color;
+				const colors = this._edgeDefinitionHelper(colorDefinition, edges);
+				const widthDefinition = edgeDefinition.display.width || this._map.data.display.edge.width;
+				const widths = this._edgeDefinitionHelper(widthDefinition, edges);
+				const opacityDefinition = edgeDefinition.display.opacity || this._map.data.display.edge.opacity;
+				const opacities = this._edgeDefinitionHelper(opacityDefinition, edges);
+				const distinctDefinition = edgeDefinition.display.distinct || this._map.data.display.edge.distinct;
+				const distincts = this._edgeDefinitionHelper(distinctDefinition, edges);
+
+				//TODO: remove. This is just here to get it to compile
+				console.info(colors, widths, opacities, distincts);
+
 				for (const edge of edges) {
 					if (edgeType == 'just putting this here to compile') continue;
 					result.push({
@@ -500,7 +524,6 @@ class AdjacencyMapNode {
 
 	get renderEdges(): RenderEdgeValue[] {
 		if (!this._cachedRenderEdges) {
-			//TODO: actually calculate these
 			this._cachedRenderEdges = this._calculateRenderEdges();
 		}
 		return this._cachedRenderEdges;
