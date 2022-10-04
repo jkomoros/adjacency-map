@@ -193,7 +193,7 @@ class MainView extends connect(store)(PageViewElement) {
 		const a = this._adjacencyMap;
 		
 		// fill for nodes
-		const fill = '#999';
+		const fill = '#333';
 		// stroke for links
 		const stroke = '#555';
 		// stroke width for links
@@ -215,7 +215,7 @@ class MainView extends connect(store)(PageViewElement) {
 			</g>
 			<g>
 				${Object.values(a.nodes).map(node => svg`<a transform="translate(${node.x},${node.y})">
-					<circle fill="${node.children.length == 0 ? fill : stroke}" r="${node.radius}" opacity="${node.opacity}"></circle>
+					<circle fill="${fill}" r="${node.radius}" opacity="${node.opacity}"></circle>
 					<title>${node.fullDescription()}</title>
 					<text dy="0.32em" x="${(node.children.length == 0 ? 1 : -1) * node.radius * 2}" text-anchor="${node.children.length == 0 ? 'start' : 'end'}" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}">${node.id}</text>
 				</a>`)}
