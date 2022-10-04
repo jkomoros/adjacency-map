@@ -1480,6 +1480,13 @@ describe('AdjacencyMap root', () => {
 
 });
 
+const NODE_A_BASE_VALUES = {
+	'core:radius': 3,
+	engineering: 3,
+	ux: 0,
+	data: 0
+};
+
 describe('AdjacencyMap node', () => {
 	it('allows a named node', async () => {
 		const input = deepCopy(legalBaseInput);
@@ -1505,10 +1512,7 @@ describe('AdjacencyMap node', () => {
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
-			engineering: 3,
-			ux: 0,
-			data: 0
+			...NODE_A_BASE_VALUES	
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1567,10 +1571,8 @@ core:radius: 3`;
 		const node = map.node('');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 4,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1582,10 +1584,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 2.5,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1598,10 +1598,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 4.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1614,10 +1612,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: NULL_SENTINEL + 3.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1631,10 +1627,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 4.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1647,10 +1641,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 8.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1662,10 +1654,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 4.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1678,10 +1668,9 @@ core:radius: 3`;
 		const node = map.node('b');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 5.0,
-			ux: 4,
-			data: 0
+			ux: 4.0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1695,10 +1684,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 10.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1712,10 +1699,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: -3.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1729,10 +1714,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 10.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1746,10 +1729,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 10.5,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1763,10 +1744,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: -90,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1780,10 +1759,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 1.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1797,10 +1774,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 0.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1814,10 +1789,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 1.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1831,10 +1804,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 0.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1860,7 +1831,7 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 12,
 			ux: 12,
 			//Data is 0 because there is no data edge on node a, so it's just an implicit reference to its root.
@@ -1884,7 +1855,7 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 12,
 			ux: 12,
 			data: 12
@@ -1902,10 +1873,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 1,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1922,10 +1891,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 4,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1942,10 +1909,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 2,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1962,10 +1927,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 3.5,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -1982,10 +1945,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 1.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2002,10 +1963,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 3.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2021,10 +1980,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 3.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2041,10 +1998,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 1.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2061,10 +2016,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 2.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2081,10 +2034,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 1.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2101,10 +2052,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 1.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2121,10 +2070,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 2.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2141,10 +2088,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 2.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2161,10 +2106,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 18,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2180,10 +2123,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 103,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2199,10 +2140,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 43,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2219,10 +2158,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 53,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2239,10 +2176,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 1.06,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2259,10 +2194,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 62.7,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2280,10 +2213,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: 7.0,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2298,10 +2229,8 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
-			'core:radius': 3,
+			...NODE_A_BASE_VALUES,
 			engineering: packColor(color('blue')),
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -2334,12 +2263,9 @@ core:radius: 3`;
 		const node = map.node('a');
 		const actual = node.values;
 		const golden = {
+			...NODE_A_BASE_VALUES,
 			'_test_a_:one': 3,
 			'_test_b_:two': 4,
-			'core:radius': 3,
-			engineering: 3,
-			ux: 0,
-			data: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
