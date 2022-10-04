@@ -474,21 +474,25 @@ class AdjacencyMapNode {
 
 		const result : RenderEdgeValue[] = [];
 		
-		const edgesBySource : {[source : NodeID]: ExpandedEdgeValue[]} = {};
+		const edgesBySource : {[source : NodeID]: {[edgeType : PropertyName]: ExpandedEdgeValue[]}} = {};
 		for (const edge of this.edges) {
-			if (!edgesBySource[edge.source]) edgesBySource[edge.source] = [];
-			edgesBySource[edge.source].push(edge);
+			if (!edgesBySource[edge.source]) edgesBySource[edge.source] = {};
+			if (!edgesBySource[edge.source][edge.type]) edgesBySource[edge.source][edge.type] = [];
+			edgesBySource[edge.source][edge.type].push(edge);
 		}
-		for (const [source, edges] of Object.entries(edgesBySource)) {
-			for (const edge of edges){
-				result.push({
-					source,
-					ref: edge.ref,
-					width: defaultWidth,
-					opacity: defaultOpacity,
-					color: defaultColor,
-					bump: defaultBump
-				});
+		for (const [source, edgeMap] of Object.entries(edgesBySource)) {
+			for (const [edgeType, edges] of Object.entries(edgeMap)){
+				for (const edge of edges) {
+					if (edgeType == 'just putting this here to compile') continue;
+					result.push({
+						source,
+						ref: edge.ref,
+						width: defaultWidth,
+						opacity: defaultOpacity,
+						color: defaultColor,
+						bump: defaultBump,
+					});
+				}
 			}
 		}
 		return result;
