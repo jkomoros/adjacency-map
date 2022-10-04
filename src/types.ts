@@ -347,7 +347,10 @@ export type NodeDisplay = {
 }
 
 export type EdgeDisplay = {
-	width: ValueDefinition
+	//The width of the stroke 
+	width: ValueDefinition,
+	//The color of the stroke
+	color: ValueDefinition
 }
 
 export type RawMapDisplay = {

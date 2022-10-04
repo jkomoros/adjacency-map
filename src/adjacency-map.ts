@@ -84,7 +84,10 @@ const BASE_NODE_DISPLAY : NodeDisplay = {
 };
 
 const BASE_EDGE_DISPLAY : EdgeDisplay = {
-	width: 1.5
+	width: 1.5,
+	color: {
+		color: '#555'
+	}
 };
 
 //Does things like include libraries, convert Raw* to * (by calculateValueLeaf

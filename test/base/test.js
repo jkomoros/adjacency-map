@@ -1631,6 +1631,65 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for an invalid color on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edge: {
+				color: 'invalid'
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Barfs for invalid color on engineering', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.display = {
+			color: 'invalid'
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows color on node and map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edge: {
+				color: {
+					color: '#555'
+				},
+			}
+		};
+		input.properties.engineering.display = {
+			width: {
+				color: '#555'
+			}
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
