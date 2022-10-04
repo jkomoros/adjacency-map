@@ -440,10 +440,39 @@ class AdjacencyMapNode {
 		return this._cachedEdges;
 	}
 
+	_calculateRenderEdges() : RenderEdgeValue[] {
+		
+		const defaultWidth = 1.5;
+		const defaultOpacity = 0.4;
+		const defaultColor = color('#555');
+		const defaultBump = 0.5;
+
+		const result : RenderEdgeValue[] = [];
+		
+		const edgesBySource : {[source : NodeID]: ExpandedEdgeValue[]} = {};
+		for (const edge of this.edges) {
+			if (!edgesBySource[edge.source]) edgesBySource[edge.source] = [];
+			edgesBySource[edge.source].push(edge);
+		}
+		for (const [source, edges] of Object.entries(edgesBySource)) {
+			for (const edge of edges){
+				result.push({
+					source,
+					ref: edge.ref,
+					width: defaultWidth,
+					opacity: defaultOpacity,
+					color: defaultColor,
+					bump: defaultBump
+				});
+			}
+		}
+		return result;
+	}
+
 	get renderEdges(): RenderEdgeValue[] {
 		if (!this._cachedRenderEdges) {
 			//TODO: actually calculate these
-			this._cachedRenderEdges = this.edges.map(edge => ({source: edge.source, ref: edge.ref, width: 1.5, opacity: 0.4, color: color('#555'), bump: 0.5}));
+			this._cachedRenderEdges = this._calculateRenderEdges();
 		}
 		return this._cachedRenderEdges;
 	}
