@@ -25,7 +25,8 @@ import {
 } from '../../src/constants.js';
 
 import {
-	deepCopy
+	deepCopy,
+	wrapArrays
 } from '../../src/util.js';
 
 import assert from 'assert';
@@ -2839,6 +2840,54 @@ describe('packColor', () => {
 		const input = 0xFFFFFFFFFF;
 		const actual = unpackColor(input);
 		const golden = color([255, 255, 255, 1]);
+		assert.deepStrictEqual(actual, golden);
+	});
+
+});
+
+describe('wrapArrays', () => {
+	it('all same length', async () => {
+		const input = [
+			[0],
+			[0],
+			[0]
+		];
+		const golden = [
+			[0],
+			[0],
+			[0]
+		];
+		const actual = wrapArrays(...input);
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('one longer', async () => {
+		const input = [
+			[0, 1],
+			[0],
+			[0]
+		];
+		const golden = [
+			[0, 1],
+			[0, 0],
+			[0, 0]
+		];
+		const actual = wrapArrays(...input);
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('one longer, another slightly shorter', async () => {
+		const input = [
+			[0, 1, 2],
+			[0, 1],
+			[0]
+		];
+		const golden = [
+			[0, 1, 2],
+			[0, 1, 0],
+			[0, 0, 0]
+		];
+		const actual = wrapArrays(...input);
 		assert.deepStrictEqual(actual, golden);
 	});
 

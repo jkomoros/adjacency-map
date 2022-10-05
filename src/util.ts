@@ -41,6 +41,23 @@ export const deepFreeze = (obj : object) : void => {
 	}
 };
 
+//Takes n arrays, and then returns a set like what was given, but where each
+//array is as long as the longest array, and if a given array was too short it
+//wraps its values around to fill the extra spaces.
+export const wrapArrays = <T>(...arrays : T[][]) : T[][] => {
+	let longestArray = 0;
+	for (const array of arrays) {
+		if (array.length > longestArray) longestArray = array.length;
+	}
+	return arrays.map(array => {
+		const result : T[] = [];
+		for (let i = 0; i < longestArray; i++) {
+			result.push(array[i % array.length]);
+		}
+		return result;
+	});
+};
+
 //Only works for POJOs
 export function deepCopy<T extends object>(obj : T) : T {
 	return JSON.parse(JSON.stringify(obj));
