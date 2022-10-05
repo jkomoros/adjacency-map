@@ -11,6 +11,8 @@ const DATA_DIRECTORY = 'data';
 const generateConfig = () => {
 	const datafiles = [];
 	for (const file of fs.readdirSync(DATA_DIRECTORY)) {
+		if (!file.endsWith('.ts')) continue;
+		if (file.endsWith('.d.ts')) continue;
 		const filename = path.basename(file, '.ts');
 		if (filename.includes('SAMPLE')) continue;
 		datafiles.push(filename);
@@ -24,7 +26,7 @@ import {
 	RawMapDefinition
 } from './types.js';
 
-${datafiles.map(filename => `import ${camelCaseFilename(filename) + 'Data'} from '../data/${filename}.json' assert { type: "json" };`).join('\n')}
+${datafiles.map(filename => `import ${camelCaseFilename(filename) + 'Data'} from '../data/${filename}.js';`).join('\n')}
 
 export type DataFilename = ${datafiles.map(filename => `'${filename}'`).join(' | ')};
 
