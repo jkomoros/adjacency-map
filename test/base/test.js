@@ -1463,7 +1463,7 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('allows a valid defintion of type lengthOf', async () => {
+	it('allows a valid defintion of type input', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = 'input';
 		const errorExpected = false;
