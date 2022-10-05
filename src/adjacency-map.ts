@@ -20,7 +20,8 @@ import {
 	Color,
 	RenderEdgeValue,
 	EdgeDisplay,
-	EdgeCombinerDisplay
+	EdgeCombinerDisplay,
+	ValueDefinitionCalculationArgs
 } from './types.js';
 
 import {
@@ -58,6 +59,7 @@ import {
 } from './libraries.js';
 
 import {
+	packColor,
 	unpackColor
 } from './color.js';
 
@@ -489,14 +491,16 @@ class AdjacencyMapNode {
 		return this._cachedEdges;
 	}
 
-	_edgeDefinitionHelper(definition : ValueDefinition, edges : ExpandedEdgeValue[]) : number[] {
-		const result = calculateValue(definition, {
+	_edgeDefinitionHelper(definition : ValueDefinition, edges : ExpandedEdgeValue[], input? : number[]) : number[] {
+		const args : ValueDefinitionCalculationArgs = {
 			edges: edges,
 			//TODO: this.parents omits expliti root references
 			refs: this.parents.map(id => this._map.node(id).values),
 			partialResult: this.values,
 			rootValue: this._map.rootValues
-		});
+		};
+		if (input) args.input = input;
+		const result = calculateValue(definition, args);
 		return result;
 	}
 
@@ -515,6 +519,8 @@ class AdjacencyMapNode {
 			edgesByRef[edge.ref][edge.type].push(edge);
 		}
 		for (const [ref, edgeMap] of Object.entries(edgesByRef)) {
+			const bundledEdges : RenderEdgeValue[] = [];
+			const resultsForRef :RenderEdgeValue[] = [];
 			for (const [edgeType, edges] of Object.entries(edgeMap)){
 				const edgeDefinition = this._map.data.properties[edgeType];
 				const colorDefinition = edgeDefinition.display.color || this._map.data.display.edge.color;
@@ -541,15 +547,38 @@ class AdjacencyMapNode {
 
 					const distinct = wrappedDistincts[i % wrappedDistincts.length];
 
-					//TODO: add to result if distinct, else add to bundledEdges for later processing.
-
 					if (distinct) {
-						console.warn('An edge said it was distinct but that is not supported yet');
+						resultsForRef.push(renderEdge);
+					} else {
+						bundledEdges.push(renderEdge);
 					}
-
-					result.push(renderEdge);
 				}
 			}
+
+			if (bundledEdges.length) {
+				//We need to do edge combining.
+				const colors = this._edgeDefinitionHelper(this._map.data.display.edgeCombiner.color, [], bundledEdges.map(edge => packColor(edge.color)));
+				const widths = this._edgeDefinitionHelper(this._map.data.display.edgeCombiner.width, [], bundledEdges.map(edge => edge.width));
+				const opacities = this._edgeDefinitionHelper(this._map.data.display.edgeCombiner.opacity, [], bundledEdges.map(edge => edge.opacity));
+
+				const [wrappedColors, wrappedWidths, wrappedOpacities] = wrapArrays(colors, widths, opacities);
+
+				for (let i = 0; i < wrappedColors.length; i++) {
+					const renderEdge = {
+						source,
+						ref,
+						width: wrappedWidths[i % wrappedWidths.length],
+						opacity: wrappedOpacities[i % wrappedOpacities.length],
+						color: unpackColor(wrappedColors[i % wrappedColors.length]),
+						bump: defaultBump,
+					};
+					resultsForRef.push(renderEdge);
+				}
+			}
+
+			//TODO: bump out if multiple results
+
+			result.push(...resultsForRef);
 		}
 		return result;
 	}
