@@ -35,6 +35,7 @@ import {
 	NULL_SENTINEL
 } from './constants.js';
 import { color, packColor } from './color.js';
+import { assertUnreachable } from './util.js';
 
 export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 	'ref': true,
@@ -275,9 +276,7 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 		return;
 	}
 
-	const _exhaustiveCheck : never = definition;
-	throw new Error('Illegal value for definition');
-	return _exhaustiveCheck;
+	return assertUnreachable(definition);
 };
 
 export const calculateValueLeaf = (definition : ValueDefinitionLeaf) : number =>  {
@@ -287,9 +286,7 @@ export const calculateValueLeaf = (definition : ValueDefinitionLeaf) : number =>
 
 	if (definition === null) return NULL_SENTINEL;
 
-	const _exhaustiveCheck : never = definition;
-	throw new Error('Illegal value for definition');
-	return _exhaustiveCheck;
+	return assertUnreachable(definition);
 };
 
 
@@ -411,9 +408,7 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 			length = args.input ? args.input.length : 1;
 			break;
 		default:
-			const _exhaustiveCheck : never = definition.lengthOf;
-			throw new Error('Illegal value for definition');
-			return _exhaustiveCheck;
+			assertUnreachable(definition.lengthOf);
 		}
 		for (let i = 0; i < length; i++) {
 			result.push(values[i % values.length]);
@@ -425,7 +420,5 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 		return args.input || [NULL_SENTINEL];
 	}
 
-	const _exhaustiveCheck : never = definition;
-	throw new Error('Illegal value for definition');
-	return _exhaustiveCheck;
+	return assertUnreachable(definition);
 };

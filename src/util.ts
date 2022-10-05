@@ -32,6 +32,10 @@ export function shuffleInPlace<T>(array : T[], rnd : RandomGenerator = Math.rand
 	return array;
 }
 
+export const assertUnreachable = (x : never) : never => {
+	throw new Error('Exhaustiveness check failed: ' + String(x));
+};
+
 export const deepFreeze = (obj : object) : void => {
 	if (!obj) return;
 	if (typeof obj != 'object') return;
