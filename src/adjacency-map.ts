@@ -480,14 +480,16 @@ class AdjacencyMapNode {
 		const defaultBump = 0.5;
 
 		const result : RenderEdgeValue[] = [];
+
+		const source = this.id;
 		
-		const edgesBySource : {[source : NodeID]: {[edgeType : PropertyName]: ExpandedEdgeValue[]}} = {};
+		const edgesByRef : {[source : NodeID]: {[edgeType : PropertyName]: ExpandedEdgeValue[]}} = {};
 		for (const edge of this.edges) {
-			if (!edgesBySource[edge.source]) edgesBySource[edge.source] = {};
-			if (!edgesBySource[edge.source][edge.type]) edgesBySource[edge.source][edge.type] = [];
-			edgesBySource[edge.source][edge.type].push(edge);
+			if (!edgesByRef[edge.ref]) edgesByRef[edge.ref] = {};
+			if (!edgesByRef[edge.ref][edge.type]) edgesByRef[edge.ref][edge.type] = [];
+			edgesByRef[edge.ref][edge.type].push(edge);
 		}
-		for (const [source, edgeMap] of Object.entries(edgesBySource)) {
+		for (const [ref, edgeMap] of Object.entries(edgesByRef)) {
 			for (const [edgeType, edges] of Object.entries(edgeMap)){
 				const edgeDefinition = this._map.data.properties[edgeType];
 				const colorDefinition = edgeDefinition.display.color || this._map.data.display.edge.color;
@@ -501,11 +503,9 @@ class AdjacencyMapNode {
 
 				for (let i = 0; i < edges.length; i++) {
 
-					const edge = edges[i];
-
 					const renderEdge = {
 						source,
-						ref: edge.ref,
+						ref,
 						width: widths[i % widths.length],
 						opacity: opacities[i % opacities.length],
 						color: unpackColor(colors[i % colors.length]),
