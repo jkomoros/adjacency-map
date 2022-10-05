@@ -89,12 +89,11 @@ const BASE_NODE_DISPLAY : NodeDisplay = {
 	}
 };
 
+//Since none of these return an array of numbers, edges of the same type from
+//the same ref/source pair will be combined together. If you want them to not
+//combine, override one of these to return {lengthOf:'edges', value: FOO}
 const BASE_EDGE_DISPLAY : EdgeDisplay = {
-	//By having a single one that returns a value for edges, all of the values will be distinct.
-	width: {
-		lengthOf: 'edges',
-		value: 1.5,
-	},
+	width: 1.5,
 	color: {
 		color: '#555'
 	},

@@ -3145,6 +3145,12 @@ describe('renderEdges', () => {
 	it('basic case no combining', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.display = {
+			edge: {
+				width: {
+					lengthOf: 'edges',
+					value: 1.5
+				}
+			},
 			edgeCombiner: {
 				width: {
 					lengthOf: 'input',
@@ -3172,7 +3178,10 @@ describe('renderEdges', () => {
 		const input = deepCopy(legalBaseInput);
 		input.display = {
 			edge: {
-				distinct: true
+				distinct: {
+					lengthOf: 'edges',
+					value: true
+				}
 			}
 		};
 		const map = new AdjacencyMap(input);
@@ -3216,7 +3225,10 @@ describe('renderEdges', () => {
 			{type: 'data'}
 		);
 		input.properties.engineering.display = {
-			distinct: true
+			distinct: {
+				lengthOf: 'edges',
+				value: true
+			}
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -3248,7 +3260,10 @@ describe('renderEdges', () => {
 			{type: 'data'}
 		);
 		input.properties.engineering.display = {
-			distinct: true
+			distinct: {
+				lengthOf: 'edges', 
+				value: true
+			}
 		};
 		input.display = {
 			edgeCombiner: {
@@ -3292,6 +3307,12 @@ describe('renderEdges', () => {
 			{type: 'data'}
 		);
 		input.display = {
+			edge: {
+				distinct: {
+					lengthOf: 'edges',
+					value: false
+				}
+			},
 			edgeCombiner: {
 				width: {
 					lengthOf: 'input',
