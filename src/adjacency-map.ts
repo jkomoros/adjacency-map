@@ -19,7 +19,8 @@ import {
 	MapDisplay,
 	Color,
 	RenderEdgeValue,
-	EdgeDisplay
+	EdgeDisplay,
+	EdgeCombinerDisplay
 } from './types.js';
 
 import {
@@ -99,6 +100,14 @@ const BASE_EDGE_DISPLAY : EdgeDisplay = {
 	distinct: false
 };
 
+const BASE_EDGE_COMBINER_DISPLAY : EdgeCombinerDisplay = {
+	width: 1.5,
+	color: {
+		color: '#555'
+	},
+	opacity: 0.4
+};
+
 //Does things like include libraries, convert Raw* to * (by calculateValueLeaf
 //on any constants, etc)
 const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
@@ -174,6 +183,7 @@ const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 	}
 	const rawNodeDisplay = data.display?.node || {};
 	const rawEdgeDisplay = data.display?.edge || {};
+	const rawEdgeCombinerDisplay = data.display?.edgeCombiner || {};
 	const display : MapDisplay = {
 		node: {
 			...BASE_NODE_DISPLAY,
@@ -182,6 +192,10 @@ const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 		edge: {
 			...BASE_EDGE_DISPLAY,
 			...rawEdgeDisplay
+		},
+		edgeCombiner: {
+			...BASE_EDGE_COMBINER_DISPLAY,
+			...rawEdgeCombinerDisplay
 		}
 	};
 	return {
@@ -256,6 +270,9 @@ const validateData = (data : MapDefinition) : void => {
 		validateValueDefinition(displayValue, exampleValues);
 	}
 	for (const displayValue of Object.values(data.display.edge)) {
+		validateValueDefinition(displayValue, exampleValues);
+	}
+	for (const displayValue of Object.values(data.display.edgeCombiner)) {
 		validateValueDefinition(displayValue, exampleValues);
 	}
 	try {

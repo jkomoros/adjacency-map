@@ -375,14 +375,30 @@ export type EdgeDisplay = {
 	distinct: ValueDefinition
 }
 
+//All of the ValueDefinition will receive as input the previous values for
+//un-distinct edges of all types. You can check how many different edge types
+//you are combining by checking lengthOf input. Because it's in an edge-free
+//context, constants fetching won't work. If any of these emits more than one
+//edge, then all of those edges will be rendered.
+export type EdgeCombinerDisplay = {
+	//The width of the stroke 
+	width: ValueDefinition,
+	//The color of the stroke
+	color: ValueDefinition
+	//The opacity of the stroke
+	opacity: ValueDefinition
+}
+
 export type RawMapDisplay = {
 	node?: Partial<NodeDisplay>,
-	edge?: Partial<EdgeDisplay>
+	edge?: Partial<EdgeDisplay>,
+	edgeCombiner? : Partial<EdgeCombinerDisplay>
 };
 
 export type MapDisplay = {
 	node: NodeDisplay;
 	edge: EdgeDisplay;
+	edgeCombiner : EdgeCombinerDisplay;
 }
 
 export type RawMapDefinition = {

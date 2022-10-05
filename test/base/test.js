@@ -1866,6 +1866,119 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for an invalid width combiner on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edgeCombiner: {
+				width: 'invalid'
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows width combiner on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edgeCombiner: {
+				width: 3,
+			}
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for an invalid color combiner on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edgeCombiner: {
+				color: 'invalid'
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows color combiner on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edgeCombiner: {
+				color: {
+					color: '#555'
+				},
+			}
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for an invalid opacity combiner on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edgeCombiner: {
+				opacity: 'invalid'
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows opacity combiner on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edgeCombiner: {
+				opacity: 0.4
+			}
+		};
+		input.properties.engineering.display = {
+			opacity: 0.4
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
