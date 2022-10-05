@@ -3212,7 +3212,8 @@ describe('renderEdges', () => {
 		const golden = [
 			//Everything merged together
 			{
-				...BASE_RENDER_EDGE
+				...BASE_RENDER_EDGE,
+				width: BASE_RENDER_EDGE.width * 3
 			}
 		];
 		assert.deepStrictEqual(actual, golden);
@@ -3246,7 +3247,8 @@ describe('renderEdges', () => {
 			//Everything else
 			{
 				...BASE_RENDER_EDGE,
-				bump: 1.0
+				bump: 1.0,
+				width: BASE_RENDER_EDGE.width * 2
 			}
 
 		];
