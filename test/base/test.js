@@ -1412,6 +1412,57 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for a value defintion of type lengthOf with illegal lengthOf property', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			lengthOf: 'invalid',
+			value: 3
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a value defintion of type lengthOf with illegal value property', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			lengthOf: 'edges',
+			value: 'invalid'
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows a value defintion of type lengthOf', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			lengthOf: 'edges',
+			value: 3
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('barfs for an invalid radius on map', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.display = {
@@ -2602,6 +2653,41 @@ engineering: 3`;
 		const golden = {
 			...NODE_A_BASE_VALUES,
 			engineering: 7.0,
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a lenghtOf on edges', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
+			lengthOf: 'edges',
+			value: 3
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			...NODE_A_BASE_VALUES,
+			engineering: 6.0,
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a lenghtOf on refs', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
+			lengthOf: 'refs',
+			value: 3
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			...NODE_A_BASE_VALUES,
+			//Ideally this would be 3.0 (one ref, de-duped) but we don't de-dupe refs.
+			engineering: 6.0,
 		};
 		assert.deepStrictEqual(actual, golden);
 	});

@@ -23,7 +23,8 @@ import {
 	ValueDefinitionCollect,
 	ValueDefinitionLeaf,
 	ValueDefinitionCalculationArgs,
-	ValueDefinitionColor
+	ValueDefinitionColor,
+	ValueDefinitionLengthOf
 } from './types.js';
 
 import {
@@ -155,6 +156,12 @@ const valueDefinitionIsCollect = (definition : ValueDefinition): definition is V
 	return 'collect' in definition;
 };
 
+const valueDefinitionIsLengthOf = (definition : ValueDefinition): definition is ValueDefinitionLengthOf => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'lengthOf' in definition;
+};
+
 export const validateValueDefinition = (definition : ValueDefinition, exampleValue : NodeValues, edgeDefinition? : PropertyDefinition) : void => {
 	if (valueDefinitionIsLeaf(definition)) return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {
@@ -248,6 +255,12 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 		for (const child of definition.collect) {
 			validateValueDefinition(child, exampleValue, edgeDefinition);
 		}
+		return;
+	}
+
+	if (valueDefinitionIsLengthOf(definition)) {
+		if (definition.lengthOf != 'refs' && definition.lengthOf != 'edges') throw new Error('lengthOf property must be either refs or edges');
+		validateValueDefinition(definition.value, exampleValue, edgeDefinition);
 		return;
 	}
 
@@ -370,6 +383,16 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 
 	if (valueDefinitionIsCollect(definition)) {
 		return definition.collect.map(child => calculateValue(child, args)).flat();
+	}
+
+	if (valueDefinitionIsLengthOf(definition)) {
+		const values = calculateValue(definition.value, args);
+		const result = [];
+		const length = definition.lengthOf == 'refs' ? args.refs.length : args.edges.length;
+		for (let i = 0; i < length; i++) {
+			result.push(values[i % values.length]);
+		}
+		return result;
 	}
 
 	const _exhaustiveCheck : never = definition;

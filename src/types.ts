@@ -158,6 +158,14 @@ export type ValueDefinitionCollect = {
 	collect: ValueDefinition[]
 }
 
+//LengthOf returns an array that is the length of refs or egdes, wrapping around
+//value if necessary. This is useful if you want an array of constant values as
+//long as edges, for example, but don't know any constants to fetch.
+export type ValueDefinitionLengthOf = {
+	lengthOf: 'refs' | 'edges',
+	value: ValueDefinition
+}
+
 //The actual values are all numbers, but for convenience raw inputs can also
 //literally be true or false, which are expanded to DEFAULT_TRUE_NUMBER and FALSE_NUMBER.
 export type ValueDefinitionLeaf = number | boolean | null;
@@ -176,6 +184,7 @@ export type ValueDefinition = ValueDefinitionLeaf |
 	ValueDefinitionClip |
 	ValueDefinitionRange |
 	ValueDefinitionPercent |
+	ValueDefinitionLengthOf | 
 	ValueDefinitionCollect;
 
 export type ValueDefinitionCalculationArgs = {
