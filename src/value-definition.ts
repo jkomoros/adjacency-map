@@ -265,7 +265,7 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 	}
 
 	if (valueDefinitionIsLengthOf(definition)) {
-		if (definition.lengthOf != 'refs' && definition.lengthOf != 'edges') throw new Error('lengthOf property must be either refs or edges');
+		if (definition.lengthOf != 'refs' && definition.lengthOf != 'edges' && definition.lengthOf != 'input') throw new Error('lengthOf property must be either refs or edges or input');
 		validateValueDefinition(definition.value, exampleValue, edgeDefinition);
 		return;
 	}
@@ -399,7 +399,22 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 	if (valueDefinitionIsLengthOf(definition)) {
 		const values = calculateValue(definition.value, args);
 		const result = [];
-		const length = definition.lengthOf == 'refs' ? args.refs.length : args.edges.length;
+		let length = 0;
+		switch(definition.lengthOf) {
+		case 'refs':
+			length = args.refs.length;
+			break;
+		case 'edges':
+			length = args.edges.length;
+			break;
+		case 'input':
+			length = args.input ? args.input.length : 1;
+			break;
+		default:
+			const _exhaustiveCheck : never = definition.lengthOf;
+			throw new Error('Illegal value for definition');
+			return _exhaustiveCheck;
+		}
 		for (let i = 0; i < length; i++) {
 			result.push(values[i % values.length]);
 		}

@@ -162,7 +162,7 @@ export type ValueDefinitionCollect = {
 //value if necessary. This is useful if you want an array of constant values as
 //long as edges, for example, but don't know any constants to fetch.
 export type ValueDefinitionLengthOf = {
-	lengthOf: 'refs' | 'edges',
+	lengthOf: 'refs' | 'edges' | 'input',
 	value: ValueDefinition
 }
 
