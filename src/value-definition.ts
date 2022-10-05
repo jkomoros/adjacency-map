@@ -24,7 +24,8 @@ import {
 	ValueDefinitionLeaf,
 	ValueDefinitionCalculationArgs,
 	ValueDefinitionColor,
-	ValueDefinitionLengthOf
+	ValueDefinitionLengthOf,
+	ValueDefinitionInput
 } from './types.js';
 
 import {
@@ -162,6 +163,11 @@ const valueDefinitionIsLengthOf = (definition : ValueDefinition): definition is 
 	return 'lengthOf' in definition;
 };
 
+const valueDefinitionIsInput = (definition : ValueDefinition): definition is ValueDefinitionInput => {
+	if( typeof definition == 'string' && definition == 'input') return true;
+	return false;
+};
+
 export const validateValueDefinition = (definition : ValueDefinition, exampleValue : NodeValues, edgeDefinition? : PropertyDefinition) : void => {
 	if (valueDefinitionIsLeaf(definition)) return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {
@@ -261,6 +267,11 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 	if (valueDefinitionIsLengthOf(definition)) {
 		if (definition.lengthOf != 'refs' && definition.lengthOf != 'edges') throw new Error('lengthOf property must be either refs or edges');
 		validateValueDefinition(definition.value, exampleValue, edgeDefinition);
+		return;
+	}
+
+	if (valueDefinitionIsInput(definition)) {
+		//There is no configuration on input
 		return;
 	}
 
@@ -393,6 +404,10 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 			result.push(values[i % values.length]);
 		}
 		return result;
+	}
+
+	if (valueDefinitionIsInput(definition)) {
+		return args.input || [NULL_SENTINEL];
 	}
 
 	const _exhaustiveCheck : never = definition;

@@ -166,6 +166,11 @@ export type ValueDefinitionLengthOf = {
 	value: ValueDefinition
 }
 
+//Input returns the input in this value calculation context, or [null] if this
+//is a context where input was not provided. For example,
+//map.display.edgeCombiner is a context where input is provided.
+export type ValueDefinitionInput = 'input';
+
 //The actual values are all numbers, but for convenience raw inputs can also
 //literally be true or false, which are expanded to DEFAULT_TRUE_NUMBER and FALSE_NUMBER.
 export type ValueDefinitionLeaf = number | boolean | null;
@@ -184,7 +189,8 @@ export type ValueDefinition = ValueDefinitionLeaf |
 	ValueDefinitionClip |
 	ValueDefinitionRange |
 	ValueDefinitionPercent |
-	ValueDefinitionLengthOf | 
+	ValueDefinitionLengthOf |
+	ValueDefinitionInput |
 	ValueDefinitionCollect;
 
 export type ValueDefinitionCalculationArgs = {
@@ -197,7 +203,10 @@ export type ValueDefinitionCalculationArgs = {
 	//property enumerated in dependencies.
 	partialResult : NodeValues, 
 	//The values of root.
-	rootValue : NodeValues
+	rootValue : NodeValues,
+	//The input numbers, which will be returned by ValueDefinitionInput, if this
+	//is a context that does that.
+	input? : number[]
 };
 
 export type LayoutInfo = {
