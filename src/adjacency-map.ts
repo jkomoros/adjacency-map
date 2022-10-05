@@ -139,9 +139,17 @@ const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 	}
 	let baseTypes : {[name : PropertyName] : RawPropertyDefinition} = {};
 	let baseRoot : RawNodeValues = {};
+	let baseNodeDisplay = {...BASE_NODE_DISPLAY};
+	let baseEdgeDisplay = {...BASE_EDGE_DISPLAY};
+	let baseEdgeCombinerDisplay = {...BASE_EDGE_COMBINER_DISPLAY};
 	for (const library of Object.values(importsMap)) {
 		baseTypes = {...baseTypes, ...library.properties};
 		baseRoot = {...baseRoot, ...library.root};
+		if (library.display) {
+			if (library.display.node) baseNodeDisplay = {...baseNodeDisplay, ...library.display.node};
+			if (library.display.edge) baseEdgeDisplay = {...baseEdgeDisplay, ...library.display.edge};
+			if (library.display.edgeCombiner) baseEdgeCombinerDisplay = {...baseEdgeCombinerDisplay, ...library.display.edgeCombiner};
+		}
 	}
 	const dataTypes = data.properties || {};
 	const dataRoot = data.root || {};
@@ -192,15 +200,15 @@ const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 	const rawEdgeCombinerDisplay = data.display?.edgeCombiner || {};
 	const display : MapDisplay = {
 		node: {
-			...BASE_NODE_DISPLAY,
+			...baseNodeDisplay,
 			...rawNodeDisplay
 		},
 		edge: {
-			...BASE_EDGE_DISPLAY,
+			...baseEdgeDisplay,
 			...rawEdgeDisplay
 		},
 		edgeCombiner: {
-			...BASE_EDGE_COMBINER_DISPLAY,
+			...baseEdgeCombinerDisplay,
 			...rawEdgeCombinerDisplay
 		}
 	};

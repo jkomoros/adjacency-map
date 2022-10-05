@@ -346,6 +346,7 @@ export type LibraryType = 'core';
 export type Library = {
 	//Libraries can import other libraries
 	import?: LibraryType[],
+	display?: RawMapDisplay,
 	//Types names should be `${libraryName}:${typeName}`
 	properties: {
 		[type : PropertyName]: RawPropertyDefinition

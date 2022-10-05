@@ -3022,6 +3022,92 @@ engineering: 3`;
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('Correctly handles libraries with display node override', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.import = '_test_a_';
+		LIBRARIES['_test_a_'] = {
+			properties: {
+				'_test_a_:one': {
+					value: 1
+				}
+			},
+			display: {
+				node: {
+					color: '#FFF'
+				}
+			},
+			root: {
+				'_test_a_:one': 3
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.color;
+		const golden = color('#FFF');
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly handles libraries with display edge override', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.import = '_test_a_';
+		LIBRARIES['_test_a_'] = {
+			properties: {
+				'_test_a_:one': {
+					value: 1
+				}
+			},
+			display: {
+				edge: {
+					color: '#FFF',
+					distinct: true
+				}
+			},
+			root: {
+				'_test_a_:one': 3
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.renderEdges;
+		const golden = [
+			{
+				...BASE_RENDER_EDGE,
+				color: color('#FFF')
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly handles libraries with display edgeCombiner override', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.import = '_test_a_';
+		LIBRARIES['_test_a_'] = {
+			properties: {
+				'_test_a_:one': {
+					value: 1
+				}
+			},
+			display: {
+				edgeCombiner: {
+					color: '#FFF',
+				}
+			},
+			root: {
+				'_test_a_:one': 3
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.renderEdges;
+		const golden = [
+			{
+				...BASE_RENDER_EDGE,
+				color: color('#FFF')
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
 
 });
 
