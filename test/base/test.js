@@ -3367,4 +3367,90 @@ describe('renderEdges', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('edge width clips', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edge: {
+				width: -10
+			},
+			edgeCombiner: {
+				width: 'input'
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.renderEdges;
+		const golden = [
+			{
+				...BASE_RENDER_EDGE,
+				width: 0.0
+			},
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('edge opacity clips', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edge: {
+				//Make it combine
+				width: 1.5,
+				opacity: -10
+			},
+			edgeCombiner: {
+				opacity: 'input'
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.renderEdges;
+		const golden = [
+			{
+				...BASE_RENDER_EDGE,
+				opacity: 0.0
+			},
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('edgeCombiner width clips', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edgeCombiner: {
+				width: -10
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.renderEdges;
+		const golden = [
+			{
+				...BASE_RENDER_EDGE,
+				width: 0.0
+			},
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('edgeCombiner opacity clips', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edgeCombiner: {
+				opacity: -10
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.renderEdges;
+		const golden = [
+			{
+				...BASE_RENDER_EDGE,
+				opacity: 0.0
+			},
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+
+
 });
