@@ -3119,3 +3119,252 @@ describe('wrapArrays', () => {
 	});
 
 });
+
+const BASE_RENDER_EDGE = {
+	opacity: 0.4,
+	ref: '',
+	source: 'a',
+	width: 1.5,
+	color: color('#555'),
+	bump: 0.5
+};
+
+describe('renderEdges', () => {
+	it('basic case', async () => {
+		const input = deepCopy(legalBaseInput);
+
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.renderEdges;
+		const golden = [
+			{...BASE_RENDER_EDGE}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('basic case no combining', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edgeCombiner: {
+				width: {
+					lengthOf: 'input',
+					value: 1.5
+				}
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.renderEdges;
+		const golden = [
+			{
+				...BASE_RENDER_EDGE,
+				bump: 0.0
+			},
+			{
+				...BASE_RENDER_EDGE,
+				bump: 1.0
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('basic case distinct', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edge: {
+				distinct: true
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.renderEdges;
+		const golden = [
+			{
+				...BASE_RENDER_EDGE,
+				bump: 0.0
+			},
+			{
+				...BASE_RENDER_EDGE,
+				bump: 1.0
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('basic case with two other edges', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.values.push(
+			{type: 'ux'},
+			{type: 'data'}
+		);
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.renderEdges;
+		const golden = [
+			//Everything merged together
+			{
+				...BASE_RENDER_EDGE
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('basic case with two other edge engineering distinct', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.values.push(
+			{type: 'ux'},
+			{type: 'data'}
+		);
+		input.properties.engineering.display = {
+			distinct: true
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.renderEdges;
+		const golden = [
+			//Each engineering node
+			{
+				...BASE_RENDER_EDGE,
+				bump: 0.0
+			},
+			{
+				...BASE_RENDER_EDGE,
+				bump: 0.5
+			},
+			//Everything else
+			{
+				...BASE_RENDER_EDGE,
+				bump: 1.0
+			}
+
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('basic case with two other edge engineering distinct no combine', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.values.push(
+			{type: 'ux'},
+			{type: 'data'}
+		);
+		input.properties.engineering.display = {
+			distinct: true
+		};
+		input.display = {
+			edgeCombiner: {
+				width: {
+					lengthOf: 'input',
+					value: 1.5
+				}
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.renderEdges;
+		const golden = [
+			//Each engineering node
+			{
+				...BASE_RENDER_EDGE,
+				bump: 0.0
+			},
+			{
+				...BASE_RENDER_EDGE,
+				bump: 1/3
+			},
+			//UX node
+			{
+				...BASE_RENDER_EDGE,
+				bump: 2/3
+			},
+			//data node
+			{
+				...BASE_RENDER_EDGE,
+				bump: 1.0
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('basic case with two other edge engineering no combine', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.values.push(
+			{type: 'ux'},
+			{type: 'data'}
+		);
+		input.display = {
+			edgeCombiner: {
+				width: {
+					lengthOf: 'input',
+					value: 1.5
+				}
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.renderEdges;
+		const golden = [
+			//Each engineering node
+			{
+				...BASE_RENDER_EDGE,
+				bump: 0.0
+			},
+			{
+				...BASE_RENDER_EDGE,
+				bump: 1/3
+			},
+			//UX node
+			{
+				...BASE_RENDER_EDGE,
+				bump: 2/3
+			},
+			//data node
+			{
+				...BASE_RENDER_EDGE,
+				bump: 1.0
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('basic case with two other edge engineering combines, no type combine', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.values.push(
+			{type: 'ux'},
+			{type: 'data'}
+		);
+		input.properties.engineering.display = {
+			//Override the default lengthOf to make it a constant
+			width: 1.5
+		};
+		input.display = {
+			edgeCombiner: {
+				width: {
+					lengthOf: 'input',
+					value: 1.5
+				}
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.renderEdges;
+		const golden = [
+			//Each engineering node
+			{
+				...BASE_RENDER_EDGE,
+				bump: 0.0
+			},
+			//UX node
+			{
+				...BASE_RENDER_EDGE,
+				bump: 0.5
+			},
+			//data node
+			{
+				...BASE_RENDER_EDGE,
+				bump: 1.0
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+});
