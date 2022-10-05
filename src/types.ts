@@ -364,6 +364,10 @@ export type NodeDisplay = {
 	color: ValueDefinition
 }
 
+//If any of these returns more than one number, then the one that returns the
+//most sets the number of edges to render for this edge type, and everything
+//else will be looped to fill. Those same edges might later be distilled via
+//edgeCombiner, though.
 export type EdgeDisplay = {
 	//The width of the stroke 
 	width: ValueDefinition,
