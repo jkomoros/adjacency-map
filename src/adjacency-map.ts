@@ -104,7 +104,7 @@ const BASE_EDGE_DISPLAY : EdgeDisplay = {
 const BASE_EDGE_COMBINER_DISPLAY : EdgeCombinerDisplay = {
 	width: {
 		combine: 'sum',
-		child: 'input'
+		value: 'input'
 	},
 	color: {
 		color: '#555'

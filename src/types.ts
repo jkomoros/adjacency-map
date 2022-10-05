@@ -59,7 +59,7 @@ export type ValueDefinitionResultValue = {
 //array of a single value.
 export type ValueDefinitionCombine = {
 	combine: CombinerType;
-	child: ValueDefinition
+	value: ValueDefinition
 }
 
 //Takes a color constant to turn into a color for items that expect it. Note

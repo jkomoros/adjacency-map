@@ -823,7 +823,7 @@ describe('AdjacencyMap validation', () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
 			combine: 'foo',
-			child: [1]
+			value: [1]
 		};
 		const errorExpected = true;
 		const fn = () => {
@@ -840,7 +840,7 @@ describe('AdjacencyMap validation', () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
 			combine: 'min',
-			child: { result: 'ux' }
+			value: { result: 'ux' }
 		};
 		const errorExpected = true;
 		const fn = () => {
@@ -857,7 +857,7 @@ describe('AdjacencyMap validation', () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
 			combine: 'min',
-			child: [3,4,5]
+			value: [3,4,5]
 		};
 		const errorExpected = false;
 		const fn = () => {
@@ -2432,7 +2432,7 @@ engineering: 3`;
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
 			combine: 'min',
-			child: [1, 4, 5]
+			value: [1, 4, 5]
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');

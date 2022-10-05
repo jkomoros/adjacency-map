@@ -205,7 +205,7 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 	}
 
 	if (valueDefintionIsCombine(definition)) {
-		validateValueDefinition(definition.child, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.value, exampleValue, edgeDefinition);
 		if (!COMBINERS[definition.combine]) throw new Error('Unknown combiner: ' + definition.combine);
 		return;
 	}
@@ -317,7 +317,7 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 		return args.edges.map(() => args.partialResult[definition.result]);
 	}
 	if (valueDefintionIsCombine(definition)) {
-		const subValues = calculateValue(definition.child, args);
+		const subValues = calculateValue(definition.value, args);
 		const combiner = COMBINERS[definition.combine];
 		return combiner(subValues);
 	}
