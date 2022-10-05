@@ -60,7 +60,6 @@ import {
 	color,
 	unpackColor
 } from './color.js';
-import { wrapArrays } from './util.js';
 
 export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 	const result : SimpleGraph = {};
@@ -504,10 +503,8 @@ class AdjacencyMapNode {
 				const distinctDefinition = edgeDefinition.display.distinct || this._map.data.display.edge.distinct;
 				const distincts = this._edgeDefinitionHelper(distinctDefinition, edges);
 
-				const [wrappedColors, wrappedWidths, wrappedOpacities, wrappedDistincts] = wrapArrays(colors, widths, opacities, distincts);
-
 				//TODO: remove. This is just here to get it to compile
-				console.info(wrappedColors, wrappedWidths, wrappedOpacities, wrappedDistincts);
+				console.info(colors, widths, opacities, distincts);
 
 				for (const edge of edges) {
 					if (edgeType == 'just putting this here to compile') continue;
