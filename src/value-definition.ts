@@ -78,6 +78,14 @@ export const valueDefinitionIsLeaf = (definition : ValueDefinition) : definition
 	return false;
 };
 
+//Some of the ValueDefinitions are canonically strings. This checks if the given
+//definition is one of them.
+export const valueDefinitionIsStringType = (definition : string | ValueDefinition) : definition is ValueDefinition => {
+	const castedDefinition = definition as ValueDefinition;
+	if ((valueDefinitionIsInput(castedDefinition))) return true;
+	return false;
+};
+
 const valueDefintionIsEdgeConstant = (definition : ValueDefinition) : definition is ValueDefintionEdgeConstant => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;

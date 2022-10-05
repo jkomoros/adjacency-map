@@ -361,7 +361,8 @@ export type NodeDisplay = {
 	//Values will be clipped to between 0 and 1
 	opacity: ValueDefinition
 	//Should return a color
-	color: ValueDefinition
+	//As syntatic sugar, if the value is a string, it will be equivalent to {color: STRING}
+	color: CSSColor | ValueDefinition
 }
 
 //If any of these returns more than one number, then the one that returns the
@@ -372,7 +373,8 @@ export type EdgeDisplay = {
 	//The width of the stroke 
 	width: ValueDefinition,
 	//The color of the stroke
-	color: ValueDefinition
+	//As syntatic sugar, if the value is a string, it will be equivalent to {color: STRING}
+	color: CSSColor | ValueDefinition
 	//The opacity of the stroke
 	opacity: ValueDefinition
 	//If truth-y, these edges will all render distinctly.
@@ -388,7 +390,8 @@ export type EdgeCombinerDisplay = {
 	//The width of the stroke 
 	width: ValueDefinition,
 	//The color of the stroke
-	color: ValueDefinition
+	//As syntatic sugar, if the value is a string, it will be equivalent to {color: STRING}
+	color: CSSColor | ValueDefinition
 	//The opacity of the stroke
 	opacity: ValueDefinition
 }

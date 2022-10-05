@@ -50,7 +50,8 @@ import {
 	calculateValueLeaf, 
 	RESERVED_VALUE_DEFINITION_PROPERTIES, 
 	validateValueDefinition,
-	valueDefinitionIsLeaf
+	valueDefinitionIsLeaf,
+	valueDefinitionIsStringType
 } from './value-definition.js';
 
 import {
@@ -59,6 +60,7 @@ import {
 } from './libraries.js';
 
 import {
+	color,
 	packColor,
 	unpackColor
 } from './color.js';
@@ -225,8 +227,19 @@ const validateData = (data : MapDefinition) : void => {
 			if (!edge.type) throw new Error(nodeName + ' has an edge with no type');
 			if (!data.properties[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
 		}
-		for (const displayValue of Object.values(nodeData.display)) {
-			validateValueDefinition(displayValue, exampleValues);
+		for (const [displayName, displayValue] of Object.entries(nodeData.display)) {
+			if (typeof displayValue == 'string') {
+				if (valueDefinitionIsStringType(displayValue)) {
+					validateValueDefinition(displayValue, exampleValues);
+				} else if (displayName == 'color') {
+					//Throw if not a color
+					color(displayValue);
+				} else {
+					throw new Error(displayName + ' was provided in ' + nodeName + ' as a string');
+				}
+			} else {
+				validateValueDefinition(displayValue, exampleValues);
+			}
 		}
 	}
 	for(const [type, propertyDefinition] of Object.entries(data.properties)) {
@@ -243,8 +256,19 @@ const validateData = (data : MapDefinition) : void => {
 				if (typeof constantValue != 'number') throw new Error(type + ' constant ' + constantName + ' was not number as expected');
 			}
 		}
-		for (const displayValue of Object.values(propertyDefinition.display)) {
-			validateValueDefinition(displayValue, exampleValues, propertyDefinition);
+		for (const [displayName, displayValue] of Object.entries(propertyDefinition.display)) {
+			if (typeof displayValue == 'string') {
+				if (valueDefinitionIsStringType(displayValue)) {
+					validateValueDefinition(displayValue, exampleValues, propertyDefinition);
+				} else if (displayName == 'color') {
+					//Throw if not a color
+					color(displayValue);
+				} else {
+					throw new Error(displayName + ' was provided in ' + type + ' as a string');
+				}
+			} else {
+				validateValueDefinition(displayValue, exampleValues, propertyDefinition);
+			}
 		}
 		if (propertyDefinition.dependencies) {
 			for (const dependency of propertyDefinition.dependencies) {
@@ -270,15 +294,24 @@ const validateData = (data : MapDefinition) : void => {
 			if (!data.properties[rootName]) throw new Error('root property ' + rootName + ' is not defined in properties');
 		}
 	}
-	for (const displayValue of Object.values(data.display.node)) {
-		validateValueDefinition(displayValue, exampleValues);
+
+	for (const displayContainer of Object.values(data.display)) {
+		for (const [displayName, displayValue] of Object.entries(displayContainer)) {
+			if (typeof displayValue == 'string') {
+				if (valueDefinitionIsStringType(displayValue)) {
+					validateValueDefinition(displayValue, exampleValues);
+				} else if (displayName == 'color') {
+					//Throw if not a color
+					color(displayValue);
+				} else {
+					throw new Error(displayName + ' was provided in displayContainer as a string');
+				}
+			} else {
+				validateValueDefinition(displayValue, exampleValues);
+			}
+		}
 	}
-	for (const displayValue of Object.values(data.display.edge)) {
-		validateValueDefinition(displayValue, exampleValues);
-	}
-	for (const displayValue of Object.values(data.display.edgeCombiner)) {
-		validateValueDefinition(displayValue, exampleValues);
-	}
+
 	try {
 		topologicalSort(extractSimpleGraph(data));
 	} catch (err) {
@@ -410,6 +443,11 @@ export class AdjacencyMap {
 	
 }
 
+const wrapStringAsColor = (input : string | ValueDefinition) : ValueDefinition => {
+	if (typeof input != 'string') return input;
+	return valueDefinitionIsStringType(input) ? input : {color: input};
+};
+
 class AdjacencyMapNode {
 	_id : NodeID;
 	_map : AdjacencyMap;
@@ -538,7 +576,8 @@ class AdjacencyMapNode {
 			const resultsForRef :RenderEdgeValue[] = [];
 			for (const [edgeType, edges] of Object.entries(edgeMap)){
 				const edgeDefinition = this._map.data.properties[edgeType];
-				const colorDefinition = edgeDefinition.display.color || this._map.data.display.edge.color;
+				const colorDefinitionOrString = edgeDefinition.display.color || this._map.data.display.edge.color;
+				const colorDefinition = wrapStringAsColor(colorDefinitionOrString);
 				const colors = this._edgeDefinitionHelper(colorDefinition, edges);
 				const widthDefinition = edgeDefinition.display.width || this._map.data.display.edge.width;
 				const clippedWidthDefinition = {
@@ -581,7 +620,9 @@ class AdjacencyMapNode {
 
 			if (bundledEdges.length) {
 				//We need to do edge combining.
-				const colors = this._edgeDefinitionHelper(this._map.data.display.edgeCombiner.color, [], bundledEdges.map(edge => packColor(edge.color)));
+				const colorDefinitionOrString = this._map.data.display.edgeCombiner.color;
+				const colorDefinition = wrapStringAsColor(colorDefinitionOrString);
+				const colors = this._edgeDefinitionHelper(colorDefinition, [], bundledEdges.map(edge => packColor(edge.color)));
 				const widthDefinition = {
 					clip: this._map.data.display.edgeCombiner.width,
 					low: 0
@@ -691,8 +732,9 @@ class AdjacencyMapNode {
 
 	get color(): Color {
 		//TODO: cache
-		const definition = this._data?.display?.color || this._map.data.display.node.color;
-		const num = this._valueDefinitionHelper(definition);
+		const definitionOrString = this._data?.display?.color || this._map.data.display.node.color;
+		const colorDefinition = wrapStringAsColor(definitionOrString);
+		const num = this._valueDefinitionHelper(colorDefinition);
 		return unpackColor(num);
 	}
 }

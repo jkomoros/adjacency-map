@@ -2975,6 +2975,18 @@ engineering: 3`;
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('Correctly handles a color shorthand set on node', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			color: '#CCC'
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.color;
+		const golden = color('#CCC');
+		assert.deepStrictEqual(actual, golden);
+	});
+
 	it('Correctly handles libraries', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.import = '_test_b_';
@@ -3138,6 +3150,45 @@ describe('renderEdges', () => {
 		const actual = node.renderEdges;
 		const golden = [
 			{...BASE_RENDER_EDGE}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('basic case with edge color shorthand', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edge: {
+				distinct: true,
+				color: '#FFF'
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.renderEdges;
+		const golden = [
+			{
+				...BASE_RENDER_EDGE,
+				color: color('#FFF')
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('basic case with edgeCombiner color shorthand', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edgeCombiner: {
+				color: '#FFF'
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.renderEdges;
+		const golden = [
+			{
+				...BASE_RENDER_EDGE,
+				color: color('#FFF')
+			}
 		];
 		assert.deepStrictEqual(actual, golden);
 	});
