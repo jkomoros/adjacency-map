@@ -3,7 +3,8 @@ import {
 	EdgeDisplay,
 	Library,
 	LibraryType,
-	NodeDisplay
+	NodeDisplay,
+	ValueDefinition
 } from './types.js';
 
 export const CORE_LIBRARY_NAME = 'core';
@@ -42,6 +43,54 @@ export const BASE_EDGE_COMBINER_DISPLAY : EdgeCombinerDisplay = {
 export const LIBRARIES : {[type in LibraryType] : Library} = {
 	core: {
 		//Core currently doesn't define anything
+		properties: {},
+		root: {}
+	},
+	//Including this library will make it so edges of various types will not be
+	//combined into one type, but rather show a different edge for each type.
+	'distinct-across-type': {
+		display: {
+			edgeCombiner: {
+				width: {
+					lengthOf: 'input',
+					value: BASE_EDGE_COMBINER_DISPLAY.width
+				},
+				color: {
+					lengthOf: 'input',
+					value: BASE_EDGE_COMBINER_DISPLAY.color as ValueDefinition
+				},
+				opacity: {
+					lengthOf: 'input',
+					value: BASE_EDGE_COMBINER_DISPLAY.opacity
+				}
+			}
+		},
+		properties: {},
+		root: {}
+	},
+	//Including this library will make it so edges of the same type will not be
+	//combined into one edge but kept separate.
+	'distinct-within-type': {
+		display: {
+			edge: {
+				width: {
+					lengthOf: 'input',
+					value: BASE_EDGE_DISPLAY.width
+				},
+				color: {
+					lengthOf: 'input',
+					value: BASE_EDGE_DISPLAY.color as ValueDefinition
+				},
+				opacity: {
+					lengthOf: 'input',
+					value: BASE_EDGE_DISPLAY.opacity
+				},
+				distinct: {
+					lengthOf: 'input',
+					value: BASE_EDGE_DISPLAY.distinct
+				}
+			}
+		},
 		properties: {},
 		root: {}
 	}
