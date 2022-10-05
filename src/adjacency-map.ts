@@ -504,6 +504,19 @@ class AdjacencyMapNode {
 		return result;
 	}
 
+	_spreadBumps(edges : RenderEdgeValue[]) : RenderEdgeValue[] {
+		if (edges.length < 2) return edges;
+		const result : RenderEdgeValue[] = [];
+		for (let i = 0; i < edges.length; i++) {
+			const edge = edges[i];
+			result.push({
+				...edge,
+				bump: (1 / (edges.length - 1)) * i
+			});
+		}
+		return result;
+	}
+
 	_calculateRenderEdges() : RenderEdgeValue[] {
 		
 		const defaultBump = 0.5;
@@ -576,9 +589,7 @@ class AdjacencyMapNode {
 				}
 			}
 
-			//TODO: bump out if multiple results
-
-			result.push(...resultsForRef);
+			result.push(...this._spreadBumps(resultsForRef));
 		}
 		return result;
 	}
