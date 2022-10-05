@@ -213,6 +213,23 @@ const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 	};
 };
 
+const validateDisplay = (data : Partial<NodeDisplay> | Partial<EdgeDisplay> | Partial<EdgeCombinerDisplay>, exampleValues : NodeValues, propertyDefinition? : PropertyDefinition) : void => {
+	for (const [displayName, displayValue] of Object.entries(data)) {
+		if (typeof displayValue == 'string') {
+			if (valueDefinitionIsStringType(displayValue)) {
+				validateValueDefinition(displayValue, exampleValues, propertyDefinition);
+			} else if (displayName == 'color') {
+				//Throw if not a color
+				color(displayValue);
+			} else {
+				throw new Error(displayName + ' was provided as a string');
+			}
+		} else {
+			validateValueDefinition(displayValue, exampleValues, propertyDefinition);
+		}
+	}
+};
+
 const validateData = (data : MapDefinition) : void => {
 	if (!data) throw new Error('No data provided');
 	if (!data.nodes) throw new Error('No nodes provided');
@@ -227,20 +244,7 @@ const validateData = (data : MapDefinition) : void => {
 			if (!edge.type) throw new Error(nodeName + ' has an edge with no type');
 			if (!data.properties[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
 		}
-		for (const [displayName, displayValue] of Object.entries(nodeData.display)) {
-			if (typeof displayValue == 'string') {
-				if (valueDefinitionIsStringType(displayValue)) {
-					validateValueDefinition(displayValue, exampleValues);
-				} else if (displayName == 'color') {
-					//Throw if not a color
-					color(displayValue);
-				} else {
-					throw new Error(displayName + ' was provided in ' + nodeName + ' as a string');
-				}
-			} else {
-				validateValueDefinition(displayValue, exampleValues);
-			}
-		}
+		validateDisplay(nodeData.display, exampleValues);
 	}
 	for(const [type, propertyDefinition] of Object.entries(data.properties)) {
 		try {
@@ -256,20 +260,7 @@ const validateData = (data : MapDefinition) : void => {
 				if (typeof constantValue != 'number') throw new Error(type + ' constant ' + constantName + ' was not number as expected');
 			}
 		}
-		for (const [displayName, displayValue] of Object.entries(propertyDefinition.display)) {
-			if (typeof displayValue == 'string') {
-				if (valueDefinitionIsStringType(displayValue)) {
-					validateValueDefinition(displayValue, exampleValues, propertyDefinition);
-				} else if (displayName == 'color') {
-					//Throw if not a color
-					color(displayValue);
-				} else {
-					throw new Error(displayName + ' was provided in ' + type + ' as a string');
-				}
-			} else {
-				validateValueDefinition(displayValue, exampleValues, propertyDefinition);
-			}
-		}
+		validateDisplay(propertyDefinition.display, exampleValues, propertyDefinition);
 		if (propertyDefinition.dependencies) {
 			for (const dependency of propertyDefinition.dependencies) {
 				if (!data.properties[dependency]) throw new Error(type + ' declared a dependency on ' + dependency + ' but that is not a valid type');
@@ -296,20 +287,7 @@ const validateData = (data : MapDefinition) : void => {
 	}
 
 	for (const displayContainer of Object.values(data.display)) {
-		for (const [displayName, displayValue] of Object.entries(displayContainer)) {
-			if (typeof displayValue == 'string') {
-				if (valueDefinitionIsStringType(displayValue)) {
-					validateValueDefinition(displayValue, exampleValues);
-				} else if (displayName == 'color') {
-					//Throw if not a color
-					color(displayValue);
-				} else {
-					throw new Error(displayName + ' was provided in displayContainer as a string');
-				}
-			} else {
-				validateValueDefinition(displayValue, exampleValues);
-			}
-		}
+		validateDisplay(displayContainer, exampleValues);
 	}
 
 	try {
