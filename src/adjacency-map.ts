@@ -60,6 +60,10 @@ import {
 	unpackColor
 } from './color.js';
 
+import {
+	wrapArrays
+} from './util.js';
+
 export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 	const result : SimpleGraph = {};
 	for (const [id, value] of Object.entries(data.nodes)) {
@@ -501,18 +505,20 @@ class AdjacencyMapNode {
 				const distinctDefinition = edgeDefinition.display.distinct || this._map.data.display.edge.distinct;
 				const distincts = this._edgeDefinitionHelper(distinctDefinition, edges);
 
-				for (let i = 0; i < edges.length; i++) {
+				const [wrappedColors, wrappedWidths, wrappedOpacities, wrappedDistincts] = wrapArrays(colors, widths, opacities, distincts);
+
+				for (let i = 0; i < wrappedColors.length; i++) {
 
 					const renderEdge = {
 						source,
 						ref,
-						width: widths[i % widths.length],
-						opacity: opacities[i % opacities.length],
-						color: unpackColor(colors[i % colors.length]),
+						width: wrappedWidths[i % wrappedWidths.length],
+						opacity: wrappedOpacities[i % wrappedOpacities.length],
+						color: unpackColor(wrappedColors[i % wrappedColors.length]),
 						bump: defaultBump,
 					};
 
-					const distinct = distincts[i % distincts.length];
+					const distinct = wrappedDistincts[i % wrappedDistincts.length];
 
 					//TODO: add to result if distinct, else add to bundledEdges for later processing.
 
