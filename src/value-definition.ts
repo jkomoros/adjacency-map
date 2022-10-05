@@ -34,8 +34,15 @@ import {
 	isTrue,
 	NULL_SENTINEL
 } from './constants.js';
-import { color, packColor } from './color.js';
-import { assertUnreachable } from './util.js';
+
+import {
+	color,
+	packColor
+} from './color.js';
+
+import {
+	assertUnreachable
+} from './util.js';
 
 export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 	'ref': true,
