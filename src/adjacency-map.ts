@@ -57,7 +57,6 @@ import {
 } from './libraries.js';
 
 import {
-	color,
 	unpackColor
 } from './color.js';
 
@@ -478,9 +477,6 @@ class AdjacencyMapNode {
 
 	_calculateRenderEdges() : RenderEdgeValue[] {
 		
-		const defaultWidth = 1.5;
-		const defaultOpacity = 0.4;
-		const defaultColor = color('#555');
 		const defaultBump = 0.5;
 
 		const result : RenderEdgeValue[] = [];
@@ -503,19 +499,28 @@ class AdjacencyMapNode {
 				const distinctDefinition = edgeDefinition.display.distinct || this._map.data.display.edge.distinct;
 				const distincts = this._edgeDefinitionHelper(distinctDefinition, edges);
 
-				//TODO: remove. This is just here to get it to compile
-				console.info(colors, widths, opacities, distincts);
+				for (let i = 0; i < edges.length; i++) {
 
-				for (const edge of edges) {
-					if (edgeType == 'just putting this here to compile') continue;
-					result.push({
+					const edge = edges[i];
+
+					const renderEdge = {
 						source,
 						ref: edge.ref,
-						width: defaultWidth,
-						opacity: defaultOpacity,
-						color: defaultColor,
+						width: widths[i % widths.length],
+						opacity: opacities[i % opacities.length],
+						color: unpackColor(colors[i % colors.length]),
 						bump: defaultBump,
-					});
+					};
+
+					const distinct = distincts[i % distincts.length];
+
+					//TODO: add to result if distinct, else add to bundledEdges for later processing.
+
+					if (distinct) {
+						console.warn('An edge said it was distinct but that is not supported yet');
+					}
+
+					result.push(renderEdge);
 				}
 			}
 		}
