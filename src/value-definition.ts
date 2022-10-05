@@ -169,6 +169,10 @@ const valueDefinitionIsInput = (definition : ValueDefinition): definition is Val
 	return false;
 };
 
+//Note: a lot of this validation is also checking things that typescript will
+//have already checked. Before, we loaded files from json and had to a
+//conversion leap of faith, but now everything is natively typescript even in
+//data/ so that leap of faith is less important.
 export const validateValueDefinition = (definition : ValueDefinition, exampleValue : NodeValues, edgeDefinition? : PropertyDefinition) : void => {
 	if (valueDefinitionIsLeaf(definition)) return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {
