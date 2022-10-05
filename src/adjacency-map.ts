@@ -21,7 +21,8 @@ import {
 	RenderEdgeValue,
 	EdgeDisplay,
 	EdgeCombinerDisplay,
-	ValueDefinitionCalculationArgs
+	ValueDefinitionCalculationArgs,
+	ImpliesConfiguration
 } from './types.js';
 
 import {
@@ -69,6 +70,7 @@ import {
 } from './color.js';
 
 import {
+	assertUnreachable,
 	wrapArrays
 } from './util.js';
 
@@ -406,6 +408,53 @@ const wrapStringAsColor = (input : string | ValueDefinition) : ValueDefinition =
 	return valueDefinitionIsStringType(input) ? input : {color: input};
 };
 
+type PropertyNameSet = {[name : PropertyName]: true};
+
+const impliedPropertyNames = (config : ImpliesConfiguration | undefined, allNames : PropertyName[]) : PropertyNameSet => {
+	if (!config) return {};
+	if (config == '*') return Object.fromEntries(allNames.map(name => [name, true]));
+	return assertUnreachable(config);
+};
+
+const completeEdgeSet = (source: NodeID, edges : EdgeValue[], data : MapDefinition) : ExpandedEdgeValue[] => {
+	const edgesByRef : {[ref : NodeID]: ExpandedEdgeValue[]} = {};
+	for (const edge of edges) {
+		const ref = edge.ref || ROOT_ID;
+		if (!edgesByRef[ref]) edgesByRef[ref] = [];
+		edgesByRef[ref].push({
+			...edge,
+			source,
+			ref
+		});
+	}
+	const allPropertyNames : PropertyName[] = Object.keys(data.properties);
+	const result : ExpandedEdgeValue[] =[];
+	for (const [ref, refEdges] of Object.entries(edgesByRef)) {
+		let impliedSet : PropertyNameSet = {};
+		const seenSet : PropertyNameSet = {};
+		for (const edge of refEdges) {
+			seenSet[edge.type] = true;
+			result.push(edge);
+			const implies = data.properties[edge.type].implies;
+			impliedSet = {...impliedSet, ...impliedPropertyNames(implies, allPropertyNames)};
+		}
+		//Now add any edges that were in implied set but not seen.
+		for (const impliedPropertyName of Object.keys(impliedSet)) {
+			if (seenSet[impliedPropertyName]) continue;
+			const typeDefinition = data.properties[impliedPropertyName];
+			const constants = typeDefinition.constants || {};
+			result.push({
+				...constants,
+				type: impliedPropertyName,
+				source,
+				ref
+			});
+		}
+	}
+
+	return result;
+};
+
 class AdjacencyMapNode {
 	_id : NodeID;
 	_map : AdjacencyMap;
@@ -481,7 +530,7 @@ class AdjacencyMapNode {
 	get edges() : ExpandedEdgeValue[] {
 		if (!this._cachedEdges) {
 			if (this._data && this._data.values) {
-				this._cachedEdges = this._data.values.map(edge => ({...edge, source: this.id, ref: edge.ref || ROOT_ID}));
+				this._cachedEdges = completeEdgeSet(this.id, this._data.values, this._map.data);
 			} else {
 				this._cachedEdges = [];
 			}

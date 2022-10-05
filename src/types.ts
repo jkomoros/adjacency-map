@@ -304,6 +304,8 @@ export type Combiner = (nums: number[]) => [number];
 //We can't use keyof typeof REDUCERS because `npm run generate:schema` can't handle those types
 export type CombinerType = 'mean' | 'first' | 'last' | 'min' | 'max' | 'sum' | 'product' | 'and' | 'or';
 
+export type ImpliesConfiguration = '*';
+
 export type RawPropertyDefinition = {
 	value: ValueDefinition,
 	description?: string,
@@ -320,6 +322,11 @@ export type RawPropertyDefinition = {
 	//enumerated here may be used in this edge's ValueDefinition when it is of
 	//type ValueDefintiionResultValue.
 	dependencies? : PropertyName[],
+	//If present, then when edges of this type exist between a source and ref it
+	//will imply that at least one edge of each other type should also exist...
+	//using defaulted ones if necessary. Edges added by implication will not
+	//have their implies executed if it exists.
+	implies? : ImpliesConfiguration,
 	//Some properties (especially in libraries don't make sense to print out in e.g. AdjacencyMapNode.description)
 	hide? : true,
 	display? : Partial<EdgeDisplay>,
@@ -334,6 +341,7 @@ export type PropertyDefinition = {
 	usage?: string,
 	combine?: CombinerType,
 	dependencies? : PropertyName[],
+	implies? : ImpliesConfiguration,
 	hide? : true,
 	display: Partial<EdgeDisplay>,
 	constants?: {

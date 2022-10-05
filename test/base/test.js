@@ -3614,3 +3614,38 @@ describe('renderEdges', () => {
 
 
 });
+
+describe('impliedEdges', () => {
+	it('basic case', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.implies = '*';
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.edges;
+		const golden = [
+			{
+				type: 'engineering',
+				ref: '',
+				source: 'a',
+				weight: 4
+			},
+			{
+				type: 'engineering',
+				ref: '',
+				source: 'a'
+			},
+			{
+				type: 'ux',
+				ref: '',
+				source: 'a'
+			},
+			{
+				type: 'data',
+				ref: '',
+				source: 'a'
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+});
