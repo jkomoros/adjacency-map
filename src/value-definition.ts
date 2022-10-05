@@ -39,7 +39,9 @@ import { assertUnreachable } from './util.js';
 
 export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 	'ref': true,
-	'type': true
+	'type': true,
+	//on ExpandedEdgeValue
+	'source': true
 };
 
 type Operator = (one : number, two: number) => number;
