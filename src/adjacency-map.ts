@@ -415,6 +415,10 @@ const impliedPropertyNames = (config : ImpliesConfiguration | undefined, allName
 	if (!config) return {};
 	if (config == '*') return Object.fromEntries(allNames.map(name => [name, true]));
 	if (Array.isArray(config)) return Object.fromEntries(config.map(name => [name, true]));
+	if (typeof config == 'object') {
+		const excludeSet = Object.fromEntries(config.exclude.map(name => [name, true]));
+		return Object.fromEntries(allNames.filter(name => !excludeSet[name]).map(name => [name, true]));
+	}
 	return assertUnreachable(config);
 };
 

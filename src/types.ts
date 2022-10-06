@@ -307,7 +307,7 @@ export type Combiner = (nums: number[]) => [number];
 export type CombinerType = 'mean' | 'first' | 'last' | 'min' | 'max' | 'sum' | 'product' | 'and' | 'or';
 
 //An enumeration of other property names to be implied. '*' means 'all property names'
-export type ImpliesConfiguration = PropertyName[] | '*' | '';
+export type ImpliesConfiguration = PropertyName[] | {exclude: PropertyName[]} | '*' | '';
 
 export type RawPropertyDefinition = {
 	value: ValueDefinition,

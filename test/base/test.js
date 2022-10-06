@@ -3708,4 +3708,31 @@ describe('impliedEdges', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('basic case property exclusion on property definition', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.implies = {exclude: ['engineering', 'ux']};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.edges;
+		const golden = [
+			{
+				type: 'engineering',
+				ref: '',
+				source: 'a',
+				weight: 4
+			},
+			{
+				type: 'engineering',
+				ref: '',
+				source: 'a'
+			},
+			{
+				type: 'data',
+				ref: '',
+				source: 'a'
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
 });
