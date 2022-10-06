@@ -248,6 +248,7 @@ export type ExpandedEdgeValue = EdgeValue & {
 	source: NodeID;
 	//Ref is always filled, possibly with ROOT_ID
 	ref: NodeID;
+	implied: number;
 };
 
 //The final edges to actually render, based on processing the EdgeValues for a

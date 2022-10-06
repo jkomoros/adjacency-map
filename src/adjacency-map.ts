@@ -32,6 +32,8 @@ import {
 } from './graph.js';
 
 import {
+	DEFAULT_TRUE_NUMBER,
+	FALSE_NUMBER,
 	ROOT_ID,
 	SVG_HEIGHT,
 	SVG_WIDTH
@@ -429,6 +431,7 @@ const completeEdgeSet = (source: NodeID, edges : EdgeValue[], data : MapDefiniti
 		if (!edgesByRef[ref]) edgesByRef[ref] = [];
 		edgesByRef[ref].push({
 			...edge,
+			implied: FALSE_NUMBER,
 			source,
 			ref
 		});
@@ -452,6 +455,7 @@ const completeEdgeSet = (source: NodeID, edges : EdgeValue[], data : MapDefiniti
 			result.push({
 				...constants,
 				type: impliedPropertyName,
+				implied: DEFAULT_TRUE_NUMBER,
 				source,
 				ref
 			});

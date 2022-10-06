@@ -1979,6 +1979,36 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('Barfs for an enumerated constant on property definition of name implied', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.constants.implied = 1;
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a value definition that relies on implied constant even though it wasn\'t defined', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			constant: 'implied'
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
@@ -2013,31 +2043,37 @@ describe('AdjacencyMap root', () => {
 				"source": "a",
 				"type": "engineering",
 				"weight": 4,
+				implied: 0
 			},
 			{
 				"ref": "",
 				"source": "a",
 				"type": "engineering",
+				implied: 0
 			},
 			{
 				"ref": "a",
 				"source": "b",
 				"type": "ux",
+				implied: 0
 			},
 			{
 				"ref": "a",
 				"source": "c",
 				"type": "engineering",
+				implied: 0
 			},
 			{
 				"ref": "b",
 				"source": "c",
 				"type": "ux",
+				implied: 0
 			},
 			{
 				"ref": "b",
 				"source": "d",
-				"type": "engineering"
+				"type": "engineering",
+				implied: 0
 			}
 		];
 		assert.deepStrictEqual(actual, golden);
@@ -3627,22 +3663,26 @@ describe('impliedEdges', () => {
 				type: 'engineering',
 				ref: '',
 				source: 'a',
-				weight: 4
+				weight: 4,
+				implied: 0
 			},
 			{
 				type: 'engineering',
 				ref: '',
-				source: 'a'
+				source: 'a',
+				implied: 0
 			},
 			{
 				type: 'ux',
 				ref: '',
-				source: 'a'
+				source: 'a',
+				implied: 1
 			},
 			{
 				type: 'data',
 				ref: '',
-				source: 'a'
+				source: 'a',
+				implied: 1
 			}
 		];
 		assert.deepStrictEqual(actual, golden);
@@ -3660,22 +3700,26 @@ describe('impliedEdges', () => {
 				ref: '',
 				source: 'a',
 				implies: '*',
-				weight: 4
+				weight: 4,
+				implied: 0,
 			},
 			{
 				type: 'engineering',
 				ref: '',
-				source: 'a'
+				source: 'a',
+				implied: 0
 			},
 			{
 				type: 'ux',
 				ref: '',
-				source: 'a'
+				source: 'a',
+				implied: 1
 			},
 			{
 				type: 'data',
 				ref: '',
-				source: 'a'
+				source: 'a',
+				implied: 1
 			}
 		];
 		assert.deepStrictEqual(actual, golden);
@@ -3692,17 +3736,20 @@ describe('impliedEdges', () => {
 				type: 'engineering',
 				ref: '',
 				source: 'a',
-				weight: 4
+				weight: 4,
+				implied: 0
 			},
 			{
 				type: 'engineering',
 				ref: '',
-				source: 'a'
+				source: 'a',
+				implied: 0
 			},
 			{
 				type: 'ux',
 				ref: '',
-				source: 'a'
+				source: 'a',
+				implied: 1
 			}
 		];
 		assert.deepStrictEqual(actual, golden);
@@ -3719,17 +3766,20 @@ describe('impliedEdges', () => {
 				type: 'engineering',
 				ref: '',
 				source: 'a',
-				weight: 4
+				weight: 4,
+				implied: 0
 			},
 			{
 				type: 'engineering',
 				ref: '',
-				source: 'a'
+				source: 'a',
+				implied: 0
 			},
 			{
 				type: 'data',
 				ref: '',
-				source: 'a'
+				source: 'a',
+				implied: 1
 			}
 		];
 		assert.deepStrictEqual(actual, golden);

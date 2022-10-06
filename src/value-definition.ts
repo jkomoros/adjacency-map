@@ -47,9 +47,17 @@ import {
 export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 	'ref': true,
 	'type': true,
+	'implies': true,
 	//on ExpandedEdgeValue
 	'source': true,
-	'implies': true
+	'implied': true
+};
+
+//Constants that are allowed to be relied on even if the constants dict doesn't
+//define them because the engine will add them. Always a subset of
+//RESERVED_VALUE_DEFINITION_PROPERTIES.
+export const ALLOWED_CONSTANTS : {[name : string] : true} = {
+	'implied' : true
 };
 
 type Operator = (one : number, two: number) => number;
@@ -199,7 +207,11 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 		return;
 	}
 	if (valueDefintionIsEdgeConstant(definition)) {
-		if (RESERVED_VALUE_DEFINITION_PROPERTIES[definition.constant]) throw new Error(definition.constant + ' is a reserved edge property name');
+		if (RESERVED_VALUE_DEFINITION_PROPERTIES[definition.constant]) {
+			if (!ALLOWED_CONSTANTS[definition.constant]) throw new Error(definition.constant + ' is a reserved edge property name');
+			//Constants here are allowed to be relied on no matter what.
+			return;
+		}
 		const constants = edgeDefinition?.constants || {};
 		if (!constants[definition.constant]) throw new Error(definition.constant + ' for edge type value definition but that constant doesn\'t exist for that type.');
 		return;
