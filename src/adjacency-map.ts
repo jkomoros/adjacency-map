@@ -414,6 +414,7 @@ type PropertyNameSet = {[name : PropertyName]: true};
 const impliedPropertyNames = (config : ImpliesConfiguration | undefined, allNames : PropertyName[]) : PropertyNameSet => {
 	if (!config) return {};
 	if (config == '*') return Object.fromEntries(allNames.map(name => [name, true]));
+	if (Array.isArray(config)) return Object.fromEntries(config.map(name => [name, true]));
 	return assertUnreachable(config);
 };
 

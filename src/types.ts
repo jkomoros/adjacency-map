@@ -230,7 +230,7 @@ export type RawEdgeValue = {
 	//If ref is not provided, it implicitly references the root node.
 	ref? : NodeID,
 	implies? : ImpliesConfiguration,
-	[constant : ConstantType]: undefined | ValueDefinitionLeaf | PropertyName | NodeID;
+	[constant : ConstantType]: undefined | ValueDefinitionLeaf | PropertyName | NodeID | ImpliesConfiguration;
 };
 
 export type EdgeValue = {
@@ -240,7 +240,7 @@ export type EdgeValue = {
 	//If ref is not provided, it implicitly references the root node.
 	ref? : NodeID,
 	implies? : ImpliesConfiguration,
-	[constant : ConstantType]: undefined | number | PropertyName | NodeID;
+	[constant : ConstantType]: undefined | number | PropertyName | NodeID | ImpliesConfiguration;
 };
 
 export type ExpandedEdgeValue = EdgeValue & {
@@ -306,7 +306,8 @@ export type Combiner = (nums: number[]) => [number];
 //We can't use keyof typeof REDUCERS because `npm run generate:schema` can't handle those types
 export type CombinerType = 'mean' | 'first' | 'last' | 'min' | 'max' | 'sum' | 'product' | 'and' | 'or';
 
-export type ImpliesConfiguration = '*' | '';
+//An enumeration of other property names to be implied. '*' means 'all property names'
+export type ImpliesConfiguration = PropertyName[] | '*' | '';
 
 export type RawPropertyDefinition = {
 	value: ValueDefinition,

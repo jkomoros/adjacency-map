@@ -3681,4 +3681,31 @@ describe('impliedEdges', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('basic case property enumeration on property definition', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.implies = ['engineering', 'ux'];
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.edges;
+		const golden = [
+			{
+				type: 'engineering',
+				ref: '',
+				source: 'a',
+				weight: 4
+			},
+			{
+				type: 'engineering',
+				ref: '',
+				source: 'a'
+			},
+			{
+				type: 'ux',
+				ref: '',
+				source: 'a'
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
 });
