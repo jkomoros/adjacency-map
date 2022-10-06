@@ -2933,6 +2933,21 @@ engineering: 3`;
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('Correctly calculates a base value with no edge', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.base = {
+			'ux': 5,
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			...NODE_A_BASE_VALUES,
+			ux: 5
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
 	it('Correctly calculates a radius set on map', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.display = {

@@ -509,6 +509,9 @@ class AdjacencyMapNode {
 			//Fill in the partial result as we go so other things htat rely on
 			//our root value can have it.
 			partialResult[type] = this._map.rootValues[type];
+			if (this._data) {
+				if (this._data.base[type]) partialResult[type] = this._data.base[type];
+			}
 			const rawEdges = edgeByType[type];
 			if (!rawEdges) continue;
 			const typeDefinition = this._map.data.properties[type];
