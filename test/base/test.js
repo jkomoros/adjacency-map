@@ -2122,6 +2122,10 @@ describe('AdjacencyMap validation', () => {
 		input.scenarios = {
 			'1' : {
 				nodes: {
+					//Overriding root node is legal
+					'': {
+						'engineering': null,
+					},
 					'a': {
 						'ux': true
 					}

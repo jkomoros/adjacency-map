@@ -433,6 +433,7 @@ export type MapDisplay = {
 export type ScenarioName = string;
 
 export type RawScenario = {
+	//Scenarios may override root nodes by using id of ROOT_ID.
 	nodes: {
 		[id : NodeID] : RawNodeValues;
 	};
