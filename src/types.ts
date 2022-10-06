@@ -332,6 +332,9 @@ export type RawPropertyDefinition = {
 	//using defaulted ones if necessary. Edges added by implication will not
 	//have their implies executed if it exists.
 	implies? : ImpliesConfiguration,
+	//If true, then this property will never be implied as an edge (even with
+	//'*' or {exclude:[]} on others) unless it is explicitly named.
+	excludeFromDefaultImplication? : boolean,
 	//Some properties (especially in libraries don't make sense to print out in e.g. AdjacencyMapNode.description)
 	hide? : true,
 	display? : Partial<EdgeDisplay>,
@@ -347,6 +350,7 @@ export type PropertyDefinition = {
 	combine?: CombinerType,
 	dependencies? : PropertyName[],
 	implies? : ImpliesConfiguration,
+	excludeFromDefaultImplication : boolean,
 	hide? : true,
 	display: Partial<EdgeDisplay>,
 	constants?: {

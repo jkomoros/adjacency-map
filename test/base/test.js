@@ -3784,4 +3784,74 @@ describe('impliedEdges', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('basic case with one property excluded', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.implies = '*';
+		input.properties.ux.excludeFromDefaultImplication = true;
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.edges;
+		const golden = [
+			{
+				type: 'engineering',
+				ref: '',
+				source: 'a',
+				weight: 4,
+				implied: 0
+			},
+			{
+				type: 'engineering',
+				ref: '',
+				source: 'a',
+				implied: 0
+			},
+			{
+				type: 'data',
+				ref: '',
+				source: 'a',
+				implied: 1
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('basic case with one property excluded but explicitly requested', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.implies = ['ux', 'data'];
+		//Even though ux says it shouldnt' be implied, it is explicitly
+		//requested by another edge so will be included.
+		input.properties.ux.excludeFromDefaultImplication = true;
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.edges;
+		const golden = [
+			{
+				type: 'engineering',
+				ref: '',
+				source: 'a',
+				weight: 4,
+				implied: 0
+			},
+			{
+				type: 'engineering',
+				ref: '',
+				source: 'a',
+				implied: 0
+			},
+			{
+				type: 'ux',
+				ref: '',
+				source: 'a',
+				implied: 1
+			},
+			{
+				type: 'data',
+				ref: '',
+				source: 'a',
+				implied: 1
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
 });

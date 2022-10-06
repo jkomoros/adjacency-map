@@ -137,8 +137,9 @@ const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 	const properties : {[name : PropertyName] : PropertyDefinition} = {};
 	for (const [name, rawDefinition] of Object.entries(combinedProperties)) {
 		const rawEdgeDisplay = rawDefinition.display || {};
-		const definition = {
+		const definition : PropertyDefinition = {
 			...rawDefinition,
+			excludeFromDefaultImplication: !! rawDefinition.excludeFromDefaultImplication,
 			display: {
 				...rawEdgeDisplay
 			},
@@ -436,7 +437,8 @@ const completeEdgeSet = (source: NodeID, edges : EdgeValue[], data : MapDefiniti
 			ref
 		});
 	}
-	const allPropertyNames : PropertyName[] = Object.keys(data.properties);
+	//Not actually all property names, but those that have not explicitly opted to be excluded.
+	const allPropertyNames : PropertyName[] = Object.keys(data.properties).filter(name => !data.properties[name].excludeFromDefaultImplication);
 	const result : ExpandedEdgeValue[] =[];
 	for (const [ref, refEdges] of Object.entries(edgesByRef)) {
 		let impliedSet : PropertyNameSet = {};
