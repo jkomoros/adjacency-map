@@ -151,6 +151,7 @@ const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 			for (const rawValue of rawNode.values) {
 				const value : EdgeValue = {type: rawValue.type};
 				if (rawValue.ref != undefined) value.ref = rawValue.ref;
+				if (rawValue.implies != undefined) value.implies = rawValue.implies;
 				for (const entry of Object.entries(rawValue)) {
 					if (RESERVED_VALUE_DEFINITION_PROPERTIES[entry[0]]) continue;
 					const val = entry[1] as ValueDefinition;
@@ -435,7 +436,7 @@ const completeEdgeSet = (source: NodeID, edges : EdgeValue[], data : MapDefiniti
 		for (const edge of refEdges) {
 			seenSet[edge.type] = true;
 			result.push(edge);
-			const implies = data.properties[edge.type].implies;
+			const implies = data.properties[edge.type].implies || edge.implies;
 			impliedSet = {...impliedSet, ...impliedPropertyNames(implies, allPropertyNames)};
 		}
 		//Now add any edges that were in implied set but not seen.

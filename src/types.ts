@@ -229,6 +229,7 @@ export type RawEdgeValue = {
 	type: PropertyName,
 	//If ref is not provided, it implicitly references the root node.
 	ref? : NodeID,
+	implies? : ImpliesConfiguration,
 	[constant : ConstantType]: undefined | ValueDefinitionLeaf | PropertyName | NodeID;
 };
 
@@ -238,6 +239,7 @@ export type EdgeValue = {
 	type: PropertyName,
 	//If ref is not provided, it implicitly references the root node.
 	ref? : NodeID,
+	implies? : ImpliesConfiguration,
 	[constant : ConstantType]: undefined | number | PropertyName | NodeID;
 };
 

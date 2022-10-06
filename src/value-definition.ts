@@ -48,7 +48,8 @@ export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 	'ref': true,
 	'type': true,
 	//on ExpandedEdgeValue
-	'source': true
+	'source': true,
+	'implies': true
 };
 
 type Operator = (one : number, two: number) => number;
