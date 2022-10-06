@@ -305,7 +305,7 @@ export type NodeValues = {
 export type Combiner = (nums: number[]) => [number];
 
 //We can't use keyof typeof REDUCERS because `npm run generate:schema` can't handle those types
-export type CombinerType = 'mean' | 'first' | 'last' | 'min' | 'max' | 'sum' | 'product' | 'and' | 'or';
+export type CombinerType = 'mean' | 'first' | 'last' | 'min' | 'max' | 'sum' | 'product' | 'and' | 'or' | 'color-mean';
 
 //An enumeration of other property names to be implied. '*' means 'all property
 //names'. An exclusion will be all property names EXCEPT the ones listed.

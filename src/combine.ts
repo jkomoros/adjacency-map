@@ -9,6 +9,13 @@ import {
 	isTrue
 } from './constants.js';
 
+import {
+	color,
+	combine,
+	packColor,
+	unpackColor
+} from './color.js';
+
 export const mean = (nums : number[]) : [number] => {
 	if (!nums.length) return [0];
 	let sum = 0;
@@ -62,6 +69,12 @@ export const or = (nums : number[]): [number] => {
 	return nums.some(num => isTrue(num)) ? [DEFAULT_TRUE_NUMBER] : [FALSE_NUMBER];
 };
 
+export const colorMean = (nums: number[]): [number] => {
+	if (!nums.length) return [packColor(color('black'))];
+	const result = combine(...nums.map(num => unpackColor(num)));
+	return [packColor(result)];
+};
+
 export const DEFAULT_COMBINER = mean;
 
 export const COMBINERS : {[combinerType in CombinerType] : Combiner} = {
@@ -73,5 +86,6 @@ export const COMBINERS : {[combinerType in CombinerType] : Combiner} = {
 	'sum': sum,
 	'product': product,
 	'and': and,
-	'or': or
+	'or': or,
+	'color-mean': colorMean, 
 };

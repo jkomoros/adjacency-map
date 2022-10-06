@@ -188,6 +188,25 @@ export const gradient = (one : CSSColor | Color, two : CSSColor | Color, percent
 	return 'rgba(' + [r,g,b,a].join(', ') + ')';
 };
 
+export const combine = (...colors : Color[]): Color => {
+	if (colors.length == 0) return color('black');
+	let r = 0;
+	let g = 0;
+	let b = 0;
+	let a = 0;
+	for (const color of colors) {
+		r += color.r;
+		g += color.g;
+		b += color.b;
+		a += color.a;
+	}
+	r /= colors.length;
+	g /= colors.length;
+	b /= colors.length;
+	a /= colors.length;
+	return color([r,g,b,a]);
+};
+
 export const color = (arg : CSSColor | RGBColor | RGBAColor) : Color => {
 	let r = 0;
 	let g = 0;
