@@ -22,7 +22,7 @@ const data : RawMapDefinition = {
 	nodes: {
 		a: {
 			description: "Node a",
-			values: [
+			edges: [
 				{
 					type: "engineering",
 					weight: 4.0
@@ -34,7 +34,7 @@ const data : RawMapDefinition = {
 		},
 		b: {
 			description: "Node b",
-			values: [
+			edges: [
 				{
 					type: "ux",
 					ref: "a"
@@ -43,7 +43,7 @@ const data : RawMapDefinition = {
 		},
 		c: {
 			description: "Node c",
-			values: [
+			edges: [
 				{
 					type: "engineering",
 					ref: "a"
@@ -56,7 +56,7 @@ const data : RawMapDefinition = {
 		},
 		d: {
 			description: "Node d",
-			values: [
+			edges: [
 				{
 					type: "engineering",
 					ref: "b"

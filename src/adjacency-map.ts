@@ -78,7 +78,7 @@ export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 	const result : SimpleGraph = {};
 	for (const [id, value] of Object.entries(data.nodes)) {
 		const edges : {[id : NodeID] : true} = {};
-		for (const edge of value.values || []) {
+		for (const edge of value.edges || []) {
 			const ref = edge.ref || ROOT_ID;
 			edges[ref] = true;
 		}
@@ -146,9 +146,9 @@ const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 	}
 	const nodes : {[id : NodeID]: NodeDefinition} = {};
 	for (const [id, rawNode] of Object.entries(data.nodes)) {
-		const values : EdgeValue[] = [];
-		if (rawNode.values) {
-			for (const rawValue of rawNode.values) {
+		const edges : EdgeValue[] = [];
+		if (rawNode.edges) {
+			for (const rawValue of rawNode.edges) {
 				const value : EdgeValue = {type: rawValue.type};
 				if (rawValue.ref != undefined) value.ref = rawValue.ref;
 				if (rawValue.implies != undefined) value.implies = rawValue.implies;
@@ -158,13 +158,13 @@ const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 					if (!valueDefinitionIsLeaf(val)) continue;
 					value[entry[0]] = calculateValueLeaf(val);
 				}
-				values.push(value);
+				edges.push(value);
 			}
 		}
 		const rawNodeDisplay = rawNode.display || {};
 		nodes[id] = {
 			...rawNode,
-			values,
+			edges,
 			display: {
 				...rawNodeDisplay
 			}
@@ -222,8 +222,8 @@ const validateData = (data : MapDefinition) : void => {
 	for (const [nodeName, nodeData] of Object.entries(data.nodes)) {
 		if (nodeName == ROOT_ID) throw new Error('Nodes may not have the same id as root: "' + ROOT_ID + '"');
 		if (!nodeData.description) throw new Error(nodeName + ' has no description');
-		const nodeValues = nodeData.values || [];
-		for (const edge of nodeValues) {
+		const nodeEdges = nodeData.edges || [];
+		for (const edge of nodeEdges) {
 			if (!edge.type) throw new Error(nodeName + ' has an edge with no type');
 			if (!data.properties[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
 		}
@@ -302,8 +302,8 @@ export class AdjacencyMap {
 		this._nodes = {};
 		const children : SimpleGraph = {};
 		for (const [child, definition] of Object.entries(this._data.nodes)) {
-			const values = definition.values || [];
-			for (const edge of values) {
+			const edges = definition.edges || [];
+			for (const edge of edges) {
 				const parent = edge.ref || ROOT_ID;
 				if (!children[parent]) children[parent] = {};
 				children[parent][child] = true;
@@ -475,8 +475,8 @@ class AdjacencyMapNode {
 	_computeValues() : NodeValues {
 		const partialResult : NodeValues = {};
 		const edgeByType : {[type : PropertyName] : EdgeValue[]} = {};
-		const values = this._data?.values || [];
-		for (const edge of values) {
+		const edges = this._data?.edges || [];
+		for (const edge of edges) {
 			if (!edgeByType[edge.type]) edgeByType[edge.type] = [];
 			edgeByType[edge.type].push(edge);
 		}
@@ -530,8 +530,8 @@ class AdjacencyMapNode {
 
 	get edges() : ExpandedEdgeValue[] {
 		if (!this._cachedEdges) {
-			if (this._data && this._data.values) {
-				this._cachedEdges = completeEdgeSet(this.id, this._data.values, this._map.data);
+			if (this._data && this._data.edges) {
+				this._cachedEdges = completeEdgeSet(this.id, this._data.edges, this._map.data);
 			} else {
 				this._cachedEdges = [];
 			}
@@ -673,8 +673,8 @@ class AdjacencyMapNode {
 	//Gets the parents we reference. Note that ROOT_ID is nearly always implied,
 	//but not returned here.
 	get parents() : NodeID[] {
-		if (!this._data || !this._data.values) return [];
-		return this._data.values.map(edge => edge.ref).filter(ref => ref && ref != ROOT_ID) as NodeID[];
+		if (!this._data || !this._data.edges) return [];
+		return this._data.edges.map(edge => edge.ref).filter(ref => ref && ref != ROOT_ID) as NodeID[];
 	}
 
 	//Gets the children we are directly referenced by.

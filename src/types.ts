@@ -281,13 +281,13 @@ export type TreeGraph = {
 export type RawNodeDefinition = {
 	description: string,
 	display?: Partial<NodeDisplay>,
-	values?: RawEdgeValue[]
+	edges?: RawEdgeValue[]
 };
 
 export type NodeDefinition = {
 	description: string,
 	display: Partial<NodeDisplay>,
-	values: EdgeValue[]
+	edges: EdgeValue[]
 };
 
 export type RawNodeValues = {

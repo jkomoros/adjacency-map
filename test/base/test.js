@@ -55,7 +55,7 @@ const legalBaseInput = {
 	"nodes": {
 		"a": {
 			"description": "Node a",
-			"values": [
+			"edges": [
 				{
 					"type": "engineering",
 					"weight": 4.0
@@ -67,7 +67,7 @@ const legalBaseInput = {
 		},
 		"b": {
 			"description": "Node b",
-			"values": [
+			"edges": [
 				{
 					"type": "ux",
 					"ref": "a"
@@ -76,7 +76,7 @@ const legalBaseInput = {
 		},
 		"c": {
 			"description": "Node c",
-			"values": [
+			"edges": [
 				{
 					"type": "engineering",
 					"ref": "a"
@@ -89,7 +89,7 @@ const legalBaseInput = {
 		},
 		"d": {
 			"description": "Node d",
-			"values": [
+			"edges": [
 				{
 					"type": "engineering",
 					"ref": "b"
@@ -165,9 +165,9 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('allows base input with node with no values', async () => {
+	it('allows base input with node with no edges', async () => {
 		const input = deepCopy(legalBaseInput);
-		delete input.nodes.a.values;
+		delete input.nodes.a.edges;
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -195,7 +195,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a node with a value without a type', async () => {
 		const input = deepCopy(legalBaseInput);
-		delete input.nodes.a.values[0].type;
+		delete input.nodes.a.edges[0].type;
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -209,7 +209,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a node with a value with an unenumerated type', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.a.values[0].type = 'foo';
+		input.nodes.a.edges[0].type = 'foo';
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -349,7 +349,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a graph with a direct cycle in it', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.b.values.push({type: 'engineering', ref:'d'});
+		input.nodes.b.edges.push({type: 'engineering', ref:'d'});
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -363,7 +363,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a graph with an indirect cycle in it', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.a.values.push({type: 'engineering', ref:'d'});
+		input.nodes.a.edges.push({type: 'engineering', ref:'d'});
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -419,7 +419,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows a node with an edge with a weight of type false', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.a.values[0].weight = false;
+		input.nodes.a.edges[0].weight = false;
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -433,7 +433,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows a node with an edge with a weight of type true', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.a.values[0].weight = true;
+		input.nodes.a.edges[0].weight = true;
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -447,7 +447,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows a node with an edge with a weight of type null', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.a.values[0].weight = null;
+		input.nodes.a.edges[0].weight = null;
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -2414,7 +2414,7 @@ engineering: 3`;
 		input.properties.data.value = {result: 'engineering'};
 		input.properties.engineering.dependencies = ['ux'];
 		input.properties.engineering.value = {result: 'ux'};
-		input.nodes.a.values.push({type: 'data'});
+		input.nodes.a.edges.push({type: 'data'});
 		input.root = {'ux': 12};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -3339,7 +3339,7 @@ describe('renderEdges', () => {
 
 	it('basic case with two other edges', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.a.values.push(
+		input.nodes.a.edges.push(
 			{type: 'ux'},
 			{type: 'data'}
 		);
@@ -3358,7 +3358,7 @@ describe('renderEdges', () => {
 
 	it('basic case with two other edge engineering distinct', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.a.values.push(
+		input.nodes.a.edges.push(
 			{type: 'ux'},
 			{type: 'data'}
 		);
@@ -3394,7 +3394,7 @@ describe('renderEdges', () => {
 
 	it('basic case with two other edge engineering distinct no combine', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.a.values.push(
+		input.nodes.a.edges.push(
 			{type: 'ux'},
 			{type: 'data'}
 		);
@@ -3441,7 +3441,7 @@ describe('renderEdges', () => {
 
 	it('basic case with two other edge engineering no combine', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.a.values.push(
+		input.nodes.a.edges.push(
 			{type: 'ux'},
 			{type: 'data'}
 		);
@@ -3488,7 +3488,7 @@ describe('renderEdges', () => {
 
 	it('basic case with two other edge engineering combines, no type combine', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.a.values.push(
+		input.nodes.a.edges.push(
 			{type: 'ux'},
 			{type: 'data'}
 		);
@@ -3650,7 +3650,7 @@ describe('impliedEdges', () => {
 
 	it('basic case implied on edge itself', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.a.values[0].implies = '*';
+		input.nodes.a.edges[0].implies = '*';
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.edges;
