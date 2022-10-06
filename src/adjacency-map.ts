@@ -22,7 +22,9 @@ import {
 	EdgeDisplay,
 	EdgeCombinerDisplay,
 	ValueDefinitionCalculationArgs,
-	ImpliesConfiguration
+	ImpliesConfiguration,
+	ScenariosDefinition,
+	Scenario
 } from './types.js';
 
 import {
@@ -32,6 +34,7 @@ import {
 } from './graph.js';
 
 import {
+	DEFAULT_SCENARIO_NAME,
 	DEFAULT_TRUE_NUMBER,
 	FALSE_NUMBER,
 	ROOT_ID,
@@ -193,12 +196,25 @@ const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 			...rawEdgeCombinerDisplay
 		}
 	};
+	const rawScenarios = data.scenarios || {};
+	const scenarios : ScenariosDefinition = {};
+	for (const [scenarioName, rawScenario] of Object.entries(rawScenarios)) {
+		const nodes : {[id : NodeID] : NodeValues} = {};
+		for (const [nodeName, nodeValues] of Object.entries(rawScenario.nodes)) {
+			nodes[nodeName] = Object.fromEntries(Object.entries(nodeValues).map(entry => [entry[0], calculateValueLeaf(entry[1])]));
+		}
+		const scenario : Scenario = {
+			nodes
+		};
+		scenarios[scenarioName] = scenario;
+	}
 	return {
 		...data,
 		root,
 		display,
 		properties,
-		nodes
+		nodes,
+		scenarios
 	};
 };
 
@@ -279,6 +295,18 @@ const validateData = (data : MapDefinition) : void => {
 		for (const [rootName, rootValue] of Object.entries(data.root)) {
 			if (typeof rootValue != 'number') throw new Error('root property ' + rootName + ' is not a number as expected');
 			if (!data.properties[rootName]) throw new Error('root property ' + rootName + ' is not defined in properties');
+		}
+	}
+
+	for (const [scenarioName, scenario] of Object.entries(data.scenarios)) {
+		if (scenarioName == DEFAULT_SCENARIO_NAME) throw new Error('The default scenario name is implied and should not be enumerated');
+		if (!scenario.nodes || typeof scenario.nodes != 'object') throw new Error('Scenario must have nodes');
+		for (const [nodeName, nodeValues] of Object.entries(scenario.nodes)) {
+			if (nodeName != ROOT_ID && !data.nodes[nodeName]) throw new Error('All node ids in a scenario must be either ROOT_ID or included in nodes');
+			for (const [propertyName, propertyValue] of Object.entries(nodeValues)) {
+				if (!data.properties[propertyName]) throw new Error('All properties in scenarios for a node must be named properties');
+				if (typeof propertyValue != 'number') throw new Error('All override node values must be numbers');
+			}
 		}
 	}
 

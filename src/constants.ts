@@ -1,8 +1,11 @@
 import {
-	NodeID
+	NodeID,
+	ScenarioName
 } from './types.js';
 
 export const ROOT_ID : NodeID = '';
+
+export const DEFAULT_SCENARIO_NAME : ScenarioName = '';
 
 /*
 

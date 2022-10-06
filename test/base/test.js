@@ -2057,6 +2057,88 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for scenario with name ""', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			'': {}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Barfs for a scenario with a non-existent node', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			'1' : {
+				nodes: {
+					'invalid': {
+						'ux': 0,
+					}
+				}
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Barfs for a scenario with a node with an invalid property name', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			'1' : {
+				nodes: {
+					'a': {
+						'invalid': 0
+					}
+				}
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a legal scenario', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			'1' : {
+				nodes: {
+					'a': {
+						'ux': true
+					}
+				}
+			}
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {

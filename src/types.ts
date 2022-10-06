@@ -430,6 +430,28 @@ export type MapDisplay = {
 	edgeCombiner : EdgeCombinerDisplay;
 }
 
+export type ScenarioName = string;
+
+export type RawScenario = {
+	nodes: {
+		[id : NodeID] : RawNodeValues;
+	};
+}
+
+export type Scenario = {
+	nodes: {
+		[id : NodeID] : NodeValues;
+	}
+}
+
+export type RawScenariosDefinition = {
+	[name : ScenarioName] : RawScenario;
+};
+
+export type ScenariosDefinition = {
+	[name : ScenarioName] : Scenario;
+};
+
 export type RawMapDefinition = {
 	version: number,
 	//Imports lists libraries to base types on. The library 'core' is implicitly
@@ -442,7 +464,11 @@ export type RawMapDefinition = {
 	root?: RawNodeValues;
 	nodes: {
 		[id : NodeID] : RawNodeDefinition
-	}
+	},
+	//Scenarios define different collections of base values to set on nodes. The
+	//default scenario is implicitly named '' and not enumerated, because it is
+	//just the base map definition.
+	scenarios?: RawScenariosDefinition,
 }
 
 //MapDefinition is RawMapDefinition, but with any imports expanded.
@@ -454,7 +480,8 @@ export type MapDefinition = {
 	root: NodeValues,
 	nodes: {
 		[id : NodeID]: NodeDefinition
-	}
+	},
+	scenarios: ScenariosDefinition;
 };
 
 export type AppState = {
