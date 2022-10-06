@@ -3699,7 +3699,6 @@ describe('impliedEdges', () => {
 				type: 'engineering',
 				ref: '',
 				source: 'a',
-				implies: '*',
 				weight: 4,
 				implied: 0,
 			},

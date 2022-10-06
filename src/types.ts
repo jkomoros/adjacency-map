@@ -243,7 +243,7 @@ export type EdgeValue = {
 	[constant : ConstantType]: undefined | number | PropertyName | NodeID | ImpliesConfiguration;
 };
 
-export type ExpandedEdgeValue = EdgeValue & {
+export type ExpandedEdgeValue = Exclude<EdgeValue,ImpliesConfiguration> & {
 	//Source is the node that links to ref
 	source: NodeID;
 	//Ref is always filled, possibly with ROOT_ID

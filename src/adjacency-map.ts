@@ -443,9 +443,10 @@ const completeEdgeSet = (source: NodeID, edges : EdgeValue[], data : MapDefiniti
 		const seenSet : PropertyNameSet = {};
 		for (const edge of refEdges) {
 			seenSet[edge.type] = true;
-			result.push(edge);
 			const implies = data.properties[edge.type].implies || edge.implies;
 			impliedSet = {...impliedSet, ...impliedPropertyNames(implies, allPropertyNames)};
+			delete edge.implies;
+			result.push(edge);
 		}
 		//Now add any edges that were in implied set but not seen.
 		for (const impliedPropertyName of Object.keys(impliedSet)) {
