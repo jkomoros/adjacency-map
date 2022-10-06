@@ -165,9 +165,12 @@ const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 			}
 		}
 		const rawNodeDisplay = rawNode.display || {};
+		const rawBase = rawNode.base || {};
+		const base = Object.fromEntries(Object.entries(rawBase).map(entry => [entry[0], calculateValueLeaf(entry[1])]));
 		nodes[id] = {
 			...rawNode,
 			edges,
+			base,
 			display: {
 				...rawNodeDisplay
 			}
@@ -231,6 +234,13 @@ const validateData = (data : MapDefinition) : void => {
 			if (!data.properties[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
 		}
 		validateDisplay(nodeData.display, exampleValues);
+		if (nodeData.base) {
+			if (typeof nodeData.base != 'object') throw new Error('base if provided must be an object');
+			for (const [baseName, baseValue] of Object.entries(nodeData.base)) {
+				if (typeof baseValue != 'number') throw new Error('base property ' + baseName + ' is not a number as expected');
+				if (!data.properties[baseName]) throw new Error('base property ' + baseName + ' is not defined in properties');
+			}
+		}
 	}
 	for(const [type, propertyDefinition] of Object.entries(data.properties)) {
 		try {

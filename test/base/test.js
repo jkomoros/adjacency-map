@@ -2009,6 +2009,54 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('Barfs for a node defining base with illegal property names', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.base = {
+			illegal: 0,
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Barfs for a node defining base with illegal value', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.base = {
+			ux: 'invalid',
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows node defining base legally', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.base = {
+			ux: 3,
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
