@@ -283,16 +283,16 @@ export type RawNodeDefinition = {
 	description: string,
 	display?: Partial<NodeDisplay>,
 	edges?: RawEdgeValue[],
-	//If any values are provided here, they will be set on the node, effectively
-	//overriding the root value that otherwise would be used as the base.
-	base? : RawNodeValues,
+	//If any values are provided here, they will be set on the node, overriding
+	//any other edge values that or root values.
+	values? : RawNodeValues,
 };
 
 export type NodeDefinition = {
 	description: string,
 	display: Partial<NodeDisplay>,
 	edges: EdgeValue[],
-	base: NodeValues
+	values: NodeValues
 };
 
 export type RawNodeValues = {

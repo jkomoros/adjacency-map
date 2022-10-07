@@ -2011,7 +2011,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('Barfs for a node defining base with illegal property names', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.a.base = {
+		input.nodes.a.values = {
 			illegal: 0,
 		};
 		const errorExpected = true;
@@ -2027,7 +2027,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('Barfs for a node defining base with illegal value', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.a.base = {
+		input.nodes.a.values = {
 			ux: 'invalid',
 		};
 		const errorExpected = true;
@@ -2043,7 +2043,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows node defining base legally', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.a.base = {
+		input.nodes.a.values = {
 			ux: 3,
 		};
 		const errorExpected = false;
@@ -3021,7 +3021,7 @@ engineering: 3`;
 
 	it('Correctly calculates a base value with no edge', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.a.base = {
+		input.nodes.a.values = {
 			'ux': 5,
 		};
 		const map = new AdjacencyMap(input);

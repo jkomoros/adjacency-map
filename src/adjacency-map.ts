@@ -168,12 +168,12 @@ const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 			}
 		}
 		const rawNodeDisplay = rawNode.display || {};
-		const rawBase = rawNode.base || {};
-		const base = Object.fromEntries(Object.entries(rawBase).map(entry => [entry[0], calculateValueLeaf(entry[1])]));
+		const rawValues = rawNode.values || {};
+		const values = Object.fromEntries(Object.entries(rawValues).map(entry => [entry[0], calculateValueLeaf(entry[1])]));
 		nodes[id] = {
 			...rawNode,
 			edges,
-			base,
+			values,
 			display: {
 				...rawNodeDisplay
 			}
@@ -250,11 +250,11 @@ const validateData = (data : MapDefinition) : void => {
 			if (!data.properties[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
 		}
 		validateDisplay(nodeData.display, exampleValues);
-		if (nodeData.base) {
-			if (typeof nodeData.base != 'object') throw new Error('base if provided must be an object');
-			for (const [baseName, baseValue] of Object.entries(nodeData.base)) {
-				if (typeof baseValue != 'number') throw new Error('base property ' + baseName + ' is not a number as expected');
-				if (!data.properties[baseName]) throw new Error('base property ' + baseName + ' is not defined in properties');
+		if (nodeData.values) {
+			if (typeof nodeData.values != 'object') throw new Error('values if provided must be an object');
+			for (const [valueName, valueValue] of Object.entries(nodeData.values)) {
+				if (typeof valueValue != 'number') throw new Error('values property ' + valueName + ' is not a number as expected');
+				if (!data.properties[valueName]) throw new Error('values property ' + valueName + ' is not defined in properties');
 			}
 		}
 	}
@@ -538,7 +538,11 @@ class AdjacencyMapNode {
 			//our root value can have it.
 			partialResult[type] = this._map.rootValues[type];
 			if (this._data) {
-				if (this._data.base[type]) partialResult[type] = this._data.base[type];
+				if (this._data.values[type]) {
+					partialResult[type] = this._data.values[type];
+					//Dont' calculate the value at all, just override it.
+					continue;
+				}
 			}
 			const rawEdges = edgeByType[type];
 			if (!rawEdges) continue;
