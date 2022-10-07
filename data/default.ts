@@ -16,11 +16,14 @@ const data : RawMapDefinition = {
 				}
 			},
 			display: {
-				color: 'red'
+				color: 'red',
+				width: {
+					constant: 'weight'
+				}
 			},
 			implies: '*',
 			constants: {
-				weight: 1.0
+				weight: 0.0
 			}
 		},
 		ux: {
@@ -35,11 +38,14 @@ const data : RawMapDefinition = {
 				}
 			},
 			display: {
-				color: 'blue'
+				color: 'blue',
+				width: {
+					constant: 'weight'
+				}
 			},
 			implies: '*',
 			constants: {
-				weight: 1.0
+				weight: 0.0
 			}
 		},
 		data: {
@@ -54,11 +60,14 @@ const data : RawMapDefinition = {
 				}
 			},
 			display: {
-				color: 'green'
+				color: 'green',
+				width: {
+					constant: 'weight'
+				}
 			},
 			implies: '*',
 			constants: {
-				weight: 1.0
+				weight: 0.0
 			}
 		},
 		usage: {
@@ -73,11 +82,14 @@ const data : RawMapDefinition = {
 				}
 			},
 			display: {
-				color: 'yellow'
+				color: 'yellow',
+				width: {
+					constant: 'weight'
+				}
 			},
 			implies: '*',
 			constants: {
-				weight: 1.0
+				weight: 0.0
 			}
 		},
 
