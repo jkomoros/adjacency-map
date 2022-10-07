@@ -32,7 +32,6 @@ import {
 import assert from 'assert';
 
 const legalBaseInput = {
-	"version": 1,
 	"properties": {
 		"engineering": {
 			"value": 3,

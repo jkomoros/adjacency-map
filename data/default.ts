@@ -3,7 +3,6 @@ import {
 } from '../src/types.js';
 
 const data : RawMapDefinition = {
-	version: 1,
 	properties: {
 		engineering: {
 			value: 3,
