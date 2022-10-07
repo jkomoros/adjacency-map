@@ -21,6 +21,7 @@ import {
 	selectLegalFilenames,
 	selectLegalScenarioNames,
 	selectScenarioName,
+	selectHashForCurrentState,
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -53,7 +54,9 @@ import {
 } from '../constants.js';
 
 import {
-	canonicalizePath
+	canonicalizeHash,
+	canonicalizePath,
+	updateHash
 } from '../actions/app.js';
 
 @customElement('main-view')
@@ -79,6 +82,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_scenarioName : ScenarioName;
+
+	@state()
+	_hashForCurrentState : string;
 
 	static override get styles() {
 		return [
@@ -153,6 +159,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._legalFilenames = selectLegalFilenames(state);
 		this._scenarioName = selectScenarioName(state);
 		this._legalScenarioNames = selectLegalScenarioNames(state);
+		this._hashForCurrentState = selectHashForCurrentState(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
@@ -160,12 +167,21 @@ class MainView extends connect(store)(PageViewElement) {
 		if ((changedProps.has('_pageExtra')) && this._pageExtra) {
 			store.dispatch(updateWithMainPageExtra(this._pageExtra));
 		}
+		if (changedProps.has('_hashForCurrentState')) {
+			store.dispatch(canonicalizeHash());
+		}
 	}
 
 	override firstUpdated() {
 		window.addEventListener('resize', () => this.resizeVisualization());
 		this.resizeVisualization();
 		store.dispatch(canonicalizePath());
+		window.addEventListener('hashchange', () => this._handleHashChange());
+		this._handleHashChange();
+	}
+
+	_handleHashChange() {
+		store.dispatch(updateHash(window.location.hash, true));
 	}
 
 	_handleFilenameChanged(e : Event) {

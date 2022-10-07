@@ -85,7 +85,6 @@ export const updateHash : AppActionCreator = (hash, comesFromURL = false) => (di
 	const state = getState();
 	const currentHash = selectHash(state);
 	if (hash == currentHash && !comesFromURL) return;
-	//Only try to parse the hash if fully loaded
 	if (comesFromURL) {
 		dispatch(ingestHash(hash));
 	} else {

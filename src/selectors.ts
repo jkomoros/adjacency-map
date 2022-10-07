@@ -52,8 +52,8 @@ export const selectAdjacencyMap = createSelector(
 export const selectHashForCurrentState = createSelector(
 	selectScenarioName,
 	(scenarioName) => {
-		const result : URLHashArgs = {};
-		if (scenarioName != DEFAULT_SCENARIO_NAME) result.s = scenarioName;
-		return result;
+		const pieces : URLHashArgs = {};
+		if (scenarioName != DEFAULT_SCENARIO_NAME) pieces.s = scenarioName;
+		return Object.entries(pieces).map(entry => entry[0] + '=' + entry[1]).join('&');
 	}
 );
