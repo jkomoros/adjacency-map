@@ -32,6 +32,11 @@ export const selectData = createSelector(
 	(filename) => DATA[filename]
 );
 
+export const selectLegalScenarioNames = createSelector(
+	selectData,
+	(data) => data ? ['', ...Object.keys(data.scenarios || {})] : ['']
+);
+
 export const selectAdjacencyMap = createSelector(
 	selectData,
 	selectScenarioName,

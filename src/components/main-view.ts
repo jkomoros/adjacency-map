@@ -9,6 +9,7 @@ import { store } from "../store.js";
 import {
 	updateFilename,
 	updateScale,
+	updateScenarioName,
 	updateWithMainPageExtra
 } from "../actions/data.js";
 
@@ -18,6 +19,8 @@ import {
 	selectAdjacencyMap,
 	selectScale,
 	selectLegalFilenames,
+	selectLegalScenarioNames,
+	selectScenarioName,
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -37,6 +40,7 @@ import {
 	DataFilename,
 	RenderEdgeValue,
 	RootState,
+	ScenarioName,
 } from '../types.js';
 
 import {
@@ -69,6 +73,12 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_legalFilenames : DataFilename[];
+
+	@state()
+	_legalScenarioNames : ScenarioName[];
+
+	@state()
+	_scenarioName : ScenarioName;
 
 	static override get styles() {
 		return [
@@ -122,6 +132,11 @@ class MainView extends connect(store)(PageViewElement) {
 				<select id='filenames' .value=${this._filename} @change=${this._handleFilenameChanged}>
 					${this._legalFilenames.map(filename => html`<option .value=${filename}>${filename}</option>`)}
 				</select>` : ''}
+				${this._legalScenarioNames.length > 1 ? html`
+				<label for='scenarios'>Scenario</label>
+				<select id='scenarios' .value=${this._scenarioName} @change=${this._handleScenarioNameChanged}>
+					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName}>${scenarioName || 'Default'}</option>`)}
+				</select>` : ''}
 			</div>
 			<div class='container'>
 				${this._svg()}
@@ -136,6 +151,8 @@ class MainView extends connect(store)(PageViewElement) {
 		this._adjacencyMap = selectAdjacencyMap(state);
 		this._scale = selectScale(state);
 		this._legalFilenames = selectLegalFilenames(state);
+		this._scenarioName = selectScenarioName(state);
+		this._legalScenarioNames = selectLegalScenarioNames(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
@@ -155,6 +172,12 @@ class MainView extends connect(store)(PageViewElement) {
 		const ele = e.composedPath()[0];
 		if (!(ele instanceof HTMLSelectElement)) throw new Error('not a select element');
 		store.dispatch(updateFilename(ele.value));
+	}
+
+	_handleScenarioNameChanged(e : Event) {
+		const ele = e.composedPath()[0];
+		if (!(ele instanceof HTMLSelectElement)) throw new Error('not a select element');
+		store.dispatch(updateScenarioName(ele.value));
 	}
 
 	//Should be called any time the scale of visualization might need to change.
