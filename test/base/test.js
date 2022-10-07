@@ -2143,6 +2143,58 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for an illegal scenario as constructor argument', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			'1' : {
+				nodes: {
+					//Overriding root node is legal
+					'': {
+						'engineering': null,
+					},
+					'a': {
+						'ux': true
+					}
+				}
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input, 'invalid');
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a legal scenario as constructor argument', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			'1' : {
+				nodes: {
+					//Overriding root node is legal
+					'': {
+						'engineering': null,
+					},
+					'a': {
+						'ux': true
+					}
+				}
+			}
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input, '1');
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
@@ -4001,6 +4053,59 @@ describe('impliedEdges', () => {
 			}
 		];
 		assert.deepStrictEqual(actual, golden);
+	});
+
+});
+
+describe('scenarios', () => {
+	it('base case', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.ux.value = {
+			ref: 'ux'
+		};
+		input.scenarios = {
+			one: {
+				nodes: {
+					a: {
+						engineering: 2.0,
+						ux: 10.0,
+					}
+				}
+			}
+		};
+		const map = new AdjacencyMap(input);
+		assert.deepStrictEqual(map.scenarioName, '');
+		const node = map.node('a');
+		assert.deepStrictEqual(node.values.ux, 0.0);
+		const nodeB = map.node('b');
+		assert.deepStrictEqual(nodeB.values.ux, 0.0);
+		map.scenarioName = 'one';
+		assert.deepStrictEqual(node.values.ux, 10.0);
+		assert.deepStrictEqual(nodeB.values.ux, 10.0);
+
+	});
+
+	it('scenario passed in constructor', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.ux.value = {
+			ref: 'ux'
+		};
+		input.scenarios = {
+			one: {
+				nodes: {
+					a: {
+						engineering: 2.0,
+						ux: 10.0,
+					}
+				}
+			}
+		};
+		const map = new AdjacencyMap(input, 'one');
+		assert.deepStrictEqual(map.scenarioName, 'one');
+		const node = map.node('a');
+		assert.deepStrictEqual(node.values.ux, 10.0);
+		const nodeB = map.node('b');
+		assert.deepStrictEqual(nodeB.values.ux, 10.0);
 	});
 
 });

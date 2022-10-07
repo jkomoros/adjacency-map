@@ -432,6 +432,8 @@ export type MapDisplay = {
 
 export type ScenarioName = string;
 
+//A scenario is an overlay over the base configuration. Currnetly it may only
+//override the base values of already existing nodes.
 export type RawScenario = {
 	//Scenarios may override root nodes by using id of ROOT_ID.
 	nodes: {

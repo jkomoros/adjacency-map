@@ -24,7 +24,8 @@ import {
 	ValueDefinitionCalculationArgs,
 	ImpliesConfiguration,
 	ScenariosDefinition,
-	Scenario
+	Scenario,
+	ScenarioName
 } from './types.js';
 
 import {
@@ -327,12 +328,13 @@ export class AdjacencyMap {
 	_nodes : {[id : NodeID] : AdjacencyMapNode};
 	_cachedChildren : {[id : NodeID] : NodeID[]};
 	_cachedEdges : ExpandedEdgeValue[];
-	_cachedRenderEdges : RenderEdgeValue[];
-	_cachedRoot : NodeValues;
+	_cachedRenderEdges : RenderEdgeValue[] | undefined;
+	_cachedRoot : NodeValues | undefined;
 	_cachedPropertyNames : PropertyName[];
 	_cachedLayoutInfo : LayoutInfo;
+	_scenarioName : ScenarioName;
 
-	constructor(rawData : RawMapDefinition) {
+	constructor(rawData : RawMapDefinition, scenarioName : ScenarioName = DEFAULT_SCENARIO_NAME) {
 		//will throw if invalid library is included
 		const data = processMapDefinition(rawData);
 		//Will throw if it doesn't validate
@@ -341,6 +343,10 @@ export class AdjacencyMap {
 		//TODO: deep freeze a copy of data
 		this._data = data;
 		this._nodes = {};
+
+		if (scenarioName != DEFAULT_SCENARIO_NAME && !this.data.scenarios[scenarioName]) throw new Error('no such scenario');
+
+		this._scenarioName = scenarioName;
 		const children : SimpleGraph = {};
 		for (const [child, definition] of Object.entries(this._data.nodes)) {
 			const edges = definition.edges || [];
@@ -367,6 +373,40 @@ export class AdjacencyMap {
 		return this._cachedPropertyNames;
 	}
 
+	get scenarioName() : ScenarioName {
+		return this._scenarioName;
+	}
+
+	set scenarioName(name : ScenarioName) {
+		if (name == this._scenarioName) return;
+		if (name != DEFAULT_SCENARIO_NAME && !this.data.scenarios[name]) throw new Error('no such scenario');
+		const oldName = this._scenarioName;
+		this._scenarioName = name;
+		this._scenarioChanged(oldName);
+	}
+
+	_scenarioData(name : ScenarioName) : Scenario {
+		return this.data.scenarios[name] || {nodes: {}};
+	}
+
+	//Returns a scenario object for the current scenario, or an empty scneario
+	//object for tthe default scenario. The scenario is an overlay over the base
+	//defintion.
+	get scenario() : Scenario {
+		return this._scenarioData(this.scenarioName);
+	}
+
+	//An opportunity to throw out any caches that are now invalidated
+	_scenarioChanged(from : ScenarioName) {
+		const fromScenario = this._scenarioData(from);
+		const toScenario = this.scenario;
+		if (fromScenario.nodes[ROOT_ID] || toScenario.nodes[ROOT_ID]) this._cachedRoot = undefined;
+		this._cachedRenderEdges = undefined;
+		for (const node of Object.values(this._nodes)) {
+			node._scenarioChanged();
+		}
+	}
+
 	get data() : MapDefinition {
 		return this._data;
 	}
@@ -378,7 +418,8 @@ export class AdjacencyMap {
 	get rootValues() : NodeValues {
 		if (!this._cachedRoot) {
 			const baseObject = Object.fromEntries(this.propertyNames.map(typ => [typ, 0.0]));
-			this._cachedRoot = {...baseObject, ...this._data.root};
+			const scenarioNode = this.scenario.nodes[ROOT_ID] || {};
+			this._cachedRoot = {...baseObject, ...this._data.root, ...scenarioNode};
 		}
 		return this._cachedRoot;
 	}
@@ -510,10 +551,10 @@ class AdjacencyMapNode {
 	_id : NodeID;
 	_map : AdjacencyMap;
 	_data : NodeDefinition | undefined;
-	_values : NodeValues;
+	_values : NodeValues | undefined;
 	_isRoot : boolean;
 	_cachedEdges : ExpandedEdgeValue[];
-	_cachedRenderEdges : RenderEdgeValue[];
+	_cachedRenderEdges : RenderEdgeValue[] | undefined;
 
 	constructor(id : NodeID, parent : AdjacencyMap, data : NodeDefinition | undefined) {
 		this._id = id;
@@ -530,6 +571,7 @@ class AdjacencyMapNode {
 			if (!edgeByType[edge.type]) edgeByType[edge.type] = [];
 			edgeByType[edge.type].push(edge);
 		}
+		const scenarioNode = this._map.scenario.nodes[this.id] || {};
 		//Iterate through edges in propertyNames order to make sure that any
 		//ValueDefinitionResultValue will have the values they already rely on
 		//calculated.
@@ -543,6 +585,12 @@ class AdjacencyMapNode {
 					//Dont' calculate the value at all, just override it.
 					continue;
 				}
+			}
+			if (scenarioNode[type]) {
+				partialResult[type] = scenarioNode[type];
+				//Dont' calculate the value at all, just override it, acting
+				//like values.
+				continue;
 			}
 			const rawEdges = edgeByType[type];
 			if (!rawEdges) continue;
@@ -566,6 +614,25 @@ class AdjacencyMapNode {
 		//partialResult now contains a value for every item (including hte ones
 		//that are just default set to root's value).
 		return partialResult;
+	}
+
+	_scenarioChanged() {
+		//The scenario changed, which means that we might need to invalidate
+		//caches that rely on values that might have changed.
+		
+		//It might seem like we can only invalidate the cached value if
+		//fromScenarioNode or toScenarioNode changed, but that's not right,
+		//because our value relies on the values of nodes we depend on, and
+		//THOSE might have changed, so just invalidate the cache.
+		this._values = undefined;
+
+		//Currently the edge values themselves cannot change because scenarios
+		//can only modify nodes, and although the values flowing THROUGH those
+		//edges might change when scenarios change, the actual edges themselves
+		//don't. However, the renderEdges might change because they can rely on
+		//values.
+
+		this._cachedRenderEdges = undefined;
 	}
 
 	get id() : NodeID {
