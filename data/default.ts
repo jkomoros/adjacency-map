@@ -103,53 +103,41 @@ const data : RawMapDefinition = {
 		}
 	},
 	nodes: {
-		orient: {
-			description: 'A basic orientation calibration experience',
+		base_pipeline: {
+			description: 'Set up the data pipeline to, given a corpus of images, train a model',
 			edges: [
 				{
 					type: 'engineering',
+					weight: 5.0,
+				}
+			]
+		},
+		base_train: {
+			description: 'Train the model on a basic corpus of images',
+			edges: [
+				{
+					type: 'engineering',
+					ref: 'base_pipeline',
+					weight: 1.0
+				},
+				{
+					type: 'data',
+					ref: 'base_pipeline',
 					weight: 6.0
-				},
-				{
-					type: 'ux',
-					weight: 4.0
-				},
-				{
-					type: 'data',
-					weight: 4.0
 				}
 			]
 		},
-		compass: {
-			description: 'Once oriented, display compass rose',
+		base_infer_colab: {
+			description: 'Take a trained model and a text prompt and return a generated image in colab',
 			edges: [
 				{
 					type: 'engineering',
-					ref: 'orient',
+					ref: 'base_train',
 					weight: 1.0
 				},
 				{
 					type: 'ux',
-					weight: 1.0
-				}
-			]
-		},
-		'landmarks': {
-			description: 'Overlay distant land marks to help orient',
-			edges: [
-				{
-					type: 'engineering',
-					ref: 'compass',
-					weight: 2.0
-				},
-				{
-					type: 'ux',
-					ref: 'compass',
-					weight: 2.0
-				},
-				{
-					type: 'data',
-					ref: 'compass',
+					ref: 'base_train',
 					weight: 1.0
 				}
 			]
