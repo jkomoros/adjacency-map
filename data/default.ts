@@ -141,6 +141,51 @@ const data : RawMapDefinition = {
 					weight: 1.0
 				}
 			]
+		},
+		base_infer_gui : {
+			description: 'Take the basic results and allow someone to install an electron app to generate an image',
+			edges: [
+				{
+					type: 'engineering',
+					ref: 'base_infer_colab',
+					weight: 5.0
+				},
+				{
+					type: 'ux',
+					ref: 'base_infer_colab',
+					weight: 10.0,
+				}
+			]
+		},
+		extended_infer : {
+			description: 'Train on a larger corpus of images',
+			edges: [
+				{
+					type: 'engineering',
+					ref: 'base_infer_colab',
+					weight: 1.0
+				},
+				{
+					type: 'data',
+					ref: 'base_infer_colab',
+					weight: 5.0
+				}
+			]
+		},
+		im_to_im_infer : {
+			description: 'Extend the model to also do image to image transfer',
+			edges: [
+				{
+					type: 'engineering',
+					ref: 'base_infer_colab',
+					weight: 10.0
+				},
+				{
+					type: 'data',
+					ref: 'base_infer_colab',
+					weight: 5.0
+				}
+			]
 		}
 	}
 };
