@@ -1,5 +1,6 @@
 export const UPDATE_FILENAME = 'UPDATE_FILENAME';
 export const UPDATE_SCALE = 'UPDATE_SCALE';
+export const UPDATE_SCENARIO_NAME = 'UPDATE_SCENARIO_NAME';
 
 export const DEFAULT_FILE_NAME = 'default';
 //Also in tools/config.ts
@@ -20,7 +21,12 @@ import {
 
 import {
 	DataFilename,
+	ScenarioName
 } from '../types.js';
+
+import {
+	AnyAction
+} from 'redux';
 
 export const updateFilename : AppActionCreator = (filename : DataFilename, skipCanonicalize = false) => (dispatch, getState) => {
 	const state = getState();
@@ -39,6 +45,13 @@ export const updateScale : AppActionCreator = (scale) => (dispatch, getState) =>
 		type: UPDATE_SCALE,
 		scale,
 	});
+};
+
+export const updateScenarioName = (scenarioName : ScenarioName) : AnyAction => {
+	return {
+		type: UPDATE_SCENARIO_NAME,
+		scenarioName,
+	};
 };
 
 export const updateWithMainPageExtra : AppActionCreator = (pageExtra) => (dispatch) => {

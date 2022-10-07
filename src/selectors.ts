@@ -21,6 +21,7 @@ export const selectFilename = (state : RootState) => state.data ? state.data.fil
 export const selectPage = (state : RootState) => state.app ? state.app.page : '';
 export const selectPageExtra = (state : RootState) => state.app ? state.app.pageExtra : '';
 export const selectScale = (state : RootState) => state.data ? state.data.scale : 1.0;
+export const selectScenarioName = (state : RootState) => state.data ? state.data.scenarioName : '';
 
 //This doesn't actually need state, but in other ways its like a selector so kind of pretend like it is
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -33,5 +34,6 @@ export const selectData = createSelector(
 
 export const selectAdjacencyMap = createSelector(
 	selectData,
-	(data) => data ? new AdjacencyMap(data) : null
+	selectScenarioName,
+	(data, scenarioName) => data ? new AdjacencyMap(data, scenarioName) : null
 );

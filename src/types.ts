@@ -496,6 +496,7 @@ export type AppState = {
 export type DataState = {
 	filename : DataFilename;
 	scale: number;
+	scenarioName : ScenarioName;
 }
 
 export type RootState = {
