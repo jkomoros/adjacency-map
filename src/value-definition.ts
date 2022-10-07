@@ -213,7 +213,7 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 			return;
 		}
 		const constants = edgeDefinition?.constants || {};
-		if (!constants[definition.constant]) throw new Error(definition.constant + ' for edge type value definition but that constant doesn\'t exist for that type.');
+		if (constants[definition.constant] == undefined) throw new Error(definition.constant + ' for edge type value definition but that constant doesn\'t exist for that type.');
 		return;
 	}
 	if (valueDefintionIsRefValue(definition)) {
