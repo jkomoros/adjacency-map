@@ -24,6 +24,7 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 	case UPDATE_FILENAME:
 		return {
 			...state,
+			scenarioName: DEFAULT_FILE_NAME,
 			filename: action.filename
 		};
 	case UPDATE_SCALE:
