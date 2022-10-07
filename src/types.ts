@@ -117,6 +117,16 @@ export type ValueDefinitionIf = {
 	else: ValueDefinition
 }
 
+/**
+ * Reduces down and cuts out any indexes in value whose corresponding index in
+ * filter is equivalent to false. If all items are filtered, the result is
+ * [null] to retain the invariant that every result is at least one number.
+ */
+export type ValueDefinitionFilter = {
+	filter: ValueDefinition,
+	value: ValueDefinition
+}
+
 //Clip returns a value like input, but where each number if it's lower than low,
 //clips to low, and if it's higher than high clips to high. Either low or high
 //may be omitted, but not both.
@@ -185,6 +195,7 @@ export type ValueDefinition = ValueDefinitionLeaf |
 	ValueDefinitionColor |
 	ValueDefinitionArithmetic |
 	ValueDefinitionIf |
+	ValueDefinitionFilter |
 	ValueDefinitionCompare |
 	ValueDefinitionClip |
 	ValueDefinitionRange |

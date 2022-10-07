@@ -25,7 +25,8 @@ import {
 	ValueDefinitionCalculationArgs,
 	ValueDefinitionColor,
 	ValueDefinitionLengthOf,
-	ValueDefinitionInput
+	ValueDefinitionInput,
+	ValueDefinitionFilter
 } from './types.js';
 
 import {
@@ -160,6 +161,12 @@ const valueDefinitionIsIf = (definition : ValueDefinition): definition is ValueD
 	return 'if' in definition;
 };
 
+const valueDefinitionIsFilter = (definition : ValueDefinition): definition is ValueDefinitionFilter => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'filter' in definition;
+};
+
 const valueDefinitionIsClip = (definition : ValueDefinition): definition is ValueDefinitionClip => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
@@ -266,6 +273,12 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 		validateValueDefinition(definition.if, exampleValue, edgeDefinition);
 		validateValueDefinition(definition.then, exampleValue, edgeDefinition);
 		validateValueDefinition(definition.else, exampleValue, edgeDefinition);
+		return;
+	}
+
+	if (valueDefinitionIsFilter(definition)) {
+		validateValueDefinition(definition.filter, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.value, exampleValue, edgeDefinition);
 		return;
 	}
 
@@ -377,6 +390,14 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 		const thenVal = calculateValue(definition.then, args);
 		const elseVal = calculateValue(definition.else, args);
 		return ifVal.map((term, i) => isTrue(term) ? thenVal[i % thenVal.length] : elseVal[i & elseVal.length]);
+	}
+
+	if (valueDefinitionIsFilter(definition)) {
+		const filterVal = calculateValue(definition.filter, args);
+		const valueVal = calculateValue(definition.value, args);
+		const result = valueVal.filter((_, index) =>  isTrue(filterVal[index % filterVal.length]));
+		if (result.length == 0) return [NULL_SENTINEL];
+		return result;
 	}
 
 	if (valueDefinitionIsClip(definition)) {

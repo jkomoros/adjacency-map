@@ -1190,6 +1190,55 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for a value defintion of type filter missing filter', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			value: [0, 1]
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a value defintion of type filter missing value', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			filter: [0, 1],
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a valid value defintion of type filter', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			filter: [0, 1],
+			value: [0, 1]
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('barfs for a value defintion of type clip missing input', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
@@ -2894,6 +2943,40 @@ engineering: 3`;
 		const golden = {
 			...NODE_A_BASE_VALUES,
 			engineering: 18,
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a filter', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
+			filter: [0, 1, 0, 1],
+			value: [0, 1, 2, 3]
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			...NODE_A_BASE_VALUES,
+			engineering: 4,
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a filter that filters away everything', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
+			filter: 0,
+			value: [0, 1, 2, 3]
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			...NODE_A_BASE_VALUES,
+			engineering: NULL_SENTINEL,
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
