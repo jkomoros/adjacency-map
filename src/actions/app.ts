@@ -1,5 +1,6 @@
 export const UPDATE_PAGE = "UPDATE_PAGE";
 export const UPDATE_OFFLINE = "UPDATE_OFFLINE";
+export const UPDATE_HASH = "UPDATE_HASH";
 
 import {
 	AnyAction
@@ -8,12 +9,22 @@ import {
 import {
 	selectPage,
 	selectPageExtra,
-	selectFilename
+	selectFilename,
+	selectHashForCurrentState,
+	selectHash
 } from '../selectors.js';
 
 import {
 	AppActionCreator
 } from '../store.js';
+
+import {
+	URLHashArgs
+} from '../types.js';
+
+import {
+	updateScenarioName
+} from './data.js';
 
 //if silent is true, then just passively updates the URL to reflect what it should be.
 export const navigatePathTo : AppActionCreator = (path, silent) => (dispatch) => {
@@ -28,6 +39,64 @@ export const navigatePathTo : AppActionCreator = (path, silent) => (dispatch) =>
 	}
 	window.history.pushState({}, '', path);
 	dispatch(navigate(path));
+};
+
+export const canonicalizeHash : AppActionCreator = () => (dispatch, getState) => {
+	const state = getState();
+	const hash = selectHashForCurrentState(state);
+	dispatch(updateHash(hash));
+};
+
+const parseHash = (hash : string) : URLHashArgs => {
+	if (hash.startsWith('#')) hash = hash.substring(1);
+	const args : URLHashArgs = {};
+	if (!hash) return args;
+	for (const part of hash.split('&')) {
+		const [key, val] = part.split('=');
+		switch(key) {
+		case 's':
+			args.s = val;
+			break;
+		default:
+			//TODO: use assertUnreachable pattern here
+			console.warn('Unknown URL arg: ' + key);
+		}
+	}
+	return args;
+};
+
+const ingestHash : AppActionCreator = (hash) => (dispatch) => {
+	const pieces = parseHash(hash);
+
+	for (const [key, value] of Object.entries(pieces)) {
+		switch (key) {
+		case 's':
+			dispatch(updateScenarioName(value));
+			break;
+		default:
+			//TODO: use assertUnreachable pattern here
+			console.warn('Unknown URL arg: ' + key);
+		}
+	}
+};
+
+export const updateHash : AppActionCreator = (hash, comesFromURL = false) => (dispatch, getState) => {
+	if (hash.startsWith('#')) hash = hash.substring(1);
+	const state = getState();
+	const currentHash = selectHash(state);
+	if (hash == currentHash && !comesFromURL) return;
+	//Only try to parse the hash if fully loaded
+	if (comesFromURL) {
+		dispatch(ingestHash(hash));
+	} else {
+		window.location.hash = hash;
+		//Clear the '#'
+		if (!hash) history.replaceState('', '', window.location.pathname + window.location.search);
+	}
+	dispatch({
+		type: UPDATE_HASH,
+		hash
+	});
 };
 
 export const canonicalizePath : AppActionCreator = () => (dispatch ,getState) => {

@@ -25,6 +25,7 @@ import {
 export const selectFilename = (state : RootState) => state.data ? state.data.filename : DEFAULT_FILE_NAME;
 export const selectPage = (state : RootState) => state.app ? state.app.page : '';
 export const selectPageExtra = (state : RootState) => state.app ? state.app.pageExtra : '';
+export const selectHash = (state : RootState) => state.app ? state.app.hash : '';
 export const selectScale = (state : RootState) => state.data ? state.data.scale : 1.0;
 export const selectScenarioName = (state : RootState) => state.data ? state.data.scenarioName : '';
 

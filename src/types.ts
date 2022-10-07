@@ -495,6 +495,7 @@ export type AppState = {
 	page : string;
 	pageExtra : string;
 	offline : boolean;
+	hash: string;
 };
 
 export type DataState = {

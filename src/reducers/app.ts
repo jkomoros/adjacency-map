@@ -5,6 +5,7 @@ import {
 import {
 	UPDATE_PAGE,
 	UPDATE_OFFLINE,
+	UPDATE_HASH,
 } from "../actions/app.js";
 
 import {
@@ -15,6 +16,7 @@ const INITIAL_STATE : AppState = {
 	page: "",
 	pageExtra: "",
 	offline: false,
+	hash: "",
 };
 
 const app = (state : AppState = INITIAL_STATE, action : AnyAction) : AppState => {
@@ -29,6 +31,11 @@ const app = (state : AppState = INITIAL_STATE, action : AnyAction) : AppState =>
 		return {
 			...state,
 			offline: action.offline
+		};
+	case UPDATE_HASH:
+		return {
+			...state,
+			hash: action.hash
 		};
 	default:
 		return state;
