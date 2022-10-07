@@ -487,6 +487,10 @@ export type MapDefinition = {
 	scenarios: ScenariosDefinition;
 };
 
+export type URLHashArgs = {
+	s? : ScenarioName
+};
+
 export type AppState = {
 	page : string;
 	pageExtra : string;

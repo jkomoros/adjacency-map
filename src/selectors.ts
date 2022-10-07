@@ -9,12 +9,17 @@ import {
 } from './adjacency-map.js';
 
 import {
+	DEFAULT_SCENARIO_NAME
+} from './constants.js';
+
+import {
 	DATA
 } from './data.GENERATED.js';
 
 import {
 	DataFilename,
-	RootState
+	RootState,
+	URLHashArgs
 } from './types.js';
 
 export const selectFilename = (state : RootState) => state.data ? state.data.filename : DEFAULT_FILE_NAME;
@@ -41,4 +46,13 @@ export const selectAdjacencyMap = createSelector(
 	selectData,
 	selectScenarioName,
 	(data, scenarioName) => data ? new AdjacencyMap(data, scenarioName) : null
+);
+
+export const selectHashForCurrentState = createSelector(
+	selectScenarioName,
+	(scenarioName) => {
+		const result : URLHashArgs = {};
+		if (scenarioName != DEFAULT_SCENARIO_NAME) result.s = scenarioName;
+		return result;
+	}
 );
