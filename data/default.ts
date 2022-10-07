@@ -94,6 +94,14 @@ const data : RawMapDefinition = {
 		},
 
 	},
+	display: {
+		edgeCombiner: {
+			color: {
+				combine: 'color-mean',
+				value: 'input'
+			}
+		}
+	},
 	nodes: {
 		orient: {
 			description: 'A basic orientation calibration experience',
