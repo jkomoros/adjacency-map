@@ -85,7 +85,7 @@ const data : RawMapDefinition = {
 				}
 			},
 			display: {
-				color: 'yellow',
+				color: 'gold',
 				width: {
 					constant: 'weight'
 				},
