@@ -145,6 +145,7 @@ class MainView extends connect(store)(PageViewElement) {
 				<select id='scenarios' .value=${this._scenarioName} @change=${this._handleScenarioNameChanged}>
 					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName}>${scenarioName || 'Default'}</option>`)}
 				</select>` : ''}
+				<pre class='result'>Total: ${'\n' + this._adjacencyMap?.resultDescription() || ''}</pre>
 			</div>
 			<div class='container'>
 				${this._svg()}
