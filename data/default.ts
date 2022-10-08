@@ -19,7 +19,8 @@ const data : RawMapDefinition = {
 				color: 'red',
 				width: {
 					constant: 'weight'
-				}
+				},
+				distinct: true
 			},
 			implies: '*',
 			constants: {
@@ -41,7 +42,8 @@ const data : RawMapDefinition = {
 				color: 'blue',
 				width: {
 					constant: 'weight'
-				}
+				},
+				distinct: true
 			},
 			implies: '*',
 			constants: {
@@ -63,7 +65,8 @@ const data : RawMapDefinition = {
 				color: 'green',
 				width: {
 					constant: 'weight'
-				}
+				},
+				distinct: true
 			},
 			implies: '*',
 			constants: {
@@ -85,7 +88,8 @@ const data : RawMapDefinition = {
 				color: 'yellow',
 				width: {
 					constant: 'weight'
-				}
+				},
+				distinct: true
 			},
 			implies: '*',
 			constants: {
