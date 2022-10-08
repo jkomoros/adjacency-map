@@ -12,7 +12,9 @@ import {
 
 import {
 	selectFilename,
-	selectScale
+	selectLegalScenarioNames,
+	selectScale,
+	selectScenarioName
 } from '../selectors.js';
 
 import {
@@ -45,6 +47,34 @@ export const updateScale : AppActionCreator = (scale) => (dispatch, getState) =>
 		type: UPDATE_SCALE,
 		scale,
 	});
+};
+
+export const nextScenarioName : AppActionCreator = () => (dispatch, getState) => {
+	const state = getState();
+	const legalNames = selectLegalScenarioNames(state);
+	const currentName = selectScenarioName(state);
+	let result = 0;
+	for (let i = 0; i < legalNames.length; i++) {
+		result = i;
+		if (legalNames[i] == currentName) break;
+	}
+	result++;
+	if (result >= legalNames.length) result = legalNames.length - 1;
+	dispatch(updateScenarioName(legalNames[result]));
+};
+
+export const previousScenarioName : AppActionCreator = () => (dispatch, getState) => {
+	const state = getState();
+	const legalNames = selectLegalScenarioNames(state);
+	const currentName = selectScenarioName(state);
+	let result = 0;
+	for (let i = 0; i < legalNames.length; i++) {
+		result = i;
+		if (legalNames[i] == currentName) break;
+	}
+	result--;
+	if (result < 0) result = 0;
+	dispatch(updateScenarioName(legalNames[result]));
 };
 
 export const updateScenarioName = (scenarioName : ScenarioName) : AnyAction => {

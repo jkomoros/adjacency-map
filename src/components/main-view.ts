@@ -7,6 +7,8 @@ import { connect } from "pwa-helpers/connect-mixin.js";
 import { store } from "../store.js";
 
 import {
+	nextScenarioName,
+	previousScenarioName,
 	updateFilename,
 	updateScale,
 	updateScenarioName,
@@ -173,11 +175,31 @@ class MainView extends connect(store)(PageViewElement) {
 	}
 
 	override firstUpdated() {
+		document.addEventListener('keydown', e => this._handleKeyDown(e));
 		window.addEventListener('resize', () => this.resizeVisualization());
 		this.resizeVisualization();
 		store.dispatch(canonicalizePath());
 		window.addEventListener('hashchange', () => this._handleHashChange());
 		this._handleHashChange();
+	}
+
+	_handleKeyDown(e : KeyboardEvent) {
+		//We have to hook this to issue content editable commands when we're
+		//active. But most of the time we don't want to do anything.
+		if (!this.active) return;
+
+		//Don't trigger keyboard shortcuts if the user is editing a text field
+		for (const ele of e.composedPath()) {
+			if (!(ele instanceof HTMLElement)) continue;
+			if (ele.localName == 'input') return;
+			if (ele.localName == 'textarea') return;
+		}
+
+		if (e.key == 'ArrowRight') {
+			store.dispatch(nextScenarioName());
+		} else if (e.key == 'ArrowLeft') {
+			store.dispatch(previousScenarioName());
+		}
 	}
 
 	_handleHashChange() {
