@@ -731,7 +731,35 @@ value: {
 ```
 
 #### ValueDefinitionRange
+
+Returns the percentage between `low` and `high` that `range` is. The inverse of ValueDefinitionPercent.
+
+`low`, `high`, and `range` may all be ValueDefinitions.
+
+```
+value: {
+    range: [3, 4]
+    low: 1,
+    high: 5
+}
+//Evalutes to [0.25, 0.5]
+```
+
 #### ValueDefinitionPercent
+
+Returns a value that is `percent` of the way from `low` to `high`. The inverse of ValueDefinitionRange.
+
+`low`, `high`, and `percent` may all be ValueDefinitions.
+
+```
+value: {
+    percent: [0.25, 0.5],
+    low: 1,
+    high: 5
+}
+//Evalutes to [3, 4]
+```
+
 #### ValueDefinitionLengthOf
 #### ValueDefinitionInput
 #### ValueDefinitionCollect;
