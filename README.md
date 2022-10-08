@@ -760,9 +760,48 @@ value: {
 //Evalutes to [3, 4]
 ```
 
-#### ValueDefinitionLengthOf
 #### ValueDefinitionInput
-#### ValueDefinitionCollect;
+
+When ValueDefinitions are used as PropetyDefinition.value, the variable inputs are typical via ValueDefinitionConstant, ValueDefinitionResult, or ValueDefinitionRef. But in other contexts, there may be special input passed, for example MapDefinition.display.edgeCombiner properties.
+
+This is the way to retrieving that supplemental input specific to the context. The documentation for each context will define what the input will be in that context. In contexts with no input, it's equivalent to `[null]`.
+
+```
+value: 'input'
+```
+
+#### ValueDefinitionLengthOf
+
+Extends the input to be the same length as `edges`, `input`, or `refs`. This is useful in `display.edge` and `display.edgeCombiner` contexts where the number of returned values is important. 
+
+`input` may be any ValueDefinition.
+
+```
+value: {
+    //In this example, assume input has 4 items
+    lengthOf: 'input',
+    input: [0, 1]
+}
+//Evaluates to [0, 1, 0, 1]
+```
+
+#### ValueDefinitionCollect
+
+Combines multiple input arrays into one longer array.
+
+`collect` is an array of ValueDefinitions with at least one item.
+
+```
+value: {
+    collect: [
+        //For this example, assume input is [0, 1]
+        'input',
+        3,
+        [4, 5]
+    ]
+}
+//Evalutes to [0,1,3,4,5]
+```
 
 ## Display
 
