@@ -362,6 +362,23 @@ edges: {
 
 ### Implied edges
 
+Typically edges are explicitly listed for each source/ref/type combination of nodes and type. However, sometimes you want the precense of one property type between a source/ref node pair to imply into existence other values, so those other property's value calculation can rely on that ref, too.
+
+This where edge implication comes in. A given node can define an `ImplicationConfiguration`. A given PropertyDefinition can also define an implies configuration, which implicitly extends to all edges of that type.
+
+An `ImplicationConfiguration` defines the set of other property names to imply into existence. The default form is simply a list of other property names:
+```
+implies: [one, two]
+```
+
+When the engine sees an `implies` configuration, it looks at all of the edges explicitly enumerated for a given source/ref node pair. If there are any edge types that are implied in the union of all explicit edges' `implies` property but not explicitly included then an edge is implied into existence for that source/ref/type. It will use the default values for constants, and also have `edge.implied` set to true.
+
+There are a few other ways to define implications.
+
+One is a value of `*`, which means, "imply all edge types that don't explicitly opt out via `excludeFromDefaultImplication`". This is useful in libraries and other contexts where the full set of property types isn't known.
+
+Finally, there is a type that allows you to *exclude* specific implications: `{exclude: [one]}`, which would be equivalent to including all edges in the implication set and then removing that type. Remember that the full set of edges to imply between a source/ref pair is the *union* of all `implies` property.
+
 ## Value Definitions
 
 ### Array calculation
