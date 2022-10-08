@@ -467,6 +467,131 @@ Colors are also represented as numbers within valueDefintion. Different ValueDef
 
 ### Value Definition Reference
 
+This section describes each ValueDefintion type.
+
+#### ValueDefinitionLeaf
+
+A ValueDefinititionLeaf is a number, true, false, or null.
+
+true, false, and null all expand to specific sentinel numeric values as described above.
+
+Technically this is semantic sugar over ValueDefinitionLeaf[], which is the fundamental type.
+
+```
+value: 3
+//Evaluates to [3]
+value: true
+//Evaluates to [1]
+value: false
+//Evalutes to [0]
+value: null
+//Evalutes to [NULL_SENTINEL_NUMBER]
+```
+
+#### ValueDefinitionLeaf[]
+
+A ValueDefinitionLeaf[], which expands to number[], is the fundamental type.
+
+```
+value: [3, true, false, null]
+//Evaluates to [3, 1, 0, NULL_SENTINEL_NUMBER]
+```
+
+#### ValueDefintionEdgeConstant
+
+Selects a specific named constant from a given edge type. It extracts the named constant for each of the edges provided in this context.
+
+This is only valid in contexts that provide a set of edges (e.g. `property.value`, which provides a set of edges to different refs all of one property type). Unknown constant names will throw an error.
+
+```
+//Default for one is '3'
+edges: [
+    {
+        type: 'one',
+        //Will implicitly use default value for this node type
+    },
+    {
+        type: 'one',
+        weight: 5
+    }
+]
+value: {
+    constant: 'weight'
+}
+//Evalues to, for example, [3, 5]
+```
+
+#### ValueDefinitionRefValue
+
+Selects a final computed value out of the parent node for an edge (the 'ref'). Only defined PropertyNames may be used. Selects one number per node referenced.
+```
+nodes: {
+    a: {
+        values: {
+            one: 3
+        }
+    },
+    b: {
+        values: {
+            one: 5
+        }
+    }
+
+}
+edges: [
+    {
+        type: 'one',
+        ref: 'a'
+    },
+    {
+        type: 'one',
+        ref: 'b'
+    }
+]
+value: {
+    //Selects the property named 'one' for each node with an edge of this property type
+    ref: 'one'
+}
+//Evalutes to [3, 5]
+```
+
+#### ValueDefinitionRootValue
+
+Selects the value from the root node. Useful for having defaults for a given property. Only defined PropertyNames may be used. Returns an array of a single number, since there's only one root.
+```
+root: {
+    one: 3
+}
+value: {
+    root: 'one'
+}
+//Evalutes to [3]
+```
+
+#### ValueDefinitionResultValue
+
+Selects the named value from the node we are currently calculating. This allows properties to rely on the final values of other properties. That means that those other properties have to have their values calculated before this property is calculated. Properties may not have circular references to themselves directly or indirectly.
+
+```
+value: {
+    result: 'two'
+}
+//Evalutes to, for example, [3]
+```
+
+#### ValueDefinitionCombine
+#### ValueDefinitionColor
+#### ValueDefinitionArithmetic
+#### ValueDefinitionIf
+#### ValueDefinitionFilter
+#### ValueDefinitionCompare
+#### ValueDefinitionClip
+#### ValueDefinitionRange
+#### ValueDefinitionPercent
+#### ValueDefinitionLengthOf
+#### ValueDefinitionInput
+#### ValueDefinitionCollect;
+
 ## Display
 
 ### Color shorthand
