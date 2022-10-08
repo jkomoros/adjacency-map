@@ -124,6 +124,27 @@ const data : RawMapDefinition = {
 				}
 			]
 		},
+		extended_infer_gui: {
+			description: 'Extend gui to also use the model with more images',
+			edges: {
+				base_infer_gui: [
+					{
+						type: 'engineering',
+						weight: 2.0
+					},
+					{
+						type: 'ux',
+						weight: 3.0
+					}
+				],
+				extended_infer: [
+					{
+						type: 'engineering',
+						weight: 2.0
+					}
+				]
+			}
+		},
 		extended_infer : {
 			description: 'Train on a larger corpus of images',
 			edges: [
@@ -153,6 +174,48 @@ const data : RawMapDefinition = {
 					weight: 5.0
 				}
 			]
+		},
+		im_to_im_infer_gui : {
+			description: 'Allow image to image transfer in the gui',
+			edges: {
+				base_infer_gui: [
+					{
+						type: 'engineering',
+						weight: 1.0
+					},
+					{
+						type: 'ux',
+						weight: 5.0
+					}
+				],
+				im_to_im_infer: [
+					{
+						type: 'engineering',
+						weight: 2.0
+					}
+				]
+			}
+		},
+		extended_im_to_im_infer_gui: {
+			description: "GUI allows both image to image transfer on the extened model",
+			edges: {
+				im_to_im_infer_gui: [
+					{
+						type: 'engineering',
+						weight: 1.0
+					},
+					{
+						type: 'ux',
+						weight: 3.0
+					}
+				],
+				extended_infer_gui: [
+					{
+						type: 'engineering',
+						weight: 1.0
+					}
+				]
+			}
 		}
 	}
 };
