@@ -2,98 +2,61 @@ import {
 	RawMapDefinition
 } from '../src/types.js';
 
+const basePropertyDefinition = {
+	value: {
+		operator: '+',
+		a: {
+			ref: '.'
+		},
+		b: {
+			constant: 'weight'
+		}
+	},
+	display: {
+		color: 'red',
+		width: {
+			constant: 'weight'
+		},
+		distinct: true
+	},
+	implies: '*',
+	constants: {
+		weight: 0.0
+	}
+} as const;
+
 const data : RawMapDefinition = {
 	properties: {
 		engineering: {
+			...basePropertyDefinition,
 			description: 'The amount of engineering effort to build to this use case',
-			value: {
-				operator: '+',
-				a: {
-					ref: '.'
-				},
-				b: {
-					constant: 'weight'
-				}
-			},
 			display: {
-				color: 'red',
-				width: {
-					constant: 'weight'
-				},
-				distinct: true
-			},
-			implies: '*',
-			constants: {
-				weight: 0.0
+				...basePropertyDefinition.display,
+				color: 'red'
 			}
 		},
 		ux: {
+			...basePropertyDefinition,
 			description: 'The amount of ux effort to build to this use case',
-			value: {
-				operator: '+',
-				a: {
-					ref: '.'
-				},
-				b: {
-					constant: 'weight'
-				}
-			},
 			display: {
-				color: 'blue',
-				width: {
-					constant: 'weight'
-				},
-				distinct: true
-			},
-			implies: '*',
-			constants: {
-				weight: 0.0
+				...basePropertyDefinition.display,
+				color: 'blue'
 			}
 		},
 		data: {
+			...basePropertyDefinition,
 			description: 'The amount of effort to build up data quality to build to this use case',
-			value: {
-				operator: '+',
-				a: {
-					ref: '.'
-				},
-				b: {
-					constant: 'weight'
-				}
-			},
 			display: {
-				color: 'green',
-				width: {
-					constant: 'weight'
-				},
-				distinct: true
-			},
-			implies: '*',
-			constants: {
-				weight: 0.0
+				...basePropertyDefinition.display,
+				color: 'green'
 			}
 		},
 		usage: {
+			...basePropertyDefinition,
 			description: 'The amount of effort required to modify usage behaviors and expectations activate this use case',
-			value: {
-				operator: '+',
-				a: {
-					ref: '.'
-				},
-				b: {
-					constant: 'weight'
-				}
-			},
 			display: {
-				color: 'gold',
-				width: {
-					constant: 'weight'
-				},
-				distinct: true
-			},
-			implies: '*',
-			constants: {
-				weight: 0.0
+				...basePropertyDefinition.display,
+				color: 'gold'
 			}
 		},
 
