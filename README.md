@@ -672,8 +672,64 @@ value: {
 ```
 
 #### ValueDefinitionFilter
+
+Returns a new array where the only numbers of `input` are included if the corresponding index of `filter` are truthy.
+
+If all numbers are filtered away, it will return `[null]`, since all number arrays must have at least one argument.
+
+`input` and `filter` may be any ValueDefinition.
+
+```
+value: {
+    input: [3, 4, 5],
+    //Effetively [0,1,0]
+    filter: [0, 1]
+}
+//Evaluates to [4]
+```
+
 #### ValueDefinitionCompare
+
+Compares `a` and `b` at each index, and returns a result tied to the comparison operator, `1` if the comparison is true, and `0` if false.
+
+`a` and `b` may be any ValueDefinition.
+
+Valid operators are: '==' | '!=' | '<' | '>' | '<=' | '>='
+
+```
+value: {
+    compare: '<',
+    a: [3, 4, 5],
+    b: [0, 10, 8]
+}
+//Evalutes to [0, 1, 1]
+```
+
 #### ValueDefinitionClip
+
+Clips `input` to be at least `low` and at most `high`. Either `low` or `high` may be omitted. 
+
+`input`, `low`, `high` may be any ValueDefinition.
+
+```
+value: {
+    input: [-1, 5, 10],
+    low: [0, 1]
+}
+//Evalutes to: [0, 5, 10]
+value: {
+    input: [-1, 5, 10],
+    high: [5, 4]
+}
+//Evalutes to [-1, 4, 5]
+value: {
+    input: [-1, 5, 10],
+    low: 0,
+    high: 6
+}
+//Evalutes to [0, 5, 6]
+```
+
 #### ValueDefinitionRange
 #### ValueDefinitionPercent
 #### ValueDefinitionLengthOf
