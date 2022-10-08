@@ -244,6 +244,27 @@ export type RawEdgeValue = {
 	[constant : ConstantType]: undefined | ValueDefinitionLeaf | PropertyName | NodeID | ImpliesConfiguration;
 };
 
+//Omit<> doesn't work for this because of the final index signature
+type RawEdgeValueNoRef = {
+	type: PropertyName,
+	implies? : ImpliesConfiguration,
+	[constant : ConstantType]: undefined | ValueDefinitionLeaf | PropertyName | NodeID | ImpliesConfiguration;
+}
+
+//Omit<> doesn't work for this because of the final index signature
+type RawEdgeValueNoRefNoType = {
+	implies? : ImpliesConfiguration,
+	[constant : ConstantType]: undefined | ValueDefinitionLeaf | PropertyName | NodeID | ImpliesConfiguration;
+}
+
+export type RawEdgeTypeMap = {
+	[propertyName : PropertyName]: RawEdgeValueNoRefNoType[] | RawEdgeValueNoRefNoType
+};
+
+export type RawEdgeMap = {
+	[ref : NodeID]: RawEdgeValueNoRef[] | RawEdgeTypeMap;
+};
+
 export type EdgeValue = {
 	//Any of the exlicitly enumerated properties should be added to
 	//RESERVED_VALUE_DEFINITION_PROPERTIES
@@ -293,7 +314,7 @@ export type TreeGraph = {
 export type RawNodeDefinition = {
 	description: string,
 	display?: Partial<NodeDisplay>,
-	edges?: RawEdgeValue[],
+	edges?: RawEdgeValue[] | RawEdgeMap,
 	//If any values are provided here, they will be set on the node, overriding
 	//any other edge values that or root values.
 	values? : RawNodeValues,

@@ -2,7 +2,8 @@
 
 import {
 	AdjacencyMap,
-	extractSimpleGraph
+	extractSimpleGraph,
+	processMapDefinition
 } from '../../src/adjacency-map.js';
 
 import {
@@ -4184,4 +4185,213 @@ describe('scenarios', () => {
 		assert.deepStrictEqual(nodeB.values.ux, 10.0);
 	});
 
+});
+
+describe('edgeDefinition ergonomics', () => {
+	it('baseline', async () => {
+		const input = {
+			properties: {
+				engineering: {
+					value: 3,
+					constants: {
+						weight: 1.0
+					}
+				},
+				ux: {
+					value: 4,
+					description: "A description of ux"
+				},
+			},
+			nodes: {
+				a: {
+					description: "Node a",
+					edges: [
+						{
+							type: "engineering",
+							weight: 4.0
+						},
+						{
+							type: "engineering"
+						}
+					]
+				},
+				b: {
+					description: "Node b",
+				}
+			}
+		};
+		const goldenNodeA = {
+			description: "Node a",
+			display: {},
+			edges: [
+				{
+					type: "engineering",
+					weight: 4.0
+				},
+				{
+					type: "engineering"
+				}
+			],
+			values: {}
+		};
+		const actualFull = processMapDefinition(input);
+		const actualNodeA = actualFull.nodes.a;
+		assert.deepStrictEqual(actualNodeA, goldenNodeA);
+	});
+
+	it('ref with array', async () => {
+		const input = {
+			properties: {
+				engineering: {
+					value: 3,
+					constants: {
+						weight: 1.0
+					}
+				},
+				ux: {
+					value: 4,
+					description: "A description of ux"
+				},
+			},
+			nodes: {
+				a: {
+					description: "Node a",
+					edges: {
+						'': [
+							{
+								type: "engineering",
+								weight: 4.0
+							},
+							{
+								type: "engineering"
+							}
+						]
+					}
+				},
+				b: {
+					description: "Node b",
+				}
+			}
+		};
+		const goldenNodeA = {
+			description: "Node a",
+			display: {},
+			edges: [
+				{
+					ref: '',
+					type: "engineering",
+					weight: 4.0
+				},
+				{
+					ref: '',
+					type: "engineering"
+				}
+			],
+			values: {}
+		};
+		const actualFull = processMapDefinition(input);
+		const actualNodeA = actualFull.nodes.a;
+		assert.deepStrictEqual(actualNodeA, goldenNodeA);
+	});
+
+	it('ref with map with array', async () => {
+		const input = {
+			properties: {
+				engineering: {
+					value: 3,
+					constants: {
+						weight: 1.0
+					}
+				},
+				ux: {
+					value: 4,
+					description: "A description of ux"
+				},
+			},
+			nodes: {
+				a: {
+					description: "Node a",
+					edges: {
+						'': {
+							'engineering': [
+								{
+									weight: 4.0
+								},
+								{}
+							]
+						}
+					}
+				},
+				b: {
+					description: "Node b",
+				}
+			}
+		};
+		const goldenNodeA = {
+			description: "Node a",
+			display: {},
+			edges: [
+				{
+					ref: '',
+					type: "engineering",
+					weight: 4.0
+				},
+				{
+					ref: '',
+					type: "engineering"
+				}
+			],
+			values: {}
+		};
+		const actualFull = processMapDefinition(input);
+		const actualNodeA = actualFull.nodes.a;
+		assert.deepStrictEqual(actualNodeA, goldenNodeA);
+	});
+
+	it('ref with map with single item', async () => {
+		const input = {
+			properties: {
+				engineering: {
+					value: 3,
+					constants: {
+						weight: 1.0
+					}
+				},
+				ux: {
+					value: 4,
+					description: "A description of ux"
+				},
+			},
+			nodes: {
+				a: {
+					description: "Node a",
+					edges: {
+						'': {
+							'engineering': {
+								weight: 4.0
+							}
+						}
+					}
+				},
+				b: {
+					description: "Node b",
+				}
+			}
+		};
+		const goldenNodeA = {
+			description: "Node a",
+			display: {},
+			edges: [
+				{
+					ref: '',
+					type: "engineering",
+					weight: 4.0
+				}
+			],
+			values: {}
+		};
+		const actualFull = processMapDefinition(input);
+		const actualNodeA = actualFull.nodes.a;
+		assert.deepStrictEqual(actualNodeA, goldenNodeA);
+	});
 });

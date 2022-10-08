@@ -25,7 +25,8 @@ import {
 	ImpliesConfiguration,
 	ScenariosDefinition,
 	Scenario,
-	ScenarioName
+	ScenarioName,
+	RawNodeDefinition
 } from './types.js';
 
 import {
@@ -97,9 +98,69 @@ export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 	return result;
 };
 
+//There are a number of different ways to conveniently define edges, this
+//function converts all of them to the base type.
+const extractEdgesFromRawNodeDefinition = (nodeData : RawNodeDefinition) : EdgeValue[] => {
+	if (!nodeData.edges) return [];
+	const edges : EdgeValue [] = [];
+	if (Array.isArray(nodeData.edges)) {
+		for (const rawValue of nodeData.edges) {
+			const value : EdgeValue = {type: rawValue.type};
+			if (rawValue.ref != undefined) value.ref = rawValue.ref;
+			if (rawValue.implies != undefined) value.implies = rawValue.implies;
+			for (const entry of Object.entries(rawValue)) {
+				if (RESERVED_VALUE_DEFINITION_PROPERTIES[entry[0]]) continue;
+				const val = entry[1] as ValueDefinition;
+				if (!valueDefinitionIsLeaf(val)) continue;
+				value[entry[0]] = calculateValueLeaf(val);
+			}
+			edges.push(value);
+		}
+	} else {
+		for (const [ref, refData] of Object.entries(nodeData.edges)) {
+			if (Array.isArray(refData)) {
+				for (const rawValue of refData) {
+					const value : EdgeValue = {
+						type: rawValue.type,
+						ref
+					};
+					if (rawValue.implies != undefined) value.implies = rawValue.implies;
+					for (const entry of Object.entries(rawValue)) {
+						if (RESERVED_VALUE_DEFINITION_PROPERTIES[entry[0]]) continue;
+						const val = entry[1] as ValueDefinition;
+						if (!valueDefinitionIsLeaf(val)) continue;
+						value[entry[0]] = calculateValueLeaf(val);
+					}
+					edges.push(value);
+				}
+			} else {
+				for (const [type, rawValues] of Object.entries(refData)) {
+					const iterValues = Array.isArray(rawValues) ? rawValues : [rawValues];
+					for (const rawValue of iterValues) {
+						const value : EdgeValue = {
+							type,
+							ref
+						};
+						if (rawValue.implies != undefined) value.implies = rawValue.implies;
+						for (const entry of Object.entries(rawValue)) {
+							if (RESERVED_VALUE_DEFINITION_PROPERTIES[entry[0]]) continue;
+							const val = entry[1] as ValueDefinition;
+							if (!valueDefinitionIsLeaf(val)) continue;
+							value[entry[0]] = calculateValueLeaf(val);
+						}
+						edges.push(value);
+					}
+				}
+			}
+		}
+	}
+	return edges;
+};
+
 //Does things like include libraries, convert Raw* to * (by calculateValueLeaf
 //on any constants, etc)
-const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
+//Exported for use in tests
+export const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 	let baseImports : LibraryType[] = [];
 	if (data.import) {
 		if (typeof data.import == 'string') {
@@ -156,21 +217,7 @@ const processMapDefinition = (data : RawMapDefinition) : MapDefinition => {
 	}
 	const nodes : {[id : NodeID]: NodeDefinition} = {};
 	for (const [id, rawNode] of Object.entries(data.nodes)) {
-		const edges : EdgeValue[] = [];
-		if (rawNode.edges) {
-			for (const rawValue of rawNode.edges) {
-				const value : EdgeValue = {type: rawValue.type};
-				if (rawValue.ref != undefined) value.ref = rawValue.ref;
-				if (rawValue.implies != undefined) value.implies = rawValue.implies;
-				for (const entry of Object.entries(rawValue)) {
-					if (RESERVED_VALUE_DEFINITION_PROPERTIES[entry[0]]) continue;
-					const val = entry[1] as ValueDefinition;
-					if (!valueDefinitionIsLeaf(val)) continue;
-					value[entry[0]] = calculateValueLeaf(val);
-				}
-				edges.push(value);
-			}
-		}
+		const edges : EdgeValue[] = extractEdgesFromRawNodeDefinition(rawNode);
 		const rawNodeDisplay = rawNode.display || {};
 		const rawValues = rawNode.values || {};
 		const values = Object.fromEntries(Object.entries(rawValues).map(entry => [entry[0], calculateValueLeaf(entry[1])]));
