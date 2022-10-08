@@ -846,6 +846,8 @@ For each source/ref/type tuple, a ValueDefintion of property `distinct` is also 
 
 Now, we have an array of final edges, and a bundle of edges to combine, possibly of different types. For each source/ref pair, we take all of the edges produced by the earlier step and pass them to the `edgeCombiner` ValueDefintiions. In this context, the input from the previous step is available as the `ValueDefintiinInput` input value. Again, the final length of the array returned from this step defines how many edges to render (with the longest property defining the target length, and other properties being wrapped around to be long enough).
 
+The behavior of how edge collapsing works means that if *any* of the properties returns an array of more than one number, then those edges will not be collapsed.
+
 If any of these display properties are omitted, they are set to the defaults you can see at the top of `src/libraries.ts`.
 
 Any edge that has a width of 0 will be culled from the final set.
