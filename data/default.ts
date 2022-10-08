@@ -9,7 +9,7 @@ const data : RawMapDefinition = {
 			value: {
 				operator: '+',
 				a: {
-					ref: 'engineering'
+					ref: '.'
 				},
 				b: {
 					constant: 'weight'
@@ -32,7 +32,7 @@ const data : RawMapDefinition = {
 			value: {
 				operator: '+',
 				a: {
-					ref: 'ux'
+					ref: '.'
 				},
 				b: {
 					constant: 'weight'
@@ -55,7 +55,7 @@ const data : RawMapDefinition = {
 			value: {
 				operator: '+',
 				a: {
-					ref: 'data'
+					ref: '.'
 				},
 				b: {
 					constant: 'weight'
@@ -78,7 +78,7 @@ const data : RawMapDefinition = {
 			value: {
 				operator: '+',
 				a: {
-					ref: 'usage'
+					ref: '.'
 				},
 				b: {
 					constant: 'weight'
