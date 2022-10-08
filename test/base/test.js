@@ -726,35 +726,6 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('allows a dependency on another', async () => {
-		const input = deepCopy(legalBaseInput);
-		input.properties.engineering.dependencies = ['ux'];
-		const errorExpected = false;
-		const fn = () => {
-			new AdjacencyMap(input);
-		};
-		if (errorExpected) {
-			assert.throws(fn);
-		} else {
-			assert.doesNotThrow(fn);
-		}
-	});
-
-	it('allows a dependency on another that has a dependency', async () => {
-		const input = deepCopy(legalBaseInput);
-		input.properties.engineering.dependencies = ['ux'];
-		input.properties.ux.dependencies = ['data'];
-		const errorExpected = false;
-		const fn = () => {
-			new AdjacencyMap(input);
-		};
-		if (errorExpected) {
-			assert.throws(fn);
-		} else {
-			assert.doesNotThrow(fn);
-		}
-	});
-
 	it('allows a value defintion of type ResultValue that has a dependency', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.root = {data: 12};
@@ -2629,9 +2600,7 @@ engineering: 3`;
 
 	it('Tests a ResultValue ref calculation', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.properties.data.dependencies = ['engineering'];
 		input.properties.data.value = {result: 'engineering'};
-		input.properties.engineering.dependencies = ['ux'];
 		input.properties.engineering.value = {result: 'ux'};
 		input.root = {'ux': 12};
 		const map = new AdjacencyMap(input);
@@ -2652,9 +2621,7 @@ engineering: 3`;
 
 	it('Tests a ResultValue ref calculation with two edges', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.properties.data.dependencies = ['engineering'];
 		input.properties.data.value = {result: 'engineering'};
-		input.properties.engineering.dependencies = ['ux'];
 		input.properties.engineering.value = {result: 'ux'};
 		input.nodes.a.edges.push({type: 'data'});
 		input.root = {'ux': 12};
