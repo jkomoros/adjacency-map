@@ -381,7 +381,64 @@ Finally, there is a type that allows you to *exclude* specific implications: `{e
 
 ## Value Definitions
 
+ValueDefinitions are the way a given `property.value` is configured. They are expressions that may nest arbitrarily and can be calculated.
+
+They are also used in a lot of the `display` contexts (see 'Display', below).
+
 ### Array calculation
+
+On a fundamental level, ValueDefinitions produce an array of at least one number as their result, based on their configuration.
+
+This is necessary because in many contexts there are multiple numbers to operate over, for example if there are multiple edges of a given property type on a node, which means that any ValueDefinition that references those ref parents or constants of a given type on edges will receive multiple inputs.
+
+The simplest ValueDefinition is an array of numbers:
+```
+value: [0, 1, 2]
+```
+
+Its common to have an array with only one item, in which case as syntactic sugar it may be provided as just one number:
+```
+//Equivalent to [0]
+value: 0
+```
+
+ValueDefinitions also sometimes nest other ValueDefinitions inside of them, and those also return arrays of numbers with at least one item.
+
+```
+{
+    compare: '==',
+    a: [0, 1, 2],
+    b: [0, 1, 3]
+}
+//Produces [1, 1, 0]
+```
+
+In general, all ValueDefinitions handle arrays by doing their specific operation on each array item in sequence. Often if there are multiple arguments, then it operates on the item of each at each index in turn. If any array is longer than another, then only part of its values are used. If it's too short, then its indexing wraps around to the beginning when it falls off the edge. Here are a few examples:
+
+```
+{
+    operator: '+',
+    a: [0, 1, 2],
+    b: [1, 2, 3]
+}
+//Produces [1, 3, 5]
+
+{
+    operator: '+',
+    a: [0, 1, 2],
+    b: [1, 2]
+}
+//Produces [1, 3, 3]. b is effectively [1, 2, 1].
+
+{
+    operator: '+',
+    a: [0, 1, 2],
+    b: 1
+}
+//Produces [1, 2, 3], because be is effectively [1, 1, 1]
+```
+
+In practice, you typically don't have to think too hard about arrays because the right thing happens. ValueDefinition documentation doesn't mention anything about wrapping around values if necessary, because it's implied. Although which of the arguments provides the length of its output is often described.
 
 ### Combiner
 
@@ -399,4 +456,4 @@ Finally, there is a type that allows you to *exclude* specific implications: `{e
 
 ## Scenarios
 
-## Libaries
+## Libraries
