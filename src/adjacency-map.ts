@@ -446,6 +446,21 @@ export class AdjacencyMap {
 		return this._scenarioData(this.scenarioName);
 	}
 
+	get result() : NodeValues {
+		const result = Object.fromEntries(this.propertyNames.map(typ => [typ, 0.0]));
+		for (const node of Object.values(this.nodes)) {
+			for (const propertyName of this.propertyNames) {
+				result[propertyName] += node.values[propertyName];
+			}
+		}
+		return result;
+	}
+
+	resultDescription(includeHidden = false) : string {
+		const filter = includeHidden ? () => true : (entry : [PropertyName, number] ) => !this.data.properties[entry[0]].hide;
+		return Object.entries(this.result).filter(filter).map(entry => entry[0] + ': ' + entry[1]).join('\n');
+	}
+
 	//An opportunity to throw out any caches that are now invalidated
 	_scenarioChanged(from : ScenarioName) {
 		const fromScenario = this._scenarioData(from);
