@@ -811,6 +811,27 @@ The display definitions have a collection of ValueDefinitions that are evaluated
 
 Display blocks can be defined at the top level at map.display, for type `node`, `edge`, and `edgeCombiner`, and those serve as defaults for every node and edge. Individual `node` and `PropertyDefinition` also have a `display` paramter for overriding the display of just that edge or display.
 
+Because the properties are the same for every node, or for every edge of a given property, and since they can't reference one another, typically the value definitions are either constants or just reference a given property, and then the final result varies with those underlying values.
+
+```
+{
+    //...
+    display: {
+        node: {
+            radius: {
+                result: 'value'
+            }
+        },
+        edge: {
+            width: {
+                constant: 'weight'
+            }
+        }
+    }
+    //...
+}
+```
+
 ### Color shorthand
 
 Each of `NodeDisplay`, `EdgeDisplay`, and `EdgeCombinerDisplay` arguments have a `color` value definition. In those cases, it's very common to have a single `color` ValueDefinition. If the value is a string, it is interpreted as being equivalent to `{color: STRING}`.
