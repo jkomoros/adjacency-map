@@ -358,11 +358,6 @@ export type RawPropertyDefinition = {
 	//a single number. This reducer will be used for that final reduction, to
 	//produce the final number to use. If not provided, defaults to 'mean'
 	combine? : CombinerType,
-	//If provided, these are the enumerated set of other edges that this edge's
-	//value can rely on. Note that they may not form a cycle. Only items
-	//enumerated here may be used in this edge's ValueDefinition when it is of
-	//type ValueDefintiionResultValue.
-	dependencies? : PropertyName[],
 	//If present, then when edges of this type exist between a source and ref it
 	//will imply that at least one edge of each other type should also exist...
 	//using defaulted ones if necessary. Edges added by implication will not
@@ -384,7 +379,7 @@ export type PropertyDefinition = {
 	description?: string,
 	usage?: string,
 	combine?: CombinerType,
-	dependencies? : PropertyName[],
+	dependencies : PropertyName[],
 	implies? : ImpliesConfiguration,
 	excludeFromDefaultImplication : boolean,
 	hide? : true,

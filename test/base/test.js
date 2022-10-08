@@ -685,38 +685,14 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('barfs for dependency on a non-existent edge', async () => {
-		const input = deepCopy(legalBaseInput);
-		input.properties.engineering.dependencies = ['foo'];
-		const errorExpected = true;
-		const fn = () => {
-			new AdjacencyMap(input);
-		};
-		if (errorExpected) {
-			assert.throws(fn);
-		} else {
-			assert.doesNotThrow(fn);
-		}
-	});
-
-	it('barfs for dependency on self', async () => {
-		const input = deepCopy(legalBaseInput);
-		input.properties.engineering.dependencies = ['engineering'];
-		const errorExpected = true;
-		const fn = () => {
-			new AdjacencyMap(input);
-		};
-		if (errorExpected) {
-			assert.throws(fn);
-		} else {
-			assert.doesNotThrow(fn);
-		}
-	});
-
 	it('barfs for a dependency on a thing that depends directly on us', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.properties.engineering.dependencies = ['ux'];
-		input.properties.ux.dependencies = ['engineering'];
+		input.properties.engineering.value = {
+			result: 'ux'
+		};
+		input.properties.ux.value = {
+			result: 'engineering'
+		};
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -730,9 +706,15 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a dependency on a thing that indirectly directly on us', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.properties.engineering.dependencies = ['ux'];
-		input.properties.ux.dependencies = ['data'];
-		input.properties.data.dependencies = ['engineering'];
+		input.properties.engineering.value = {
+			result: 'ux'
+		};
+		input.properties.ux.value = {
+			result: 'data'
+		};
+		input.properties.data.value = {
+			result: 'engineering'
+		};
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -773,27 +755,11 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('allows a value defintion of type ResultValue that lists the dependency', async () => {
+	it('allows a value defintion of type ResultValue that has a dependency', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.root = {data: 12};
-		input.properties.engineering.dependencies = ['data'];
 		input.properties.engineering.value = {result: 'data'};
 		const errorExpected = false;
-		const fn = () => {
-			new AdjacencyMap(input);
-		};
-		if (errorExpected) {
-			assert.throws(fn);
-		} else {
-			assert.doesNotThrow(fn);
-		}
-	});
-
-	it('barfs on a value defintion of type ResultValue that does not list the dependency', async () => {
-		const input = deepCopy(legalBaseInput);
-		input.root = {data: 12};
-		input.properties.engineering.value = {result: 'data'};
-		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
 		};
@@ -837,13 +803,13 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('barfs on a value defintion that includes a result ref without declared dependency', async () => {
+	it('allows a value defintion that includes a result ref', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
 			combine: 'min',
 			value: { result: 'ux' }
 		};
-		const errorExpected = true;
+		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
 		};
@@ -2649,8 +2615,12 @@ engineering: 3`;
 
 	it('Correctly sorts propertyNames', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.properties.data.dependencies = ['engineering'];
-		input.properties.engineering.dependencies = ['ux'];
+		input.properties.data.value = {
+			result: 'engineering'
+		};
+		input.properties.engineering.value ={
+			result: 'ux'
+		};
 		const map = new AdjacencyMap(input);
 		const actual = map.propertyNames;
 		const golden = ['ux', 'engineering', 'data'];

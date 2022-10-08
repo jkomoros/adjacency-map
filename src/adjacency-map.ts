@@ -56,6 +56,7 @@ import {
 import {
 	calculateValue, 
 	calculateValueLeaf, 
+	extractRequiredDependencies, 
 	RESERVED_VALUE_DEFINITION_PROPERTIES, 
 	validateValueDefinition,
 	valueDefinitionIsLeaf,
@@ -205,8 +206,10 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 	const properties : {[name : PropertyName] : PropertyDefinition} = {};
 	for (const [name, rawDefinition] of Object.entries(combinedProperties)) {
 		const rawEdgeDisplay = rawDefinition.display || {};
+		const dependencies = extractRequiredDependencies(rawDefinition.value);
 		const definition : PropertyDefinition = {
 			...rawDefinition,
+			dependencies,
 			excludeFromDefaultImplication: !! rawDefinition.excludeFromDefaultImplication,
 			display: {
 				...rawEdgeDisplay

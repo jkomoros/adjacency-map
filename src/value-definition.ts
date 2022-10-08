@@ -26,7 +26,8 @@ import {
 	ValueDefinitionColor,
 	ValueDefinitionLengthOf,
 	ValueDefinitionInput,
-	ValueDefinitionFilter
+	ValueDefinitionFilter,
+	PropertyName
 } from './types.js';
 
 import {
@@ -200,6 +201,117 @@ const valueDefinitionIsLengthOf = (definition : ValueDefinition): definition is 
 const valueDefinitionIsInput = (definition : ValueDefinition): definition is ValueDefinitionInput => {
 	if( typeof definition == 'string' && definition == 'input') return true;
 	return false;
+};
+
+const listNestedDefinitions = (definition : ValueDefinition) : ValueDefinition[] => {
+	if (valueDefinitionIsLeaf(definition)) return [definition];
+	if (typeof definition == 'object' && Array.isArray(definition)) {
+		return [definition];
+	}
+	if (valueDefintionIsEdgeConstant(definition)) {
+		return [definition];
+	}
+	if (valueDefintionIsRefValue(definition)) {
+		return [definition];
+	}
+	if (valueDefintionIsRootValue(definition)) {
+		return [definition];
+	}
+	if (valueDefintionIsResultValue(definition)) {
+		return [definition];
+	}
+
+	if (valueDefintionIsCombine(definition)) {
+		return [definition, ...listNestedDefinitions(definition.value)];
+	}
+
+	if (valueDefintionIsColor(definition)) {
+		return [definition];
+	}
+
+	if (valueDefinitionIsArithmetic(definition)) {
+		const result = [definition, ...listNestedDefinitions(definition.a)];
+		if (!arithmeticIsUnary(definition)) result.push(...listNestedDefinitions(definition.b));
+		return result;
+	}
+
+	if (valueDefinitionIsCompare(definition)) {
+		return [definition, ...listNestedDefinitions(definition.a), ...listNestedDefinitions(definition.b)];
+	}
+
+	if (valueDefinitionIsIf(definition)) {
+		return [
+			definition,
+			...listNestedDefinitions(definition.if),
+			...listNestedDefinitions(definition.then),
+			...listNestedDefinitions(definition.else)
+
+		];
+	}
+
+	if (valueDefinitionIsFilter(definition)) {
+		return [
+			definition,
+			...listNestedDefinitions(definition.filter),
+			...listNestedDefinitions(definition.value)
+		];
+	}
+
+	if (valueDefinitionIsClip(definition)) {
+		const result = [definition, ...listNestedDefinitions(definition.clip)];
+		if (definition.low != undefined) result.push(...listNestedDefinitions(definition.low));
+		if (definition.high != undefined) result.push(...listNestedDefinitions(definition.high));
+		return result;
+	}
+
+	if (valueDefinitionIsRange(definition)) {
+		return [
+			definition,
+			...listNestedDefinitions(definition.range),
+			...listNestedDefinitions(definition.low),
+			...listNestedDefinitions(definition.high)
+		];
+	}
+
+	if (valueDefinitionIsPercent(definition)) {
+		return [
+			definition,
+			...listNestedDefinitions(definition.percent),
+			...listNestedDefinitions(definition.low),
+			...listNestedDefinitions(definition.high)
+		];
+	}
+
+	if (valueDefinitionIsCollect(definition)) {
+		const result : ValueDefinition[] = [definition];
+		for (const child of definition.collect) {
+			result.push(...listNestedDefinitions(child));
+		}
+		return result;
+	}
+
+	if (valueDefinitionIsLengthOf(definition)) {
+		return [
+			definition, 
+			...listNestedDefinitions(definition.value)
+		];
+	}
+
+	if (valueDefinitionIsInput(definition)) {
+		return [definition];
+	}
+
+	return assertUnreachable(definition);
+};
+
+export const extractRequiredDependencies = (definition : ValueDefinition) : PropertyName[] => {
+	const result : PropertyName[] = [];
+	for (const def of listNestedDefinitions(definition)) {
+		if (valueDefintionIsResultValue(def)) {
+			result.push(def.result);
+		}
+	}
+	return result;
 };
 
 //Note: a lot of this validation is also checking things that typescript will
