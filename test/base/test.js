@@ -2347,7 +2347,8 @@ describe('AdjacencyMap node', () => {
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.fullDescription();
-		const golden = `Node a
+		const golden = `a
+Node a
 
 ux: 0
 engineering: 3`;
@@ -2361,7 +2362,8 @@ engineering: 3`;
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.fullDescription(true);
-		const golden = `Node a
+		const golden = `a
+Node a
 
 data: 0
 ux: 0
