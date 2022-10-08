@@ -852,4 +852,27 @@ Any edge that has a width of 0 will be culled from the final set.
 
 ## Scenarios
 
+The default configuration in a map defines the diagram display.
+
+However, it's also possible to define a set of 'scenarios' that set specific nodes to specific values, effectively defining a `values` property for any enumerated node.
+
+```
+const data : RawMapDefinition = {
+    //...
+    scenarios: {
+        scenario_name_1: {
+            node_a: {
+                //Other enumerated values are left alone.
+                one: 3
+            }
+        }
+    }
+    //...
+};
+```
+
+The default defintion is implicitly the scenario named ''.
+
+When there is more than one scenario defined, the UI shows a drop down allowing the user to select which scenario to render. The URL also includes the selected scenario. Hitting the left/right arrows also cycles through different scenarios.
+
 ## Libraries
