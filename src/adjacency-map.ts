@@ -80,6 +80,9 @@ import {
 	wrapArrays
 } from './util.js';
 
+//If an edge is bumped, this is the amount we aim to bump it by by default.
+const TARGET_BUMP = 0.4;
+
 export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 	const result : SimpleGraph = {};
 	for (const [id, value] of Object.entries(data.nodes)) {
@@ -678,12 +681,21 @@ class AdjacencyMapNode {
 
 	_spreadBumps(edges : RenderEdgeValue[]) : RenderEdgeValue[] {
 		if (edges.length < 2) return edges;
+		const totalTargetSpread = (edges.length -1) * TARGET_BUMP;
 		const result : RenderEdgeValue[] = [];
 		for (let i = 0; i < edges.length; i++) {
 			const edge = edges[i];
+			let bump = 0.5;
+			if (totalTargetSpread > 1.0) {
+				//Spread total amount evenly
+				bump = (1 / (edges.length - 1)) * i;
+			} else {
+				//Spread each one out with the ideal spacing
+				bump = i * TARGET_BUMP + (1 - totalTargetSpread) / 2;
+			}
 			result.push({
 				...edge,
-				bump: (1 / (edges.length - 1)) * i
+				bump
 			});
 		}
 		return result;

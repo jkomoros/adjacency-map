@@ -3620,11 +3620,11 @@ describe('renderEdges', () => {
 		const golden = [
 			{
 				...BASE_RENDER_EDGE,
-				bump: 0.0
+				bump: 0.3
 			},
 			{
 				...BASE_RENDER_EDGE,
-				bump: 1.0
+				bump: 0.7
 			}
 		];
 		assert.deepStrictEqual(actual, golden);
@@ -3646,11 +3646,11 @@ describe('renderEdges', () => {
 		const golden = [
 			{
 				...BASE_RENDER_EDGE,
-				bump: 0.0
+				bump: 0.3
 			},
 			{
 				...BASE_RENDER_EDGE,
-				bump: 1.0
+				bump: 0.7
 			}
 		];
 		assert.deepStrictEqual(actual, golden);
@@ -3694,7 +3694,7 @@ describe('renderEdges', () => {
 			//Each engineering node
 			{
 				...BASE_RENDER_EDGE,
-				bump: 0.0
+				bump: 0.09999999999999998
 			},
 			{
 				...BASE_RENDER_EDGE,
@@ -3703,7 +3703,7 @@ describe('renderEdges', () => {
 			//Everything else
 			{
 				...BASE_RENDER_EDGE,
-				bump: 1.0,
+				bump: 0.9,
 				width: BASE_RENDER_EDGE.width * 2
 			}
 
@@ -3830,7 +3830,7 @@ describe('renderEdges', () => {
 			//Each engineering node
 			{
 				...BASE_RENDER_EDGE,
-				bump: 0.0
+				bump: 0.09999999999999998
 			},
 			//UX node
 			{
@@ -3840,7 +3840,7 @@ describe('renderEdges', () => {
 			//data node
 			{
 				...BASE_RENDER_EDGE,
-				bump: 1.0
+				bump: 0.9
 			}
 		];
 		assert.deepStrictEqual(actual, golden);
