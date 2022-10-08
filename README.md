@@ -805,11 +805,50 @@ value: {
 
 ## Display
 
+Display properties allow defining how nodes and edges render.
+
+The display definitions have a collection of ValueDefinitions that are evaluated after all of the underlying values for nodes are calculated.
+
+Display blocks can be defined at the top level at map.display, for type `node`, `edge`, and `edgeCombiner`, and those serve as defaults for every node and edge. Individual `node` and `PropertyDefinition` also have a `display` paramter for overriding the display of just that edge or display.
+
 ### Color shorthand
+
+Each of `NodeDisplay`, `EdgeDisplay`, and `EdgeCombinerDisplay` arguments have a `color` value definition. In those cases, it's very common to have a single `color` ValueDefinition. If the value is a string, it is interpreted as being equivalent to `{color: STRING}`.
+
+```
+{
+    //...
+    display: {
+        node: {
+            //Equivalent to color: {color: 'red'}
+            color: 'red'
+        }
+    }
+    //...
+}
+```
 
 ### Node Display
 
+Nodes have three values: `color`, `radius`, and `opacity`.
+
+Each of those is a ValueDefinition. The first number returned is used.
+
+ValueDefinitions of type ValueDefinitionRefValue and ValueDefinitionEdgeValue will have no inputs in this context.
+
 ### Edge Display
+
+Edges are more complex than nodes.
+
+At the high level, first, we collect every source/ref/type tuple of edges and run the `color`, `width`, and `opacity` value definitions for each. If they return an array of numbers, then one edge for each index is passed on to the next step. (The property of `color`, `width`, `opacity`, and `distinct` with the longest length defines the number of edges, with the other properties being wrapped around to achieve the target length.)
+
+For each source/ref/type tuple, a ValueDefintion of property `distinct` is also computed. For each edge in this step, if `distinct` for that edge index returns a truthy value, then that edge is added to the output step. If it returns a falsey value, it is instead added to the bundle of edges for the next step.
+
+Now, we have an array of final edges, and a bundle of edges to combine, possibly of different types. For each source/ref pair, we take all of the edges produced by the earlier step and pass them to the `edgeCombiner` ValueDefintiions. In this context, the input from the previous step is available as the `ValueDefintiinInput` input value. Again, the final length of the array returned from this step defines how many edges to render (with the longest property defining the target length, and other properties being wrapped around to be long enough).
+
+If any of these display properties are omitted, they are set to the defaults you can see at the top of `src/libraries.ts`.
+
+Any edge that has a width of 0 will be culled from the final set.
 
 ## Scenarios
 
