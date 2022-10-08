@@ -496,7 +496,7 @@ export type RawMapDefinition = {
 		[type : PropertyName]: RawPropertyDefinition
 	}
 	root?: RawNodeValues;
-	nodes: {
+	nodes?: {
 		[id : NodeID] : RawNodeDefinition
 	},
 	//Scenarios define different collections of base values to set on nodes. The

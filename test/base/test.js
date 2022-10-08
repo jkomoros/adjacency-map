@@ -113,9 +113,10 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('barfs on no nodes', async () => {
-		const input = Object.fromEntries(Object.entries(legalBaseInput).filter(entry => entry[0] != 'nodes'));
-		const errorExpected = true;
+	it('Allows no nodes', async () => {
+		const input = deepCopy(legalBaseInput);
+		delete input.nodes;
+		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
 		};

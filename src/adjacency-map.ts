@@ -216,7 +216,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		properties[name] = definition;
 	}
 	const nodes : {[id : NodeID]: NodeDefinition} = {};
-	for (const [id, rawNode] of Object.entries(data.nodes)) {
+	for (const [id, rawNode] of Object.entries(data.nodes || {})) {
 		const edges : EdgeValue[] = extractEdgesFromRawNodeDefinition(rawNode);
 		const rawNodeDisplay = rawNode.display || {};
 		const rawValues = rawNode.values || {};

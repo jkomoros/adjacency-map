@@ -3,7 +3,7 @@ import {
 } from '../src/types.js';
 
 const data : RawMapDefinition = {
-	nodes: {}
+	//Define your data here
 };
 
 export default data;
