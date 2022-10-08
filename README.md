@@ -582,12 +582,21 @@ value: {
 #### ValueDefinitionCombine
 
 Reduces an array of possibly many numbers down to an array with a single number, based on the combiner selected.
+
+input may be any other ValueDefinition.
+
 ```
 value: {
     combine: 'sum',
     input: [0, 1, 2]
 }
 //Evaluates to [3]
+value: {
+    combine: 'sum',
+    input: {
+        ref: 'one'
+    }
+}
 ```
 
 Legal values for combine: 
