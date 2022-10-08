@@ -152,6 +152,8 @@ value: {
 
 See more about ValueDefinitions in the Value Definition section below.
 
+The value calculation is the same for every calculation of that property type on any node, although the final value may vary widely based on different parent values it relies on, different constants, etc.
+
 ### combine? : CombinerType
 
 The final value for a node has to reduce a potentially multi-entry array of numbers (e.g. if there are multiple edges of this type) down to a single number. This combiner will be run on the final result, reducing it to a single number. Any `CombinerType` is allowed; if not included, it defaults to `mean`.
@@ -178,7 +180,80 @@ Some edges, especially in libraries, are for internals and don't want to be show
 
 ## Nodes
 
+Nodes define the named points whose final values is the entire point of the framework. 
+
+Edges may only refer to nodes that are defined in the nodes block:
+
+```
+const data : RawMapDefinition = {
+    //...
+    nodes: {
+        a: {
+            //...
+        },
+        b: {
+            //...
+        }
+    }
+    //...
+}
+```
+
+The ID of each node is its name in the nodes map.
+
+The final values of each node is *primarily* defined by the edges that it has, and how each of those edge's property types configures how the value shoudl be calculated.
+
+### description : string
+
+A description of what this node represents, for displaying in tooltips in the UI.
+
+### displayName? : string
+
+Sometimes the ID of the node is ugly (e.g. uses underscores). If the displayName is set, that will be used for rendering it in the UI instead of the ID.
+
+### display? : NodeDisplay
+
+Configures how this particular node will be displayed. See 'Display' section below for more on configuring display.
+
+### edges : RawEdgeValue[] | RawEdgeMap
+
+The primary meat of the engine, these are the edges who will be included in the value calculation of this node. See the 'Edges' section below for much more on how these are defined.
+
+### values? : RawNodeValues
+
+The final values of a node are primarily driven by the edges they include and the defined value calculation for those edge types. However, sometimes you want to just override and explicitly set values on a given node.
+
+```
+values: {
+    //The primary output is numbers, but you can also use true/false/null
+    one: true
+    //property names not enumerated will be calculated as usual.
+}
+```
+
+Scenarios also effectively set these values properties for nodes in different scenarios.
+
 ### The root node
+
+Every map includes one special `root` node, whose id is ''. This node is implied, and may not be listed in your `nodes` definition. It has no inbound edges, but it may set specific default values for any property. (Properties that are not enumerated are set to 0 on the root).
+
+The root node can have its values overriden in the `root` property of the map:
+```
+const data : RawMapDefinition = {
+    //...
+    root: {
+        one: 3
+        //Unenumerated properties are implicitly set to 0.
+    }
+    //...
+}
+```
+
+The `root` property is essentially the `values` property of the implied node named '' in the nodes map.
+
+Edges that do not explicitly name a `ref` implicitly reference the root node.
+
+The default values for each node starts out as the values in root, with each value potentially be overriden by the node's own `values` property, or incoming edges of a given type.
 
 ## Edges
 
