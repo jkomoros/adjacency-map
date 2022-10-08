@@ -636,7 +636,41 @@ value: {
 ```
 
 #### ValueDefinitionArithmetic
+
+Calculates an arithemtic result of `a` OP `b`.
+
+The resulting array of numbers will have the same length as `a`.
+
+`a` and `b` may be any other ValueDefinition.
+
+Valid operators are   '+' | '*' | '-' | '/' | '&&' | '||' and '!'. `b` is ignored if the operator is '!'. '&&', '||', and '!' treat any value that is not 0 as true.
+
+```
+{
+    operator: '+',
+    a: [0, 1, 2],
+    //Effectively [0, 1, 0] to bring it to the same size as a.
+    b: [0, 1]
+}
+//Evaluates to [0, 2, 2]
+```
+
 #### ValueDefinitionIf
+
+Returns `then` or `else` argument depending on value of `if`. The numbers in `if` are considered false if 0, true otherwise.
+
+`if`, `then`, and `else` may all be any other ValueDefinition.
+
+```
+value: {
+    if: [0, 1, 0],
+    //Effectively [2, 3, 2] to bring it to the length of if.
+    then: [2, 3],
+    else: [5, 4, 3]
+}
+//Evaluates to [5, 3, 3]
+```
+
 #### ValueDefinitionFilter
 #### ValueDefinitionCompare
 #### ValueDefinitionClip
