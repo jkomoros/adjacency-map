@@ -876,3 +876,25 @@ The default defintion is implicitly the scenario named ''.
 When there is more than one scenario defined, the UI shows a drop down allowing the user to select which scenario to render. The URL also includes the selected scenario. Hitting the left/right arrows also cycles through different scenarios.
 
 ## Libraries
+
+Properties and display values can be finicky to define and compose. Libraries allow a definition to load in pre-defined properties and display configurations to use as a base.
+
+```
+const data : RawMapDefinition = {
+    //...
+    import: ['distinct-across-type']
+    //...
+};
+```
+
+You can enumerate multiple libraries to import.
+
+Legal values are defined below.
+
+### distinct-across-type
+
+Including this library will make it so edges of various types will not be combined into one type, but rather show a different edge for each type.
+
+### distinct-within-type
+
+Including this library will make it so edges of the same type will not be combined into one edge but kept separate.
