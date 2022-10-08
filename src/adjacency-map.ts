@@ -705,7 +705,7 @@ class AdjacencyMapNode {
 		}
 		for (const [ref, edgeMap] of Object.entries(edgesByRef)) {
 			const bundledEdges : RenderEdgeValue[] = [];
-			const resultsForRef :RenderEdgeValue[] = [];
+			let resultsForRef :RenderEdgeValue[] = [];
 			for (const [edgeType, edges] of Object.entries(edgeMap)){
 				const edgeDefinition = this._map.data.properties[edgeType];
 				const colorDefinitionOrString = edgeDefinition.display.color || this._map.data.display.edge.color;
@@ -781,6 +781,9 @@ class AdjacencyMapNode {
 					resultsForRef.push(renderEdge);
 				}
 			}
+
+			//Remove edges that have 0 width and pretend they don't exist
+			resultsForRef = resultsForRef.filter(edge => edge.width > 0);
 
 			result.push(...this._spreadBumps(resultsForRef));
 		}

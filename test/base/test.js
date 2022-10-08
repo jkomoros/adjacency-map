@@ -3860,10 +3860,7 @@ describe('renderEdges', () => {
 		const node = map.node('a');
 		const actual = node.renderEdges;
 		const golden = [
-			{
-				...BASE_RENDER_EDGE,
-				width: 0.0
-			},
+			//When the width is 0 it's removed
 		];
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -3903,10 +3900,7 @@ describe('renderEdges', () => {
 		const node = map.node('a');
 		const actual = node.renderEdges;
 		const golden = [
-			{
-				...BASE_RENDER_EDGE,
-				width: 0.0
-			},
+			//An edge with width 0 will be removed
 		];
 		assert.deepStrictEqual(actual, golden);
 	});
