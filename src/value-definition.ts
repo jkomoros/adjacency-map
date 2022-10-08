@@ -43,7 +43,7 @@ import {
 } from './color.js';
 
 import {
-	assertUnreachable
+	assertUnreachable, deepCopy
 } from './util.js';
 
 export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
@@ -61,6 +61,8 @@ export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 export const ALLOWED_CONSTANTS : {[name : string] : true} = {
 	'implied' : true
 };
+
+export const SELF_PROPERTY_NAME = '.';
 
 type Operator = (one : number, two: number) => number;
 
@@ -436,6 +438,36 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 	}
 
 	return assertUnreachable(definition);
+};
+
+const cloneDefinition = (definition : ValueDefinition) : ValueDefinition => {
+	if (definition && typeof definition == 'object') return deepCopy(definition);
+	return definition;
+};
+
+//Returns a valude defintiion like definition (sometimes precisely the same) but
+//with any propertyName references wihtin to SELF_NAME replaced with self.
+export const cloneWithSelf = (definition: ValueDefinition, self : PropertyName) : ValueDefinition => {
+	const definitions = listNestedDefinitions(definition);
+	const includedPropertyNames = Object.fromEntries(definitions.map(def => {
+		if (valueDefinitionIsRefValue(def)) return def.ref;
+		if (valueDefinitionIsRootValue(def)) return def.root;
+		return '';
+	}).map(name => [name, true]));
+	if (!includedPropertyNames[SELF_PROPERTY_NAME]) return definition;
+	//We need to clone it because at least one uses the self property name.
+	const clone = cloneDefinition(definition);
+	const clonedDefs = listNestedDefinitions(clone);
+	for (const clonedDef of clonedDefs) {
+		if (valueDefinitionIsRefValue(clonedDef) && clonedDef.ref == SELF_PROPERTY_NAME) {
+			clonedDef.ref = self;
+		}
+		if (valueDefinitionIsRootValue(clonedDef) && clonedDef.root == SELF_PROPERTY_NAME) {
+			clonedDef.root = self;
+		}
+		//We dont' support self for resultValue because that would be a dependency
+	}
+	return clone;
 };
 
 export const calculateValueLeaf = (definition : ValueDefinitionLeaf) : number =>  {

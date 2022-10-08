@@ -524,6 +524,9 @@ value: {
 #### ValueDefinitionRefValue
 
 Selects a final computed value out of the parent node for an edge (the 'ref'). Only defined PropertyNames may be used. Selects one number per node referenced.
+
+If the ValueDefinition is in the context of a PropertyDefinition.value, then a PropertyName of '.' will automatically be replaced with the PropertyName being defined.
+
 ```
 nodes: {
     a: {
@@ -558,6 +561,9 @@ value: {
 #### ValueDefinitionRootValue
 
 Selects the value from the root node. Useful for having defaults for a given property. Only defined PropertyNames may be used. Returns an array of a single number, since there's only one root.
+
+If the ValueDefinition is in the context of a PropertyDefinition.value, then a PropertyName of '.' will automatically be replaced with the PropertyName being defined.
+
 ```
 root: {
     one: 3

@@ -1464,6 +1464,55 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for a resultValue definition that references self', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			result: '.'
+		};
+		//A result relying on self is a direct cycle, so illegal.
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows a root definition that references self', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			root: '.'
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('allows a refValue definition that references self', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			ref: '.'
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('barfs for an invalid radius on map', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.display = {
@@ -2612,6 +2661,19 @@ engineering: 3`;
 			ux: 12,
 			//Data is 0 because there is no data edge on node a, so it's just an implicit reference to its root.
 			data: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Tests a refValue ref calculation that uses self', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {ref: '.'};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			...NODE_A_BASE_VALUES,
+			engineering: 4,
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
