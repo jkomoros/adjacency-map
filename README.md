@@ -440,15 +440,36 @@ In general, all ValueDefinitions handle arrays by doing their specific operation
 
 In practice, you typically don't have to think too hard about arrays because the right thing happens. ValueDefinition documentation doesn't mention anything about wrapping around values if necessary, because it's implied. Although which of the arguments provides the length of its output is often described.
 
-### Combiner
-
 ### True, false, and null
 
+All ValueDefinitions implicitly operate over an array of numbers.
+
+However, in your inputs you can also use `true`, `false`, and `null` values, which expand to specific sentinel numeric values for purposes of comparison:
+
+```
+//Any value that is not zero is considered truthy
+true: 1,
+false: 0,
+null: <a specific, very rare number>
+```
+
+### Combiner
+
+One important type of ValueDefinition is ValueDefintionCombine.
+
+This ValueDefinition takes a CombineType (see below) and an input, and then combines all of the numbers into an array with a single number as output.
+
+It's special because Property.combine can be defined to be any valid CombineType as the final step to reduce the ValueDefinition for value (which might have more than one number) into an array with precisely one number.
+
 ### Color
+
+Colors are also represented as numbers within valueDefintion. Different ValueDefinitions produce or consume numbers that are interpeted as colors. Under the covers the RGBA components are packed into an integer, and unpacked into a `color` when processed. You don't need to know much about this, other than that if you use a color in another context, you might see it have odd number values.
 
 ### Value Definition Reference
 
 ## Display
+
+### Color shorthand
 
 ### Node Display
 
