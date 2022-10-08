@@ -580,7 +580,52 @@ value: {
 ```
 
 #### ValueDefinitionCombine
+
+Reduces an array of possibly many numbers down to an array with a single number, based on the combiner selected.
+```
+value: {
+    combine: 'sum',
+    input: [0, 1, 2]
+}
+//Evaluates to [3]
+```
+
+Legal values for combine: 
+- `mean` - The average of all numbers
+- `first` - The first in the list of numbers
+- `last` - The last in the list of numbers
+- `min` - The smallest in the list of numbers
+- `max` - The largest in the list of numbers
+- `sum` - The sum of all numbers
+- `product` - The product of all numbers
+- `and` - true if the list of all numbers are not false
+- `or` - true if any in the list of numbers is not false`
+- `color-mean` - interprets each input as a color, and returns the average color by averaging each component of RGBA separately for each color
+
 #### ValueDefinitionColor
+
+Returns a color. As described above, colors are packed into integers, and different ValueDefinitions or contexts know to unpack the color into a `color` with r, g, b, and a components.
+
+```
+//All examples evaluate to '#FF0000FF';
+value: {
+    //May be any CSS named color
+    color: 'red'
+}
+value: {
+    color: '#FF0000'
+}
+value: {
+    color: '#FF0000FF'
+}
+value: {
+    color: 'rgb(255, 0, 0)'
+}
+value: {
+    color: 'rgba(255, 0, 0, 1.0)'
+}
+```
+
 #### ValueDefinitionArithmetic
 #### ValueDefinitionIf
 #### ValueDefinitionFilter
