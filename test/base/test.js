@@ -32,66 +32,66 @@ import {
 import assert from 'assert';
 
 const legalBaseInput = {
-	"properties": {
-		"engineering": {
-			"value": 3,
-			"constants": {
-				"weight": 1.0
+	properties: {
+		engineering: {
+			value: 3,
+			constants: {
+				weight: 1.0
 			}
 		},
-		"ux": {
-			"value": 4,
-			"description": "A description of ux"
+		ux: {
+			value: 4,
+			description: "A description of ux"
 		},
-		"data": {
-			"value": 2,
-			"description": "Investment in data quality"
+		data: {
+			value: 2,
+			description: "Investment in data quality"
 		}
 	},
-	"root": {
-		"engineering" : 4.0
+	root: {
+		engineering : 4.0
 	},
-	"nodes": {
-		"a": {
-			"description": "Node a",
-			"edges": [
+	nodes: {
+		a: {
+			description: "Node a",
+			edges: [
 				{
-					"type": "engineering",
-					"weight": 4.0
+					type: "engineering",
+					weight: 4.0
 				},
 				{
-					"type": "engineering"
+					type: "engineering"
 				}
 			]
 		},
-		"b": {
-			"description": "Node b",
-			"edges": [
+		b: {
+			description: "Node b",
+			edges: [
 				{
-					"type": "ux",
-					"ref": "a"
+					type: "ux",
+					ref: "a"
 				}
 			]
 		},
-		"c": {
-			"description": "Node c",
-			"edges": [
+		c: {
+			description: "Node c",
+			edges: [
 				{
-					"type": "engineering",
-					"ref": "a"
+					type: "engineering",
+					ref: "a"
 				},
 				{
-					"type": "ux",
-					"ref": "b"
+					type: "ux",
+					ref: "b"
 				}
 			]
 		},
-		"d": {
-			"description": "Node d",
-			"edges": [
+		d: {
+			description: "Node d",
+			edges: [
 				{
-					"type": "engineering",
-					"ref": "b"
+					type: "engineering",
+					ref: "b"
 				}
 			]
 		}
