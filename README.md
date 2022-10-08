@@ -257,6 +257,109 @@ The default values for each node starts out as the values in root, with each val
 
 ## Edges
 
+Edges are the most important part of configuration; they define which nodes rely on which other nodes. Edges are defined on nodes, in the `edges` property.
+
+Each edge notionally has the following properties:
+```
+//The type is the property type this edge represents, which tells the engine which ValueDefinition to execute.
+type: PropertyName,
+//source is never set explicitly, but implied by the node whose edge definition the edge shows up in
+source: NodeID
+//if ref is omitted it will implicitly be the root node, with id of ''
+ref?: NodeID,
+//A way for a given edge to override the implies property of its property type, see 'Implied Edges', below
+implies?: ImpliesConfiguration
+//If an edge was implied into existence, it will have implied: true. Effectively a special constant. You may not explicitly define a value for implied in your configuration; it is set automaticlaly by the engine.
+implied: true | false
+//Edges may also explicitly set any values for constants they defined on their PropertyDefinition for that type, to be available in the value calculation. Constants defined on that property type but  not explicitly included will default to the value in the PropertyDefinition.
+weight: 5
+```
+
+The simplest way to define edges is to have `node.edges` enumerate a list of them:
+```
+edges: [
+    {
+        //type is required in this form
+        type: 'one'
+        //A ref that is omitted implies the root node, of name ''
+        ref: 'b',
+        weight: 3
+    },
+    {
+        //ref, source, and any constants just get their default values.
+        type: 'two'
+    }
+]
+```
+
+However, sometimes you have multiple edges to a given ref, and want to make it faster to manually configure them. You can also provide a map of nodeIDs to edges. Each edge in that list will then implicitly have its `ref` property set.
+
+```
+edges: {
+    //You may explicitly name the root nodeID here.
+    '' : [
+        {
+            //Ref is implicitly ''
+            type: 'one'
+        }
+    ],
+    a: [
+        {
+            //Ref is implicitly 'a'
+            type: 'two'
+        }
+    ]
+}
+```
+
+But sometimes you want to have multiple edges from a given node, of a given type. If you use a nodeID map, you can also have the values be a map of propertyType to edges:
+
+```
+edges: {
+    '': {
+        one: [
+            //Ref is '', type is 'one'
+            {},
+            {weight: 2}
+        ],
+        two: [
+            //Ref is '', type is 'two'
+            {weight: 5}
+        ]
+    },
+    //You can use the typeID map for one node, and the array type for other nodes.
+    a: [
+        {
+            //Ref is implicitly 'a'
+            type: 'two'
+        }
+    ]
+}
+```
+
+Finally, sometimes in that form, you only have edge to imply, so you can skip wrapping them in an array if you have only one:
+
+```
+edges: {
+    '': {
+        one: [
+            //Ref is '', type is 'one'
+            {},
+            {weight: 2}
+        ],
+        //Ref is '', type is 'two'. Only one edge, so skip the containing []
+        two: {weight: 5}
+    },
+    //You can use the typeID map for one node, and the array type for other nodes.
+    a: [
+        {
+            //Ref is implicitly 'a'
+            type: 'two'
+        }
+    ]
+}
+```
+
 ### Implied edges
 
 ## Value Definitions
