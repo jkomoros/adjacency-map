@@ -313,6 +313,7 @@ export type TreeGraph = {
 
 export type RawNodeDefinition = {
 	description: string,
+	displayName? : string,
 	display?: Partial<NodeDisplay>,
 	edges?: RawEdgeValue[] | RawEdgeMap,
 	//If any values are provided here, they will be set on the node, overriding
@@ -322,6 +323,7 @@ export type RawNodeDefinition = {
 
 export type NodeDefinition = {
 	description: string,
+	displayName?: string,
 	display: Partial<NodeDisplay>,
 	edges: EdgeValue[],
 	values: NodeValues

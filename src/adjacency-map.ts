@@ -715,6 +715,10 @@ class AdjacencyMapNode {
 		return this._data ? this._data.description : 'Root node';
 	}
 
+	get displayName() : string {
+		return this._data?.displayName || this.id;
+	}
+
 	fullDescription(includeHidden = false) : string {
 		const filter = includeHidden ? () => true : (entry : [PropertyName, number] ) => !this._map.data.properties[entry[0]].hide;
 		return this.description + '\n\n' + Object.entries(this.values).filter(filter).map(entry => entry[0] + ': ' + entry[1]).join('\n');
