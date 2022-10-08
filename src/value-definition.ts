@@ -104,37 +104,37 @@ export const valueDefinitionIsStringType = (definition : string | ValueDefinitio
 	return false;
 };
 
-const valueDefintionIsEdgeConstant = (definition : ValueDefinition) : definition is ValueDefintionEdgeConstant => {
+const valueDefinitionIsEdgeConstant = (definition : ValueDefinition) : definition is ValueDefintionEdgeConstant => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
 	return 'constant' in definition;
 };
 
-const valueDefintionIsRefValue = (definition : ValueDefinition) : definition is ValueDefinitionRefValue => {
+const valueDefinitionIsRefValue = (definition : ValueDefinition) : definition is ValueDefinitionRefValue => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
 	return 'ref' in definition;
 };
 
-const valueDefintionIsRootValue = (definition : ValueDefinition) : definition is ValueDefinitionRootValue => {
+const valueDefinitionIsRootValue = (definition : ValueDefinition) : definition is ValueDefinitionRootValue => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
 	return 'root' in definition;
 };
 
-const valueDefintionIsResultValue = (definition : ValueDefinition) : definition is ValueDefinitionResultValue => {
+const valueDefinitionIsResultValue = (definition : ValueDefinition) : definition is ValueDefinitionResultValue => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
 	return 'result' in definition;
 };
 
-const valueDefintionIsCombine = (definition : ValueDefinition) : definition is ValueDefinitionCombine => {
+const valueDefinitionIsCombine = (definition : ValueDefinition) : definition is ValueDefinitionCombine => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
 	return 'combine' in definition;
 };
 
-const valueDefintionIsColor = (definition : ValueDefinition) : definition is ValueDefinitionColor => {
+const valueDefinitionIsColor = (definition : ValueDefinition) : definition is ValueDefinitionColor => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
 	return 'color' in definition;
@@ -208,24 +208,24 @@ const listNestedDefinitions = (definition : ValueDefinition) : ValueDefinition[]
 	if (typeof definition == 'object' && Array.isArray(definition)) {
 		return [definition];
 	}
-	if (valueDefintionIsEdgeConstant(definition)) {
+	if (valueDefinitionIsEdgeConstant(definition)) {
 		return [definition];
 	}
-	if (valueDefintionIsRefValue(definition)) {
+	if (valueDefinitionIsRefValue(definition)) {
 		return [definition];
 	}
-	if (valueDefintionIsRootValue(definition)) {
+	if (valueDefinitionIsRootValue(definition)) {
 		return [definition];
 	}
-	if (valueDefintionIsResultValue(definition)) {
+	if (valueDefinitionIsResultValue(definition)) {
 		return [definition];
 	}
 
-	if (valueDefintionIsCombine(definition)) {
+	if (valueDefinitionIsCombine(definition)) {
 		return [definition, ...listNestedDefinitions(definition.value)];
 	}
 
-	if (valueDefintionIsColor(definition)) {
+	if (valueDefinitionIsColor(definition)) {
 		return [definition];
 	}
 
@@ -307,7 +307,7 @@ const listNestedDefinitions = (definition : ValueDefinition) : ValueDefinition[]
 export const extractRequiredDependencies = (definition : ValueDefinition) : PropertyName[] => {
 	const result : PropertyName[] = [];
 	for (const def of listNestedDefinitions(definition)) {
-		if (valueDefintionIsResultValue(def)) {
+		if (valueDefinitionIsResultValue(def)) {
 			result.push(def.result);
 		}
 	}
@@ -325,7 +325,7 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 		if (definition.length == 0) throw new Error('If an array of numbers is provided there must be at least one');
 		return;
 	}
-	if (valueDefintionIsEdgeConstant(definition)) {
+	if (valueDefinitionIsEdgeConstant(definition)) {
 		if (RESERVED_VALUE_DEFINITION_PROPERTIES[definition.constant]) {
 			if (!ALLOWED_CONSTANTS[definition.constant]) throw new Error(definition.constant + ' is a reserved edge property name');
 			//Constants here are allowed to be relied on no matter what.
@@ -335,15 +335,15 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 		if (constants[definition.constant] == undefined) throw new Error(definition.constant + ' for edge type value definition but that constant doesn\'t exist for that type.');
 		return;
 	}
-	if (valueDefintionIsRefValue(definition)) {
+	if (valueDefinitionIsRefValue(definition)) {
 		if (exampleValue[definition.ref] == undefined) throw new Error(definition.ref + ' is not a defined edge type');
 		return;
 	}
-	if (valueDefintionIsRootValue(definition)) {
+	if (valueDefinitionIsRootValue(definition)) {
 		if (exampleValue[definition.root] == undefined) throw new Error(definition.root + ' is not a defined edge type');
 		return;
 	}
-	if (valueDefintionIsResultValue(definition)) {
+	if (valueDefinitionIsResultValue(definition)) {
 		if (edgeDefinition) {
 			const declaredDependencies = edgeDefinition.dependencies || [];
 			if (!declaredDependencies.some(dependency => dependency == definition.result)) throw new Error(definition.result + ' is used in a ResultValue definition but it is not declared in dependencies.');
@@ -351,13 +351,13 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 		return;
 	}
 
-	if (valueDefintionIsCombine(definition)) {
+	if (valueDefinitionIsCombine(definition)) {
 		validateValueDefinition(definition.value, exampleValue, edgeDefinition);
 		if (!COMBINERS[definition.combine]) throw new Error('Unknown combiner: ' + definition.combine);
 		return;
 	}
 
-	if (valueDefintionIsColor(definition)) {
+	if (valueDefinitionIsColor(definition)) {
 		if (!definition.color) throw new Error('No color provided');
 		try {
 			color(definition.color);
@@ -457,25 +457,25 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 
 	if (Array.isArray(definition)) return definition.map(leaf => calculateValueLeaf(leaf));
 
-	if (valueDefintionIsEdgeConstant(definition)) {
+	if (valueDefinitionIsEdgeConstant(definition)) {
 		return args.edges.map(edge => edge[definition.constant] as number);
 	}
-	if (valueDefintionIsRefValue(definition)) {
+	if (valueDefinitionIsRefValue(definition)) {
 		return args.refs.map(values => values[definition.ref]);
 	}
-	if (valueDefintionIsRootValue(definition)) {
+	if (valueDefinitionIsRootValue(definition)) {
 		return [args.rootValue[definition.root]];
 	}
-	if (valueDefintionIsResultValue(definition)) {
+	if (valueDefinitionIsResultValue(definition)) {
 		return args.edges.map(() => args.partialResult[definition.result]);
 	}
-	if (valueDefintionIsCombine(definition)) {
+	if (valueDefinitionIsCombine(definition)) {
 		const subValues = calculateValue(definition.value, args);
 		const combiner = COMBINERS[definition.combine];
 		return combiner(subValues);
 	}
 
-	if (valueDefintionIsColor(definition)) {
+	if (valueDefinitionIsColor(definition)) {
 		return [packColor(color(definition.color))];
 	}
 
