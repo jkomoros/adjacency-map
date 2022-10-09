@@ -499,7 +499,7 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 		return [args.rootValue[definition.root]];
 	}
 	if (valueDefinitionIsResultValue(definition)) {
-		return args.edges.map(() => args.partialResult[definition.result]);
+		return [args.partialResult[definition.result]];
 	}
 	if (valueDefinitionIsCombine(definition)) {
 		const subValues = calculateValue(definition.value, args);
