@@ -853,15 +853,16 @@ Because the properties are the same for every node, or for every edge of a given
 
 ### Color shorthand
 
-Each of `NodeDisplay`, `EdgeDisplay`, and `EdgeCombinerDisplay` arguments have a `color` value definition. In those cases, it's very common to have a single `color` ValueDefinition. If the value is a string, it is interpreted as being equivalent to `{color: STRING}`.
+Each of `NodeDisplay`, `EdgeDisplay`, and `EdgeCombinerDisplay` arguments have a `color` (and sometimes `strokeColor`) value definition. In those cases, it's very common to have a single `color` ValueDefinition. If the value is a string, it is interpreted as being equivalent to `{color: STRING}`.
 
 ```
 {
     //...
     display: {
         node: {
-            //Equivalent to color: {color: 'red'}
+            //Both are equivalent to color: {color: 'red'}
             color: 'red'
+            strokeColor: 'red'
         }
     }
     //...
@@ -870,7 +871,7 @@ Each of `NodeDisplay`, `EdgeDisplay`, and `EdgeCombinerDisplay` arguments have a
 
 ### Node Display
 
-Nodes have three values: `color`, `radius`, and `opacity`.
+Nodes have 6 values: `color`, `radius`, `opacity`, `strokeColor`, `strokeWidth`, and `strokeOpacity`.
 
 Each of those is a ValueDefinition. The first number returned is used.
 

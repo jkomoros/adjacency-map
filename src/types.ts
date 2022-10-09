@@ -422,7 +422,14 @@ export type NodeDisplay = {
 	opacity: ValueDefinition
 	//Should return a color
 	//As syntatic sugar, if the value is a string, it will be equivalent to {color: STRING}
-	color: CSSColor | ValueDefinition
+	color: CSSColor | ValueDefinition,
+	//Values below 0.0 will be clipped to 0
+	strokeWidth: ValueDefinition,
+	//Values will be clipped to between 0 and 1
+	strokeOpacity: ValueDefinition,
+	//Should return a color
+	//As syntatic sugar, if the value is a string, it will be equivalent to {color: STRING}
+	strokeColor: CSSColor | ValueDefinition
 }
 
 //If any of these returns more than one number, then the one that returns the

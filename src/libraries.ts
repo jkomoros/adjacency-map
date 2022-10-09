@@ -14,6 +14,11 @@ export const BASE_NODE_DISPLAY : NodeDisplay = {
 	opacity: 1.0,
 	color: {
 		color: '#333'
+	},
+	strokeWidth: 0.0,
+	strokeOpacity: 1.0,
+	strokeColor: {
+		color: '#000'
 	}
 };
 

@@ -1825,6 +1825,171 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for an invalid strokeWidth on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				strokeWidth: 'invalid'
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Barfs for invalid strokeWidth on a', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			strokeWidth: 'invalid'
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows strokeWidth on node and map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				strokeWidth: 3,
+			}
+		};
+		input.nodes.a.display = {
+			strokeWidth: 5
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for an invalid strokeOpacity on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				strokeOpacity: 'invalid'
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Barfs for invalid strokeOpacity on a', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			strokeOpacity: 'invalid'
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows strokeOpacity on node and map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				strokeOpacity: 3,
+			}
+		};
+		input.nodes.a.display = {
+			strokeOpacity: -1.0
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for an invalid strokeColor on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				strokeColor: 'invalid'
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Barfs for invalid strokeColor on a', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			strokeColor: 'invalid'
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows strokeColor on node and map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				strokeColor: 3,
+			}
+		};
+		input.nodes.a.display = {
+			strokeColor: -1.0
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('barfs for an invalid width on map', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.display = {
@@ -3452,6 +3617,144 @@ engineering: 3`;
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.color;
+		const golden = color('#CCC');
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a strokeWidth set on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				strokeWidth: 10
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.strokeWidth;
+		const golden = 10;
+		assert.deepStrictEqual(actual, golden);
+	});
+
+
+	it('Correctly calculates a strokeWidth set on node', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			strokeWidth: 10
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.strokeWidth;
+		const golden = 10;
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a strokeWidth set on node below 0', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			strokeWidth: -1
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.strokeWidth;
+		const golden = 0;
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a strokeWidth set on node that relies on a value', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			strokeWidth: {
+				result: 'engineering'
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.strokeWidth;
+		const golden = NODE_A_BASE_VALUES.engineering;
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a strokeOpacity set on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				strokeOpacity: 0.8
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.strokeOpacity;
+		const golden = 0.8;
+		assert.deepStrictEqual(actual, golden);
+	});
+
+
+	it('Correctly calculates an strokeOpacity set on node', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			strokeOpacity: 0.8
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.strokeOpacity;
+		const golden = 0.8;
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a strokeOpacity set on node that relies on a value', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			strokeOpacity: {
+				result: 'engineering'
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.strokeOpacity;
+		//We expect it to be clipped
+		const golden = 1.0;
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a strokeColor set on map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			node: {
+				strokeColor: {
+					color: '#CCC'
+				}
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.strokeColor;
+		const golden = color('#CCC');
+		assert.deepStrictEqual(actual, golden);
+	});
+
+
+	it('Correctly calculates a strokeColor set on node', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			strokeColor: {
+				color: '#CCC'
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.strokeColor;
+		const golden = color('#CCC');
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly handles a strokeColor shorthand set on node', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.display = {
+			strokeColor: '#CCC'
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.strokeColor;
 		const golden = color('#CCC');
 		assert.deepStrictEqual(actual, golden);
 	});

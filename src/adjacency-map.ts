@@ -283,7 +283,7 @@ const validateDisplay = (data : Partial<NodeDisplay> | Partial<EdgeDisplay> | Pa
 		if (typeof displayValue == 'string') {
 			if (valueDefinitionIsStringType(displayValue)) {
 				validateValueDefinition(displayValue, exampleValues, propertyDefinition);
-			} else if (displayName == 'color') {
+			} else if (displayName == 'color' || displayName == 'strokeColor') {
 				//Throw if not a color
 				color(displayValue);
 			} else {
@@ -951,6 +951,16 @@ class AdjacencyMapNode {
 		return this._valueDefinitionHelper(clippedDefinition);
 	}
 
+	get strokeWidth() : number {
+		//TODO: cache
+		const definition = this._data?.display?.strokeWidth || this._map.data.display.node.strokeWidth;
+		const clippedDefinition : ValueDefinition = {
+			clip: definition,
+			low: 0.0
+		};
+		return this._valueDefinitionHelper(clippedDefinition);
+	}
+
 	get opacity() : number {
 		//TODO: cache
 		const definition = this._data?.display?.opacity || this._map.data.display.node.opacity;
@@ -962,9 +972,28 @@ class AdjacencyMapNode {
 		return this._valueDefinitionHelper(clippedDefinition);
 	}
 
+	get strokeOpacity() : number {
+		//TODO: cache
+		const definition = this._data?.display?.strokeOpacity || this._map.data.display.node.strokeOpacity;
+		const clippedDefinition : ValueDefinition = {
+			clip: definition,
+			low: 0.0,
+			high: 1.0
+		};
+		return this._valueDefinitionHelper(clippedDefinition);
+	}
+
 	get color(): Color {
 		//TODO: cache
 		const definitionOrString = this._data?.display?.color || this._map.data.display.node.color;
+		const colorDefinition = wrapStringAsColor(definitionOrString);
+		const num = this._valueDefinitionHelper(colorDefinition);
+		return unpackColor(num);
+	}
+
+	get strokeColor() : Color {
+		//TODO: cache
+		const definitionOrString = this._data?.display?.strokeColor || this._map.data.display.node.strokeColor;
 		const colorDefinition = wrapStringAsColor(definitionOrString);
 		const num = this._valueDefinitionHelper(colorDefinition);
 		return unpackColor(num);
