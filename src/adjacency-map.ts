@@ -450,6 +450,7 @@ export class AdjacencyMap {
 	_cachedEdges : ExpandedEdgeValue[];
 	_cachedRenderEdges : RenderEdgeValue[] | undefined;
 	_cachedRoot : NodeValues | undefined;
+	_cachedTags : TagMap;
 	_cachedPropertyNames : PropertyName[];
 	_cachedLayoutInfo : LayoutInfo;
 	_scenarioName : ScenarioName;
@@ -519,6 +520,17 @@ export class AdjacencyMap {
 	get rootTags() : TagMap {
 		//TODO: cache
 		return Object.fromEntries(Object.entries(this._data.tags).filter(entry => entry[1].root).map(entry => [entry[0], true]));
+	}
+
+	//the union of all node's tags.
+	get tagsUnion() : TagMap {
+		if (!this._cachedTags) {
+			let tags : TagMap = {};
+			for (const node of Object.values(this.nodes)) {
+				tags = {...tags, ...node.tags};
+			}
+		}
+		return this._cachedTags;
 	}
 
 	get result() : NodeValues {
