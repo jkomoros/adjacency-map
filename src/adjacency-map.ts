@@ -730,7 +730,8 @@ class AdjacencyMapNode {
 				edges: defaultedEdges,
 				refs,
 				partialResult,
-				rootValue: this._map.rootValues
+				rootValue: this._map.rootValues,
+				tags: this.tags,
 			};
 			const values = calculateValue(edgeValueDefinition, args);
 			if (values.length == 0) throw new Error('values was not at least of length 1');
@@ -807,7 +808,8 @@ class AdjacencyMapNode {
 			//TODO: this.parents omits expliti root references
 			refs: this.parents.map(id => this._map.node(id).values),
 			partialResult: this.values,
-			rootValue: this._map.rootValues
+			rootValue: this._map.rootValues,
+			tags: this.tags,
 		};
 		if (input) args.input = input;
 		const result = calculateValue(definition, args);
@@ -1006,7 +1008,8 @@ class AdjacencyMapNode {
 			//TODO: this.parents omits expliti root references
 			refs: this.parents.map(id => this._map.node(id).values),
 			partialResult: this.values,
-			rootValue: this._map.rootValues
+			rootValue: this._map.rootValues,
+			tags: this.tags,
 		});
 		if (result.length < 1) throw new Error('Value definition returned an empty array');
 		return result[0];

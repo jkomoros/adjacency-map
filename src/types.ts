@@ -215,6 +215,8 @@ export type ValueDefinitionCalculationArgs = {
 	partialResult : NodeValues, 
 	//The values of root.
 	rootValue : NodeValues,
+	//The tags for the result node.
+	tags: TagMap,
 	//The input numbers, which will be returned by ValueDefinitionInput, if this
 	//is a context that does that.
 	input? : number[]
