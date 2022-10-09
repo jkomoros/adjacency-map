@@ -2561,6 +2561,47 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+
+	it('Barfs for a value of hasTag with a nonexistent tag', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {},
+			tagB: {}
+		};
+		input.properties.engineering.value = {
+			has: 'tagC'
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a value of hasTag with an existing tag', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {},
+			tagB: {}
+		};
+		input.properties.engineering.value = {
+			has: 'tagA'
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
@@ -4078,6 +4119,49 @@ engineering: 3`;
 			//This one comes from node a
 			tagA:true,
 			tagB:true
+		};
+		assert.deepStrictEqual(actual, golden);
+
+	});
+
+	it('Correctly handles ValueDefinitionHasTags without all', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {},
+			tagB: {}
+		};
+		input.nodes.a.tags = 'tagA';
+		input.properties.engineering.value = {
+			has: ['tagA', 'tagB']
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			...NODE_A_BASE_VALUES,
+			engineering: 1
+		};
+		assert.deepStrictEqual(actual, golden);
+
+	});
+
+	it('Correctly handles ValueDefinitionHasTags with all', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {},
+			tagB: {}
+		};
+		input.nodes.a.tags = 'tagA';
+		input.properties.engineering.value = {
+			has: ['tagA', 'tagB'],
+			all: true
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			...NODE_A_BASE_VALUES,
+			engineering: 0
 		};
 		assert.deepStrictEqual(actual, golden);
 

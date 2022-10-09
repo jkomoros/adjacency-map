@@ -181,6 +181,15 @@ export type ValueDefinitionLengthOf = {
 //map.display.edgeCombiner is a context where input is provided.
 export type ValueDefinitionInput = 'input';
 
+//Returns true if the result node has any of the defined tags.
+export type ValueDefinitionHasTag = {
+	//The tag to 
+	has: TagID | TagID[] | TagMap
+	//If true, only returns true if all of them are present. If false, then true
+	//as long as any one is true.
+	all?: boolean;
+}
+
 //The actual values are all numbers, but for convenience raw inputs can also
 //literally be true or false, which are expanded to DEFAULT_TRUE_NUMBER and FALSE_NUMBER.
 export type ValueDefinitionLeaf = number | boolean | null;
@@ -202,7 +211,8 @@ export type ValueDefinition = ValueDefinitionLeaf |
 	ValueDefinitionPercent |
 	ValueDefinitionLengthOf |
 	ValueDefinitionInput |
-	ValueDefinitionCollect;
+	ValueDefinitionCollect |
+	ValueDefinitionHasTag;
 
 export type ValueDefinitionCalculationArgs = {
 	//All of the edges that are being calculated together, all of the same type

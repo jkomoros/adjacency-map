@@ -793,6 +793,35 @@ This is the way to retrieving that supplemental input specific to the context. T
 value: 'input'
 ```
 
+#### ValueDefinitionHasTag
+
+Checks to see if the result node has any of the tags enumerated in `has` and
+returns [true] or [false]. If `all` is true, then it returns true only if all of
+the enumerated tags are in the result.
+
+```
+//node.tags = {a: true, b: true}
+value: {
+    has: {'a': true, 'c':true}
+}
+//Evaluates to true
+value: {
+    has: {'a': true, 'c':true}
+    all: true
+}
+//Evaluates to false
+value: {
+    //Equivalent to {'a': true}
+    has: 'a'
+}
+//Evaluates to true
+value: {
+    //Equivalent to {'a': true, 'c': true}
+    has: ['a', 'c']
+}
+//Evalutes to true
+```
+
 #### ValueDefinitionLengthOf
 
 Extends the input to be the same length as `edges`, `input`, or `refs`. This is useful in `display.edge` and `display.edgeCombiner` contexts where the number of returned values is important. 

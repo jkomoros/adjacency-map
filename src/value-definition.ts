@@ -27,6 +27,7 @@ import {
 	ValueDefinitionLengthOf,
 	ValueDefinitionInput,
 	ValueDefinitionFilter,
+	ValueDefinitionHasTag,
 	PropertyName,
 	MapDefinition
 } from './types.js';
@@ -46,6 +47,7 @@ import {
 import {
 	assertUnreachable, deepCopy
 } from './util.js';
+import { makeTagMap } from './adjacency-map.js';
 
 export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 	'ref': true,
@@ -206,6 +208,12 @@ const valueDefinitionIsInput = (definition : ValueDefinition): definition is Val
 	return false;
 };
 
+const valueDefinitionIsHasTag = (definition : ValueDefinition): definition is ValueDefinitionHasTag => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'has' in definition;
+};
+
 const listNestedDefinitions = (definition : ValueDefinition) : ValueDefinition[] => {
 	if (valueDefinitionIsLeaf(definition)) return [definition];
 	if (typeof definition == 'object' && Array.isArray(definition)) {
@@ -304,6 +312,10 @@ const listNestedDefinitions = (definition : ValueDefinition) : ValueDefinition[]
 		return [definition];
 	}
 
+	if (valueDefinitionIsHasTag(definition)) {
+		return [definition];
+	}
+
 	return assertUnreachable(definition);
 };
 
@@ -321,7 +333,7 @@ export const extractRequiredDependencies = (definition : ValueDefinition) : Prop
 //have already checked. Before, we loaded files from json and had to a
 //conversion leap of faith, but now everything is natively typescript even in
 //data/ so that leap of faith is less important.
-export const validateValueDefinition = (definition : ValueDefinition, exampleValue : NodeValues, data: MapDefinition, edgeDefinition? : PropertyDefinition) : void => {
+export const validateValueDefinition = (definition : ValueDefinition, exampleValue : NodeValues, data : MapDefinition, edgeDefinition? : PropertyDefinition) : void => {
 	if (valueDefinitionIsLeaf(definition)) return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {
 		if (definition.some(leaf => !valueDefinitionIsLeaf(leaf))) throw new Error('If an array is provided it msut contain only numbers, booleans, or null');
@@ -435,6 +447,12 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 
 	if (valueDefinitionIsInput(definition)) {
 		//There is no configuration on input
+		return;
+	}
+
+	if (valueDefinitionIsHasTag(definition)) {
+		const tags = makeTagMap(definition.has);
+		if (Object.keys(tags).some(tag => !data.tags[tag])) throw new Error('Unknown tag in definition.has');
 		return;
 	}
 
@@ -624,6 +642,14 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 
 	if (valueDefinitionIsInput(definition)) {
 		return args.input || [NULL_SENTINEL];
+	}
+
+	if (valueDefinitionIsHasTag(definition)) {
+		const tags = Object.keys(makeTagMap(definition.has));
+		if (definition.all) {
+			return tags.every(tag => args.tags[tag]) ? [DEFAULT_TRUE_NUMBER] : [FALSE_NUMBER];
+		}
+		return tags.some(tag => args.tags[tag]) ? [DEFAULT_TRUE_NUMBER] : [FALSE_NUMBER];
 	}
 
 	return assertUnreachable(definition);
