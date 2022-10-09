@@ -777,6 +777,11 @@ class AdjacencyMapNode {
 		let result = this.displayName + '\n';
 		result +=  this.description + '\n\n';
 		result += Object.entries(this.values).filter(filter).map(entry => entry[0] + ': ' + entry[1]).join('\n');
+		const tags = Object.keys(this.tags);
+		if (tags.length) {
+			result += '\n\nTags:\n';
+			result += tags.map(tag => this._map.data.tags[tag].displayName).join('\n');
+		}
 		return result;
 	}
 

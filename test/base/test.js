@@ -2686,6 +2686,26 @@ engineering: 3`;
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('fullDescription includes tags', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.data.hide = true;
+		input.tags = {tagA: {displayName: 'Tag A'}};
+		input.nodes.a.tags = 'tagA';
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.fullDescription();
+		const golden = `a
+Node a
+
+ux: 0
+engineering: 3
+
+Tags:
+Tag A`;
+
+		assert.deepStrictEqual(actual, golden);
+	});
+
 	it('fullDescription(true) works for a named node', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.data.hide = true;
