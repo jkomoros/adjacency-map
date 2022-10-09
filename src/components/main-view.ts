@@ -176,9 +176,9 @@ class MainView extends connect(store)(PageViewElement) {
 						<h3>Values</h3>
 						${Object.entries(this._summaryValues).map(entry => html`<div><strong>${entry[0]}</strong>: ${entry[1]}</div>`)}
 					</div>
-					${Object.keys(this._summaryTags).length ? 
+					${Object.keys(this._summaryTags).length && this._adjacencyMap ? 
 		html`<h3>Tags</h3>
-				${Object.keys(this._summaryTags).map(tagName => html`<div>${tagName}</div>`)}`
+				${Object.keys(this._summaryTags).map(tagName => html`<div>${this._adjacencyMap?.data.tags[tagName].displayName}</div>`)}`
 		: ''}
 				</div>
 			</div>
