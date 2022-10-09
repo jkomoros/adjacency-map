@@ -190,6 +190,12 @@ export type ValueDefinitionHasTag = {
 	all?: boolean;
 }
 
+//Returns the given constant from each tag on result, or null if that constant
+//doesn't exist on that tag.
+export type ValueDefinitionTagConstant = {
+	tagConstant: TagConstantName
+}
+
 //The actual values are all numbers, but for convenience raw inputs can also
 //literally be true or false, which are expanded to DEFAULT_TRUE_NUMBER and FALSE_NUMBER.
 export type ValueDefinitionLeaf = number | boolean | null;
@@ -212,7 +218,8 @@ export type ValueDefinition = ValueDefinitionLeaf |
 	ValueDefinitionLengthOf |
 	ValueDefinitionInput |
 	ValueDefinitionCollect |
-	ValueDefinitionHasTag;
+	ValueDefinitionHasTag |
+	ValueDefinitionTagConstant;
 
 export type ValueDefinitionCalculationArgs = {
 	//All of the edges that are being calculated together, all of the same type

@@ -29,7 +29,8 @@ import {
 	ValueDefinitionFilter,
 	ValueDefinitionHasTag,
 	PropertyName,
-	MapDefinition
+	MapDefinition,
+	ValueDefinitionTagConstant
 } from './types.js';
 
 import {
@@ -214,6 +215,12 @@ const valueDefinitionIsHasTag = (definition : ValueDefinition): definition is Va
 	return 'has' in definition;
 };
 
+const valueDefinitionIsTagConstant = (definition : ValueDefinition): definition is ValueDefinitionTagConstant => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'tagConstant' in definition;
+};
+
 const listNestedDefinitions = (definition : ValueDefinition) : ValueDefinition[] => {
 	if (valueDefinitionIsLeaf(definition)) return [definition];
 	if (typeof definition == 'object' && Array.isArray(definition)) {
@@ -313,6 +320,10 @@ const listNestedDefinitions = (definition : ValueDefinition) : ValueDefinition[]
 	}
 
 	if (valueDefinitionIsHasTag(definition)) {
+		return [definition];
+	}
+	
+	if (valueDefinitionIsTagConstant(definition)) {
 		return [definition];
 	}
 
@@ -453,6 +464,11 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 	if (valueDefinitionIsHasTag(definition)) {
 		const tags = makeTagMap(definition.has);
 		if (Object.keys(tags).some(tag => !data.tags[tag])) throw new Error('Unknown tag in definition.has');
+		return;
+	}
+
+	if (valueDefinitionIsTagConstant(definition)) {
+		//Getting a non existent tag constant simply returns null
 		return;
 	}
 
@@ -650,6 +666,17 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 			return tags.every(tag => args.tags[tag]) ? [DEFAULT_TRUE_NUMBER] : [FALSE_NUMBER];
 		}
 		return tags.some(tag => args.tags[tag]) ? [DEFAULT_TRUE_NUMBER] : [FALSE_NUMBER];
+	}
+
+	if (valueDefinitionIsTagConstant(definition)) {
+		const result = Object.keys(args.tags).map(tagName => {
+			const tagDefinition = args.definition.tags[tagName];
+			const constant = tagDefinition.constants[definition.tagConstant];
+			if (constant === undefined) return NULL_SENTINEL;
+			return constant;
+		});
+		if (result.length == 0) return [NULL_SENTINEL];
+		return result;
 	}
 
 	return assertUnreachable(definition);

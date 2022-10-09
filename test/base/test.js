@@ -2602,6 +2602,27 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('Allows a value of hasTag with a non-existing constant', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {},
+			tagB: {}
+		};
+		input.properties.engineering.value = {
+			tagConstant: 'invalid'
+		};
+		//It will simply return null
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
@@ -4162,6 +4183,31 @@ engineering: 3`;
 		const golden = {
 			...NODE_A_BASE_VALUES,
 			engineering: 0
+		};
+		assert.deepStrictEqual(actual, golden);
+
+	});
+
+	it('Correctly handles ValueDefinitionTagConstant', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {
+				constants: {
+					weight: 5
+				}
+			},
+			tagB: {}
+		};
+		input.nodes.a.tags = ['tagA', 'tagB'];
+		input.properties.engineering.value = {
+			tagConstant: 'weight'
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			...NODE_A_BASE_VALUES,
+			engineering: (NULL_SENTINEL + 5) / 2
 		};
 		assert.deepStrictEqual(actual, golden);
 

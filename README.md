@@ -822,6 +822,35 @@ value: {
 //Evalutes to true
 ```
 
+#### ValueDefinitionTagConstant
+
+Extracts the named constant for each of the tags on the result node. If the
+constant doesn't exist on that tag, null will be returned for that tag.
+
+If there are no tags on the result node it will evaluate to `[null]`.
+
+```
+//In MapDefinition:
+tags: {
+    tagA: {
+        constants: {
+            weight: 5
+        }
+    },
+    tagB: {
+        constants: {
+            other: 2
+        }
+    }
+}
+
+//Assuming node.tags = ['tagA', 'tagB']
+value: {
+    tagConstant: 'weight'
+}
+//Returns [5, null]
+```
+
 #### ValueDefinitionLengthOf
 
 Extends the input to be the same length as `edges`, `input`, or `refs`. This is useful in `display.edge` and `display.edgeCombiner` contexts where the number of returned values is important. 
