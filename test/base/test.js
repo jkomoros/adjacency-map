@@ -2543,6 +2543,24 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('Barfs for a node with a nonexistent edge', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {},
+			tagB: {}
+		};
+		input.nodes.a.tags = {tagA: true, tagC: true};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 });
 
 describe('AdjacencyMap root', () => {
@@ -4749,6 +4767,7 @@ describe('edgeDefinition ergonomics', () => {
 					type: "engineering"
 				}
 			],
+			tags: {},
 			values: {}
 		};
 		const actualFull = processMapDefinition(input);
@@ -4804,6 +4823,7 @@ describe('edgeDefinition ergonomics', () => {
 					type: "engineering"
 				}
 			],
+			tags: {},
 			values: {}
 		};
 		const actualFull = processMapDefinition(input);
@@ -4858,6 +4878,7 @@ describe('edgeDefinition ergonomics', () => {
 					type: "engineering"
 				}
 			],
+			tags: {},
 			values: {}
 		};
 		const actualFull = processMapDefinition(input);
@@ -4905,6 +4926,7 @@ describe('edgeDefinition ergonomics', () => {
 					weight: 4.0
 				}
 			],
+			tags:{},
 			values: {}
 		};
 		const actualFull = processMapDefinition(input);

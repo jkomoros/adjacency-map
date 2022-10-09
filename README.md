@@ -940,6 +940,43 @@ const data : RawMapDefinition = {
 }
 ```
 
+Then, specific nodes can define tags they want to set true/false to override the rootTags:
+
+```
+const data : RawMapDefinition = {
+    //...
+    tags: {
+        tagA: {},
+        tagB: {}
+    }
+    nodes: {
+        a: {
+            //...
+            tags: {
+                //TagIDs must all be enumerated in map.tags.
+                tagA: true,
+                //Tags can be removed too
+                tagB: false
+            }
+            //...
+        },
+        b: {
+            //...
+            //Equivalent to {tagA: true, tagB: true}
+            tags: ['tagA', 'tagB']
+            //...
+        },
+        c : {
+            //...
+            //Equivalent to {tagA: true}
+            tags: 'tagA'
+            //...
+        }
+    }
+    //...
+}
+```
+
 ## Libraries
 
 Properties and display values can be finicky to define and compose. Libraries allow a definition to load in pre-defined properties and display configurations to use as a base.

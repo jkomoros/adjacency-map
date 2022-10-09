@@ -233,8 +233,23 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		const rawNodeDisplay = rawNode.display || {};
 		const rawValues = rawNode.values || {};
 		const values = Object.fromEntries(Object.entries(rawValues).map(entry => [entry[0], calculateValueLeaf(entry[1])]));
+		const tags : TagMap = {};
+		if (rawNode.tags != undefined) {
+			if (typeof rawNode.tags == 'string') {
+				tags[rawNode.tags] = true;
+			} else if (Array.isArray(rawNode.tags)) {
+				for (const tag of rawNode.tags) {
+					tags[tag] = true;
+				}
+			} else {
+				for (const [tagID, value] of Object.entries(rawNode.tags)) {
+					tags[tagID] = value;
+				}
+			}
+		}
 		nodes[id] = {
 			...rawNode,
+			tags,
 			edges,
 			values,
 			display: {
@@ -332,6 +347,9 @@ const validateData = (data : MapDefinition) : void => {
 				if (typeof valueValue != 'number') throw new Error('values property ' + valueName + ' is not a number as expected');
 				if (!data.properties[valueName]) throw new Error('values property ' + valueName + ' is not defined in properties');
 			}
+		}
+		for (const tagID of Object.keys(nodeData.tags)) {
+			if (!data.tags[tagID]) throw new Error(nodeName + ' defined an unknown tag: ' + tagID);
 		}
 	}
 	for(const [type, propertyDefinition] of Object.entries(data.properties)) {
