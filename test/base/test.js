@@ -348,6 +348,34 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for a property definition that has an explicit implication for a non-existent property', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.implies = ['foo'];
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for an edge that has an explicit implication for a non-existent property', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.edges[0].implies = ['foo'];
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('barfs for a property definition that says no edges but there are edges in nodes on the map', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.noEdges = true;
@@ -402,6 +430,42 @@ describe('AdjacencyMap validation', () => {
 		input.properties.foo = {
 			value: {ref: 'engineering'},
 			noEdges: true,
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a property definition that has an explicit implication for property that says noEdges', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.implies = ['foo'];
+		input.properties.foo = {
+			value: 3,
+			noEdges: true
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for an edge that has an explicit implication for a property that is noEdges', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.edges[0].implies = ['foo'];
+		input.properties.foo = {
+			value: 3,
+			noEdges: true
 		};
 		const errorExpected = true;
 		const fn = () => {
