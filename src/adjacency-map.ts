@@ -163,6 +163,23 @@ const extractEdgesFromRawNodeDefinition = (nodeData : RawNodeDefinition) : EdgeV
 	return edges;
 };
 
+export const makeTagMap = (input : undefined | TagID | TagID[] | TagMap) : TagMap => {
+	if (!input) return {};
+	const tags : TagMap = {};
+	if (typeof input == 'string') {
+		tags[input] = true;
+	} else if (Array.isArray(input)) {
+		for (const tag of input) {
+			tags[tag] = true;
+		}
+	} else {
+		for (const [tagID, value] of Object.entries(input)) {
+			tags[tagID] = value;
+		}
+	}
+	return tags;
+};
+
 //Does things like include libraries, convert Raw* to * (by calculateValueLeaf
 //on any constants, etc)
 //Exported for use in tests
@@ -234,20 +251,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		const rawNodeDisplay = rawNode.display || {};
 		const rawValues = rawNode.values || {};
 		const values = Object.fromEntries(Object.entries(rawValues).map(entry => [entry[0], calculateValueLeaf(entry[1])]));
-		const tags : TagMap = {};
-		if (rawNode.tags != undefined) {
-			if (typeof rawNode.tags == 'string') {
-				tags[rawNode.tags] = true;
-			} else if (Array.isArray(rawNode.tags)) {
-				for (const tag of rawNode.tags) {
-					tags[tag] = true;
-				}
-			} else {
-				for (const [tagID, value] of Object.entries(rawNode.tags)) {
-					tags[tagID] = value;
-				}
-			}
-		}
+		const tags = makeTagMap(rawNode.tags);
 		nodes[id] = {
 			...rawNode,
 			tags,
