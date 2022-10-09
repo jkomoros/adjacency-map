@@ -529,6 +529,7 @@ export class AdjacencyMap {
 			for (const node of Object.values(this.nodes)) {
 				tags = {...tags, ...node.tags};
 			}
+			this._cachedTags = tags;
 		}
 		return this._cachedTags;
 	}
