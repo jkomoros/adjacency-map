@@ -14,6 +14,7 @@ import {
 
 import {
 	selectFilename,
+	selectHoveredNodeID,
 	selectLegalScenarioNames,
 	selectScale,
 	selectScenarioName
@@ -87,11 +88,13 @@ export const updateScenarioName = (scenarioName : ScenarioName) : AnyAction => {
 	};
 };
 
-export const updateHoveredNodeID = (nodeID? : NodeID) : AnyAction => {
-	return {
+export const updateHoveredNodeID : AppActionCreator =  (nodeID? : NodeID) => (dispatch, getState) => {
+	//This will get hit a lot so don't update state if hte nodeID hasn't changed.
+	if (selectHoveredNodeID(getState()) == nodeID) return;
+	dispatch({
 		type: UPDATE_HOVERED_NODE_ID,
 		nodeID
-	};
+	});
 };
 
 export const updateWithMainPageExtra : AppActionCreator = (pageExtra) => (dispatch) => {
