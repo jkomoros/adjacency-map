@@ -61,7 +61,8 @@ import {
 	RESERVED_VALUE_DEFINITION_PROPERTIES, 
 	validateValueDefinition,
 	valueDefinitionIsLeaf,
-	valueDefinitionIsStringType
+	valueDefinitionIsStringType,
+	valueDefinitionReliesOnEdges
 } from './value-definition.js';
 
 import {
@@ -211,9 +212,10 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		const dependencies = extractRequiredDependencies(value);
 		const definition : PropertyDefinition = {
 			...rawDefinition,
+			noEdges: !!rawDefinition.noEdges,
 			value,
 			dependencies,
-			excludeFromDefaultImplication: !! rawDefinition.excludeFromDefaultImplication,
+			excludeFromDefaultImplication: (!! rawDefinition.excludeFromDefaultImplication || !!rawDefinition.noEdges),
 			display: {
 				...rawEdgeDisplay
 			},
@@ -305,6 +307,7 @@ const validateData = (data : MapDefinition) : void => {
 		for (const edge of nodeEdges) {
 			if (!edge.type) throw new Error(nodeName + ' has an edge with no type');
 			if (!data.properties[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
+			if (data.properties[edge.type].noEdges) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' but that edge type does not allow any edges');
 		}
 		validateDisplay(nodeData.display, exampleValues);
 		if (nodeData.values) {
@@ -321,6 +324,8 @@ const validateData = (data : MapDefinition) : void => {
 		} catch (err) {
 			throw new Error(type + ' does not have a legal value definition: ' + err);
 		}
+		if (propertyDefinition.noEdges && valueDefinitionReliesOnEdges(propertyDefinition.value)) throw new Error(type + ' has set noEdges but its value definition relies on edges');
+		if (propertyDefinition.noEdges && propertyDefinition.implies) throw new Error(type + ' sets noEdges but also sets an implies value.');
 		if (propertyDefinition.combine && !COMBINERS[propertyDefinition.combine]) throw new Error('Unknown combiner: ' + propertyDefinition.combine);
 		if (propertyDefinition.description && typeof propertyDefinition.description != 'string') throw new Error(type + ' has a description not of type string');
 		if (propertyDefinition.constants) {
@@ -663,9 +668,9 @@ class AdjacencyMapNode {
 				//like values.
 				continue;
 			}
-			const rawEdges = edgeByType[type];
-			if (!rawEdges) continue;
+			const rawEdges = edgeByType[type] || [];
 			const typeDefinition = this._map.data.properties[type];
+			if (rawEdges.length == 0 && !typeDefinition.noEdges) continue;
 			const edgeValueDefinition = typeDefinition.value;
 			const constants = typeDefinition.constants || {};
 			const defaultedEdges = rawEdges.map(edge => ({...constants, ...edge}));

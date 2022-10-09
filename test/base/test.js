@@ -348,6 +348,89 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for a property definition that says no edges but there are edges in nodes on the map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.noEdges = true;
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a property definition that says no edges also sets implies', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.foo = {
+			value: 3,
+			noEdges: true,
+			implies: '*'
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a property definition that says no edges but has a value that relies on edges', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.foo = {
+			value: {constant: 'weight'},
+			noEdges: true,
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a property definition that says no edges but has a value that relies on refs', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.foo = {
+			value: {ref: 'engineering'},
+			noEdges: true,
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a property definition that says no edges', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.foo = {
+			value: 3,
+			noEdges: true
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('barfs for a graph with a direct cycle in it', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.nodes.b.edges.push({type: 'engineering', ref:'d'});
@@ -3430,6 +3513,57 @@ engineering: 3`;
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('ensure when noEdges provided excludeFromDefaultImplication automatically set', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.foo = {
+			value: 3,
+			noEdges: true
+		};
+		const map = new AdjacencyMap(input);
+		assert.deepStrictEqual(map.data.properties.foo.excludeFromDefaultImplication, true);
+		// const node = map.node('a');
+		// const actual = node.values;
+		// const golden = {
+		// 	...NODE_A_BASE_VALUES
+		// }
+		// assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a constant noEdges property even when no edges', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.foo = {
+			value: 3,
+			noEdges: true
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			...NODE_A_BASE_VALUES,
+			foo: 3
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a noEdges property even when no edges that relies on other values', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.foo = {
+			value: {
+				operator: '+',
+				a: {result: 'engineering'},
+				b: {result: 'ux'}
+			},
+			noEdges: true
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			...NODE_A_BASE_VALUES,
+			foo: 3
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
 
 });
 
@@ -3926,8 +4060,6 @@ describe('renderEdges', () => {
 		];
 		assert.deepStrictEqual(actual, golden);
 	});
-
-
 
 });
 
