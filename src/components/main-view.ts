@@ -149,6 +149,10 @@ class MainView extends connect(store)(PageViewElement) {
 					justify-content: flex-end;
 				}
 
+				circle:hover {
+					cursor: pointer;
+				}
+
 			`
 		];
 	}
