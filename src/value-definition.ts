@@ -470,6 +470,12 @@ export const cloneWithSelf = (definition: ValueDefinition, self : PropertyName) 
 	return clone;
 };
 
+//Returns true if the value definition relies on edge values
+export const valueDefinitionReliesOnEdges = (definition : ValueDefinition) : boolean => {
+	const defs = listNestedDefinitions(definition);
+	return defs.some(def => valueDefinitionIsRefValue(def) || valueDefinitionIsEdgeConstant(def));
+};
+
 export const calculateValueLeaf = (definition : ValueDefinitionLeaf) : number =>  {
 	if (typeof definition == 'boolean') return definition ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER;
 
