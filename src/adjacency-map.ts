@@ -774,7 +774,10 @@ class AdjacencyMapNode {
 
 	fullDescription(includeHidden = false) : string {
 		const filter = includeHidden ? () => true : (entry : [PropertyName, number] ) => !this._map.data.properties[entry[0]].hide;
-		return this.displayName + '\n' + this.description + '\n\n' + Object.entries(this.values).filter(filter).map(entry => entry[0] + ': ' + entry[1]).join('\n');
+		let result = this.displayName + '\n';
+		result +=  this.description + '\n\n';
+		result += Object.entries(this.values).filter(filter).map(entry => entry[0] + ': ' + entry[1]).join('\n');
+		return result;
 	}
 
 	get edges() : ExpandedEdgeValue[] {
