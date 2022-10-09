@@ -733,6 +733,7 @@ class AdjacencyMapNode {
 				partialResult,
 				rootValue: this._map.rootValues,
 				tags: this.tags,
+				definition: this._map.data
 			};
 			const values = calculateValue(edgeValueDefinition, args);
 			if (values.length == 0) throw new Error('values was not at least of length 1');
@@ -811,6 +812,7 @@ class AdjacencyMapNode {
 			partialResult: this.values,
 			rootValue: this._map.rootValues,
 			tags: this.tags,
+			definition: this._map.data
 		};
 		if (input) args.input = input;
 		const result = calculateValue(definition, args);
@@ -1011,6 +1013,7 @@ class AdjacencyMapNode {
 			partialResult: this.values,
 			rootValue: this._map.rootValues,
 			tags: this.tags,
+			definition: this._map.data
 		});
 		if (result.length < 1) throw new Error('Value definition returned an empty array');
 		return result[0];

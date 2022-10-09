@@ -227,6 +227,7 @@ export type ValueDefinitionCalculationArgs = {
 	rootValue : NodeValues,
 	//The tags for the result node.
 	tags: TagMap,
+	definition: MapDefinition,
 	//The input numbers, which will be returned by ValueDefinitionInput, if this
 	//is a context that does that.
 	input? : number[]
