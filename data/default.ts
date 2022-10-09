@@ -27,9 +27,15 @@ const basePropertyDefinition = {
 
 const data : RawMapDefinition = {
 	tags: {
-		gui: {},
-		extended: {},
-		im2Im: {},
+		gui: {
+			displayName: 'GUI'
+		},
+		extended: {
+			displayName: 'Extended'
+		},
+		im2Im: {
+			displayName: 'Image2Image'
+		},
 	},
 	properties: {
 		engineering: {
