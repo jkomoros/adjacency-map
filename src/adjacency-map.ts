@@ -297,7 +297,8 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 			tags[tagID] = {
 				displayName: rawTagDefinition.displayName || tagID,
 				color: rawTagDefinition.color || 'red',
-				root: !!rawTagDefinition.root
+				root: !!rawTagDefinition.root,
+				constants: Object.fromEntries(Object.entries(rawTagDefinition.constants || {}).map(entry => [entry[0], calculateValueLeaf(entry[1])]))
 			};
 		}
 	}

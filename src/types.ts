@@ -495,12 +495,27 @@ export type MapDisplay = {
 
 export type TagID = string;
 
-export type TagDefinition = {
+export type TagConstantName = string;
+
+export type RawTagDefinition = {
 	displayName? : string,
 	color? : CSSColor,
 	//If true, will be included in map.rootTags()
 	root?: boolean
+	constants?: {
+		[constantName : TagConstantName]: ValueDefinitionLeaf
+	}
 };
+
+export type TagDefinition = {
+	displayName : string,
+	color : CSSColor,
+	//If true, will be included in map.rootTags()
+	root: boolean
+	constants: {
+		[constantName : TagConstantName]: number
+	}
+}
 
 export type TagMap = {
 	[id : TagID] : boolean
@@ -537,7 +552,7 @@ export type RawMapDefinition = {
 	import?: LibraryType | LibraryType[],
 	display?: RawMapDisplay,
 	tags?: {
-		[id : TagID]: TagDefinition,
+		[id : TagID]: RawTagDefinition,
 	},
 	properties?: {
 		[type : PropertyName]: RawPropertyDefinition
@@ -558,7 +573,7 @@ export type MapDefinition = {
 		[type : PropertyName]: PropertyDefinition
 	}
 	tags: {
-		[id : TagID]: Required<TagDefinition>
+		[id : TagID]: TagDefinition
 	}
 	display: MapDisplay,
 	root: NodeValues,

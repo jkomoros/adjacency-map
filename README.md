@@ -964,7 +964,13 @@ const data : RawMapDefinition = {
         displayName: 'My tag',
         color: 'green',
         //Will be included in map.rootTags()
-        root: true
+        root: true,
+        //Constants can enumerate any constant numbers.
+        constants: {
+            weight: 5
+            //True, false, and null are also allowed
+            include: true
+        }
     },
     two: {
         //displayName will default to the tagID if not provided
