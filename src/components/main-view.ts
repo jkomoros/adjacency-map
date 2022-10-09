@@ -51,6 +51,7 @@ import {
 	RenderEdgeValue,
 	RootState,
 	ScenarioName,
+	TagID,
 	TagMap,
 } from '../types.js';
 
@@ -178,7 +179,7 @@ class MainView extends connect(store)(PageViewElement) {
 					</div>
 					${Object.keys(this._summaryTags).length && this._adjacencyMap ? 
 		html`<h3>Tags</h3>
-				${Object.keys(this._summaryTags).map(tagName => html`<div>${this._adjacencyMap?.data.tags[tagName].displayName}</div>`)}`
+				${Object.keys(this._summaryTags).map(tagName => this._htmlForTag(tagName))}`
 		: ''}
 				</div>
 			</div>
@@ -186,6 +187,10 @@ class MainView extends connect(store)(PageViewElement) {
 				${this._svg()}
 			</div>
 		`;
+	}
+
+	_htmlForTag(tagName : TagID) : TemplateResult {
+		return html`<div>${this._adjacencyMap?.data.tags[tagName].displayName}</div>`;
 	}
 
 	// This is called every time something is updated in the store.
