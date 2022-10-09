@@ -3966,6 +3966,81 @@ engineering: 3`;
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('Allows node.tags as map', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {},
+			tagB: {}
+		};
+		input.nodes.a.tags = {tagA: true};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.tags;
+		const golden = {
+			tagA: true
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Allows node.tags as list', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {},
+			tagB: {}
+		};
+		input.nodes.a.tags = ['tagA', 'tagB'];
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.tags;
+		const golden = {
+			tagA: true,
+			tagB: true
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Allows node.tags as a single tagID', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {},
+			tagB: {root: true}
+		};
+		input.nodes.a.tags = 'tagA';
+
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.tags;
+		const golden = {
+			tagA: true,
+			tagB: true
+		};
+		assert.deepStrictEqual(actual, golden);
+
+	});
+
+	it('Allows node.tags to remove a tag in root', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {
+				root: true
+			},
+			tagB: {}
+		};
+		input.nodes.a.tags = {
+			tagA: false,
+			tagB: true
+		};
+
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.tags;
+		const golden = {
+			tagB: true
+		};
+		assert.deepStrictEqual(actual, golden);
+
+	});
+
 });
 
 describe('tidyLongestTree', () => {

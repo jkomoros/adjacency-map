@@ -943,6 +943,17 @@ class AdjacencyMapNode {
 		return this._map._children(this.id) || [];
 	}
 
+	get tags() : TagMap {
+		//TODO: cache
+		let tags = this._map.rootTags;
+		if (this._data) {
+			tags = {...tags, ...this._data.tags};
+			//Remove any explicitly set to false
+			tags = Object.fromEntries(Object.entries(tags).filter(entry => entry[1]));
+		}
+		return tags;
+	}
+
 	/**
 	 * The final computed values
 	 */
