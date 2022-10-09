@@ -378,6 +378,9 @@ export type RawPropertyDefinition = {
 	//{ref: 'foo'}) and its implies property must be empty. If not provided,
 	//defaults to 'edges'.
 	calculateWhen?: 'edges' | 'always';
+	//If true, then the source node will automatically inherit all of the tags
+	//from all of the ref'd nodes.
+	extendTags? : boolean,
 	//Some properties (especially in libraries don't make sense to print out in e.g. AdjacencyMapNode.description)
 	hide? : true,
 	display? : Partial<EdgeDisplay>,
@@ -395,6 +398,7 @@ export type PropertyDefinition = {
 	implies? : ImpliesConfiguration,
 	excludeFromDefaultImplication : boolean,
 	calculateWhen: 'edges' | 'always',
+	extendTags: boolean,
 	hide? : true,
 	display: Partial<EdgeDisplay>,
 	constants?: {

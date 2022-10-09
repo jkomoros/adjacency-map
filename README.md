@@ -167,6 +167,10 @@ If calculateWhen is 'always':
 - `implies` must be unset or set to ''.
 - `excludeFromDefaultImplication` is automatically set to true.
 
+### extendTags? : boolean
+
+If true, then the source node's base tag set will include any tags on the ref node. This allows tags to 'flow' through a graph additively.
+
 ### display? : EdgeDisplay
 
 Defines how to display this edge by default. See the `display` section below for how these configurations work.
@@ -976,6 +980,8 @@ const data : RawMapDefinition = {
     //...
 }
 ```
+
+Tags are also included in a node's tags if from any node it has an edge to whose definition sets extendTags: true.
 
 ## Libraries
 

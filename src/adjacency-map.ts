@@ -219,6 +219,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 			calculateWhen,
 			value,
 			dependencies,
+			extendTags: !! rawDefinition.extendTags,
 			excludeFromDefaultImplication: (!! rawDefinition.excludeFromDefaultImplication || calculateWhen != 'edges'),
 			display: {
 				...rawEdgeDisplay
@@ -951,9 +952,19 @@ class AdjacencyMapNode {
 		return this._map._children(this.id) || [];
 	}
 
+	//Tags includes all of the tags included in root, included in any nodes we
+	//have an edge with .extendTags=true on, and any tags our node.data.tags
+	//includes.
 	get tags() : TagMap {
 		//TODO: cache
 		let tags = this._map.rootTags;
+		const nodeIDsToExtendTagsFrom : {[nodeID : NodeID] : true} = {};
+		for (const edge of this.edges) {
+			if (this._map.data.properties[edge.type].extendTags) nodeIDsToExtendTagsFrom[edge.ref] = true;
+		}
+		for (const nodeID of Object.keys(nodeIDsToExtendTagsFrom)) {
+			tags = {...tags, ...this._map.node(nodeID).tags};
+		}
 		if (this._data) {
 			tags = {...tags, ...this._data.tags};
 			//Remove any explicitly set to false

@@ -4061,6 +4061,28 @@ engineering: 3`;
 
 	});
 
+	it('Allows node.tags to remove a tag in root', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {},
+			tagB: {}
+		};
+		input.properties.ux.extendTags = true;
+		input.nodes.a.tags = 'tagA';
+		input.nodes.b.tags = 'tagB';
+
+		const map = new AdjacencyMap(input);
+		const node = map.node('b');
+		const actual = node.tags;
+		const golden = {
+			//This one comes from node a
+			tagA:true,
+			tagB:true
+		};
+		assert.deepStrictEqual(actual, golden);
+
+	});
+
 });
 
 describe('tidyLongestTree', () => {
