@@ -368,11 +368,14 @@ export type RawPropertyDefinition = {
 	//If true, then this property will never be implied as an edge (even with
 	//'*' or {exclude:[]} on others) unless it is explicitly named.
 	excludeFromDefaultImplication? : boolean,
-	//If true, then no edges may be included for this type but its value
+	//Controls when the value definition is executed. If 'edges' then it will
+	//only be run if at least one edge of that type exists on a node. If
+	//'always', then no edges may be included for this type but its value
 	//definition will be executed for every node. In addition, its value
 	//definition must not rely on any edge values (e.g. {constant:'foo'} or
-	//{ref: 'foo'}) and its implies property must be empty.
-	noEdges? : boolean;
+	//{ref: 'foo'}) and its implies property must be empty. If not provided,
+	//defaults to 'edges'.
+	calculateWhen?: 'edges' | 'always';
 	//Some properties (especially in libraries don't make sense to print out in e.g. AdjacencyMapNode.description)
 	hide? : true,
 	display? : Partial<EdgeDisplay>,
@@ -389,7 +392,7 @@ export type PropertyDefinition = {
 	dependencies : PropertyName[],
 	implies? : ImpliesConfiguration,
 	excludeFromDefaultImplication : boolean,
-	noEdges: boolean,
+	calculateWhen: 'edges' | 'always',
 	hide? : true,
 	display: Partial<EdgeDisplay>,
 	constants?: {

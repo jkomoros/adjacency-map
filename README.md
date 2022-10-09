@@ -158,11 +158,11 @@ The value calculation is the same for every calculation of that property type on
 
 The final value for a node has to reduce a potentially multi-entry array of numbers (e.g. if there are multiple edges of this type) down to a single number. This combiner will be run on the final result, reducing it to a single number. Any `CombinerType` is allowed; if not included, it defaults to `mean`.
 
-### noEdges? : boolean
+### calculateWhen? : 'edges' | 'always'
 
-Many values rely on there being edges to do their calculation. Some values rely only on other properties in values, or are just constants. If noEdges is true, then this value will be calcluated on a node even if there are no edges (explicit or implied) to this node.
+Many values rely on there being edges to do their calculation (calculateWhen of 'edges'). Some values rely only on other properties in values, or are just constants. If calculateWhen is 'always', then this value will be calcluated on a node even if there are no edges (explicit or implied) to this node.
 
-If this is true: 
+If calculateWhen is 'always': 
 - the value must not include any `{constant: 'foo'}` or `{ref: 'foo'}` ValueDefinitions nested. 
 - `implies` must be unset or set to ''.
 - `excludeFromDefaultImplication` is automatically set to true.
@@ -179,13 +179,13 @@ Often you want values to 'flow' through nodes at long as there is any edge from 
 
 This is where an edge can define a default implication of other edges whenever it shows up. Read more at 'Implied edges', below.
 
-If noEdges is true, then implies must be empty.
+If calculateWhen != 'edges', then implies must be empty.
 
 ### excludeFromDefaultImplication? : boolean
 
 A common value for `implies` is `*`, which means "include all other nodes". However, some edges really only want to be inclued if they are explicitly added. This allows a property type to opt out of being implied via `*`, unless they are specifically implied by another node.
 
-If noEdges is true, then excludeFromDefaultImplication is automatically set to true.
+If calculeWhen != 'edges', then excludeFromDefaultImplication is automatically set to true.
 
 ### hide? : true
 

@@ -210,12 +210,13 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		const rawEdgeDisplay = rawDefinition.display || {};
 		const value = cloneWithSelf(rawDefinition.value, name);
 		const dependencies = extractRequiredDependencies(value);
+		const calculateWhen = rawDefinition.calculateWhen || 'edges';
 		const definition : PropertyDefinition = {
 			...rawDefinition,
-			noEdges: !!rawDefinition.noEdges,
+			calculateWhen,
 			value,
 			dependencies,
-			excludeFromDefaultImplication: (!! rawDefinition.excludeFromDefaultImplication || !!rawDefinition.noEdges),
+			excludeFromDefaultImplication: (!! rawDefinition.excludeFromDefaultImplication || calculateWhen != 'edges'),
 			display: {
 				...rawEdgeDisplay
 			},
@@ -307,8 +308,8 @@ const validateData = (data : MapDefinition) : void => {
 		for (const edge of nodeEdges) {
 			if (!edge.type) throw new Error(nodeName + ' has an edge with no type');
 			if (!data.properties[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
-			if (data.properties[edge.type].noEdges) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' but that edge type does not allow any edges');
-			if (Object.keys(explicitlyEnumaratedImpliedPropertyNames(edge.implies)).some(propertyName => !data.properties[propertyName] || data.properties[propertyName].noEdges)) throw new Error(nodeName + ' has an edge that has an implication that explicitly implies a property that doesn\'t exist or is noEdges');
+			if (data.properties[edge.type].calculateWhen == 'always') throw new Error(nodeName + ' has an edge of type ' + edge.type + ' but that edge type does not allow any edges');
+			if (Object.keys(explicitlyEnumaratedImpliedPropertyNames(edge.implies)).some(propertyName => !data.properties[propertyName] || data.properties[propertyName].calculateWhen == 'always')) throw new Error(nodeName + ' has an edge that has an implication that explicitly implies a property that doesn\'t exist or is noEdges');
 		}
 		validateDisplay(nodeData.display, exampleValues);
 		if (nodeData.values) {
@@ -325,11 +326,11 @@ const validateData = (data : MapDefinition) : void => {
 		} catch (err) {
 			throw new Error(type + ' does not have a legal value definition: ' + err);
 		}
-		if (propertyDefinition.noEdges && valueDefinitionReliesOnEdges(propertyDefinition.value)) throw new Error(type + ' has set noEdges but its value definition relies on edges');
-		if (propertyDefinition.noEdges && propertyDefinition.implies) throw new Error(type + ' sets noEdges but also sets an implies value.');
+		if (propertyDefinition.calculateWhen == 'always' && valueDefinitionReliesOnEdges(propertyDefinition.value)) throw new Error(type + ' has set noEdges but its value definition relies on edges');
+		if (propertyDefinition.calculateWhen == 'always' && propertyDefinition.implies) throw new Error(type + ' sets noEdges but also sets an implies value.');
 		if (propertyDefinition.combine && !COMBINERS[propertyDefinition.combine]) throw new Error('Unknown combiner: ' + propertyDefinition.combine);
 		if (propertyDefinition.description && typeof propertyDefinition.description != 'string') throw new Error(type + ' has a description not of type string');
-		if (Object.keys(explicitlyEnumaratedImpliedPropertyNames(propertyDefinition.implies)).some(propertyName => !data.properties[propertyName] || data.properties[propertyName].noEdges)) throw new Error(type + 'has an implication that explicitly implies a property that doesn\'t exist or is noEdges');
+		if (Object.keys(explicitlyEnumaratedImpliedPropertyNames(propertyDefinition.implies)).some(propertyName => !data.properties[propertyName] || data.properties[propertyName].calculateWhen == 'always')) throw new Error(type + 'has an implication that explicitly implies a property that doesn\'t exist or is noEdges');
 		if (propertyDefinition.constants) {
 			for (const [constantName, constantValue] of Object.entries(propertyDefinition.constants)) {
 				if (RESERVED_VALUE_DEFINITION_PROPERTIES[constantName]) throw new Error(constantName + ' was present in constants for ' + type + ' but is reserved');
@@ -677,7 +678,7 @@ class AdjacencyMapNode {
 			}
 			const rawEdges = edgeByType[type] || [];
 			const typeDefinition = this._map.data.properties[type];
-			if (rawEdges.length == 0 && !typeDefinition.noEdges) continue;
+			if (rawEdges.length == 0 && typeDefinition.calculateWhen == 'edges') continue;
 			const edgeValueDefinition = typeDefinition.value;
 			const constants = typeDefinition.constants || {};
 			const defaultedEdges = rawEdges.map(edge => ({...constants, ...edge}));

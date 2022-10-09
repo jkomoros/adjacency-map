@@ -378,7 +378,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a property definition that says no edges but there are edges in nodes on the map', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.properties.engineering.noEdges = true;
+		input.properties.engineering.calculateWhen = 'always';
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -394,7 +394,7 @@ describe('AdjacencyMap validation', () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.foo = {
 			value: 3,
-			noEdges: true,
+			calculateWhen: 'always',
 			implies: '*'
 		};
 		const errorExpected = true;
@@ -412,7 +412,7 @@ describe('AdjacencyMap validation', () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.foo = {
 			value: {constant: 'weight'},
-			noEdges: true,
+			calculateWhen: 'always',
 		};
 		const errorExpected = true;
 		const fn = () => {
@@ -429,7 +429,7 @@ describe('AdjacencyMap validation', () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.foo = {
 			value: {ref: 'engineering'},
-			noEdges: true,
+			calculateWhen: 'always',
 		};
 		const errorExpected = true;
 		const fn = () => {
@@ -447,7 +447,7 @@ describe('AdjacencyMap validation', () => {
 		input.properties.engineering.implies = ['foo'];
 		input.properties.foo = {
 			value: 3,
-			noEdges: true
+			calculateWhen: 'always'
 		};
 		const errorExpected = true;
 		const fn = () => {
@@ -465,7 +465,7 @@ describe('AdjacencyMap validation', () => {
 		input.nodes.a.edges[0].implies = ['foo'];
 		input.properties.foo = {
 			value: 3,
-			noEdges: true
+			calculateWhen: 'always'
 		};
 		const errorExpected = true;
 		const fn = () => {
@@ -482,7 +482,7 @@ describe('AdjacencyMap validation', () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.foo = {
 			value: 3,
-			noEdges: true
+			calculateWhen: 'always'
 		};
 		const errorExpected = false;
 		const fn = () => {
@@ -3581,7 +3581,7 @@ engineering: 3`;
 		const input = deepCopy(legalBaseInput);
 		input.properties.foo = {
 			value: 3,
-			noEdges: true
+			calculateWhen: 'always'
 		};
 		const map = new AdjacencyMap(input);
 		assert.deepStrictEqual(map.data.properties.foo.excludeFromDefaultImplication, true);
@@ -3597,7 +3597,7 @@ engineering: 3`;
 		const input = deepCopy(legalBaseInput);
 		input.properties.foo = {
 			value: 3,
-			noEdges: true
+			calculateWhen: 'always'
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
@@ -3617,7 +3617,7 @@ engineering: 3`;
 				a: {result: 'engineering'},
 				b: {result: 'ux'}
 			},
-			noEdges: true
+			calculateWhen: 'always'
 		};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
