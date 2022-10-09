@@ -475,6 +475,15 @@ export type MapDisplay = {
 	edgeCombiner : EdgeCombinerDisplay;
 }
 
+export type TagID = string;
+
+export type TagDefinition = {
+	displayName? : string,
+	color? : CSSColor,
+	//If true, will be included in map.rootTags()
+	root?: boolean
+};
+
 export type ScenarioName = string;
 
 //A scenario is an overlay over the base configuration. Currnetly it may only
@@ -505,6 +514,9 @@ export type RawMapDefinition = {
 	//always imported.
 	import?: LibraryType | LibraryType[],
 	display?: RawMapDisplay,
+	tags?: {
+		[id : TagID]: TagDefinition,
+	},
 	properties?: {
 		[type : PropertyName]: RawPropertyDefinition
 	}
@@ -522,6 +534,9 @@ export type RawMapDefinition = {
 export type MapDefinition = {
 	properties: {
 		[type : PropertyName]: PropertyDefinition
+	}
+	tags: {
+		[id : TagID]: Required<TagDefinition>
 	}
 	display: MapDisplay,
 	root: NodeValues,

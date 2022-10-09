@@ -26,7 +26,9 @@ import {
 	ScenariosDefinition,
 	Scenario,
 	ScenarioName,
-	RawNodeDefinition
+	RawNodeDefinition,
+	TagDefinition,
+	TagID
 } from './types.js';
 
 import {
@@ -268,10 +270,21 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		};
 		scenarios[scenarioName] = scenario;
 	}
+	const tags : {[id : TagID]: Required<TagDefinition>} = {};
+	if (data.tags) {
+		for (const [tagID, rawTagDefinition] of Object.entries(data.tags)) {
+			tags[tagID] = {
+				displayName: rawTagDefinition.displayName || tagID,
+				color: rawTagDefinition.color || 'red',
+				root: !!rawTagDefinition.root
+			};
+		}
+	}
 	return {
 		...data,
 		root,
 		display,
+		tags,
 		properties,
 		nodes,
 		scenarios
