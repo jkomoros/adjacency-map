@@ -824,8 +824,7 @@ value: {
 
 #### ValueDefinitionTagConstant
 
-Extracts the named constant for each of the tags on the result node. If the
-constant doesn't exist on that tag, null will be returned for that tag.
+Extracts the named constant for each of the tags on the result node.
 
 If there are no tags on the result node it will evaluate to `[null]`.
 
@@ -834,12 +833,15 @@ If there are no tags on the result node it will evaluate to `[null]`.
 tags: {
     tagA: {
         constants: {
-            weight: 5
+            weight: 5,
+            other: 2
         }
     },
     tagB: {
         constants: {
-            other: 2
+            //If this tag did not have weight or other, then the MapDefinition would not validate.
+            weight: 2,
+            other: 1
         }
     }
 }
@@ -848,7 +850,7 @@ tags: {
 value: {
     tagConstant: 'weight'
 }
-//Returns [5, null]
+//Returns [5, 2]
 ```
 
 #### ValueDefinitionLengthOf
@@ -994,9 +996,9 @@ const data : RawMapDefinition = {
         color: 'green',
         //Will be included in map.rootTags()
         root: true,
-        //Constants can enumerate any constant numbers.
+        //Each tag must enumerate the same constants
         constants: {
-            weight: 5
+            weight: 5,
             //True, false, and null are also allowed
             include: true
         }
@@ -1004,6 +1006,10 @@ const data : RawMapDefinition = {
     two: {
         //displayName will default to the tagID if not provided
         //color will default to 'red' if not provided
+        constants: {
+            weight: 2,
+            include: false
+        }
     }
 }
 ```

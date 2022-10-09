@@ -29,7 +29,8 @@ import {
 	RawNodeDefinition,
 	TagDefinition,
 	TagID,
-	TagMap
+	TagMap,
+	TagConstantName
 } from './types.js';
 
 import {
@@ -358,6 +359,23 @@ const validateData = (data : MapDefinition) : void => {
 			if (!data.tags[tagID]) throw new Error(nodeName + ' defined an unknown tag: ' + tagID);
 		}
 	}
+
+	const expectedTagConstants : {[name : TagConstantName]: true} = {};
+	let firstTag = true;
+	for (const [tagID, tagDefinition] of Object.entries(data.tags)) {
+		const notSeenConstants = {...expectedTagConstants};
+		for (const constantName of Object.keys(tagDefinition.constants)) {
+			if (firstTag) {
+				expectedTagConstants[constantName] = true;
+			} else {
+				if (!notSeenConstants[constantName]) throw new Error(tagID + ' had a constant named ' + constantName + ' but the first tag did not');
+				delete notSeenConstants[constantName];
+			}
+		}
+		if (Object.keys(notSeenConstants).length) throw new Error(tagID + ' was missing expected constants ' + Object.keys(notSeenConstants).join(', '));
+		firstTag = false;
+	}
+
 	for(const [type, propertyDefinition] of Object.entries(data.properties)) {
 		try {
 			validateValueDefinition(propertyDefinition.value, exampleValues, data, propertyDefinition);

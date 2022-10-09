@@ -468,7 +468,11 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 	}
 
 	if (valueDefinitionIsTagConstant(definition)) {
-		//Getting a non existent tag constant simply returns null
+		const tagNames = Object.keys(data.tags);
+		if (tagNames.length == 0) throw new Error('No tags defined');
+		//All tags must have the same constant sets
+		const firstTagValues = data.tags[tagNames[0]];
+		if (firstTagValues.constants[definition.tagConstant] === undefined) throw new Error('Invalid tagConstant: ' + definition.tagConstant);
 		return;
 	}
 

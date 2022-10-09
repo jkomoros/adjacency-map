@@ -2602,16 +2602,51 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('Allows a value of hasTag with a non-existing constant', async () => {
+	it('Barfs for a value of tagConstant with a non-existing constant', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.tags = {
-			tagA: {},
-			tagB: {}
+			tagA: {
+				constants: {
+					weight: 5
+				}
+			},
+			tagB: {
+				constants: {
+					weight: 2
+				}
+			}
 		};
 		input.properties.engineering.value = {
 			tagConstant: 'invalid'
 		};
-		//It will simply return null
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a ValueDefinition of tagConstant with a valid constant', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {
+				constants: {
+					weight: 5
+				}
+			},
+			tagB: {
+				constants: {
+					weight: 2
+				}
+			}
+		};
+		input.properties.engineering.value = {
+			tagConstant: 'weight'
+		};
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -4196,7 +4231,11 @@ engineering: 3`;
 					weight: 5
 				}
 			},
-			tagB: {}
+			tagB: {
+				constants: {
+					weight: 7
+				}
+			}
 		};
 		input.nodes.a.tags = ['tagA', 'tagB'];
 		input.properties.engineering.value = {
@@ -4207,7 +4246,7 @@ engineering: 3`;
 		const actual = node.values;
 		const golden = {
 			...NODE_A_BASE_VALUES,
-			engineering: (NULL_SENTINEL + 5) / 2
+			engineering: 6
 		};
 		assert.deepStrictEqual(actual, golden);
 
