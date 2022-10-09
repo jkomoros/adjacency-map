@@ -918,6 +918,28 @@ The default defintion is implicitly the scenario named ''.
 
 When there is more than one scenario defined, the UI shows a drop down allowing the user to select which scenario to render. The URL also includes the selected scenario. Hitting the left/right arrows also cycles through different scenarios.
 
+## Tags
+
+Diagrams also have a notion of `tags`. Tags are an enumerated set of binary tags. For example, in a diagram these might represent independent features that are represented in a product at each node.
+
+They are defined on the MapDefinition.tags.
+
+```
+const data : RawMapDefinition = {
+    //The tagID is the key
+    one: {
+        displayName: 'My tag',
+        color: 'green',
+        //Will be included in map.rootTags()
+        root: true
+    },
+    two: {
+        //displayName will default to the tagID if not provided
+        //color will default to 'red' if not provided
+    }
+}
+```
+
 ## Libraries
 
 Properties and display values can be finicky to define and compose. Libraries allow a definition to load in pre-defined properties and display configurations to use as a base.
