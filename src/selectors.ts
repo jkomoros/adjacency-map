@@ -39,6 +39,12 @@ export const selectData = createSelector(
 	(filename) => DATA[filename]
 );
 
+//The node that should be used for the summary readout
+export const selectSummaryNodeID = createSelector(
+	selectHoveredNodeID,
+	(hoveredNodeID) => hoveredNodeID
+);
+
 export const selectLegalScenarioNames = createSelector(
 	selectData,
 	(data) => data ? ['', ...Object.keys(data.scenarios || {})] : ['']
@@ -56,5 +62,38 @@ export const selectHashForCurrentState = createSelector(
 		const pieces : URLHashArgs = {};
 		if (scenarioName != DEFAULT_SCENARIO_NAME) pieces.s = scenarioName;
 		return Object.entries(pieces).map(entry => entry[0] + '=' + entry[1]).join('&');
+	}
+);
+
+export const selectSummaryDescription = createSelector(
+	selectSummaryNodeID,
+	selectAdjacencyMap,
+	(nodeID, map) => {
+		if (!map) return {};
+		if (nodeID === undefined) return '';
+		const node = map.node(nodeID);
+		return node.description;
+	}
+);
+
+export const selectSummaryValues = createSelector(
+	selectSummaryNodeID,
+	selectAdjacencyMap,
+	(nodeID, map) => {
+		if (!map) return {};
+		if (nodeID === undefined) return map.result;
+		const node = map.node(nodeID);
+		return node.values;
+	}
+);
+
+export const selectSummaryTags = createSelector(
+	selectSummaryNodeID,
+	selectAdjacencyMap,
+	(nodeID, map) => {
+		if (!map) return {};
+		if (nodeID === undefined) return map.tagsUnion;
+		const node = map.node(nodeID);
+		return node.tags;
 	}
 );
