@@ -2,6 +2,8 @@ export const UPDATE_FILENAME = 'UPDATE_FILENAME';
 export const UPDATE_SCALE = 'UPDATE_SCALE';
 export const UPDATE_SCENARIO_NAME = 'UPDATE_SCENARIO_NAME';
 
+export const UPDATE_HOVERED_NODE_ID = 'UPDATE_HOVERED_NODE_ID';
+
 export const DEFAULT_FILE_NAME = 'default';
 //Also in tools/config.ts
 export const DATA_DIRECTORY = 'data';
@@ -23,6 +25,7 @@ import {
 
 import {
 	DataFilename,
+	NodeID,
 	ScenarioName
 } from '../types.js';
 
@@ -81,6 +84,13 @@ export const updateScenarioName = (scenarioName : ScenarioName) : AnyAction => {
 	return {
 		type: UPDATE_SCENARIO_NAME,
 		scenarioName,
+	};
+};
+
+export const updateHoveredNodeID = (nodeID? : NodeID) : AnyAction => {
+	return {
+		type: UPDATE_HOVERED_NODE_ID,
+		nodeID
 	};
 };
 

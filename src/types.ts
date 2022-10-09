@@ -606,6 +606,7 @@ export type DataState = {
 	filename : DataFilename;
 	scale: number;
 	scenarioName : ScenarioName;
+	hoveredNodeID? : NodeID;
 }
 
 export type RootState = {
