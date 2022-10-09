@@ -27,7 +27,8 @@ import {
 	ValueDefinitionLengthOf,
 	ValueDefinitionInput,
 	ValueDefinitionFilter,
-	PropertyName
+	PropertyName,
+	MapDefinition
 } from './types.js';
 
 import {
@@ -320,7 +321,7 @@ export const extractRequiredDependencies = (definition : ValueDefinition) : Prop
 //have already checked. Before, we loaded files from json and had to a
 //conversion leap of faith, but now everything is natively typescript even in
 //data/ so that leap of faith is less important.
-export const validateValueDefinition = (definition : ValueDefinition, exampleValue : NodeValues, edgeDefinition? : PropertyDefinition) : void => {
+export const validateValueDefinition = (definition : ValueDefinition, exampleValue : NodeValues, data: MapDefinition, edgeDefinition? : PropertyDefinition) : void => {
 	if (valueDefinitionIsLeaf(definition)) return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {
 		if (definition.some(leaf => !valueDefinitionIsLeaf(leaf))) throw new Error('If an array is provided it msut contain only numbers, booleans, or null');
@@ -354,7 +355,7 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 	}
 
 	if (valueDefinitionIsCombine(definition)) {
-		validateValueDefinition(definition.value, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.value, exampleValue, data, edgeDefinition);
 		if (!COMBINERS[definition.combine]) throw new Error('Unknown combiner: ' + definition.combine);
 		return;
 	}
@@ -370,65 +371,65 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 	}
 
 	if (valueDefinitionIsArithmetic(definition)) {
-		validateValueDefinition(definition.a, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.a, exampleValue, data, edgeDefinition);
 		if (!Object.keys(OPERATORS).some(operator => operator == definition.operator)) throw new Error('Unknown operator: ' + definition.operator);
-		if (!arithmeticIsUnary(definition)) validateValueDefinition(definition.b, exampleValue, edgeDefinition);
+		if (!arithmeticIsUnary(definition)) validateValueDefinition(definition.b, exampleValue, data, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsCompare(definition)) {
-		validateValueDefinition(definition.a, exampleValue, edgeDefinition);
-		validateValueDefinition(definition.b, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.a, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.b, exampleValue, data, edgeDefinition);
 		if (!Object.keys(COMPARE_OPERATORS).some(operator => operator == definition.compare)) throw new Error('Unknown compare operator: ' + definition.compare);
 		return;
 	}
 
 	if (valueDefinitionIsIf(definition)) {
-		validateValueDefinition(definition.if, exampleValue, edgeDefinition);
-		validateValueDefinition(definition.then, exampleValue, edgeDefinition);
-		validateValueDefinition(definition.else, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.if, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.then, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.else, exampleValue, data, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsFilter(definition)) {
-		validateValueDefinition(definition.filter, exampleValue, edgeDefinition);
-		validateValueDefinition(definition.value, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.filter, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.value, exampleValue, data, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsClip(definition)) {
-		validateValueDefinition(definition.clip, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.clip, exampleValue, data, edgeDefinition);
 		if (definition.low == undefined && definition.high == undefined) throw new Error('Clip expects at least one of low or high');
-		if (definition.low != undefined) validateValueDefinition(definition.low, exampleValue, edgeDefinition);
-		if (definition.high != undefined) validateValueDefinition(definition.high, exampleValue, edgeDefinition);
+		if (definition.low != undefined) validateValueDefinition(definition.low, exampleValue, data, edgeDefinition);
+		if (definition.high != undefined) validateValueDefinition(definition.high, exampleValue, data, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsRange(definition)) {
-		validateValueDefinition(definition.range, exampleValue, edgeDefinition);
-		validateValueDefinition(definition.low, exampleValue, edgeDefinition);
-		validateValueDefinition(definition.high, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.range, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.low, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.high, exampleValue, data, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsPercent(definition)) {
-		validateValueDefinition(definition.percent, exampleValue, edgeDefinition);
-		validateValueDefinition(definition.low, exampleValue, edgeDefinition);
-		validateValueDefinition(definition.high, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.percent, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.low, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.high, exampleValue, data, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsCollect(definition)) {
 		if (!definition.collect || definition.collect.length == 0) throw new Error('collect requires at least one child');
 		for (const child of definition.collect) {
-			validateValueDefinition(child, exampleValue, edgeDefinition);
+			validateValueDefinition(child, exampleValue, data, edgeDefinition);
 		}
 		return;
 	}
 
 	if (valueDefinitionIsLengthOf(definition)) {
 		if (definition.lengthOf != 'refs' && definition.lengthOf != 'edges' && definition.lengthOf != 'input') throw new Error('lengthOf property must be either refs or edges or input');
-		validateValueDefinition(definition.value, exampleValue, edgeDefinition);
+		validateValueDefinition(definition.value, exampleValue, data, edgeDefinition);
 		return;
 	}
 
