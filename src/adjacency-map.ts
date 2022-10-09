@@ -28,7 +28,8 @@ import {
 	ScenarioName,
 	RawNodeDefinition,
 	TagDefinition,
-	TagID
+	TagID,
+	TagMap
 } from './types.js';
 
 import {
@@ -471,6 +472,11 @@ export class AdjacencyMap {
 	//defintion.
 	get scenario() : Scenario {
 		return this._scenarioData(this.scenarioName);
+	}
+
+	get rootTags() : TagMap {
+		//TODO: cache
+		return Object.fromEntries(Object.entries(this._data.tags).filter(entry => entry[1].root).map(entry => [entry[0], true]));
 	}
 
 	get result() : NodeValues {

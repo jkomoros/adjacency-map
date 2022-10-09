@@ -484,6 +484,10 @@ export type TagDefinition = {
 	root?: boolean
 };
 
+export type TagMap = {
+	[id : TagID] : boolean
+};
+
 export type ScenarioName = string;
 
 //A scenario is an overlay over the base configuration. Currnetly it may only

@@ -3932,6 +3932,22 @@ engineering: 3`;
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('Correctly calculates map.rootEdges', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags= {
+			tagA: {
+				root: true
+			},
+			tagB: {}
+		};
+		const map = new AdjacencyMap(input);
+		const actual = map.rootTags;
+		const golden = {
+			tagA: true
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
 });
 
 describe('tidyLongestTree', () => {
