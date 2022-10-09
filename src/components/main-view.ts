@@ -25,6 +25,10 @@ import {
 	selectLegalScenarioNames,
 	selectScenarioName,
 	selectHashForCurrentState,
+	selectSummaryDescription,
+	selectSummaryNodeID,
+	selectSummaryTags,
+	selectSummaryValues,
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -42,9 +46,12 @@ import {
 
 import {
 	DataFilename,
+	NodeID,
+	NodeValues,
 	RenderEdgeValue,
 	RootState,
 	ScenarioName,
+	TagMap,
 } from '../types.js';
 
 import {
@@ -88,6 +95,18 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_hashForCurrentState : string;
+
+	@state()
+	_summaryNodeID : NodeID | undefined;
+
+	@state()
+	_summaryTags : TagMap;
+
+	@state()
+	_summaryDescription : string;
+
+	@state()
+	_summaryValues : NodeValues;
 
 	static override get styles() {
 		return [
@@ -146,7 +165,22 @@ class MainView extends connect(store)(PageViewElement) {
 				<select id='scenarios' .value=${this._scenarioName} @change=${this._handleScenarioNameChanged}>
 					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName}>${scenarioName || 'Default'}</option>`)}
 				</select>` : ''}
-				<pre class='result'>Total: ${'\n' + this._adjacencyMap?.resultDescription() || ''}</pre>
+				<div class='summary'>
+					<div>
+						Node: <strong>${this._summaryNodeID === undefined ? html`<em>Result</em>` : (this._summaryNodeID || html`<em>Root</em>`)}</strong>
+					</div>
+					<div>
+						Description: ${this._summaryDescription}
+					</div>
+					<div>
+						<h3>Values</h3>
+						${Object.entries(this._summaryValues).map(entry => html`<div><strong>${entry[0]}</strong>: ${entry[1]}</div>`)}
+					</div>
+					${Object.keys(this._summaryTags).length ? 
+		html`<h3>Tags</h3>
+				${Object.keys(this._summaryTags).map(tagName => html`<div>${tagName}</div>`)}`
+		: ''}
+				</div>
 			</div>
 			<div class='container'>
 				${this._svg()}
@@ -164,6 +198,10 @@ class MainView extends connect(store)(PageViewElement) {
 		this._scenarioName = selectScenarioName(state);
 		this._legalScenarioNames = selectLegalScenarioNames(state);
 		this._hashForCurrentState = selectHashForCurrentState(state);
+		this._summaryDescription = selectSummaryDescription(state);
+		this._summaryNodeID = selectSummaryNodeID(state);
+		this._summaryTags = selectSummaryTags(state);
+		this._summaryValues = selectSummaryValues(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
