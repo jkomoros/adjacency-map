@@ -26,6 +26,11 @@ const basePropertyDefinition = {
 } as const;
 
 const data : RawMapDefinition = {
+	tags: {
+		gui: {},
+		extended: {},
+		im2Im: {},
+	},
 	properties: {
 		engineering: {
 			...basePropertyDefinition,
@@ -111,6 +116,7 @@ const data : RawMapDefinition = {
 		},
 		base_infer_gui : {
 			description: 'Take the basic results and allow someone to install an electron app to generate an image',
+			tags: ['gui'],
 			edges: [
 				{
 					type: 'engineering',
@@ -126,6 +132,7 @@ const data : RawMapDefinition = {
 		},
 		extended_infer_gui: {
 			description: 'Extend gui to also use the model with more images',
+			tags: ['gui', 'extended'],
 			edges: {
 				base_infer_gui: [
 					{
@@ -147,6 +154,7 @@ const data : RawMapDefinition = {
 		},
 		extended_infer : {
 			description: 'Train on a larger corpus of images',
+			tags: ['extended'],
 			edges: [
 				{
 					type: 'engineering',
@@ -162,6 +170,7 @@ const data : RawMapDefinition = {
 		},
 		im_to_im_infer : {
 			description: 'Extend the model to also do image to image transfer',
+			tags: ['im2Im'],
 			edges: [
 				{
 					type: 'engineering',
@@ -177,6 +186,7 @@ const data : RawMapDefinition = {
 		},
 		im_to_im_infer_gui : {
 			description: 'Allow image to image transfer in the gui',
+			tags: ['im2Im', 'gui'],
 			edges: {
 				base_infer_gui: [
 					{
@@ -198,6 +208,7 @@ const data : RawMapDefinition = {
 		},
 		extended_im_to_im_infer_gui: {
 			description: "GUI allows both image to image transfer on the extened model",
+			tags: ['gui', 'extended', 'im2Im'],
 			edges: {
 				im_to_im_infer_gui: [
 					{
