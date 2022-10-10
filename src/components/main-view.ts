@@ -26,9 +26,9 @@ import {
 	selectScenarioName,
 	selectHashForCurrentState,
 	selectSummaryDescription,
-	selectSummaryNodeID,
 	selectSummaryTags,
 	selectSummaryValues,
+	selectSummaryNodeDisplayName,
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -99,6 +99,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_summaryNodeID : NodeID | undefined;
+
+	@state()
+	_summaryNodeDisplayName : string | undefined;
 
 	@state()
 	_summaryTags : TagMap;
@@ -176,7 +179,7 @@ class MainView extends connect(store)(PageViewElement) {
 				</select>` : ''}
 				<div class='summary'>
 					<div>
-						<label>Node</label> <strong>${this._summaryNodeID === undefined ? html`<em>Result</em>` : (this._summaryNodeID || html`<em>Root</em>`)}</strong>
+						<label>Node</label> <strong>${this._summaryNodeDisplayName === undefined ? html`<em>Result</em>` : (this._summaryNodeDisplayName || html`<em>Root</em>`)}</strong>
 					</div>
 					<div>
 						<label>Description</label> ${this._summaryDescription}
@@ -212,7 +215,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._legalScenarioNames = selectLegalScenarioNames(state);
 		this._hashForCurrentState = selectHashForCurrentState(state);
 		this._summaryDescription = selectSummaryDescription(state);
-		this._summaryNodeID = selectSummaryNodeID(state);
+		this._summaryNodeDisplayName = selectSummaryNodeDisplayName(state);
 		this._summaryTags = selectSummaryTags(state);
 		this._summaryValues = selectSummaryValues(state);
 	}

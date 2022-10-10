@@ -65,6 +65,16 @@ export const selectHashForCurrentState = createSelector(
 	}
 );
 
+export const selectSummaryNodeDisplayName = createSelector(
+	selectSummaryNodeID,
+	selectAdjacencyMap,
+	(nodeID, map) => {
+		if (!map) return '';
+		if (nodeID === undefined) return undefined;
+		const node = map.node(nodeID);
+		return node.displayName;
+	}
+);
 export const selectSummaryDescription = createSelector(
 	selectSummaryNodeID,
 	selectAdjacencyMap,
