@@ -6,6 +6,8 @@ It contains a powerful caluclation and configuration engine.
 
 ![demo](/examples/demo.png?raw=true)
 
+Check out the live demo at https://adjacency-map-demo.web.app/
+
 ## Installing
 
 Install npm.
