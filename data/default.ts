@@ -12,6 +12,7 @@ const basePropertyDefinition = {
 			constant: 'weight'
 		}
 	},
+	extendTags: true,
 	display: {
 		color: 'red',
 		width: {
@@ -138,7 +139,6 @@ const data : RawMapDefinition = {
 		},
 		extended_infer_gui: {
 			description: 'Extend gui to also use the model with more images',
-			tags: ['gui', 'extended'],
 			edges: {
 				base_infer_gui: [
 					{
@@ -192,7 +192,6 @@ const data : RawMapDefinition = {
 		},
 		im_to_im_infer_gui : {
 			description: 'Allow image to image transfer in the gui',
-			tags: ['im2Im', 'gui'],
 			edges: {
 				base_infer_gui: [
 					{
@@ -214,7 +213,6 @@ const data : RawMapDefinition = {
 		},
 		extended_im_to_im_infer_gui: {
 			description: "GUI allows both image to image transfer on the extened model",
-			tags: ['gui', 'extended', 'im2Im'],
 			edges: {
 				im_to_im_infer_gui: [
 					{
