@@ -27,6 +27,7 @@ const basePropertyDefinition = {
 } as const;
 
 const data : RawMapDefinition = {
+	description: 'A simple example that shows use cases for a Stable Diffusion project',
 	tags: {
 		gui: {
 			displayName: 'GUI'
