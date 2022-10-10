@@ -67,6 +67,7 @@ class MyApp extends connect(store)(LitElement) {
 					--app-light-text-color: white;
 					/* Also encoded as CONTROLS_WIDTH above */
 					--controls-width: 18em;
+					font-size: 0.8em;
 				}
 
 				.page {

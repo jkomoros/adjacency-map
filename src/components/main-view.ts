@@ -126,6 +126,10 @@ class MainView extends connect(store)(PageViewElement) {
 					position: absolute;
 					top: 0;
 					left: 0;
+					padding: 1em;
+					box-sizing: border-box;
+					border: 1px solid var(--dark-gray-color);
+					width: var(--controls-width);
 				}
 
 				.container {
@@ -172,17 +176,17 @@ class MainView extends connect(store)(PageViewElement) {
 				</select>` : ''}
 				<div class='summary'>
 					<div>
-						Node: <strong>${this._summaryNodeID === undefined ? html`<em>Result</em>` : (this._summaryNodeID || html`<em>Root</em>`)}</strong>
+						<label>Node</label> <strong>${this._summaryNodeID === undefined ? html`<em>Result</em>` : (this._summaryNodeID || html`<em>Root</em>`)}</strong>
 					</div>
 					<div>
-						Description: ${this._summaryDescription}
+						<label>Description</label> ${this._summaryDescription}
 					</div>
 					<div>
-						<h3>Values</h3>
+						<label>Values</label>
 						${Object.entries(this._summaryValues).map(entry => html`<div><strong>${entry[0]}</strong>: ${entry[1]}</div>`)}
 					</div>
 					${Object.keys(this._summaryTags).length && this._adjacencyMap ? 
-		html`<h3>Tags</h3>
+		html`<label>Tags</label>
 				${Object.keys(this._summaryTags).map(tagName => this._htmlForTag(tagName))}`
 		: ''}
 				</div>
