@@ -70,7 +70,7 @@ export const selectSummaryDescription = createSelector(
 	selectAdjacencyMap,
 	(nodeID, map) => {
 		if (!map) return '';
-		if (nodeID === undefined) return '';
+		if (nodeID === undefined) return map.description;
 		const node = map.node(nodeID);
 		return node.description;
 	}

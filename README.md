@@ -73,6 +73,8 @@ The final value for each property for each node is calulated by:
 3) Implicitly calculating the final value for each property type by aggregating all of the edges of that property that terminate in this node, and then passing those edges to the calculation expression definined on that property's `value` property.
 4) Using the configuration defined in the various `display` properties on the map itself, each property type, and each node to determine color, opacity, width, etc of nodes and edges to display.
 
+Most of the properties of `RawMapDefinition` will be described below. It also has `description`, an optional string property that will be shown in the UI to describe the overall model.
+
 ## Properties
 
 The list of properites defines the set of values for each node that will be calculated. They are explicitly enumerated in `map.properties`. Any `node.values` definition or `scenario.NODENAME.values` definition or `edge.type` that is defined must be one of these enumerated properties or the configuration won't validate.

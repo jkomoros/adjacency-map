@@ -555,6 +555,7 @@ export type ScenariosDefinition = {
 };
 
 export type RawMapDefinition = {
+	description?: string;
 	//Imports lists libraries to base types on. The library 'core' is implicitly
 	//always imported.
 	import?: LibraryType | LibraryType[],
@@ -577,6 +578,7 @@ export type RawMapDefinition = {
 
 //MapDefinition is RawMapDefinition, but with any imports expanded.
 export type MapDefinition = {
+	description: string,
 	properties: {
 		[type : PropertyName]: PropertyDefinition
 	}

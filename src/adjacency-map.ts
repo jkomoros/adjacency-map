@@ -303,8 +303,10 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 			};
 		}
 	}
+	const description = data.description || '';
 	return {
 		...data,
+		description,
 		root,
 		display,
 		tags,
@@ -615,6 +617,10 @@ export class AdjacencyMap {
 		const longestTree = tidyLongestTree(simpleGraph);
 		const treeGraph = treeGraphFromParentGraph(longestTree);
 		this._cachedLayoutInfo = TreeLayout(treeGraph, SVG_WIDTH, SVG_HEIGHT);
+	}
+
+	get description() : string {
+		return this._data.description;
 	}
 
 	get width() : number {
