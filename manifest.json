@@ -1,7 +1,7 @@
 {
-  "name": "CASsim",
-  "short_name": "CASsim",
-  "description": "A simple viewer for agent based models",
+  "name": "Adjacency Map",
+  "short_name": "adjacency-map",
+  "description": "A simple tool to generate diagrams for adjacency maps",
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#51b9a3",
