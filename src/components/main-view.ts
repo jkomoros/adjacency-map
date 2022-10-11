@@ -1,5 +1,6 @@
 import { html, css, svg, TemplateResult} from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { PageViewElement } from "./page-view-element.js";
 import { connect } from "pwa-helpers/connect-mixin.js";
 
@@ -220,7 +221,12 @@ class MainView extends connect(store)(PageViewElement) {
 		if (!this._adjacencyMap) return html`${tagName}`;
 		const tagDefinition = this._adjacencyMap.data.tags[tagName];
 		if (!tagDefinition) return html`${tagName}`;
-		return html`<div class='tag'>${tagDefinition.displayName}</div>`;
+
+		const styles : {[propertyName : string] : string} = {
+			backgroundColor: tagDefinition.color
+		};
+
+		return html`<div class='tag' style=${styleMap(styles)}>${tagDefinition.displayName}</div>`;
 	}
 
 	// This is called every time something is updated in the store.
