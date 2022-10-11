@@ -156,6 +156,22 @@ class MainView extends connect(store)(PageViewElement) {
 					justify-content: flex-end;
 				}
 
+				.tag {
+					background-color: red;
+					font-size: 0.8em;
+					color: white;
+					border-radius: 0.3em;
+					box-sizing: border-box;
+					padding: 0.2em;
+					display: inline-block;
+					margin: 0.2em;
+					cursor: pointer;
+				}
+
+				.tag:hover {
+					opacity: 0.6;
+				}
+
 				circle:hover {
 					cursor: pointer;
 				}
@@ -201,7 +217,10 @@ class MainView extends connect(store)(PageViewElement) {
 	}
 
 	_htmlForTag(tagName : TagID) : TemplateResult {
-		return html`<div>${this._adjacencyMap?.data.tags[tagName].displayName}</div>`;
+		if (!this._adjacencyMap) return html`${tagName}`;
+		const tagDefinition = this._adjacencyMap.data.tags[tagName];
+		if (!tagDefinition) return html`${tagName}`;
+		return html`<div class='tag'>${tagDefinition.displayName}</div>`;
 	}
 
 	// This is called every time something is updated in the store.
