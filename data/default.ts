@@ -30,13 +30,19 @@ const data : RawMapDefinition = {
 	description: 'A simple example that shows use cases for a Stable Diffusion project',
 	tags: {
 		gui: {
-			displayName: 'GUI'
+			displayName: 'GUI',
+			color: 'blue',
+			description: 'The user may use a Graphical User Interface instead of a command line interface'
 		},
 		extended: {
-			displayName: 'Extended'
+			displayName: 'Extended',
+			color: 'green',
+			description: 'The underlying model is trained on significantly more images, leading to higher quality results',
 		},
 		im2Im: {
-			displayName: 'Image2Image'
+			displayName: 'Image2Image',
+			color: 'red',
+			description: 'The underlying model can also take an image as input, making it possible to generate variations on a basic image composition'
 		},
 	},
 	properties: {
