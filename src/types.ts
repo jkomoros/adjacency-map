@@ -507,6 +507,7 @@ export type TagConstantName = string;
 
 export type RawTagDefinition = {
 	displayName? : string,
+	description? : string,
 	color? : CSSColor,
 	//If true, will be included in map.rootTags()
 	root?: boolean
@@ -517,6 +518,7 @@ export type RawTagDefinition = {
 
 export type TagDefinition = {
 	displayName : string,
+	description: string,
 	color : CSSColor,
 	//If true, will be included in map.rootTags()
 	root: boolean

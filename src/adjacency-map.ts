@@ -295,8 +295,10 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 	const tags : {[id : TagID]: Required<TagDefinition>} = {};
 	if (data.tags) {
 		for (const [tagID, rawTagDefinition] of Object.entries(data.tags)) {
+			const displayName = rawTagDefinition.displayName || tagID;
 			tags[tagID] = {
-				displayName: rawTagDefinition.displayName || tagID,
+				description: rawTagDefinition.description || ('Tag ' + displayName),
+				displayName,
 				color: rawTagDefinition.color || 'red',
 				root: !!rawTagDefinition.root,
 				constants: Object.fromEntries(Object.entries(rawTagDefinition.constants || {}).map(entry => [entry[0], calculateValueLeaf(entry[1])]))

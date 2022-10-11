@@ -226,7 +226,7 @@ class MainView extends connect(store)(PageViewElement) {
 			backgroundColor: tagDefinition.color
 		};
 
-		return html`<div class='tag' style=${styleMap(styles)}>${tagDefinition.displayName}</div>`;
+		return html`<div class='tag' style=${styleMap(styles)} title='${tagDefinition.description}'>${tagDefinition.displayName}</div>`;
 	}
 
 	// This is called every time something is updated in the store.
