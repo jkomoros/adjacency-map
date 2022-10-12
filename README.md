@@ -1008,6 +1008,8 @@ const data : RawMapDefinition = {
 };
 ```
 
+If the ValueDefinition evalutes to more than one number, only the first will be used for the final value of that node's property in that scenario--an implicit `combine` of type `first`.
+
 ## Tags
 
 Diagrams also have a notion of `tags`. Tags are an enumerated set of binary tags. For example, in a diagram these might represent independent features that are represented in a product at each node.
