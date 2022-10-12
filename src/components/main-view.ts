@@ -201,7 +201,7 @@ class MainView extends connect(store)(PageViewElement) {
 				</select>` : ''}
 				<div class='summary'>
 					<div>
-						<label>Node</label> <strong>${this._summaryNodeDisplayName === undefined ? html`<em>Result</em>` : (this._summaryNodeDisplayName || html`<em>Root</em>`)}</strong>
+						<label>Node</label> <strong>${this._summaryNodeDisplayName === undefined ? html`<em>Union of all nodes</em>` : (this._summaryNodeDisplayName || html`<em>Root</em>`)}</strong>
 					</div>
 					<div>
 						<label>Description</label> ${this._summaryDescription}
