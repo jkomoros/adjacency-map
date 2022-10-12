@@ -1597,9 +1597,27 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
-	it('allows a valid defintion of type input', async () => {
+	it('Barfs for a valid defintion of type input in a context in which its not allowed', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = 'input';
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a valid defintion of type input in a context in which it is allowed', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.display = {
+			edgeCombiner: {
+				weight: 'input',
+			}
+		};
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -3569,20 +3587,6 @@ engineering: 3`;
 			...NODE_A_BASE_VALUES,
 			//Ideally this would be 3.0 (one ref, de-duped) but we don't de-dupe refs.
 			engineering: 6.0,
-		};
-		assert.deepStrictEqual(actual, golden);
-	});
-
-	it('Correctly calculates input in a context without input', async () => {
-		const input = deepCopy(legalBaseInput);
-		input.properties.engineering.combine = 'sum';
-		input.properties.engineering.value = 'input';
-		const map = new AdjacencyMap(input);
-		const node = map.node('a');
-		const actual = node.values;
-		const golden = {
-			...NODE_A_BASE_VALUES,
-			engineering: NULL_SENTINEL,
 		};
 		assert.deepStrictEqual(actual, golden);
 	});

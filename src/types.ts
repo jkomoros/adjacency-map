@@ -221,6 +221,18 @@ export type ValueDefinition = ValueDefinitionLeaf |
 	ValueDefinitionHasTag |
 	ValueDefinitionTagConstant;
 
+//Different contexts that ValueDefinitions show up in allow different subsets of
+//these types of proeprties.
+export type AllowedValueDefinitionVariableTypes = {
+	edgeConstant: boolean,
+	refValue: boolean,
+	rootValue: boolean,
+	resultValue: boolean,
+	input: boolean,
+	hasTag: boolean,
+	tagConstant: boolean
+};
+
 export type ValueDefinitionCalculationArgs = {
 	//All of the edges that are being calculated together, all of the same type
 	edges : EdgeValue[], 

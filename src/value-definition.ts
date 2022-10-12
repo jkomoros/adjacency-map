@@ -30,7 +30,8 @@ import {
 	ValueDefinitionHasTag,
 	PropertyName,
 	MapDefinition,
-	ValueDefinitionTagConstant
+	ValueDefinitionTagConstant,
+	AllowedValueDefinitionVariableTypes
 } from './types.js';
 
 import {
@@ -48,7 +49,14 @@ import {
 import {
 	assertUnreachable, deepCopy
 } from './util.js';
-import { makeTagMap } from './adjacency-map.js';
+
+import {
+	makeTagMap
+} from './adjacency-map.js';
+
+import {
+	TypedObject
+} from './typed-object.js';
 
 export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 	'ref': true,
@@ -221,6 +229,16 @@ const valueDefinitionIsTagConstant = (definition : ValueDefinition): definition 
 	return 'tagConstant' in definition;
 };
 
+const VALUE_DEFINITION_VARIABLE_TESTER : {[kind in keyof AllowedValueDefinitionVariableTypes]: (v : ValueDefinition) => boolean} ={
+	edgeConstant: valueDefinitionIsEdgeConstant,
+	refValue: valueDefinitionIsRefValue,
+	rootValue: valueDefinitionIsRootValue,
+	resultValue: valueDefinitionIsResultValue,
+	input: valueDefinitionIsInput,
+	hasTag: valueDefinitionIsHasTag,
+	tagConstant: valueDefinitionIsTagConstant
+};
+
 const listNestedDefinitions = (definition : ValueDefinition) : ValueDefinition[] => {
 	if (valueDefinitionIsLeaf(definition)) return [definition];
 	if (typeof definition == 'object' && Array.isArray(definition)) {
@@ -344,13 +362,19 @@ export const extractRequiredDependencies = (definition : ValueDefinition) : Prop
 //have already checked. Before, we loaded files from json and had to a
 //conversion leap of faith, but now everything is natively typescript even in
 //data/ so that leap of faith is less important.
-export const validateValueDefinition = (definition : ValueDefinition, exampleValue : NodeValues, data : MapDefinition, edgeDefinition? : PropertyDefinition) : void => {
+export const validateValueDefinition = (definition : ValueDefinition, exampleValue : NodeValues, data : MapDefinition, allowedVariables: AllowedValueDefinitionVariableTypes, edgeDefinition? : PropertyDefinition) : void => {
 	if (valueDefinitionIsLeaf(definition)) return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {
 		if (definition.some(leaf => !valueDefinitionIsLeaf(leaf))) throw new Error('If an array is provided it msut contain only numbers, booleans, or null');
 		if (definition.length == 0) throw new Error('If an array of numbers is provided there must be at least one');
 		return;
 	}
+	for (const [variableType, allowed] of TypedObject.entries(allowedVariables)) {
+		if (allowed) continue;
+		const tester = VALUE_DEFINITION_VARIABLE_TESTER[variableType];
+		if (tester(definition)) throw new Error('Definition includes a type with variable accessors that is not allowed in this context: ' + variableType);
+	}
+
 	if (valueDefinitionIsEdgeConstant(definition)) {
 		if (RESERVED_VALUE_DEFINITION_PROPERTIES[definition.constant]) {
 			if (!ALLOWED_CONSTANTS[definition.constant]) throw new Error(definition.constant + ' is a reserved edge property name');
@@ -378,7 +402,7 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 	}
 
 	if (valueDefinitionIsCombine(definition)) {
-		validateValueDefinition(definition.value, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.value, exampleValue, data, allowedVariables, edgeDefinition);
 		if (!COMBINERS[definition.combine]) throw new Error('Unknown combiner: ' + definition.combine);
 		return;
 	}
@@ -394,65 +418,65 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 	}
 
 	if (valueDefinitionIsArithmetic(definition)) {
-		validateValueDefinition(definition.a, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.a, exampleValue, data, allowedVariables, edgeDefinition);
 		if (!Object.keys(OPERATORS).some(operator => operator == definition.operator)) throw new Error('Unknown operator: ' + definition.operator);
-		if (!arithmeticIsUnary(definition)) validateValueDefinition(definition.b, exampleValue, data, edgeDefinition);
+		if (!arithmeticIsUnary(definition)) validateValueDefinition(definition.b, exampleValue, data, allowedVariables, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsCompare(definition)) {
-		validateValueDefinition(definition.a, exampleValue, data, edgeDefinition);
-		validateValueDefinition(definition.b, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.a, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.b, exampleValue, data, allowedVariables, edgeDefinition);
 		if (!Object.keys(COMPARE_OPERATORS).some(operator => operator == definition.compare)) throw new Error('Unknown compare operator: ' + definition.compare);
 		return;
 	}
 
 	if (valueDefinitionIsIf(definition)) {
-		validateValueDefinition(definition.if, exampleValue, data, edgeDefinition);
-		validateValueDefinition(definition.then, exampleValue, data, edgeDefinition);
-		validateValueDefinition(definition.else, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.if, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.then, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.else, exampleValue, data, allowedVariables, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsFilter(definition)) {
-		validateValueDefinition(definition.filter, exampleValue, data, edgeDefinition);
-		validateValueDefinition(definition.value, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.filter, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.value, exampleValue, data, allowedVariables, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsClip(definition)) {
-		validateValueDefinition(definition.clip, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.clip, exampleValue, data, allowedVariables, edgeDefinition);
 		if (definition.low == undefined && definition.high == undefined) throw new Error('Clip expects at least one of low or high');
-		if (definition.low != undefined) validateValueDefinition(definition.low, exampleValue, data, edgeDefinition);
-		if (definition.high != undefined) validateValueDefinition(definition.high, exampleValue, data, edgeDefinition);
+		if (definition.low != undefined) validateValueDefinition(definition.low, exampleValue, data, allowedVariables, edgeDefinition);
+		if (definition.high != undefined) validateValueDefinition(definition.high, exampleValue, data, allowedVariables, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsRange(definition)) {
-		validateValueDefinition(definition.range, exampleValue, data, edgeDefinition);
-		validateValueDefinition(definition.low, exampleValue, data, edgeDefinition);
-		validateValueDefinition(definition.high, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.range, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.low, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.high, exampleValue, data, allowedVariables, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsPercent(definition)) {
-		validateValueDefinition(definition.percent, exampleValue, data, edgeDefinition);
-		validateValueDefinition(definition.low, exampleValue, data, edgeDefinition);
-		validateValueDefinition(definition.high, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.percent, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.low, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.high, exampleValue, data, allowedVariables, edgeDefinition);
 		return;
 	}
 
 	if (valueDefinitionIsCollect(definition)) {
 		if (!definition.collect || definition.collect.length == 0) throw new Error('collect requires at least one child');
 		for (const child of definition.collect) {
-			validateValueDefinition(child, exampleValue, data, edgeDefinition);
+			validateValueDefinition(child, exampleValue, data, allowedVariables, edgeDefinition);
 		}
 		return;
 	}
 
 	if (valueDefinitionIsLengthOf(definition)) {
 		if (definition.lengthOf != 'refs' && definition.lengthOf != 'edges' && definition.lengthOf != 'input') throw new Error('lengthOf property must be either refs or edges or input');
-		validateValueDefinition(definition.value, exampleValue, data, edgeDefinition);
+		validateValueDefinition(definition.value, exampleValue, data, allowedVariables, edgeDefinition);
 		return;
 	}
 

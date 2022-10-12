@@ -30,7 +30,8 @@ import {
 	TagDefinition,
 	TagID,
 	TagMap,
-	TagConstantName
+	TagConstantName,
+	AllowedValueDefinitionVariableTypes
 } from './types.js';
 
 import {
@@ -87,6 +88,31 @@ import {
 	assertUnreachable,
 	wrapArrays
 } from './util.js';
+import { TypedObject } from './typed-object.js';
+
+const BASE_ALLOWED_VARIABLE_TYPES : AllowedValueDefinitionVariableTypes = {
+	edgeConstant: true,
+	refValue: true,
+	resultValue: true,
+	rootValue: true,
+	input: false,
+	hasTag: true,
+	tagConstant: true
+};
+
+const ALLOWED_VARIABLES_FOR_CONTEXT = {
+	nodeDisplay: {
+		...BASE_ALLOWED_VARIABLE_TYPES,
+		edgeConstant: false
+	},
+	property: BASE_ALLOWED_VARIABLE_TYPES,
+	propertyDisplay: BASE_ALLOWED_VARIABLE_TYPES,
+	propertyCombinerDisplay: {
+		...BASE_ALLOWED_VARIABLE_TYPES,
+		edgeConstant: false,
+		input: true,
+	}
+} as const;
 
 //If an edge is bumped, this is the amount we aim to bump it by by default.
 const TARGET_BUMP = 0.4;
@@ -318,11 +344,11 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 	};
 };
 
-const validateDisplay = (data : Partial<NodeDisplay> | Partial<EdgeDisplay> | Partial<EdgeCombinerDisplay>, exampleValues : NodeValues, map: MapDefinition, propertyDefinition? : PropertyDefinition) : void => {
+const validateDisplay = (data : Partial<NodeDisplay> | Partial<EdgeDisplay> | Partial<EdgeCombinerDisplay>, exampleValues : NodeValues, map: MapDefinition, allowedVariables: AllowedValueDefinitionVariableTypes, propertyDefinition? : PropertyDefinition) : void => {
 	for (const [displayName, displayValue] of Object.entries(data)) {
 		if (typeof displayValue == 'string') {
 			if (valueDefinitionIsStringType(displayValue)) {
-				validateValueDefinition(displayValue, exampleValues, map, propertyDefinition);
+				validateValueDefinition(displayValue, exampleValues, map, allowedVariables, propertyDefinition);
 			} else if (displayName == 'color' || displayName == 'strokeColor') {
 				//Throw if not a color
 				color(displayValue);
@@ -330,7 +356,7 @@ const validateDisplay = (data : Partial<NodeDisplay> | Partial<EdgeDisplay> | Pa
 				throw new Error(displayName + ' was provided as a string');
 			}
 		} else {
-			validateValueDefinition(displayValue, exampleValues, map, propertyDefinition);
+			validateValueDefinition(displayValue, exampleValues, map, allowedVariables, propertyDefinition);
 		}
 	}
 };
@@ -351,7 +377,7 @@ const validateData = (data : MapDefinition) : void => {
 			if (data.properties[edge.type].calculateWhen == 'always') throw new Error(nodeName + ' has an edge of type ' + edge.type + ' but that edge type does not allow any edges');
 			if (Object.keys(explicitlyEnumaratedImpliedPropertyNames(edge.implies)).some(propertyName => !data.properties[propertyName] || data.properties[propertyName].calculateWhen == 'always')) throw new Error(nodeName + ' has an edge that has an implication that explicitly implies a property that doesn\'t exist or is noEdges');
 		}
-		validateDisplay(nodeData.display, exampleValues, data);
+		validateDisplay(nodeData.display, exampleValues, data, ALLOWED_VARIABLES_FOR_CONTEXT.nodeDisplay);
 		if (nodeData.values) {
 			if (typeof nodeData.values != 'object') throw new Error('values if provided must be an object');
 			for (const [valueName, valueValue] of Object.entries(nodeData.values)) {
@@ -382,7 +408,7 @@ const validateData = (data : MapDefinition) : void => {
 
 	for(const [type, propertyDefinition] of Object.entries(data.properties)) {
 		try {
-			validateValueDefinition(propertyDefinition.value, exampleValues, data, propertyDefinition);
+			validateValueDefinition(propertyDefinition.value, exampleValues, data, ALLOWED_VARIABLES_FOR_CONTEXT.property, propertyDefinition);
 		} catch (err) {
 			throw new Error(type + ' does not have a legal value definition: ' + err);
 		}
@@ -397,7 +423,7 @@ const validateData = (data : MapDefinition) : void => {
 				if (typeof constantValue != 'number') throw new Error(type + ' constant ' + constantName + ' was not number as expected');
 			}
 		}
-		validateDisplay(propertyDefinition.display, exampleValues, data, propertyDefinition);
+		validateDisplay(propertyDefinition.display, exampleValues, data, ALLOWED_VARIABLES_FOR_CONTEXT.propertyDisplay, propertyDefinition);
 		if (propertyDefinition.dependencies) {
 			for (const dependency of propertyDefinition.dependencies) {
 				if (!data.properties[dependency]) throw new Error(type + ' declared a dependency on ' + dependency + ' but that is not a valid type');
@@ -435,8 +461,20 @@ const validateData = (data : MapDefinition) : void => {
 		}
 	}
 
-	for (const displayContainer of Object.values(data.display)) {
-		validateDisplay(displayContainer, exampleValues, data);
+	for (const displayKey of TypedObject.keys(data.display)) {
+		switch(displayKey) {
+		case 'edge':
+			validateDisplay(data.display.edge, exampleValues, data, ALLOWED_VARIABLES_FOR_CONTEXT.propertyDisplay);
+			break;
+		case 'edgeCombiner':
+			validateDisplay(data.display.edgeCombiner, exampleValues, data, ALLOWED_VARIABLES_FOR_CONTEXT.propertyCombinerDisplay);
+			break;
+		case 'node':
+			validateDisplay(data.display.node, exampleValues, data, ALLOWED_VARIABLES_FOR_CONTEXT.nodeDisplay);
+			break;
+		default:
+			assertUnreachable(displayKey);
+		}
 	}
 
 	try {
