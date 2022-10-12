@@ -75,6 +75,7 @@ export const selectSummaryNodeDisplayName = createSelector(
 		return node.displayName;
 	}
 );
+
 export const selectSummaryDescription = createSelector(
 	selectSummaryNodeID,
 	selectAdjacencyMap,

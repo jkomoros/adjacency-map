@@ -167,6 +167,11 @@ class MainView extends connect(store)(PageViewElement) {
 					display: inline-block;
 					margin: 0.2em;
 					cursor: pointer;
+					opacity: 0.2;
+				}
+
+				.tag.active {
+					opacity: 1.0;
 				}
 
 				.tag:hover {
@@ -207,7 +212,7 @@ class MainView extends connect(store)(PageViewElement) {
 					</div>
 					${Object.keys(this._summaryTags).length && this._adjacencyMap ? 
 		html`<label>Tags</label>
-				${Object.keys(this._summaryTags).map(tagName => this._htmlForTag(tagName))}`
+				${Object.keys(this._adjacencyMap.data.tags).map(tagName => this._htmlForTag(tagName, this._summaryTags))}`
 		: ''}
 				</div>
 			</div>
@@ -217,16 +222,18 @@ class MainView extends connect(store)(PageViewElement) {
 		`;
 	}
 
-	_htmlForTag(tagName : TagID) : TemplateResult {
+	_htmlForTag(tagName : TagID, tagMap : TagMap) : TemplateResult {
 		if (!this._adjacencyMap) return html`${tagName}`;
 		const tagDefinition = this._adjacencyMap.data.tags[tagName];
 		if (!tagDefinition) return html`${tagName}`;
+
+		const active = tagMap[tagName] || false;
 
 		const styles : {[propertyName : string] : string} = {
 			backgroundColor: tagDefinition.color
 		};
 
-		return html`<div class='tag' style=${styleMap(styles)} title='${tagDefinition.description}'>${tagDefinition.displayName}</div>`;
+		return html`<div class='tag ${active ? 'active' : ''}' style=${styleMap(styles)} title='${tagDefinition.description}'>${tagDefinition.displayName}</div>`;
 	}
 
 	// This is called every time something is updated in the store.
