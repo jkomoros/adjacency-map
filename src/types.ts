@@ -548,6 +548,7 @@ export type ScenarioName = string;
 //A scenario is an overlay over the base configuration. Currnetly it may only
 //override the base values of already existing nodes.
 export type RawScenario = {
+	description? : string,
 	//Scenarios may override root nodes by using id of ROOT_ID.
 	nodes: {
 		[id : NodeID] : {
@@ -557,6 +558,7 @@ export type RawScenario = {
 }
 
 export type Scenario = {
+	description : string,
 	nodes: {
 		[id : NodeID] : {
 			[propertyName : PropertyName]: ValueDefinition

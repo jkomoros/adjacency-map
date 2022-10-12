@@ -206,6 +206,11 @@ class MainView extends connect(store)(PageViewElement) {
 					<div>
 						<label>Description</label> ${this._summaryDescription}
 					</div>
+					${this._legalScenarioNames.length > 1 ? 
+		html`<div>
+							<label>Scenario</label> ${this._adjacencyMap?.scenario.description || (this._adjacencyMap?.scenarioName ? html`<em>No description</em>` : html`<em>Default</em>`)}
+						</div>`
+		: html``}
 					<div>
 						<label>Values</label>
 						${Object.entries(this._summaryValues).map(entry => html`<div><strong>${entry[0]}</strong>: ${entry[1]}</div>`)}

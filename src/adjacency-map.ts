@@ -319,6 +319,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 	const scenarios : ScenariosDefinition = {};
 	for (const [scenarioName, rawScenario] of Object.entries(rawScenarios)) {
 		const scenario : Scenario = {
+			description: rawScenario.description || '',
 			nodes: rawScenario.nodes
 		};
 		scenarios[scenarioName] = scenario;
