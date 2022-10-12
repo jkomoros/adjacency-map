@@ -5010,6 +5010,72 @@ describe('scenarios', () => {
 		assert.deepStrictEqual(nodeB.values.ux, 10.0);
 	});
 
+	it('scenario with ValueDefinition input', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			one: {
+				nodes: {
+					a: {
+						engineering: {
+							operator: '+',
+							a: 'input',
+							b: 3.0
+						},
+					}
+				}
+			}
+		};
+		const map = new AdjacencyMap(input, 'one');
+		const node = map.node('a');
+		assert.deepStrictEqual(node.values.engineering, 7.0);
+
+	});
+
+	it('scenario with ValueDefinition input on root', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			one: {
+				nodes: {
+					'': {
+						engineering: {
+							operator: '+',
+							a: 'input',
+							b: 3.0
+						},
+					}
+				}
+			}
+		};
+		const map = new AdjacencyMap(input, 'one');
+		const node = map.node('');
+		assert.deepStrictEqual(node.values.engineering, 7.0);
+
+	});
+
+	it('barfs for scenario with ValueDefinition of illegal type', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			one: {
+				nodes: {
+					a: {
+						engineering: {
+							operator: '+',
+							a: 'input',
+							b: {
+								result: 'ux'
+							}
+						},
+					}
+				}
+			}
+		};
+		const fn = () => {
+			new AdjacencyMap(input, 'one');
+		};
+		assert.throws(fn);
+	});
+
+
 });
 
 describe('edgeDefinition ergonomics', () => {

@@ -986,6 +986,28 @@ The default defintion is implicitly the scenario named ''.
 
 When there is more than one scenario defined, the UI shows a drop down allowing the user to select which scenario to render. The URL also includes the selected scenario. Hitting the left/right arrows also cycles through different scenarios.
 
+The values for scenarios are any ValueDefinition. In this context, root, ref, result and edge constant statements are not allowed. The input will be the final result of what the node would have been had the scenario not applied.
+
+So for example you could have the scenario define that the value for a node would be 4.0 more than it would have otherwise been:
+
+```
+const data : RawMapDefinition = {
+    //...
+    scenarios: {
+        scenario_name_1: {
+            node_a: {
+                one: {
+                    operator: '+',
+                    a: 'input',
+                    b: 4.0
+                }
+            }
+        }
+    }
+    //...
+};
+```
+
 ## Tags
 
 Diagrams also have a notion of `tags`. Tags are an enumerated set of binary tags. For example, in a diagram these might represent independent features that are represented in a product at each node.

@@ -550,13 +550,17 @@ export type ScenarioName = string;
 export type RawScenario = {
 	//Scenarios may override root nodes by using id of ROOT_ID.
 	nodes: {
-		[id : NodeID] : RawNodeValues;
+		[id : NodeID] : {
+			[propertyName: PropertyName]: ValueDefinition
+		};
 	};
 }
 
 export type Scenario = {
 	nodes: {
-		[id : NodeID] : NodeValues;
+		[id : NodeID] : {
+			[propertyName : PropertyName]: ValueDefinition
+		};
 	}
 }
 

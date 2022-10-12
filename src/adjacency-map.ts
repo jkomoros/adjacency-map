@@ -111,6 +111,15 @@ const ALLOWED_VARIABLES_FOR_CONTEXT = {
 		...BASE_ALLOWED_VARIABLE_TYPES,
 		edgeConstant: false,
 		input: true,
+	},
+	scenarioValue: {
+		edgeConstant: false,
+		refValue: false,
+		resultValue: false,
+		rootValue: false,
+		input: true,
+		hasTag: true,
+		tagConstant: true
 	}
 } as const;
 
@@ -309,12 +318,8 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 	const rawScenarios = data.scenarios || {};
 	const scenarios : ScenariosDefinition = {};
 	for (const [scenarioName, rawScenario] of Object.entries(rawScenarios)) {
-		const nodes : {[id : NodeID] : NodeValues} = {};
-		for (const [nodeName, nodeValues] of Object.entries(rawScenario.nodes)) {
-			nodes[nodeName] = Object.fromEntries(Object.entries(nodeValues).map(entry => [entry[0], calculateValueLeaf(entry[1])]));
-		}
 		const scenario : Scenario = {
-			nodes
+			nodes: rawScenario.nodes
 		};
 		scenarios[scenarioName] = scenario;
 	}
@@ -456,7 +461,7 @@ const validateData = (data : MapDefinition) : void => {
 			if (nodeName != ROOT_ID && !data.nodes[nodeName]) throw new Error('All node ids in a scenario must be either ROOT_ID or included in nodes');
 			for (const [propertyName, propertyValue] of Object.entries(nodeValues)) {
 				if (!data.properties[propertyName]) throw new Error('All properties in scenarios for a node must be named properties');
-				if (typeof propertyValue != 'number') throw new Error('All override node values must be numbers');
+				validateValueDefinition(propertyValue, {}, data, ALLOWED_VARIABLES_FOR_CONTEXT.scenarioValue);
 			}
 		}
 	}
@@ -614,7 +619,19 @@ export class AdjacencyMap {
 		if (!this._cachedRoot) {
 			const baseObject = Object.fromEntries(this.propertyNames.map(typ => [typ, 0.0]));
 			const scenarioNode = this.scenario.nodes[ROOT_ID] || {};
-			this._cachedRoot = {...baseObject, ...this._data.root, ...scenarioNode};
+			const result = {...baseObject, ...this._data.root};
+			const args : ValueDefinitionCalculationArgs = {
+				refs: [],
+				edges: [],
+				partialResult: {},
+				rootValue: {},
+				tags: this.rootTags,
+				definition: this._data
+			};
+			for (const [propertyName, valueDefinition] of Object.entries(scenarioNode)) {
+				result[propertyName] = calculateValue(valueDefinition, {...args, input: [result[propertyName]]})[0];
+			}
+			this._cachedRoot = result;
 		}
 		return this._cachedRoot;
 	}
@@ -791,7 +808,16 @@ class AdjacencyMapNode {
 				}
 			}
 			if (scenarioNode[type]) {
-				partialResult[type] = scenarioNode[type];
+				const scenarioArgs : ValueDefinitionCalculationArgs = {
+					refs: [],
+					edges: [],
+					partialResult: {},
+					rootValue: {},
+					tags: this.tags,
+					definition: this._map.data,
+					input: [partialResult[type]]
+				};
+				partialResult[type] = calculateValue(scenarioNode[type], scenarioArgs)[0];
 				//Dont' calculate the value at all, just override it, acting
 				//like values.
 				continue;
