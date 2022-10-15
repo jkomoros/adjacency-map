@@ -185,6 +185,8 @@ class MainView extends connect(store)(PageViewElement) {
 
 				circle:hover {
 					cursor: pointer;
+					stroke: white !important;
+					stroke-width: 0.2em !important;
 				}
 
 				circle.selected {
