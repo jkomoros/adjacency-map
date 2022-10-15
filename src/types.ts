@@ -629,6 +629,7 @@ export type DataState = {
 	scale: number;
 	scenarioName : ScenarioName;
 	hoveredNodeID? : NodeID;
+	selectedNodeID? : NodeID;
 }
 
 export type RootState = {

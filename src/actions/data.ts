@@ -3,6 +3,7 @@ export const UPDATE_SCALE = 'UPDATE_SCALE';
 export const UPDATE_SCENARIO_NAME = 'UPDATE_SCENARIO_NAME';
 
 export const UPDATE_HOVERED_NODE_ID = 'UPDATE_HOVERED_NODE_ID';
+export const UPDATE_SELECTED_NODE_ID = 'UPDATE_SELECTED_NODE_ID';
 
 export const DEFAULT_FILE_NAME = 'default';
 //Also in tools/config.ts
@@ -15,6 +16,7 @@ import {
 import {
 	selectFilename,
 	selectHoveredNodeID,
+	selectSelectedNodeID,
 	selectLegalScenarioNames,
 	selectScale,
 	selectScenarioName
@@ -93,6 +95,14 @@ export const updateHoveredNodeID : AppActionCreator =  (nodeID? : NodeID) => (di
 	if (selectHoveredNodeID(getState()) == nodeID) return;
 	dispatch({
 		type: UPDATE_HOVERED_NODE_ID,
+		nodeID
+	});
+};
+
+export const updateSelectedNodeID : AppActionCreator =  (nodeID? : NodeID) => (dispatch, getState) => {
+	if (selectSelectedNodeID(getState()) == nodeID) return;
+	dispatch({
+		type: UPDATE_SELECTED_NODE_ID,
 		nodeID
 	});
 };

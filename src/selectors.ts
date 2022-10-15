@@ -29,6 +29,7 @@ export const selectHash = (state : RootState) => state.app ? state.app.hash : ''
 export const selectScale = (state : RootState) => state.data ? state.data.scale : 1.0;
 export const selectScenarioName = (state : RootState) => state.data ? state.data.scenarioName : '';
 export const selectHoveredNodeID = (state : RootState) => state.data ? state.data.hoveredNodeID : undefined;
+export const selectSelectedNodeID = (state : RootState) => state.data ? state.data.selectedNodeID : undefined;
 
 //This doesn't actually need state, but in other ways its like a selector so kind of pretend like it is
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -41,8 +42,9 @@ export const selectData = createSelector(
 
 //The node that should be used for the summary readout
 export const selectSummaryNodeID = createSelector(
+	selectSelectedNodeID,
 	selectHoveredNodeID,
-	(hoveredNodeID) => hoveredNodeID
+	(selectedNodeID, hoveredNodeID) => selectedNodeID || hoveredNodeID
 );
 
 export const selectLegalScenarioNames = createSelector(

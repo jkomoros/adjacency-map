@@ -7,7 +7,8 @@ import {
 	DEFAULT_FILE_NAME,
 	UPDATE_SCALE,
 	UPDATE_SCENARIO_NAME,
-	UPDATE_HOVERED_NODE_ID
+	UPDATE_HOVERED_NODE_ID,
+	UPDATE_SELECTED_NODE_ID
 } from "../actions/data.js";
 
 import {
@@ -43,6 +44,11 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			hoveredNodeID: action.nodeID
+		};
+	case UPDATE_SELECTED_NODE_ID:
+		return {
+			...state,
+			selectedNodeID: action.nodeID
 		};
 	default:
 		return state;
