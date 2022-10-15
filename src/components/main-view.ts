@@ -14,6 +14,7 @@ import {
 	updateHoveredNodeID,
 	updateScale,
 	updateScenarioName,
+	updateSelectedNodeID,
 	updateWithMainPageExtra
 } from "../actions/data.js";
 
@@ -358,6 +359,13 @@ class MainView extends connect(store)(PageViewElement) {
 		store.dispatch(updateHoveredNodeID(id));
 	}
 
+	_handleSVGMouseClick(e : MouseEvent) {
+		const ele = e.composedPath()[0];
+		if (!(ele instanceof Element)) throw new Error('unexpected node');
+		const id = ele.id.includes('node:') ? ele.id.replace('node:', '') : undefined;
+		store.dispatch(updateSelectedNodeID(id));
+	}
+
 	_svg() : TemplateResult {
 		if (!this._adjacencyMap) return svg``;
 
@@ -372,13 +380,13 @@ class MainView extends connect(store)(PageViewElement) {
 		// padding around the labels
 		const haloWidth = 3;
 
-		return html`<svg @mousemove=${this._handleSVGMouseMove} class='main' viewBox='${a.viewBox}' width='${a.width * this._scale}' height='${a.height * this._scale}' style='max-width: 100%; height: auto; height: intrinsic;' font-family='sans-serif' font-size='10'>
+		return html`<svg @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} class='main' viewBox='${a.viewBox}' width='${a.width * this._scale}' height='${a.height * this._scale}' style='max-width: 100%; height: auto; height: intrinsic;' font-family='sans-serif' font-size='10'>
 			<g fill="none" stroke-linecap="${strokeLinecap}" stroke-linejoin="${strokeLinejoin}">
 				${a.renderEdges.map(edge => svg`<path d="${this._pathForEdge(edge, a)}" stroke-width='${edge.width}' stroke-opacity='${edge.opacity}' stroke='${edge.color.rgbaStr}'></path>`)}
 			</g>
 			<g>
 				${Object.values(a.nodes).map(node => svg`<a transform="translate(${node.x},${node.y})">
-					<circle @mousemove=${this._handleSVGMouseMove} id="${'node:' + node.id}" fill="${node.color.rgbaStr}" r="${node.radius}" opacity="${node.opacity}" stroke="${node.strokeColor.rgbaStr}" stroke-width="${node.strokeWidth}" stroke-opacity="${node.strokeOpacity}"></circle>
+					<circle @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} id="${'node:' + node.id}" fill="${node.color.rgbaStr}" r="${node.radius}" opacity="${node.opacity}" stroke="${node.strokeColor.rgbaStr}" stroke-width="${node.strokeWidth}" stroke-opacity="${node.strokeOpacity}"></circle>
 					<title>${node.fullDescription()}</title>
 					<text dy="0.32em" x="${(node.children.length == 0 ? 1 : -1) * node.radius * 2}" text-anchor="${node.children.length == 0 ? 'start' : 'end'}" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}">${node.displayName}</text>
 				</a>`)}
