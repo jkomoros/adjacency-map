@@ -31,6 +31,7 @@ import {
 	selectSummaryTags,
 	selectSummaryValues,
 	selectSummaryNodeDisplayName,
+	selectSelectedNodeID,
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -101,6 +102,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_summaryNodeID : NodeID | undefined;
+
+	@state()
+	_selectedNodeID : NodeID | undefined;
 
 	@state()
 	_summaryNodeDisplayName : string | undefined;
@@ -183,6 +187,11 @@ class MainView extends connect(store)(PageViewElement) {
 					cursor: pointer;
 				}
 
+				circle.selected {
+					stroke: gold !important;
+					stroke-width: 0.2em !important;
+				}
+
 			`
 		];
 	}
@@ -253,6 +262,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._legalScenarioNames = selectLegalScenarioNames(state);
 		this._hashForCurrentState = selectHashForCurrentState(state);
 		this._summaryDescription = selectSummaryDescription(state);
+		this._selectedNodeID = selectSelectedNodeID(state);
 		this._summaryNodeDisplayName = selectSummaryNodeDisplayName(state);
 		this._summaryTags = selectSummaryTags(state);
 		this._summaryValues = selectSummaryValues(state);
@@ -386,7 +396,7 @@ class MainView extends connect(store)(PageViewElement) {
 			</g>
 			<g>
 				${Object.values(a.nodes).map(node => svg`<a transform="translate(${node.x},${node.y})">
-					<circle @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} id="${'node:' + node.id}" fill="${node.color.rgbaStr}" r="${node.radius}" opacity="${node.opacity}" stroke="${node.strokeColor.rgbaStr}" stroke-width="${node.strokeWidth}" stroke-opacity="${node.strokeOpacity}"></circle>
+					<circle class='${this._selectedNodeID == node.id ? 'selected' : ''}' @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} id="${'node:' + node.id}" fill="${node.color.rgbaStr}" r="${node.radius}" opacity="${node.opacity}" stroke="${node.strokeColor.rgbaStr}" stroke-width="${node.strokeWidth}" stroke-opacity="${node.strokeOpacity}"></circle>
 					<title>${node.fullDescription()}</title>
 					<text dy="0.32em" x="${(node.children.length == 0 ? 1 : -1) * node.radius * 2}" text-anchor="${node.children.length == 0 ? 'start' : 'end'}" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}">${node.displayName}</text>
 				</a>`)}
