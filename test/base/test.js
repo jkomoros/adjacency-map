@@ -2648,6 +2648,35 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('Barfs for a value of tagConstant with an invalid default', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {
+				constants: {
+					weight: 5
+				}
+			},
+			tagB: {
+				constants: {
+					weight: 2
+				}
+			}
+		};
+		input.properties.engineering.value = {
+			tagConstant: 'weight',
+			default: 'invalid'
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('Allows a ValueDefinition of tagConstant with a valid constant', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.tags = {
@@ -2664,6 +2693,35 @@ describe('AdjacencyMap validation', () => {
 		};
 		input.properties.engineering.value = {
 			tagConstant: 'weight'
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a ValueDefinition of tagConstant with a valid constant and default', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {
+				constants: {
+					weight: 5
+				}
+			},
+			tagB: {
+				constants: {
+					weight: 2
+				}
+			}
+		};
+		input.properties.engineering.value = {
+			tagConstant: 'weight',
+			default: 3
 		};
 		const errorExpected = false;
 		const fn = () => {
@@ -4251,6 +4309,36 @@ engineering: 3`;
 		const golden = {
 			...NODE_A_BASE_VALUES,
 			engineering: 6
+		};
+		assert.deepStrictEqual(actual, golden);
+
+	});
+
+	it('Correctly handles ValueDefinitionTagConstant with a default', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {
+				constants: {
+					weight: 5
+				}
+			},
+			tagB: {
+				constants: {
+					weight: 7
+				}
+			}
+		};
+		input.nodes.a.tags = [];
+		input.properties.engineering.value = {
+			tagConstant: 'weight',
+			default: 3
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			...NODE_A_BASE_VALUES,
+			engineering: 3
 		};
 		assert.deepStrictEqual(actual, golden);
 

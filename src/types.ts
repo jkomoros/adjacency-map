@@ -191,9 +191,11 @@ export type ValueDefinitionHasTag = {
 }
 
 //Returns the given constant from each tag on result, or null if that constant
-//doesn't exist on that tag.
+//doesn't exist on that tag. If the node has no tags, then the default value
+//will be provided. If default is not set explicitly, it will return [null].
 export type ValueDefinitionTagConstant = {
 	tagConstant: TagConstantName
+	default? : ValueDefinition
 }
 
 //The actual values are all numbers, but for convenience raw inputs can also

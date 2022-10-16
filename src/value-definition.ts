@@ -342,7 +342,11 @@ const listNestedDefinitions = (definition : ValueDefinition) : ValueDefinition[]
 	}
 	
 	if (valueDefinitionIsTagConstant(definition)) {
-		return [definition];
+		const argDefault = definition.default || null;
+		return [
+			definition,
+			...listNestedDefinitions(argDefault)
+		];
 	}
 
 	return assertUnreachable(definition);
@@ -497,6 +501,7 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 		//All tags must have the same constant sets
 		const firstTagValues = data.tags[tagNames[0]];
 		if (firstTagValues.constants[definition.tagConstant] === undefined) throw new Error('Invalid tagConstant: ' + definition.tagConstant);
+		if (definition.default !== undefined) validateValueDefinition(definition.default, exampleValue, data, allowedVariables, edgeDefinition);
 		return;
 	}
 
@@ -703,7 +708,10 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 			if (constant === undefined) return NULL_SENTINEL;
 			return constant;
 		});
-		if (result.length == 0) return [NULL_SENTINEL];
+		if (result.length == 0) {
+			if (definition.default === undefined) return [NULL_SENTINEL];
+			return calculateValue(definition.default, args);
+		}
 		return result;
 	}
 
