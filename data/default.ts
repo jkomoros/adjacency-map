@@ -87,14 +87,39 @@ const data : RawMapDefinition = {
 				color: 'gold'
 			}
 		},
-		value: {
-			description: 'The overall user value created at this node.',
-			calculateWhen: "always",
-			//Value should be either set explicitly via node.values or the union of values of the features on this edge.
+		parentValue: {
+			description: 'The component of value that comes from the parent',
+			value: {
+				ref: 'value'
+			},
+			hide: true,
+			display: {
+				width: 0
+			}
+		},
+		selfValue: {
+			description: 'The component of the value that comes from net adds on self.',
+			//Value should either be set explicilty on node.values.selfValue, or
+			//it will be the sum of features added in this cycle.
+			calculateWhen: 'always',
+			//TODO: really this should be net NEW tags not yet included in value yet in parent.
 			value: {
 				combine: 'sum',
 				value: {
 					tagConstant: 'value'
+				}
+			},
+		},
+		value: {
+			description: 'The overall user value created at this node.',
+			calculateWhen: "always",
+			value: {
+				operator: '+',
+				a : {
+					result: 'selfValue'
+				},
+				b: {
+					result: 'parentValue'
 				}
 			}
 		}
