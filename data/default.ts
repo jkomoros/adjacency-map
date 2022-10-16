@@ -150,7 +150,7 @@ const data : RawMapDefinition = {
 				}
 			],
 			values: {
-				value: 1
+				selfValue: 1
 			}
 		},
 		base_train: {
@@ -168,7 +168,7 @@ const data : RawMapDefinition = {
 				}
 			],
 			values: {
-				value: 2
+				selfValue: 2
 			}
 		},
 		base_infer_colab: {
@@ -186,7 +186,7 @@ const data : RawMapDefinition = {
 				}
 			],
 			values: {
-				value: 5
+				selfValue: 5
 			}
 		},
 		base_infer_gui : {
@@ -203,10 +203,7 @@ const data : RawMapDefinition = {
 					ref: 'base_infer_colab',
 					weight: 10.0,
 				}
-			],
-			values: {
-				value: 10
-			}
+			]
 		},
 		extended_infer_gui: {
 			description: 'Extend gui to also use the model with more images',
@@ -227,9 +224,6 @@ const data : RawMapDefinition = {
 						weight: 2.0
 					}
 				]
-			},
-			values: {
-				value: 15
 			}
 		},
 		extended_infer : {
