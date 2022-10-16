@@ -709,7 +709,7 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 			return constant;
 		});
 		if (result.length == 0) {
-			if (definition.default === undefined) return [NULL_SENTINEL];
+			if (definition.default === undefined) return [0];
 			return calculateValue(definition.default, args);
 		}
 		return result;

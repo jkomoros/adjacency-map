@@ -830,7 +830,7 @@ value: {
 
 Extracts the named constant for each of the tags on the result node.
 
-If there are no tags on the result node it will evaluate to whatever was provided as the `default` parameter. If `default` is not provided, it defaults to `[null]`.
+If there are no tags on the result node it will evaluate to whatever was provided as the `default` parameter. If `default` is not provided, it defaults to `[0]`.
 
 ```
 //In MapDefinition:
