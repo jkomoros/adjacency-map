@@ -101,6 +101,13 @@ const data : RawMapDefinition = {
 
 	},
 	display: {
+		node: {
+			radius: {
+				operator: '+',
+				a: 6,
+				b: {result: 'value'}
+			}
+		},
 		edgeCombiner: {
 			color: {
 				combine: 'color-mean',
