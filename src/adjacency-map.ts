@@ -816,8 +816,7 @@ class AdjacencyMapNode {
 	_computeValues() : NodeValues {
 		const partialResult : NodeValues = {};
 		const edgeByType : {[type : PropertyName] : EdgeValue[]} = {};
-		const edges = this._data?.edges || [];
-		for (const edge of edges) {
+		for (const edge of this.edges) {
 			if (!edgeByType[edge.type]) edgeByType[edge.type] = [];
 			edgeByType[edge.type].push(edge);
 		}
