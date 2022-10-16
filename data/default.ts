@@ -102,11 +102,11 @@ const data : RawMapDefinition = {
 			//Value should either be set explicilty on node.values.selfValue, or
 			//it will be the sum of features added in this cycle.
 			calculateWhen: 'always',
-			//TODO: really this should be net NEW tags not yet included in value yet in parent.
 			value: {
 				combine: 'sum',
 				value: {
-					tagConstant: 'value'
+					tagConstant: 'value',
+					which: 'self'
 				}
 			},
 		},
