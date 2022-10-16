@@ -254,6 +254,13 @@ export type ValueDefinitionCalculationArgs = {
 	input? : number[]
 };
 
+export type ValudeDefinitionValidationArgs = {
+	exampleValues : NodeValues, 
+	data : MapDefinition, 
+	allowedVariables: AllowedValueDefinitionVariableTypes, 
+	propertyDefinition? : PropertyDefinition
+};
+
 export type LayoutInfo = {
 	width: number,
 	height: number,

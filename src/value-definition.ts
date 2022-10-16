@@ -3,8 +3,6 @@ import {
 } from './combine.js';
 
 import {
-	PropertyDefinition,
-	NodeValues,
 	ValueDefinition,
 	ValueDefinitionArithmetic,
 	ValueDefinitionCombine,
@@ -29,9 +27,9 @@ import {
 	ValueDefinitionFilter,
 	ValueDefinitionHasTag,
 	PropertyName,
-	MapDefinition,
 	ValueDefinitionTagConstant,
-	AllowedValueDefinitionVariableTypes
+	AllowedValueDefinitionVariableTypes,
+	ValudeDefinitionValidationArgs
 } from './types.js';
 
 import {
@@ -366,14 +364,14 @@ export const extractRequiredDependencies = (definition : ValueDefinition) : Prop
 //have already checked. Before, we loaded files from json and had to a
 //conversion leap of faith, but now everything is natively typescript even in
 //data/ so that leap of faith is less important.
-export const validateValueDefinition = (definition : ValueDefinition, exampleValue : NodeValues, data : MapDefinition, allowedVariables: AllowedValueDefinitionVariableTypes, edgeDefinition? : PropertyDefinition) : void => {
+export const validateValueDefinition = (definition : ValueDefinition, args: ValudeDefinitionValidationArgs) : void => {
 	if (valueDefinitionIsLeaf(definition)) return;
 	if (typeof definition == 'object' && Array.isArray(definition)) {
 		if (definition.some(leaf => !valueDefinitionIsLeaf(leaf))) throw new Error('If an array is provided it msut contain only numbers, booleans, or null');
 		if (definition.length == 0) throw new Error('If an array of numbers is provided there must be at least one');
 		return;
 	}
-	for (const [variableType, allowed] of TypedObject.entries(allowedVariables)) {
+	for (const [variableType, allowed] of TypedObject.entries(args.allowedVariables)) {
 		if (allowed) continue;
 		const tester = VALUE_DEFINITION_VARIABLE_TESTER[variableType];
 		if (tester(definition)) throw new Error('Definition includes a type with variable accessors that is not allowed in this context: ' + variableType);
@@ -385,28 +383,29 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 			//Constants here are allowed to be relied on no matter what.
 			return;
 		}
-		const constants = edgeDefinition?.constants || {};
+		const constants = args.propertyDefinition?.constants || {};
 		if (constants[definition.constant] == undefined) throw new Error(definition.constant + ' for edge type value definition but that constant doesn\'t exist for that type.');
 		return;
 	}
 	if (valueDefinitionIsRefValue(definition)) {
-		if (exampleValue[definition.ref] == undefined) throw new Error(definition.ref + ' is not a defined edge type');
+		if (args.exampleValues[definition.ref] == undefined) throw new Error(definition.ref + ' is not a defined edge type');
 		return;
 	}
 	if (valueDefinitionIsRootValue(definition)) {
-		if (exampleValue[definition.root] == undefined) throw new Error(definition.root + ' is not a defined edge type');
+		if (args.exampleValues[definition.root] == undefined) throw new Error(definition.root + ' is not a defined edge type');
 		return;
 	}
 	if (valueDefinitionIsResultValue(definition)) {
-		if (edgeDefinition) {
-			const declaredDependencies = edgeDefinition.dependencies || [];
+		if (args.propertyDefinition) {
+			const declaredDependencies = args.propertyDefinition.dependencies || [];
 			if (!declaredDependencies.some(dependency => dependency == definition.result)) throw new Error(definition.result + ' is used in a ResultValue definition but it is not declared in dependencies.');
+			//TODO: we also should check that exampleValues has an entry
 		}
 		return;
 	}
 
 	if (valueDefinitionIsCombine(definition)) {
-		validateValueDefinition(definition.value, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.value, args);
 		if (!COMBINERS[definition.combine]) throw new Error('Unknown combiner: ' + definition.combine);
 		return;
 	}
@@ -422,65 +421,65 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 	}
 
 	if (valueDefinitionIsArithmetic(definition)) {
-		validateValueDefinition(definition.a, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.a, args);
 		if (!Object.keys(OPERATORS).some(operator => operator == definition.operator)) throw new Error('Unknown operator: ' + definition.operator);
-		if (!arithmeticIsUnary(definition)) validateValueDefinition(definition.b, exampleValue, data, allowedVariables, edgeDefinition);
+		if (!arithmeticIsUnary(definition)) validateValueDefinition(definition.b, args);
 		return;
 	}
 
 	if (valueDefinitionIsCompare(definition)) {
-		validateValueDefinition(definition.a, exampleValue, data, allowedVariables, edgeDefinition);
-		validateValueDefinition(definition.b, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.a, args);
+		validateValueDefinition(definition.b, args);
 		if (!Object.keys(COMPARE_OPERATORS).some(operator => operator == definition.compare)) throw new Error('Unknown compare operator: ' + definition.compare);
 		return;
 	}
 
 	if (valueDefinitionIsIf(definition)) {
-		validateValueDefinition(definition.if, exampleValue, data, allowedVariables, edgeDefinition);
-		validateValueDefinition(definition.then, exampleValue, data, allowedVariables, edgeDefinition);
-		validateValueDefinition(definition.else, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.if, args);
+		validateValueDefinition(definition.then, args);
+		validateValueDefinition(definition.else, args);
 		return;
 	}
 
 	if (valueDefinitionIsFilter(definition)) {
-		validateValueDefinition(definition.filter, exampleValue, data, allowedVariables, edgeDefinition);
-		validateValueDefinition(definition.value, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.filter, args);
+		validateValueDefinition(definition.value, args);
 		return;
 	}
 
 	if (valueDefinitionIsClip(definition)) {
-		validateValueDefinition(definition.clip, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.clip, args);
 		if (definition.low == undefined && definition.high == undefined) throw new Error('Clip expects at least one of low or high');
-		if (definition.low != undefined) validateValueDefinition(definition.low, exampleValue, data, allowedVariables, edgeDefinition);
-		if (definition.high != undefined) validateValueDefinition(definition.high, exampleValue, data, allowedVariables, edgeDefinition);
+		if (definition.low != undefined) validateValueDefinition(definition.low, args);
+		if (definition.high != undefined) validateValueDefinition(definition.high, args);
 		return;
 	}
 
 	if (valueDefinitionIsRange(definition)) {
-		validateValueDefinition(definition.range, exampleValue, data, allowedVariables, edgeDefinition);
-		validateValueDefinition(definition.low, exampleValue, data, allowedVariables, edgeDefinition);
-		validateValueDefinition(definition.high, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.range, args);
+		validateValueDefinition(definition.low, args);
+		validateValueDefinition(definition.high, args);
 		return;
 	}
 
 	if (valueDefinitionIsPercent(definition)) {
-		validateValueDefinition(definition.percent, exampleValue, data, allowedVariables, edgeDefinition);
-		validateValueDefinition(definition.low, exampleValue, data, allowedVariables, edgeDefinition);
-		validateValueDefinition(definition.high, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.percent, args);
+		validateValueDefinition(definition.low, args);
+		validateValueDefinition(definition.high, args);
 		return;
 	}
 
 	if (valueDefinitionIsCollect(definition)) {
 		if (!definition.collect || definition.collect.length == 0) throw new Error('collect requires at least one child');
 		for (const child of definition.collect) {
-			validateValueDefinition(child, exampleValue, data, allowedVariables, edgeDefinition);
+			validateValueDefinition(child, args);
 		}
 		return;
 	}
 
 	if (valueDefinitionIsLengthOf(definition)) {
 		if (definition.lengthOf != 'refs' && definition.lengthOf != 'edges' && definition.lengthOf != 'input') throw new Error('lengthOf property must be either refs or edges or input');
-		validateValueDefinition(definition.value, exampleValue, data, allowedVariables, edgeDefinition);
+		validateValueDefinition(definition.value, args);
 		return;
 	}
 
@@ -491,17 +490,17 @@ export const validateValueDefinition = (definition : ValueDefinition, exampleVal
 
 	if (valueDefinitionIsHasTag(definition)) {
 		const tags = makeTagMap(definition.has);
-		if (Object.keys(tags).some(tag => !data.tags[tag])) throw new Error('Unknown tag in definition.has');
+		if (Object.keys(tags).some(tag => !args.data.tags[tag])) throw new Error('Unknown tag in definition.has');
 		return;
 	}
 
 	if (valueDefinitionIsTagConstant(definition)) {
-		const tagNames = Object.keys(data.tags);
+		const tagNames = Object.keys(args.data.tags);
 		if (tagNames.length == 0) throw new Error('No tags defined');
 		//All tags must have the same constant sets
-		const firstTagValues = data.tags[tagNames[0]];
+		const firstTagValues = args.data.tags[tagNames[0]];
 		if (firstTagValues.constants[definition.tagConstant] === undefined) throw new Error('Invalid tagConstant: ' + definition.tagConstant);
-		if (definition.default !== undefined) validateValueDefinition(definition.default, exampleValue, data, allowedVariables, edgeDefinition);
+		if (definition.default !== undefined) validateValueDefinition(definition.default, args);
 		return;
 	}
 
