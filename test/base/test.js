@@ -5075,6 +5075,149 @@ describe('scenarios', () => {
 		assert.throws(fn);
 	});
 
+	it('barfs for scenario with extension with a cycle', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			one: {
+				extends: 'three',
+				nodes: {
+					a: {
+						engineering: 10
+					}
+				}
+			},
+			two: {
+				extends: 'one',
+				nodes: {
+					b: {
+						ux: 5
+					}
+				}
+			},
+			three: {
+				extends: 'two',
+				nodes: {
+					c: {
+						ux: 8
+					}
+				}
+			}
+		};
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		assert.throws(fn);
+	});
+
+	it('barfs for scenario with extension of root scenario', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			one: {
+				extends: '',
+				nodes: {
+					a: {
+						engineering: 10
+					}
+				}
+			}
+		};
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		assert.throws(fn);
+	});
+
+	it('barfs for scenario with extension of non-exsitent other scenario', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			one: {
+				extends: 'invalid',
+				nodes: {
+					a: {
+						engineering: 10
+					}
+				}
+			}
+		};
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		assert.throws(fn);
+	});
+
+	it('Correctly calculates a scenario with direct extension', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			one: {
+				nodes: {
+					a: {
+						engineering: 10
+					},
+					b: {
+						engineering: 3
+					}
+				}
+			},
+			two: {
+				extends: 'one',
+				nodes: {
+					b: {
+						ux: 5
+					}
+				}
+			}
+		};
+		const map = new AdjacencyMap(input, 'two');
+		const node = map.node('b');
+		const actual = node.values;
+		const golden = {
+			data: 0,
+			ux: 5,
+			engineering: 3,
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a scenario with indirect extension', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			one: {
+				nodes: {
+					a: {
+						engineering: 10
+					},
+					b: {
+						engineering: 3
+					}
+				}
+			},
+			two: {
+				extends: 'one',
+				nodes: {
+					b: {
+						ux: 5
+					}
+				}
+			},
+			three: {
+				extends: 'two',
+				nodes: {
+					a: {
+						ux: 2
+					}
+				}
+			}
+		};
+		const map = new AdjacencyMap(input, 'three');
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			data: 0,
+			ux: 2,
+			engineering: 10,
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
 
 });
 

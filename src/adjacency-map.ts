@@ -31,7 +31,8 @@ import {
 	TagID,
 	TagMap,
 	TagConstantName,
-	AllowedValueDefinitionVariableTypes
+	AllowedValueDefinitionVariableTypes,
+	RawScenariosDefinition
 } from './types.js';
 
 import {
@@ -137,6 +138,16 @@ export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 		result[id] = edges;
 	}
 	result[ROOT_ID] = {};
+	return result;
+};
+
+const scenarioNameGraph = (scenarios :RawScenariosDefinition) : SimpleGraph => {
+	const result : SimpleGraph = {};
+	for (const [scenarioID, scenarioDefinition] of Object.entries(scenarios)) {
+		const children : {[otherID : NodeID] : true} = {};
+		if (scenarioDefinition.extends !== undefined) children[scenarioDefinition.extends] = true;
+		result[scenarioID] = children;
+	}
 	return result;
 };
 
@@ -316,11 +327,28 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		}
 	};
 	const rawScenarios = data.scenarios || {};
+	const topologicalScenarios = topologicalSort(scenarioNameGraph(rawScenarios));
+	topologicalScenarios.reverse();
 	const scenarios : ScenariosDefinition = {};
-	for (const [scenarioName, rawScenario] of Object.entries(rawScenarios)) {
+	for (const scenarioName of topologicalScenarios) {
+		const rawScenario = rawScenarios[scenarioName];
+		if (rawScenario.extends === '') throw new Error('Scenario ' + scenarioName + ' extends the root scenario which is not allowed');
+		const scenarioToExtend : Scenario = rawScenario.extends !== undefined ? scenarios[rawScenario.extends] : {description: '', nodes: {}};
+		if (!scenarioToExtend) throw new Error('Scenario ' + scenarioName + ' extends a non-existent scenario ' + rawScenario.extends);
+
+		//Create a full overlay
+		const nodes : {[id : NodeID]: {[property : PropertyName] : ValueDefinition}} = {};
+		for (const [id, baseNode] of Object.entries(scenarioToExtend.nodes)) {
+			nodes[id] = {...baseNode};
+		}
+		for (const [id, node] of Object.entries(rawScenario.nodes)) {
+			const existingNode = nodes[id] || {};
+			nodes[id] = {...existingNode, ...node};
+		}
+
 		const scenario : Scenario = {
-			description: rawScenario.description || '',
-			nodes: rawScenario.nodes
+			description: scenarioToExtend.description || rawScenario.description || '',
+			nodes
 		};
 		scenarios[scenarioName] = scenario;
 	}

@@ -1010,6 +1010,8 @@ const data : RawMapDefinition = {
 
 If the ValueDefinition evalutes to more than one number, only the first will be used for the final value of that node's property in that scenario--an implicit `combine` of type `first`.
 
+Scenarios may extend other scenarios, effectively overlaying any of their properties, by defining the `extends` parameter. Scenarios may not extend another scenario that also depends on them (which would form a cycle);
+
 ## Tags
 
 Diagrams also have a notion of `tags`. Tags are an enumerated set of binary tags. For example, in a diagram these might represent independent features that are represented in a product at each node.
