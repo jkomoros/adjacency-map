@@ -99,8 +99,7 @@ const data : RawMapDefinition = {
 		},
 		selfValue: {
 			description: 'The component of the value that comes from net adds on self.',
-			//Value should either be set explicilty on node.values.selfValue, or
-			//it will be the sum of features added in this cycle.
+			usage: 'Value should either be set explicilty on node.values.selfValue, or it will be the sum of features added in this cycle.',
 			calculateWhen: 'always',
 			value: {
 				combine: 'sum',
