@@ -702,7 +702,7 @@ value: {
 
 Returns a new array where the only numbers of `input` are included if the corresponding index of `filter` are truthy.
 
-If all numbers are filtered away, it will return `[null]`, since all number arrays must have at least one argument.
+If all numbers are filtered away, it will return the value of `default` (which if not provided defaults to `[null]`), since all number arrays must have at least one argument.
 
 `input` and `filter` may be any ValueDefinition.
 

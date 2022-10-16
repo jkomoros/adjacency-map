@@ -124,7 +124,8 @@ export type ValueDefinitionIf = {
  */
 export type ValueDefinitionFilter = {
 	filter: ValueDefinition,
-	value: ValueDefinition
+	value: ValueDefinition,
+	default?: ValueDefinition
 }
 
 //Clip returns a value like input, but where each number if it's lower than low,

@@ -286,10 +286,12 @@ const listNestedDefinitions = (definition : ValueDefinition) : ValueDefinition[]
 	}
 
 	if (valueDefinitionIsFilter(definition)) {
+		const argDefault = definition.default || null;
 		return [
 			definition,
 			...listNestedDefinitions(definition.filter),
-			...listNestedDefinitions(definition.value)
+			...listNestedDefinitions(definition.value),
+			...listNestedDefinitions(argDefault)
 		];
 	}
 
@@ -446,6 +448,7 @@ export const validateValueDefinition = (definition : ValueDefinition, args: Valu
 	if (valueDefinitionIsFilter(definition)) {
 		validateValueDefinition(definition.filter, args);
 		validateValueDefinition(definition.value, args);
+		if (definition.default !== undefined) validateValueDefinition(definition.default, args);
 		return;
 	}
 
@@ -627,7 +630,10 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 		const filterVal = calculateValue(definition.filter, args);
 		const valueVal = calculateValue(definition.value, args);
 		const result = valueVal.filter((_, index) =>  isTrue(filterVal[index % filterVal.length]));
-		if (result.length == 0) return [NULL_SENTINEL];
+		if (result.length == 0) {
+			if (definition.default == undefined) return [NULL_SENTINEL];
+			return calculateValue(definition.default, args);
+		}
 		return result;
 	}
 
