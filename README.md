@@ -900,6 +900,30 @@ value: {
 //Evalutes to [0,1,3,4,5]
 ```
 
+#### ValueDefinitionLet / ValueDefinitionVariable
+
+Sets a given named variable to have a given variable within a sub-expression block.
+
+Useful when you want to use the same sub-expression multiple times in a statement.
+
+Use ValueDefinitionVariable to access the named variable within the block.
+
+```
+value: {
+    let: 'foo',
+    value: 3,
+    //Within statements in block, the variable `foo` will be set to 3
+    block: {
+        operator: '+',
+        a: {
+            variable: 'foo'
+        },
+        b: 5
+    }
+}
+//Evalutes to 8
+```
+
 ## Display
 
 Display properties allow defining how nodes and edges render.

@@ -209,6 +209,25 @@ export type ValueDefinitionTagConstant = {
 	which?: WhichTagSet
 }
 
+export type VariableName = string;
+
+//Stores a value in a given named variable, retrievable via
+//ValueDefinitionVariable for statements nested within block.
+export type ValueDefinitionLet = {
+	//The name of the variable to set
+	let: VariableName
+	//The value to set the variable to
+	value: ValueDefinition,
+	//The sub-expression, within which the variable will have that value.
+	block: ValueDefinition,
+}
+
+//Fetch the value stored in the variable with that name, set using
+//ValueDefinitionLet.
+export type ValueDefinitionVariable = {
+	variable: VariableName
+}
+
 //The actual values are all numbers, but for convenience raw inputs can also
 //literally be true or false, which are expanded to DEFAULT_TRUE_NUMBER and FALSE_NUMBER.
 export type ValueDefinitionLeaf = number | boolean | null;
@@ -232,7 +251,9 @@ export type ValueDefinition = ValueDefinitionLeaf |
 	ValueDefinitionInput |
 	ValueDefinitionCollect |
 	ValueDefinitionHasTag |
-	ValueDefinitionTagConstant;
+	ValueDefinitionTagConstant |
+	ValueDefinitionLet |
+	ValueDefinitionVariable;
 
 //Different contexts that ValueDefinitions show up in allow different subsets of
 //these types of proeprties.
@@ -262,6 +283,7 @@ export type ValueDefinitionCalculationArgs = {
 	//Tags explicitly on precisely self
 	selfTags: TagMap,
 	definition: MapDefinition,
+	variables?: {[name : VariableName]: number[]},
 	//The input numbers, which will be returned by ValueDefinitionInput, if this
 	//is a context that does that.
 	input? : number[]
@@ -271,7 +293,8 @@ export type ValudeDefinitionValidationArgs = {
 	exampleValues : NodeValues, 
 	data : MapDefinition, 
 	allowedVariables: AllowedValueDefinitionVariableTypes, 
-	propertyDefinition? : PropertyDefinition
+	propertyDefinition? : PropertyDefinition,
+	variables? : {[name : VariableName]: true}
 };
 
 export type LayoutInfo = {

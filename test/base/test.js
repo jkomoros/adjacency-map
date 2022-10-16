@@ -1678,6 +1678,64 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('barfs for a duplicate declared variable', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			let: 'foo',
+			value: 3,
+			block: {
+				let: 'foo',
+				value: 4,
+				block: 5
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Allows a declared variable', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			let: 'foo',
+			value: 3,
+			block: {
+				variable: 'foo'
+			}
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('barfs for a variable access outside of its let block', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.value = {
+			variable: 'foo'
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('barfs for an invalid radius on map', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.display = {
@@ -3645,6 +3703,26 @@ engineering: 3`;
 			...NODE_A_BASE_VALUES,
 			//Ideally this would be 3.0 (one ref, de-duped) but we don't de-dupe refs.
 			engineering: 6.0,
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a statement that uses let/variable', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
+			let: 'foo',
+			value: 3,
+			block: {
+				variable: 'foo'
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			...NODE_A_BASE_VALUES,
+			engineering: 3
 		};
 		assert.deepStrictEqual(actual, golden);
 	});

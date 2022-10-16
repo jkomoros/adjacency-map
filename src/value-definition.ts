@@ -31,7 +31,9 @@ import {
 	AllowedValueDefinitionVariableTypes,
 	ValudeDefinitionValidationArgs,
 	WhichTagSet,
-	TagMap
+	TagMap,
+	ValueDefinitionLet,
+	ValueDefinitionVariable
 } from './types.js';
 
 import {
@@ -229,6 +231,18 @@ const valueDefinitionIsTagConstant = (definition : ValueDefinition): definition 
 	return 'tagConstant' in definition;
 };
 
+const valueDefinitionIsLet = (definition : ValueDefinition): definition is ValueDefinitionLet => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'let' in definition;
+};
+
+const valueDefinitionIsVariable = (definition : ValueDefinition): definition is ValueDefinitionVariable => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'variable' in definition;
+};
+
 const VALUE_DEFINITION_VARIABLE_TESTER : {[kind in keyof AllowedValueDefinitionVariableTypes]: (v : ValueDefinition) => boolean} ={
 	edgeConstant: valueDefinitionIsEdgeConstant,
 	refValue: valueDefinitionIsRefValue,
@@ -349,6 +363,18 @@ const listNestedDefinitions = (definition : ValueDefinition) : ValueDefinition[]
 			definition,
 			...listNestedDefinitions(argDefault)
 		];
+	}
+
+	if (valueDefinitionIsLet(definition)) {
+		return [
+			definition,
+			...listNestedDefinitions(definition.value),
+			...listNestedDefinitions(definition.block)
+		];
+	}
+
+	if (valueDefinitionIsVariable(definition)) {
+		return [definition];
 	}
 
 	return assertUnreachable(definition);
@@ -506,6 +532,20 @@ export const validateValueDefinition = (definition : ValueDefinition, args: Valu
 		const firstTagValues = args.data.tags[tagNames[0]];
 		if (firstTagValues.constants[definition.tagConstant] === undefined) throw new Error('Invalid tagConstant: ' + definition.tagConstant);
 		if (definition.default !== undefined) validateValueDefinition(definition.default, args);
+		return;
+	}
+
+	if (valueDefinitionIsLet(definition)) {
+		const variables = args.variables || {};
+		if (variables[definition.let]) throw new Error('Variable ' + definition.let + ' re-declared');
+		validateValueDefinition(definition.value, args);
+		validateValueDefinition(definition.block, {...args, variables: {...variables, [definition.let]: true}});
+		return;
+	}
+
+	if (valueDefinitionIsVariable(definition)) {
+		const variables = args.variables || {};
+		if (!variables[definition.variable]) throw new Error('Variable ' + definition.variable + ' accessed in a context it was not defined in');
 		return;
 	}
 
@@ -734,6 +774,17 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 			return calculateValue(definition.default, args);
 		}
 		return result;
+	}
+
+	if (valueDefinitionIsLet(definition)) {
+		const value = calculateValue(definition.value, args);
+		const variables = args.variables || {};
+		return calculateValue(definition.block, {...args, variables: {...variables, [definition.let]: value}});
+	}
+
+	if (valueDefinitionIsVariable(definition)) {
+		const variables = args.variables || {};
+		return variables[definition.variable];
 	}
 
 	return assertUnreachable(definition);
