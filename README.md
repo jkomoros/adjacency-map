@@ -803,6 +803,11 @@ Checks to see if the result node has any of the tags enumerated in `has` and
 returns [true] or [false]. If `all` is true, then it returns true only if all of
 the enumerated tags are in the result.
 
+The optional `which` parameter selects which tags to use for the comparison:
+- `all` (default) - All of the node's final tags
+- `self` - Only the tags specifically added to this node.
+- `extended` - Only the tags this node got via an edge with `extendTags` set.
+
 ```
 //node.tags = {a: true, b: true}
 value: {
@@ -831,6 +836,11 @@ value: {
 Extracts the named constant for each of the tags on the result node.
 
 If there are no tags on the result node it will evaluate to whatever was provided as the `default` parameter. If `default` is not provided, it defaults to `[0]`.
+
+The optional `which` parameter selects which tags to use for the comparison:
+- `all` (default) - All of the node's final tags
+- `self` - Only the tags specifically added to this node.
+- `extended` - Only the tags this node got via an edge with `extendTags` set.
 
 ```
 //In MapDefinition:

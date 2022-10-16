@@ -181,6 +181,10 @@ export type ValueDefinitionLengthOf = {
 //map.display.edgeCombiner is a context where input is provided.
 export type ValueDefinitionInput = 'input';
 
+//Which tags to do the ValueDefintion for: all tags, only ones explicity added
+//on this node, or only ones that come from previous nodes.
+export type WhichTagSet = 'all' | 'self' | 'extended';
+
 //Returns true if the result node has any of the defined tags.
 export type ValueDefinitionHasTag = {
 	//The tag to 
@@ -188,6 +192,9 @@ export type ValueDefinitionHasTag = {
 	//If true, only returns true if all of them are present. If false, then true
 	//as long as any one is true.
 	all?: boolean;
+	//Which tags to collect, 'all', 'new', or 'extended'
+	//If which is not provided, it defaults to 'all'
+	which?: WhichTagSet
 }
 
 //Returns the given constant from each tag on result, or null if that constant
@@ -196,6 +203,9 @@ export type ValueDefinitionHasTag = {
 export type ValueDefinitionTagConstant = {
 	tagConstant: TagConstantName
 	default? : ValueDefinition
+	//Which tags to collect, 'all', 'new', or 'extended'
+	//If which is not provided, it defaults to 'all'
+	which?: WhichTagSet
 }
 
 //The actual values are all numbers, but for convenience raw inputs can also
@@ -248,6 +258,8 @@ export type ValueDefinitionCalculationArgs = {
 	rootValue : NodeValues,
 	//The tags for the result node.
 	tags: TagMap,
+	//Tags explicitly on precisely self
+	selfTags: TagMap,
 	definition: MapDefinition,
 	//The input numbers, which will be returned by ValueDefinitionInput, if this
 	//is a context that does that.

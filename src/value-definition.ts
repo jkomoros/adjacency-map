@@ -29,7 +29,9 @@ import {
 	PropertyName,
 	ValueDefinitionTagConstant,
 	AllowedValueDefinitionVariableTypes,
-	ValudeDefinitionValidationArgs
+	ValudeDefinitionValidationArgs,
+	WhichTagSet,
+	TagMap
 } from './types.js';
 
 import {
@@ -543,6 +545,18 @@ export const valueDefinitionReliesOnEdges = (definition : ValueDefinition) : boo
 	return defs.some(def => valueDefinitionIsRefValue(def) || valueDefinitionIsEdgeConstant(def));
 };
 
+const tagSetForDefintion = (allTags : TagMap, selfTags : TagMap, which : WhichTagSet = 'all') : TagMap => {
+	switch(which) {
+	case  'all':
+		return allTags;
+	case 'self':
+		return selfTags;
+	case 'extended':
+		return Object.fromEntries(Object.entries(allTags).filter(entry => !selfTags[entry[0]]));
+	}
+	return assertUnreachable(which);
+};
+
 export const calculateValueLeaf = (definition : ValueDefinitionLeaf) : number =>  {
 	if (typeof definition == 'boolean') return definition ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER;
 
@@ -694,14 +708,16 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 
 	if (valueDefinitionIsHasTag(definition)) {
 		const tags = Object.keys(makeTagMap(definition.has));
+		const tagSet = tagSetForDefintion(args.tags, args.selfTags, definition.which);
 		if (definition.all) {
-			return tags.every(tag => args.tags[tag]) ? [DEFAULT_TRUE_NUMBER] : [FALSE_NUMBER];
+			return tags.every(tag => tagSet[tag]) ? [DEFAULT_TRUE_NUMBER] : [FALSE_NUMBER];
 		}
-		return tags.some(tag => args.tags[tag]) ? [DEFAULT_TRUE_NUMBER] : [FALSE_NUMBER];
+		return tags.some(tag => tagSet[tag]) ? [DEFAULT_TRUE_NUMBER] : [FALSE_NUMBER];
 	}
 
 	if (valueDefinitionIsTagConstant(definition)) {
-		const result = Object.keys(args.tags).map(tagName => {
+		const tagSet = tagSetForDefintion(args.tags, args.selfTags, definition.which);
+		const result = Object.keys(tagSet).map(tagName => {
 			const tagDefinition = args.definition.tags[tagName];
 			const constant = tagDefinition.constants[definition.tagConstant];
 			if (constant === undefined) return NULL_SENTINEL;

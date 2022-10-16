@@ -656,6 +656,7 @@ export class AdjacencyMap {
 				partialResult: {},
 				rootValue: {},
 				tags: this.rootTags,
+				selfTags: {},
 				definition: this._data
 			};
 			for (const [propertyName, valueDefinition] of Object.entries(scenarioNode)) {
@@ -847,6 +848,7 @@ class AdjacencyMapNode {
 					partialResult: {},
 					rootValue: {},
 					tags: this.tags,
+					selfTags: this._data ? this._data.tags : {},
 					definition: this._map.data,
 					input: [partialResult[type]]
 				};
@@ -869,6 +871,7 @@ class AdjacencyMapNode {
 				partialResult,
 				rootValue: this._map.rootValues,
 				tags: this.tags,
+				selfTags: this._data ? this._data.tags : {},
 				definition: this._map.data
 			};
 			const values = calculateValue(edgeValueDefinition, args);
@@ -948,6 +951,7 @@ class AdjacencyMapNode {
 			partialResult: this.values,
 			rootValue: this._map.rootValues,
 			tags: this.tags,
+			selfTags: this._data ? this._data.tags : {},
 			definition: this._map.data
 		};
 		if (input) args.input = input;
@@ -1149,6 +1153,7 @@ class AdjacencyMapNode {
 			partialResult: this.values,
 			rootValue: this._map.rootValues,
 			tags: this.tags,
+			selfTags: this._data ? this._data.tags : {},
 			definition: this._map.data
 		});
 		if (result.length < 1) throw new Error('Value definition returned an empty array');

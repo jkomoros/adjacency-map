@@ -4263,6 +4263,123 @@ engineering: 3`;
 
 	});
 
+	it('Correctly handles ValueDefinitionHasTags with which self included', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {},
+			tagB: {}
+		};
+		input.nodes.a.tags = 'tagA';
+		input.nodes.b.tags = 'tagB';
+		input.nodes.b.edges.push({
+			type: 'engineering',
+			ref: 'a'
+		});
+		input.properties.engineering.value = {
+			has: 'tagB',
+			which: 'self'
+		};
+		input.properties.ux.extendTags = true;
+		const map = new AdjacencyMap(input);
+		const node = map.node('b');
+		const actual = node.values;
+		const golden = {
+			engineering: 1,
+			data: 0,
+			ux: 4
+		};
+		assert.deepStrictEqual(actual, golden);
+
+	});
+
+	it('Correctly handles ValueDefinitionHasTags with which self excluded', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {},
+			tagB: {}
+		};
+		input.nodes.a.tags = 'tagA';
+		input.nodes.b.tags = 'tagB';
+		input.nodes.b.edges.push({
+			type: 'engineering',
+			ref: 'a'
+		});
+		input.properties.engineering.value = {
+			has: 'tagA',
+			which: 'self'
+		};
+		input.properties.ux.extendTags = true;
+		const map = new AdjacencyMap(input);
+		const node = map.node('b');
+		const actual = node.values;
+		const golden = {
+			engineering: 0,
+			data: 0,
+			ux: 4
+		};
+		assert.deepStrictEqual(actual, golden);
+
+	});
+
+	it('Correctly handles ValueDefinitionHasTags with which extended included', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {},
+			tagB: {}
+		};
+		input.nodes.a.tags = 'tagA';
+		input.nodes.b.tags = 'tagB';
+		input.nodes.b.edges.push({
+			type: 'engineering',
+			ref: 'a'
+		});
+		input.properties.engineering.value = {
+			has: 'tagB',
+			which: 'extended'
+		};
+		input.properties.ux.extendTags = true;
+		const map = new AdjacencyMap(input);
+		const node = map.node('b');
+		const actual = node.values;
+		const golden = {
+			engineering: 0,
+			data: 0,
+			ux: 4
+		};
+		assert.deepStrictEqual(actual, golden);
+
+	});
+
+	it('Correctly handles ValueDefinitionHasTags with which extended excluded', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {},
+			tagB: {}
+		};
+		input.nodes.a.tags = 'tagA';
+		input.nodes.b.tags = 'tagB';
+		input.nodes.b.edges.push({
+			type: 'engineering',
+			ref: 'a'
+		});
+		input.properties.engineering.value = {
+			has: 'tagA',
+			which: 'extended'
+		};
+		input.properties.ux.extendTags = true;
+		const map = new AdjacencyMap(input);
+		const node = map.node('b');
+		const actual = node.values;
+		const golden = {
+			engineering: 1,
+			data: 0,
+			ux: 4
+		};
+		assert.deepStrictEqual(actual, golden);
+
+	});
+
+
 	it('Correctly handles ValueDefinitionHasTags with all', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.tags = {
@@ -4309,6 +4426,80 @@ engineering: 3`;
 		const golden = {
 			...NODE_A_BASE_VALUES,
 			engineering: 6
+		};
+		assert.deepStrictEqual(actual, golden);
+
+	});
+
+	it('Correctly handles ValueDefinitionTagConstant with which self', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {
+				constants: {
+					weight: 5
+				}
+			},
+			tagB: {
+				constants: {
+					weight: 7
+				}
+			}
+		};
+		input.nodes.b.edges.push({
+			type: 'engineering',
+			ref: 'a'
+		});
+		input.nodes.a.tags = 'tagA';
+		input.nodes.b.tags = 'tagB';
+		input.properties.ux.extendTags = true;
+		input.properties.engineering.value = {
+			tagConstant: 'weight',
+			which: 'self'
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('b');
+		const actual = node.values;
+		const golden = {
+			data: 0,
+			ux: 4,
+			engineering: 7
+		};
+		assert.deepStrictEqual(actual, golden);
+
+	});
+
+	it('Correctly handles ValueDefinitionTagConstant with which extended', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.tags = {
+			tagA: {
+				constants: {
+					weight: 5
+				}
+			},
+			tagB: {
+				constants: {
+					weight: 7
+				}
+			}
+		};
+		input.nodes.b.edges.push({
+			type: 'engineering',
+			ref: 'a'
+		});
+		input.nodes.a.tags = 'tagA';
+		input.nodes.b.tags = 'tagB';
+		input.properties.ux.extendTags = true;
+		input.properties.engineering.value = {
+			tagConstant: 'weight',
+			which: 'extended'
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('b');
+		const actual = node.values;
+		const golden = {
+			data: 0,
+			ux: 4,
+			engineering: 5
 		};
 		assert.deepStrictEqual(actual, golden);
 
