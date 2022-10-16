@@ -194,6 +194,11 @@ class MainView extends connect(store)(PageViewElement) {
 					stroke-width: 0.2em !important;
 				}
 
+				svg text {
+					user-select: none;
+					pointer-events: none;
+				}
+
 			`
 		];
 	}
