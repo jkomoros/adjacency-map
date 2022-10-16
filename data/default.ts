@@ -141,8 +141,20 @@ const data : RawMapDefinition = {
 					result: 'incrementalCertainty'
 				}
 			}
+		},
+		expectedValue: {
+			description: 'The value times certainty for this node.',
+			calculateWhen: 'always',
+			value: {
+				operator: '*',
+				a: {
+					result: 'value'
+				},
+				b: {
+					result: 'certainty'
+				}
+			}
 		}
-		//TODO: add expected value
 	},
 	root: {
 		certainty: 1.0
