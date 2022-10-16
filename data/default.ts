@@ -122,8 +122,30 @@ const data : RawMapDefinition = {
 					result: 'parentValue'
 				}
 			}
+		},
+		incrementalCertainty: {
+			description: 'A value between 0 and 1 denoting how much more uncertain this node is than its parent',
+			usage: 'Designed to be a constant or set explicitly on a node',
+			calculateWhen: 'always',
+			value: 0.9
+		},
+		certainty: {
+			description: 'A value between 0 and 1 denoting how certain the value is at this node',
+			combine: 'product',
+			value: {
+				operator: '*',
+				a: {
+					ref: 'certainty'
+				},
+				b: {
+					result: 'incrementalCertainty'
+				}
+			}
 		}
-
+		//TODO: add expected value
+	},
+	root: {
+		certainty: 1.0
 	},
 	display: {
 		node: {
@@ -131,6 +153,9 @@ const data : RawMapDefinition = {
 				operator: '+',
 				a: 6,
 				b: {result: 'value'}
+			},
+			opacity: {
+				result: 'certainty'
 			}
 		},
 		edgeCombiner: {
