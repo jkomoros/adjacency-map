@@ -833,6 +833,10 @@ class AdjacencyMapNode {
 				if (this._data.values[type]) {
 					partialResult[type] = this._data.values[type];
 					//Dont' calculate the value at all, just override it.
+
+					//TODO: we need this value set to pass to the scenario check
+					//afterwards... but if hte scenario is set it should
+					//override this value.
 					continue;
 				}
 			}
