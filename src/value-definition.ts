@@ -396,10 +396,10 @@ export const validateValueDefinition = (definition : ValueDefinition, args: Valu
 		return;
 	}
 	if (valueDefinitionIsResultValue(definition)) {
+		if (args.exampleValues[definition.result] == undefined) throw new Error(definition.result + ' is not a defined edge type');
 		if (args.propertyDefinition) {
 			const declaredDependencies = args.propertyDefinition.dependencies || [];
 			if (!declaredDependencies.some(dependency => dependency == definition.result)) throw new Error(definition.result + ' is used in a ResultValue definition but it is not declared in dependencies.');
-			//TODO: we also should check that exampleValues has an entry
 		}
 		return;
 	}
