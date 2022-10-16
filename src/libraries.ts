@@ -51,6 +51,29 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 		properties: {},
 		root: {}
 	},
+	//Returns a value for the smallest number of hops away from root it is
+	generation: {
+		properties: {
+			generation: {
+				description: 'The smallest number of edges to get back to root',
+				combine: 'min',
+				hide: true,
+				display: {
+					width: 0
+				},
+				value: {
+					operator: '+',
+					a: {
+						ref: '.'
+					},
+					b: 1
+				}
+			}
+		},
+		root: {
+			generation: 0
+		}
+	},
 	//Including this library will make it so edges of various types will not be
 	//combined into one type, but rather show a different edge for each type.
 	'distinct-across-type': {
