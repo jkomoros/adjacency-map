@@ -549,6 +549,8 @@ export type ScenarioName = string;
 //override the base values of already existing nodes.
 export type RawScenario = {
 	description? : string,
+	//A scenario may extend another by using its ID here, which means it will
+	//overlay its definition. Cycles are not allowed.
 	extends? : ScenarioName,
 	//Scenarios may override root nodes by using id of ROOT_ID.
 	nodes: {
