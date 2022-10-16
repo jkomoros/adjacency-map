@@ -32,17 +32,26 @@ const data : RawMapDefinition = {
 		gui: {
 			displayName: 'GUI',
 			color: 'blue',
-			description: 'The user may use a Graphical User Interface instead of a command line interface'
+			description: 'The user may use a Graphical User Interface instead of a command line interface',
+			constants: {
+				value: 10
+			}
 		},
 		extended: {
 			displayName: 'Extended',
 			color: 'green',
 			description: 'The underlying model is trained on significantly more images, leading to higher quality results',
+			constants: {
+				value: 8
+			}
 		},
 		im2Im: {
 			displayName: 'Image2Image',
 			color: 'red',
-			description: 'The underlying model can also take an image as input, making it possible to generate variations on a basic image composition'
+			description: 'The underlying model can also take an image as input, making it possible to generate variations on a basic image composition',
+			constants: {
+				value: 3
+			}
 		},
 	},
 	properties: {
@@ -78,6 +87,17 @@ const data : RawMapDefinition = {
 				color: 'gold'
 			}
 		},
+		value: {
+			description: 'The overall user value created at this node.',
+			calculateWhen: "always",
+			//Value should be either set explicitly via node.values or the union of values of the features on this edge.
+			value: {
+				combine: 'sum',
+				value: {
+					tagConstant: 'value'
+				}
+			}
+		}
 
 	},
 	display: {
@@ -96,7 +116,10 @@ const data : RawMapDefinition = {
 					type: 'engineering',
 					weight: 5.0,
 				}
-			]
+			],
+			values: {
+				value: 1
+			}
 		},
 		base_train: {
 			description: 'Train the model on a basic corpus of images',
@@ -111,7 +134,10 @@ const data : RawMapDefinition = {
 					ref: 'base_pipeline',
 					weight: 6.0
 				}
-			]
+			],
+			values: {
+				value: 2
+			}
 		},
 		base_infer_colab: {
 			description: 'Take a trained model and a text prompt and return a generated image in colab',
@@ -126,7 +152,10 @@ const data : RawMapDefinition = {
 					ref: 'base_train',
 					weight: 1.0
 				}
-			]
+			],
+			values: {
+				value: 5
+			}
 		},
 		base_infer_gui : {
 			description: 'Take the basic results and allow someone to install an electron app to generate an image',
@@ -142,7 +171,10 @@ const data : RawMapDefinition = {
 					ref: 'base_infer_colab',
 					weight: 10.0,
 				}
-			]
+			],
+			values: {
+				value: 10
+			}
 		},
 		extended_infer_gui: {
 			description: 'Extend gui to also use the model with more images',
@@ -163,6 +195,9 @@ const data : RawMapDefinition = {
 						weight: 2.0
 					}
 				]
+			},
+			values: {
+				value: 15
 			}
 		},
 		extended_infer : {
