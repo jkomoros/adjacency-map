@@ -338,6 +338,25 @@ const data : RawMapDefinition = {
 				]
 			}
 		}
+	},
+	scenarios: {
+		'increased-certainty': {
+			description: 'Override to increase the certainty of certain values, which increases downstream certainty too',
+			nodes: {
+				im_to_im_infer: {
+					//Take the value it was in the base and add 0.08 to it.
+					certainty: {
+						operator: '+',
+						a: 'input',
+						b: 0.08
+					}
+				},
+				extended_infer_gui: {
+					//Just override the value of the node's value to 0.8
+					certainty: 0.8
+				}
+			}
+		}
 	}
 };
 
