@@ -43,9 +43,9 @@ export const selectData = createSelector(
 
 //The node that should be used for the summary readout
 export const selectSummaryNodeID = createSelector(
-	selectSelectedNodeID,
 	selectHoveredNodeID,
-	(selectedNodeID, hoveredNodeID) => selectedNodeID || hoveredNodeID
+	selectSelectedNodeID,
+	(hoveredNodeID, selectedNodeID) => hoveredNodeID || selectedNodeID
 );
 
 export const selectLegalScenarioNames = createSelector(
