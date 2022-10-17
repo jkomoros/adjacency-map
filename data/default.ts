@@ -101,6 +101,7 @@ const data : RawMapDefinition = {
 			description: 'The component of the value that comes from net adds on self.',
 			usage: 'Value should either be set explicilty on node.values.selfValue, or it will be the sum of features added in this cycle.',
 			calculateWhen: 'always',
+			hide: true,
 			value: {
 				combine: 'sum',
 				value: {
@@ -125,6 +126,7 @@ const data : RawMapDefinition = {
 		incrementalCertainty: {
 			description: 'A value between 0 and 1 denoting how much more uncertain this node is than its parent',
 			usage: 'Designed to be a constant or set explicitly on a node',
+			hide: true,
 			calculateWhen: 'always',
 			value: 0.9
 		},
