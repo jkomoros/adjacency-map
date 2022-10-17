@@ -356,6 +356,20 @@ const data : RawMapDefinition = {
 					certainty: 0.8
 				}
 			}
+		},
+		'increased-value': {
+			description: 'Extends the increased-capacity scenario and also increases the value at a node',
+			extends: 'increased-certainty',
+			nodes: {
+				extended_im_to_im_infer_gui: {
+					//Multiply the previous baseline value by 1.5
+					value: {
+						operator: '*',
+						a: 'input',
+						b: 1.5
+					}
+				}
+			}
 		}
 	}
 };
