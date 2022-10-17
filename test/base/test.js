@@ -5388,6 +5388,28 @@ describe('scenarios', () => {
 
 	});
 
+	it('scenario with ValueDefinition input on top of a node override', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			one: {
+				nodes: {
+					a: {
+						engineering: {
+							operator: '+',
+							a: 'input',
+							b: 3.0
+						},
+					}
+				}
+			}
+		};
+		input.nodes.a.values = {engineering:  5};
+		const map = new AdjacencyMap(input, 'one');
+		const node = map.node('a');
+		assert.deepStrictEqual(node.values.engineering, 5.0 + 3.0);
+
+	});
+
 	it('scenario with ValueDefinition input on root', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.scenarios = {
