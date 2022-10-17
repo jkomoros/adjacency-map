@@ -5384,7 +5384,7 @@ describe('scenarios', () => {
 		};
 		const map = new AdjacencyMap(input, 'one');
 		const node = map.node('a');
-		assert.deepStrictEqual(node.values.engineering, 7.0);
+		assert.deepStrictEqual(node.values.engineering, NODE_A_BASE_VALUES.engineering + 3.0);
 
 	});
 

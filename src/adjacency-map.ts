@@ -830,17 +830,37 @@ class AdjacencyMapNode {
 			//Fill in the partial result as we go so other things htat rely on
 			//our root value can have it.
 			partialResult[type] = this._map.rootValues[type];
-			if (this._data) {
-				if (this._data.values[type]) {
-					partialResult[type] = this._data.values[type];
-					//Dont' calculate the value at all, just override it.
 
-					//TODO: we need this value set to pass to the scenario check
-					//afterwards... but if hte scenario is set it should
-					//override this value.
-					continue;
-				}
+			//Compute the default value
+			const rawEdges = edgeByType[type] || [];
+			const typeDefinition = this._map.data.properties[type];
+			if (rawEdges.length  > 0 || typeDefinition.calculateWhen == 'always') {
+				const edgeValueDefinition = typeDefinition.value;
+				const constants = typeDefinition.constants || {};
+				const defaultedEdges = rawEdges.map(edge => ({...constants, ...edge}));
+				//TODO: should we make it illegal to have an edge of same type and ref on a node? 
+				const refs = rawEdges.map(edge => this._map.node(edge.ref || '').values);
+				const args = {
+					edges: defaultedEdges,
+					refs,
+					partialResult,
+					rootValue: this._map.rootValues,
+					tags: this.tags,
+					selfTags: this._data ? this._data.tags : {},
+					definition: this._map.data
+				};
+				const values = calculateValue(edgeValueDefinition, args);
+				if (values.length == 0) throw new Error('values was not at least of length 1');
+				const finalCombiner = typeDefinition.combine ? COMBINERS[typeDefinition.combine] : DEFAULT_COMBINER;
+				partialResult[type] = finalCombiner(values)[0];
 			}
+
+			//Override the default value with the nodes override (if applicable)
+			//TODO: also pass through the previous value as an input to a full ValueDefinition
+			if (this._data && this._data.values[type]) {
+				partialResult[type] = this._data.values[type];
+			}
+			//Finally, do the scenario overriding if applicable
 			if (scenarioNode[type]) {
 				const scenarioArgs : ValueDefinitionCalculationArgs = {
 					refs: [],
@@ -853,31 +873,8 @@ class AdjacencyMapNode {
 					input: [partialResult[type]]
 				};
 				partialResult[type] = calculateValue(scenarioNode[type], scenarioArgs)[0];
-				//Dont' calculate the value at all, just override it, acting
-				//like values.
-				continue;
 			}
-			const rawEdges = edgeByType[type] || [];
-			const typeDefinition = this._map.data.properties[type];
-			if (rawEdges.length == 0 && typeDefinition.calculateWhen == 'edges') continue;
-			const edgeValueDefinition = typeDefinition.value;
-			const constants = typeDefinition.constants || {};
-			const defaultedEdges = rawEdges.map(edge => ({...constants, ...edge}));
-			//TODO: should we make it illegal to have an edge of same type and ref on a node? 
-			const refs = rawEdges.map(edge => this._map.node(edge.ref || '').values);
-			const args = {
-				edges: defaultedEdges,
-				refs,
-				partialResult,
-				rootValue: this._map.rootValues,
-				tags: this.tags,
-				selfTags: this._data ? this._data.tags : {},
-				definition: this._map.data
-			};
-			const values = calculateValue(edgeValueDefinition, args);
-			if (values.length == 0) throw new Error('values was not at least of length 1');
-			const finalCombiner = typeDefinition.combine ? COMBINERS[typeDefinition.combine] : DEFAULT_COMBINER;
-			partialResult[type] = finalCombiner(values)[0];
+
 		}
 		//partialResult now contains a value for every item (including hte ones
 		//that are just default set to root's value).
