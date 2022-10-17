@@ -8,7 +8,8 @@ import {
 	UPDATE_SCALE,
 	UPDATE_SCENARIO_NAME,
 	UPDATE_HOVERED_NODE_ID,
-	UPDATE_SELECTED_NODE_ID
+	UPDATE_SELECTED_NODE_ID,
+	UPDATE_SHOW_HIDDEN_VALUES
 } from "../actions/data.js";
 
 import {
@@ -19,7 +20,8 @@ const INITIAL_STATE : DataState = {
 	filename: DEFAULT_FILE_NAME,
 	scale: 1.0,
 	scenarioName: '',
-	hoveredNodeID: undefined
+	hoveredNodeID: undefined,
+	showHiddenValues: false
 };
 
 const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState => {
@@ -49,6 +51,11 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			selectedNodeID: action.nodeID
+		};
+	case UPDATE_SHOW_HIDDEN_VALUES:
+		return {
+			...state,
+			showHiddenValues: action.showHiddenValues
 		};
 	default:
 		return state;

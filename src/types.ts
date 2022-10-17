@@ -678,6 +678,7 @@ export type DataState = {
 	scenarioName : ScenarioName;
 	hoveredNodeID? : NodeID;
 	selectedNodeID? : NodeID;
+	showHiddenValues: boolean;
 }
 
 export type RootState = {

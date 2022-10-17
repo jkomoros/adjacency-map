@@ -4,6 +4,7 @@ export const UPDATE_SCENARIO_NAME = 'UPDATE_SCENARIO_NAME';
 
 export const UPDATE_HOVERED_NODE_ID = 'UPDATE_HOVERED_NODE_ID';
 export const UPDATE_SELECTED_NODE_ID = 'UPDATE_SELECTED_NODE_ID';
+export const UPDATE_SHOW_HIDDEN_VALUES = 'UPDATE_SHOW_HIDDEN_VALUES';
 
 export const DEFAULT_FILE_NAME = 'default';
 //Also in tools/config.ts
@@ -105,6 +106,13 @@ export const updateSelectedNodeID : AppActionCreator =  (nodeID? : NodeID) => (d
 		type: UPDATE_SELECTED_NODE_ID,
 		nodeID
 	});
+};
+
+export const updateShowHiddenValues = (showHiddenValues = false) : AnyAction => {
+	return {
+		type: UPDATE_SHOW_HIDDEN_VALUES,
+		showHiddenValues
+	};
 };
 
 export const updateWithMainPageExtra : AppActionCreator = (pageExtra) => (dispatch) => {
