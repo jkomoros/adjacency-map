@@ -228,6 +228,12 @@ export type ValueDefinitionVariable = {
 	variable: VariableName
 }
 
+//Prints the value to the console and passes it through unmodified up.
+export type ValueDefinitionLog = {
+	log: ValueDefinition
+	message? : string
+}
+
 //The actual values are all numbers, but for convenience raw inputs can also
 //literally be true or false, which are expanded to DEFAULT_TRUE_NUMBER and FALSE_NUMBER.
 export type ValueDefinitionLeaf = number | boolean | null;
@@ -253,7 +259,8 @@ export type ValueDefinition = ValueDefinitionLeaf |
 	ValueDefinitionHasTag |
 	ValueDefinitionTagConstant |
 	ValueDefinitionLet |
-	ValueDefinitionVariable;
+	ValueDefinitionVariable |
+	ValueDefinitionLog;
 
 //Different contexts that ValueDefinitions show up in allow different subsets of
 //these types of proeprties.

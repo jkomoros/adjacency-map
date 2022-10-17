@@ -924,6 +924,26 @@ value: {
 //Evalutes to 8
 ```
 
+#### ValueDefinitionLog
+
+Logs the value passed to `log` to the console, and returns it upwards.
+
+Useful for 
+
+You can optionally provide a `message` parameter to prefix to the message.
+
+```
+//Assume above there is a let block of foo to 1.0
+value: {
+    //Logs 'log: message, [1.0]' to the console
+    log: {
+        variable: 'foo'
+    },
+    message: 'message'
+}
+//Evaluates to [1.0]
+```
+
 ## Display
 
 Display properties allow defining how nodes and edges render.

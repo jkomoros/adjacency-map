@@ -33,7 +33,8 @@ import {
 	WhichTagSet,
 	TagMap,
 	ValueDefinitionLet,
-	ValueDefinitionVariable
+	ValueDefinitionVariable,
+	ValueDefinitionLog
 } from './types.js';
 
 import {
@@ -243,6 +244,12 @@ const valueDefinitionIsVariable = (definition : ValueDefinition): definition is 
 	return 'variable' in definition;
 };
 
+const valueDefinitionIsLog = (definition : ValueDefinition): definition is ValueDefinitionLog => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'log' in definition;
+};
+
 const VALUE_DEFINITION_VARIABLE_TESTER : {[kind in keyof AllowedValueDefinitionVariableTypes]: (v : ValueDefinition) => boolean} ={
 	edgeConstant: valueDefinitionIsEdgeConstant,
 	refValue: valueDefinitionIsRefValue,
@@ -375,6 +382,13 @@ const listNestedDefinitions = (definition : ValueDefinition) : ValueDefinition[]
 
 	if (valueDefinitionIsVariable(definition)) {
 		return [definition];
+	}
+
+	if (valueDefinitionIsLog(definition)) {
+		return [
+			definition,
+			...listNestedDefinitions(definition.log)
+		];
 	}
 
 	return assertUnreachable(definition);
@@ -546,6 +560,11 @@ export const validateValueDefinition = (definition : ValueDefinition, args: Valu
 	if (valueDefinitionIsVariable(definition)) {
 		const variables = args.variables || {};
 		if (!variables[definition.variable]) throw new Error('Variable ' + definition.variable + ' accessed in a context it was not defined in');
+		return;
+	}
+
+	if (valueDefinitionIsLog(definition)) {
+		validateValueDefinition(definition.log, args);
 		return;
 	}
 
@@ -785,6 +804,13 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 	if (valueDefinitionIsVariable(definition)) {
 		const variables = args.variables || {};
 		return variables[definition.variable];
+	}
+
+	if (valueDefinitionIsLog(definition)) {
+		const value = calculateValue(definition.log, args);
+		const message = 'log: ' + (definition.message || '');
+		console.log(message, value);
+		return value;
 	}
 
 	return assertUnreachable(definition);
