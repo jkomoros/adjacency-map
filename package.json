@@ -32,7 +32,6 @@
   "dependencies": {
     "@types/d3": "^7.4.0",
     "@webcomponents/webcomponentsjs": "^2.2.4",
-    "canvas": "^2.10.1",
     "d3": "^7.3.0",
     "esm-seedrandom": "^3.0.5",
     "firebase": "^9.6.2",
@@ -55,6 +54,7 @@
     "@web/dev-server": "^0.1.31",
     "@web/dev-server-rollup": "^0.3.17",
     "axe-core": "^3.0.0",
+    "canvas": "^2.10.1",
     "chai": "^4.1.2",
     "del": "^3.0.0",
     "eslint": "^7.18.0",
