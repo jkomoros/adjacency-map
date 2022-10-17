@@ -69,9 +69,10 @@ There is one special **root** node, with ID of '', that sets default values for 
 
 The final value for each property for each node is calulated by: 
 1) Taking the values of the **root** node as the default values
-2) Overlaying any values for this node explicitly defined it its **values** property, or implicitly defined in the active scenario. Any property that has a value explicitly defined will have that be the final value, skipping the last step.
-3) Implicitly calculating the final value for each property type by aggregating all of the edges of that property that terminate in this node, and then passing those edges to the calculation expression definined on that property's `value` property.
-4) Using the configuration defined in the various `display` properties on the map itself, each property type, and each node to determine color, opacity, width, etc of nodes and edges to display.
+2) Implicitly calculating the final value for each property type by aggregating all of the edges of that property that terminate in this node, and then passing those edges to the calculation expression definined on that property's `value` property. This set is skipped if calculateWhen is `edge` and there are no edges of that type.
+3) Overlaying any specific node value overrides defined in map.nodes.NODEID.values, overriding the earlier value set via the normal process.
+4) Overlaying any overrides specific to this node specific to the active scenario. This ValueDefinition is passed the previous value in the pipeline as input, allowing modifying the previous value in the pipeline.
+5) Using the configuration defined in the various `display` properties on the map itself, each property type, and each node to determine color, opacity, width, etc of nodes and edges to display.
 
 Most of the properties of `RawMapDefinition` will be described below. It also has `description`, an optional string property that will be shown in the UI to describe the overall model.
 
