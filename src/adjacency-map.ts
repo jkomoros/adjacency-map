@@ -114,7 +114,7 @@ const ALLOWED_VARIABLES_FOR_CONTEXT = {
 		edgeConstant: false,
 		input: true,
 	},
-	scenarioValue: {
+	nodeOverride: {
 		edgeConstant: false,
 		refValue: false,
 		resultValue: false,
@@ -298,7 +298,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		const edges : EdgeValue[] = extractEdgesFromRawNodeDefinition(rawNode);
 		const rawNodeDisplay = rawNode.display || {};
 		const rawValues = rawNode.values || {};
-		const values = Object.fromEntries(Object.entries(rawValues).map(entry => [entry[0], calculateValueLeaf(entry[1])]));
+		const values = {...rawValues};
 		const tags = makeTagMap(rawNode.tags);
 		nodes[id] = {
 			...rawNode,
@@ -416,8 +416,8 @@ const validateData = (data : MapDefinition) : void => {
 		if (nodeData.values) {
 			if (typeof nodeData.values != 'object') throw new Error('values if provided must be an object');
 			for (const [valueName, valueValue] of Object.entries(nodeData.values)) {
-				if (typeof valueValue != 'number') throw new Error('values property ' + valueName + ' is not a number as expected');
 				if (!data.properties[valueName]) throw new Error('values property ' + valueName + ' is not defined in properties');
+				validateValueDefinition(valueValue, {exampleValues: {}, data, allowedVariables: ALLOWED_VARIABLES_FOR_CONTEXT.nodeOverride});
 			}
 		}
 		for (const tagID of Object.keys(nodeData.tags)) {
@@ -491,7 +491,7 @@ const validateData = (data : MapDefinition) : void => {
 			if (nodeName != ROOT_ID && !data.nodes[nodeName]) throw new Error('All node ids in a scenario must be either ROOT_ID or included in nodes');
 			for (const [propertyName, propertyValue] of Object.entries(nodeValues)) {
 				if (!data.properties[propertyName]) throw new Error('All properties in scenarios for a node must be named properties');
-				validateValueDefinition(propertyValue, {exampleValues: {}, data, allowedVariables: ALLOWED_VARIABLES_FOR_CONTEXT.scenarioValue});
+				validateValueDefinition(propertyValue, {exampleValues: {}, data, allowedVariables: ALLOWED_VARIABLES_FOR_CONTEXT.nodeOverride});
 			}
 		}
 	}
@@ -856,10 +856,20 @@ class AdjacencyMapNode {
 			}
 
 			//Override the default value with the nodes override (if applicable)
-			//TODO: also pass through the previous value as an input to a full ValueDefinition
 			if (this._data && this._data.values[type]) {
-				partialResult[type] = this._data.values[type];
+				const overrideArgs : ValueDefinitionCalculationArgs = {
+					refs: [],
+					edges: [],
+					partialResult: {},
+					rootValue: {},
+					tags: this.tags,
+					selfTags: this._data ? this._data.tags : {},
+					definition: this._map.data,
+					input: [partialResult[type]]
+				};
+				partialResult[type] = calculateValue(this._data.values[type], overrideArgs)[0];
 			}
+
 			//Finally, do the scenario overriding if applicable
 			if (scenarioNode[type]) {
 				const scenarioArgs : ValueDefinitionCalculationArgs = {

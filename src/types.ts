@@ -402,8 +402,9 @@ export type RawNodeDefinition = {
 	tags? : TagID | TagID[] | TagMap,
 	edges?: RawEdgeValue[] | RawEdgeMap,
 	//If any values are provided here, they will be set on the node, overriding
-	//any other edge values that or root values.
-	values? : RawNodeValues,
+	//any other edge values that or root values. They may use
+	//ValueDefinitionInput in their definition.
+	values? : NodeValuesOverride
 };
 
 export type NodeDefinition = {
@@ -412,8 +413,12 @@ export type NodeDefinition = {
 	tags: TagMap,
 	display: Partial<NodeDisplay>,
 	edges: EdgeValue[],
-	values: NodeValues
+	values: NodeValuesOverride
 };
+
+type NodeValuesOverride = {
+	[propertyName: PropertyName]: ValueDefinition
+}
 
 export type RawNodeValues = {
 	[type : PropertyName]: ValueDefinitionLeaf
@@ -606,10 +611,8 @@ export type RawScenario = {
 	extends? : ScenarioName,
 	//Scenarios may override root nodes by using id of ROOT_ID.
 	nodes: {
-		[id : NodeID] : {
-			[propertyName: PropertyName]: ValueDefinition
-		};
-	};
+		[id : NodeID] : NodeValuesOverride
+	}
 }
 
 export type Scenario = {

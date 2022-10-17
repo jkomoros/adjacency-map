@@ -70,7 +70,7 @@ There is one special **root** node, with ID of '', that sets default values for 
 The final value for each property for each node is calulated by: 
 1) Taking the values of the **root** node as the default values
 2) Implicitly calculating the final value for each property type by aggregating all of the edges of that property that terminate in this node, and then passing those edges to the calculation expression definined on that property's `value` property. This set is skipped if calculateWhen is `edge` and there are no edges of that type.
-3) Overlaying any specific node value overrides defined in map.nodes.NODEID.values, overriding the earlier value set via the normal process.
+3) Overlaying any specific node value overrides defined in map.nodes.NODEID.values, overriding the earlier value set via the normal process. This override may be a ValueDefinition, and it will be passed an input of the previous result in the pipeline to modify if it chooses.
 4) Overlaying any overrides specific to this node specific to the active scenario. This ValueDefinition is passed the previous value in the pipeline as input, allowing modifying the previous value in the pipeline.
 5) Using the configuration defined in the various `display` properties on the map itself, each property type, and each node to determine color, opacity, width, etc of nodes and edges to display.
 
@@ -249,6 +249,12 @@ The final values of a node are primarily driven by the edges they include and th
 values: {
     //The primary output is numbers, but you can also use true/false/null
     one: true
+    //The override may be a ValueDefinition. It will be passed an input of the previous value in the pipeline, which can be modified.
+    two: {
+        operator: '+',
+        a: 'input',
+        b: 5.0
+    }
     //property names not enumerated will be calculated as usual.
 }
 ```

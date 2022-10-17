@@ -5410,6 +5410,65 @@ describe('scenarios', () => {
 
 	});
 
+	it('scenario with ValueDefinition input on top of a node override that uses input', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			one: {
+				nodes: {
+					a: {
+						engineering: {
+							operator: '+',
+							a: 'input',
+							b: 3.0
+						},
+					}
+				}
+			}
+		};
+		input.nodes.a.values = {
+			engineering:  {
+				operator: '+',
+				a: 'input',
+				b: 2.0
+			}
+		};
+		const map = new AdjacencyMap(input, 'one');
+		const node = map.node('a');
+		assert.deepStrictEqual(node.values.engineering, NODE_A_BASE_VALUES.engineering + 2.0 + 3.0);
+
+	});
+
+	it('node override that uses input no scenario', async () => {
+		//TODO: this test should be in the other block for normal calculation results
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.values = {
+			engineering:  {
+				operator: '+',
+				a: 'input',
+				b: 2.0
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		assert.deepStrictEqual(node.values.engineering, NODE_A_BASE_VALUES.engineering + 2.0);
+
+	});
+
+	it('barfs for a node override that uses an illegal variable type', async () => {
+		//TODO: this test should be in the other block for normal input validation
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.values = {
+			//ref type is illegal in this context
+			engineering: {
+				ref: '.'
+			}
+		}
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		assert.throws(fn);
+	});
+
 	it('scenario with ValueDefinition input on root', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.scenarios = {
