@@ -5462,7 +5462,7 @@ describe('scenarios', () => {
 			engineering: {
 				ref: '.'
 			}
-		}
+		};
 		const fn = () => {
 			new AdjacencyMap(input);
 		};
