@@ -15,6 +15,7 @@ import {
 	updateScale,
 	updateScenarioName,
 	updateSelectedNodeID,
+	updateShowHiddenValues,
 	updateWithMainPageExtra
 } from "../actions/data.js";
 
@@ -32,6 +33,7 @@ import {
 	selectSummaryValues,
 	selectSummaryNodeDisplayName,
 	selectSelectedNodeID,
+	selectShowHiddenValues,
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -72,6 +74,11 @@ import {
 	canonicalizePath,
 	updateHash
 } from '../actions/app.js';
+
+import {
+	VISIBILITY_ICON,
+	VISIBILITY_OFF_ICON
+} from './my-icons.js';
 
 @customElement('main-view')
 class MainView extends connect(store)(PageViewElement) {
@@ -117,6 +124,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_summaryValues : NodeValues;
+
+	@state()
+	_showHiddenValues : boolean;
 
 	static override get styles() {
 		return [
@@ -229,8 +239,8 @@ class MainView extends connect(store)(PageViewElement) {
 						</div>`
 		: html``}
 					<div>
-						<label>Values</label>
-						${Object.entries(this._summaryValues).filter(entry => !this._adjacencyMap?.data.properties[entry[0]].hide).map(entry => html`<div><strong title='${this._adjacencyMap?.data.properties[entry[0]].description || ''}'>${entry[0]}</strong>: ${entry[1]}</div>`)}
+						<label>Values <button class='small' title='Show hidden values'>${this._showHiddenValues ? VISIBILITY_ICON : VISIBILITY_OFF_ICON}</button><input type='checkbox' .checked=${this._showHiddenValues} @change=${this._handleShowHiddenValuesClicked}></input></label>
+						${Object.entries(this._summaryValues).filter(entry => this._showHiddenValues || !this._adjacencyMap?.data.properties[entry[0]].hide).map(entry => html`<div><strong title='${this._adjacencyMap?.data.properties[entry[0]].description || ''}'>${entry[0]}</strong>: ${entry[1]}</div>`)}
 					</div>
 					${Object.keys(this._summaryTags).length && this._adjacencyMap ? 
 		html`<label>Tags</label>
@@ -273,6 +283,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._summaryNodeDisplayName = selectSummaryNodeDisplayName(state);
 		this._summaryTags = selectSummaryTags(state);
 		this._summaryValues = selectSummaryValues(state);
+		this._showHiddenValues = selectShowHiddenValues(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
@@ -311,6 +322,10 @@ class MainView extends connect(store)(PageViewElement) {
 		} else if (e.key == 'ArrowLeft') {
 			store.dispatch(previousScenarioName());
 		}
+	}
+
+	_handleShowHiddenValuesClicked() {
+		store.dispatch(updateShowHiddenValues(!this._showHiddenValues));
 	}
 
 	_handleHashChange() {
