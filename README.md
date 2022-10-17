@@ -1133,6 +1133,11 @@ You can enumerate multiple libraries to import.
 
 Legal values are defined below.
 
+### generation
+
+Adds a value called `generation` that counts how many layers deep each node is from the root node (via the shortest path).
+
+
 ### distinct-across-type
 
 Including this library will make it so edges of various types will not be combined into one type, but rather show a different edge for each type.
