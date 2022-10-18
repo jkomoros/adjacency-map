@@ -8,6 +8,8 @@ It contains a powerful caluclation and configuration engine.
 
 Check out the live demo at https://adjacency-map-demo.web.app/
 
+Check out the configuration that produces the default example at [data/default.ts](https://github.com/jkomoros/adjacency-map/blob/main/data/default.ts)
+
 ## Installing
 
 Install npm.
