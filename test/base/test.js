@@ -3513,6 +3513,24 @@ engineering: 3`;
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('Correctly calculates a gradient type >=', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.engineering.combine = 'sum';
+		input.properties.engineering.value = {
+			gradient: 0.5,
+			a: {color: 'white'},
+			b: {color: 'black'},
+		};
+		const map = new AdjacencyMap(input);
+		const node = map.node('a');
+		const actual = node.values;
+		const golden = {
+			...NODE_A_BASE_VALUES,
+			engineering: packColor(color([128, 128, 128, 1.0])),
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
 	it('Correctly calculates an if', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.combine = 'sum';

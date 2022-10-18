@@ -34,7 +34,8 @@ import {
 	TagMap,
 	ValueDefinitionLet,
 	ValueDefinitionVariable,
-	ValueDefinitionLog
+	ValueDefinitionLog,
+	ValueDefinitionGradient
 } from './types.js';
 
 import {
@@ -46,7 +47,9 @@ import {
 
 import {
 	color,
-	packColor
+	gradient,
+	packColor,
+	unpackColor
 } from './color.js';
 
 import {
@@ -155,6 +158,12 @@ const valueDefinitionIsColor = (definition : ValueDefinition) : definition is Va
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
 	return 'color' in definition;
+};
+
+const valueDefinitionIsGradient = (definition : ValueDefinition) : definition is ValueDefinitionGradient => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'gradient' in definition;
 };
 
 const valueDefinitionIsArithmetic = (definition : ValueDefinition): definition is ValueDefinitionArithmetic => {
@@ -284,6 +293,15 @@ const listNestedDefinitions = (definition : ValueDefinition) : ValueDefinition[]
 
 	if (valueDefinitionIsColor(definition)) {
 		return [definition];
+	}
+
+	if (valueDefinitionIsGradient(definition)) {
+		return [
+			definition,
+			...listNestedDefinitions(definition.gradient),
+			...listNestedDefinitions(definition.a),
+			...listNestedDefinitions(definition.b)
+		];
 	}
 
 	if (valueDefinitionIsArithmetic(definition)) {
@@ -461,6 +479,13 @@ export const validateValueDefinition = (definition : ValueDefinition, args: Valu
 		} catch(er) {
 			throw new Error('Invalid color definition: ' + er);
 		}
+		return;
+	}
+
+	if (valueDefinitionIsGradient(definition)) {
+		validateValueDefinition(definition.gradient, args);
+		validateValueDefinition(definition.a, args);
+		validateValueDefinition(definition.b, args);
 		return;
 	}
 
@@ -658,6 +683,16 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 
 	if (valueDefinitionIsColor(definition)) {
 		return [packColor(color(definition.color))];
+	}
+
+	if (valueDefinitionIsGradient(definition)) {
+		const aValue = calculateValue(definition.a, args);
+		const bValue = calculateValue(definition.b, args);
+		const gradientValue = calculateValue({clip: definition.gradient, low: 0.0, high: 1.0}, args);
+		const a = aValue.map(a => unpackColor(a));
+		const b = bValue.map(b => unpackColor(b));
+		const result = a.map((val, index) => gradient(val, b[index % b.length], gradientValue[index % gradientValue.length]));
+		return result.map(val => packColor(val));
 	}
 
 	if (valueDefinitionIsArithmetic(definition)) {

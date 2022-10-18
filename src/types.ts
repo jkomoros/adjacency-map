@@ -70,6 +70,16 @@ export type ValueDefinitionColor = {
 	color: CSSColor | RGBColor | RGBAColor
 }
 
+export type ValueDefinitionGradient = {
+	//gradient should be between 0 and 1, representing the percentage between
+	//color a and color b 
+	gradient: ValueDefinition,
+	//a shoiuld be a color
+	a: ValueDefinition,
+	//b should be a color
+	b: ValueDefinition
+}
+
 type ArithmeticOperatorBinary =  '+' | '*' | '-' | '/' | '&&' | '||';
 type ArithmeticOperatorUnary = '!';
 
@@ -246,6 +256,7 @@ export type ValueDefinition = ValueDefinitionLeaf |
 	ValueDefinitionResultValue |
 	ValueDefinitionCombine |
 	ValueDefinitionColor |
+	ValueDefinitionGradient |
 	ValueDefinitionArithmetic |
 	ValueDefinitionIf |
 	ValueDefinitionFilter |

@@ -671,6 +671,20 @@ value: {
 }
 ```
 
+#### ValueDefinitionGradient
+
+Takes two colors, `a` and `b` and returns a new color that is `gradient` percentage between `a` and `b`.
+
+`a`, `b`, and `gradient` may all be arrays, and all be ValueDefinitions. The final result will have the same length as a.
+
+```
+value: {
+    gradient: 0.5,
+    a: {color: 'red'},
+    b: {color: 'blue'}
+}
+```
+
 #### ValueDefinitionArithmetic
 
 Calculates an arithemtic result of `a` OP `b`.
