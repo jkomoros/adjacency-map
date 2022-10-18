@@ -224,6 +224,30 @@ const data : RawMapDefinition = {
 					}
 				}
 			}
+		},
+		'implemented-1': {
+			extends: 'increased-certainty',
+			nodes: {
+				base_pipeline: {
+					implemented: 1.0
+				}
+			}
+		},
+		'implemented-2': {
+			extends: 'implemented-1',
+			nodes: {
+				base_train: {
+					implemented: 1.0
+				}
+			}
+		},
+		'implemented-3': {
+			extends: 'implemented-2',
+			nodes: {
+				base_infer_colab: {
+					implemented: 1.0
+				}
+			}
 		}
 	}
 };
