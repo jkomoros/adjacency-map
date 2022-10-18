@@ -213,6 +213,10 @@ class MainView extends connect(store)(PageViewElement) {
 					pointer-events: none;
 				}
 
+				svg * {
+					transition: all 0.1s ease-in-out;
+				}
+
 			`
 		];
 	}
