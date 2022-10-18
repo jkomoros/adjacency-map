@@ -177,10 +177,17 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 						result: 'certainty'
 					}
 				}
+			},
+			implemented: {
+				description: 'What percentage of this node is implemented',
+				calculateWhen: 'always',
+				//Override node.values.implemented to set
+				value: 0.0
 			}
 		},
 		root: {
-			certainty: 1.0
+			certainty: 1.0,
+			implemented: 1.0
 		},
 		display: {
 			node: {
@@ -191,6 +198,13 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 				},
 				opacity: {
 					result: 'certainty'
+				},
+				color: {
+					gradient: {
+						result: 'implemented'
+					},
+					a: {color: 'black'},
+					b: {color: 'blue'}
 				}
 			},
 			edgeCombiner: {
