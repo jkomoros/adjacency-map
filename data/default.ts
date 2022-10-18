@@ -9,20 +9,20 @@ const basePropertyDefinition = {
 			ref: '.'
 		},
 		b: {
-			constant: 'weight'
+			constant: 'cost'
 		}
 	},
 	extendTags: true,
 	display: {
 		color: 'red',
 		width: {
-			constant: 'weight'
+			constant: 'cost'
 		},
 		distinct: true
 	},
 	implies: '*',
 	constants: {
-		weight: 0.0
+		cost: 0.0
 	}
 } as const;
 
@@ -184,7 +184,7 @@ const data : RawMapDefinition = {
 			edges: [
 				{
 					type: 'engineering',
-					weight: 5.0,
+					cost: 5.0,
 				}
 			],
 			values: {
@@ -197,12 +197,12 @@ const data : RawMapDefinition = {
 				{
 					type: 'engineering',
 					ref: 'base_pipeline',
-					weight: 1.0
+					cost: 1.0
 				},
 				{
 					type: 'data',
 					ref: 'base_pipeline',
-					weight: 6.0
+					cost: 6.0
 				}
 			],
 			values: {
@@ -215,12 +215,12 @@ const data : RawMapDefinition = {
 				{
 					type: 'engineering',
 					ref: 'base_train',
-					weight: 1.0
+					cost: 1.0
 				},
 				{
 					type: 'ux',
 					ref: 'base_train',
-					weight: 1.0
+					cost: 1.0
 				}
 			],
 			values: {
@@ -234,12 +234,12 @@ const data : RawMapDefinition = {
 				{
 					type: 'engineering',
 					ref: 'base_infer_colab',
-					weight: 5.0
+					cost: 5.0
 				},
 				{
 					type: 'ux',
 					ref: 'base_infer_colab',
-					weight: 10.0,
+					cost: 10.0,
 				}
 			]
 		},
@@ -249,17 +249,17 @@ const data : RawMapDefinition = {
 				base_infer_gui: [
 					{
 						type: 'engineering',
-						weight: 2.0
+						cost: 2.0
 					},
 					{
 						type: 'ux',
-						weight: 3.0
+						cost: 3.0
 					}
 				],
 				extended_infer: [
 					{
 						type: 'engineering',
-						weight: 2.0
+						cost: 2.0
 					}
 				]
 			}
@@ -271,12 +271,12 @@ const data : RawMapDefinition = {
 				{
 					type: 'engineering',
 					ref: 'base_infer_colab',
-					weight: 1.0
+					cost: 1.0
 				},
 				{
 					type: 'data',
 					ref: 'base_infer_colab',
-					weight: 5.0
+					cost: 5.0
 				}
 			]
 		},
@@ -287,12 +287,12 @@ const data : RawMapDefinition = {
 				{
 					type: 'engineering',
 					ref: 'base_infer_colab',
-					weight: 10.0
+					cost: 10.0
 				},
 				{
 					type: 'data',
 					ref: 'base_infer_colab',
-					weight: 5.0
+					cost: 5.0
 				}
 			]
 		},
@@ -302,17 +302,17 @@ const data : RawMapDefinition = {
 				base_infer_gui: [
 					{
 						type: 'engineering',
-						weight: 1.0
+						cost: 1.0
 					},
 					{
 						type: 'ux',
-						weight: 5.0
+						cost: 5.0
 					}
 				],
 				im_to_im_infer: [
 					{
 						type: 'engineering',
-						weight: 2.0
+						cost: 2.0
 					}
 				]
 			}
@@ -323,17 +323,17 @@ const data : RawMapDefinition = {
 				im_to_im_infer_gui: [
 					{
 						type: 'engineering',
-						weight: 1.0
+						cost: 1.0
 					},
 					{
 						type: 'ux',
-						weight: 3.0
+						cost: 3.0
 					}
 				],
 				extended_infer_gui: [
 					{
 						type: 'engineering',
-						weight: 1.0
+						cost: 1.0
 					}
 				]
 			}
