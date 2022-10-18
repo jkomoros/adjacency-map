@@ -79,7 +79,7 @@ const data : RawMapDefinition = {
 				color: 'green'
 			}
 		},
-		usage: {
+		activation: {
 			...basePropertyDefinition,
 			description: 'The amount of effort required to modify usage behaviors and expectations to activate this use case. For use cases users want to do, it\'s low. For use cases users don\'t want to do, this would require marketing.',
 			display: {
