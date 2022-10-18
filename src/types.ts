@@ -495,7 +495,7 @@ export type PropertyDefinition = {
 	}
 }
 
-export type LibraryType = 'core' | 'generation' | 'distinct-within-type' | 'distinct-across-type';
+export type LibraryType = 'core' | 'product' | 'generation' | 'distinct-within-type' | 'distinct-across-type';
 
 export type Library = {
 	//Libraries can import other libraries

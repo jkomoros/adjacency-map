@@ -2,32 +2,10 @@ import {
 	RawMapDefinition
 } from '../src/types.js';
 
-const basePropertyDefinition = {
-	value: {
-		operator: '+',
-		a: {
-			ref: '.'
-		},
-		b: {
-			constant: 'cost'
-		}
-	},
-	extendTags: true,
-	display: {
-		color: 'red',
-		width: {
-			constant: 'cost'
-		},
-		distinct: true
-	},
-	implies: '*',
-	constants: {
-		cost: 0.0
-	}
-} as const;
-
 const data : RawMapDefinition = {
 	description: 'A simple example that shows use cases for a Stable Diffusion project',
+	//Product is the library that defines all of the main edges we use.
+	import: 'product',
 	tags: {
 		gui: {
 			displayName: 'GUI',
@@ -53,130 +31,6 @@ const data : RawMapDefinition = {
 				value: 3
 			}
 		},
-	},
-	properties: {
-		engineering: {
-			...basePropertyDefinition,
-			description: 'The amount of engineering effort to build to this use case',
-			display: {
-				...basePropertyDefinition.display,
-				color: 'red'
-			}
-		},
-		ux: {
-			...basePropertyDefinition,
-			description: 'The amount of ux effort to build to this use case',
-			display: {
-				...basePropertyDefinition.display,
-				color: 'blue'
-			}
-		},
-		data: {
-			...basePropertyDefinition,
-			description: 'The amount of effort to build up data quality to build to this use case',
-			display: {
-				...basePropertyDefinition.display,
-				color: 'green'
-			}
-		},
-		activation: {
-			...basePropertyDefinition,
-			description: 'The amount of effort required to modify usage behaviors and expectations to activate this use case. For use cases users want to do, it\'s low. For use cases users don\'t want to do, this would require marketing.',
-			display: {
-				...basePropertyDefinition.display,
-				color: 'gold'
-			}
-		},
-		parentValue: {
-			description: 'The component of value that comes from the parent',
-			value: {
-				ref: 'value'
-			},
-			hide: true,
-			display: {
-				width: 0
-			}
-		},
-		selfValue: {
-			description: 'The component of the value that comes from net adds on self.',
-			usage: 'Value should either be set explicilty on node.values.selfValue, or it will be the sum of features added in this cycle.',
-			calculateWhen: 'always',
-			hide: true,
-			value: {
-				combine: 'sum',
-				value: {
-					tagConstant: 'value',
-					which: 'self'
-				}
-			},
-		},
-		value: {
-			description: 'The overall user value created at this node.',
-			calculateWhen: "always",
-			value: {
-				operator: '+',
-				a : {
-					result: 'selfValue'
-				},
-				b: {
-					result: 'parentValue'
-				}
-			}
-		},
-		incrementalCertainty: {
-			description: 'A value between 0 and 1 denoting how much more uncertain this node is than its parent',
-			usage: 'Designed to be a constant or set explicitly on a node',
-			hide: true,
-			calculateWhen: 'always',
-			value: 0.9
-		},
-		certainty: {
-			description: 'A value between 0 and 1 denoting how certain the value is at this node',
-			combine: 'product',
-			value: {
-				operator: '*',
-				a: {
-					ref: 'certainty'
-				},
-				b: {
-					result: 'incrementalCertainty'
-				}
-			}
-		},
-		expectedValue: {
-			description: 'The value times certainty for this node.',
-			calculateWhen: 'always',
-			value: {
-				operator: '*',
-				a: {
-					result: 'value'
-				},
-				b: {
-					result: 'certainty'
-				}
-			}
-		}
-	},
-	root: {
-		certainty: 1.0
-	},
-	display: {
-		node: {
-			radius: {
-				operator: '+',
-				a: 6,
-				b: {result: 'value'}
-			},
-			opacity: {
-				result: 'certainty'
-			}
-		},
-		edgeCombiner: {
-			color: {
-				combine: 'color-mean',
-				value: 'input'
-			}
-		}
 	},
 	nodes: {
 		base_pipeline: {

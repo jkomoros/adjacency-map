@@ -1162,6 +1162,12 @@ You can enumerate multiple libraries to import.
 
 Legal values are defined below.
 
+### product
+
+Product is a large library that configures a number of properties for use in building product use case maps.
+
+TODO: document
+
 ### generation
 
 Adds a value called `generation` that counts how many layers deep each node is from the root node (via the shortest path).
