@@ -178,14 +178,14 @@ export const unpackColor = (packedColor: PackedColor): Color => {
 	return color([r, g, b, a]);
 };
 
-export const gradient = (one : CSSColor | Color, two : CSSColor | Color, percentage : number) : CSSColor => {
+export const gradient = (one : CSSColor | Color, two : CSSColor | Color, percentage : number) : Color => {
 	if (typeof one != 'object') one = color(one);
 	if (typeof two != 'object') two = color(two);
 	const r = Math.round((two.r - one.r) * percentage + one.r);
 	const g = Math.round((two.g - one.g) * percentage + one.g);
 	const b = Math.round((two.b - one.b) * percentage + one.b);
 	const a = Math.round((two.a - one.a) * percentage + one.a);
-	return 'rgba(' + [r,g,b,a].join(', ') + ')';
+	return color([r,g,b,a]);
 };
 
 export const combine = (...colors : Color[]): Color => {
