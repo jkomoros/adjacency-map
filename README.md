@@ -1089,6 +1089,40 @@ If the ValueDefinition evalutes to more than one number, only the first will be 
 
 Scenarios may extend other scenarios, effectively overlaying any of their properties, by defining the `extends` parameter. Scenarios may not extend another scenario that also depends on them (which would form a cycle);
 
+Finally, sometimes you have a sequence of scenarios, all of which should extend the one previous to them, animating in new states. If you provide an array of scenarios, then they will be expanded into a set:
+
+```
+const data : RawMapDefinition = {
+    //...
+    scenarios: {
+        //Normal scenarios and arrays may be intermixed
+        scenario_name_a: {
+            node_a:{
+                //...
+            }
+        }
+        scenario_name_b: [
+            //The name of this scenario will be `scenario_name_b_0`
+            {
+                //The first one in a sequence may extend a different sceario
+                extends: 'scenario_name_a'
+                node_a: {
+                    //...
+                }
+            },
+            //The name of this scenario will be `scenario_name_b_1`
+            {
+                //The `extends` will automatically be `scenario_nambe_b_0`. If one were provided explicitly here it would be overriden.
+                node_b: {
+                    //...
+                }
+            }
+        ]
+    }
+    //...
+}
+```
+
 ## Tags
 
 Diagrams also have a notion of `tags`. Tags are an enumerated set of binary tags. For example, in a diagram these might represent independent features that are represented in a product at each node.

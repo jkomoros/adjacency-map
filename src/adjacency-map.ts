@@ -32,8 +32,8 @@ import {
 	TagMap,
 	TagConstantName,
 	AllowedValueDefinitionVariableTypes,
-	RawScenariosDefinition,
-	ValudeDefinitionValidationArgs
+	ValudeDefinitionValidationArgs,
+	ScenariosDefinitionUnextended
 } from './types.js';
 
 import {
@@ -142,7 +142,7 @@ export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 	return result;
 };
 
-const scenarioNameGraph = (scenarios :RawScenariosDefinition) : SimpleGraph => {
+const scenarioNameGraph = (scenarios :ScenariosDefinitionUnextended) : SimpleGraph => {
 	const result : SimpleGraph = {};
 	for (const [scenarioID, scenarioDefinition] of Object.entries(scenarios)) {
 		const children : {[otherID : NodeID] : true} = {};
@@ -328,11 +328,24 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		}
 	};
 	const rawScenarios = data.scenarios || {};
-	const topologicalScenarios = topologicalSort(scenarioNameGraph(rawScenarios));
+	const expandedScenarios : ScenariosDefinitionUnextended = {};
+	for (const [scenarioName, scenarioDefinition] of Object.entries(rawScenarios)) {
+		if (!Array.isArray(scenarioDefinition)) {
+			expandedScenarios[scenarioName] = scenarioDefinition;
+			continue;
+		}
+		if (scenarioDefinition.length == 0) continue;
+		for (let i = 0; i < scenarioDefinition.length; i++) {
+			const obj = {...scenarioDefinition[i]};
+			if (i > 0) obj.extends = scenarioName + '_' + String(i - 1);
+			expandedScenarios[scenarioName + '_' + String(i)] = obj;
+		}
+	}
+	const topologicalScenarios = topologicalSort(scenarioNameGraph(expandedScenarios));
 	topologicalScenarios.reverse();
 	const scenarios : ScenariosDefinition = {};
 	for (const scenarioName of topologicalScenarios) {
-		const rawScenario = rawScenarios[scenarioName];
+		const rawScenario = expandedScenarios[scenarioName];
 		if (rawScenario.extends === '') throw new Error('Scenario ' + scenarioName + ' extends the root scenario which is not allowed');
 		const scenarioToExtend : Scenario = rawScenario.extends !== undefined ? scenarios[rawScenario.extends] : {description: '', nodes: {}};
 		if (!scenarioToExtend) throw new Error('Scenario ' + scenarioName + ' extends a non-existent scenario ' + rawScenario.extends);
@@ -354,7 +367,18 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		scenarios[scenarioName] = scenario;
 	}
 	//Put the scenarios back into original sorted (non topological) order
-	const sortedScenarios = Object.fromEntries(Object.keys(rawScenarios).map(scenarioName => [scenarioName, scenarios[scenarioName]]));
+	const sortedScenarios : ScenariosDefinition = {};
+	for (const scenarioName of Object.keys(rawScenarios)) {
+		const rawScenario = rawScenarios[scenarioName];
+		if (Array.isArray(rawScenario)) {
+			for (let i = 0; i < rawScenario.length; i++) {
+				const key = scenarioName + '_' + String(i);
+				sortedScenarios[key] = scenarios[key];
+			}
+		} else {
+			sortedScenarios[scenarioName] = scenarios[scenarioName];
+		}
+	}
 	const tags : {[id : TagID]: Required<TagDefinition>} = {};
 	if (data.tags) {
 		for (const [tagID, rawTagDefinition] of Object.entries(data.tags)) {

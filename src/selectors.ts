@@ -48,15 +48,15 @@ export const selectSummaryNodeID = createSelector(
 	(hoveredNodeID, selectedNodeID) => hoveredNodeID || selectedNodeID
 );
 
-export const selectLegalScenarioNames = createSelector(
-	selectData,
-	(data) => data ? ['', ...Object.keys(data.scenarios || {})] : ['']
-);
-
 export const selectAdjacencyMap = createSelector(
 	selectData,
 	selectScenarioName,
 	(data, scenarioName) => data ? new AdjacencyMap(data, scenarioName) : null
+);
+
+export const selectLegalScenarioNames = createSelector(
+	selectAdjacencyMap,
+	(map) => map ? ['', ...Object.keys(map.data.scenarios || {})] : ['']
 );
 
 export const selectHashForCurrentState = createSelector(

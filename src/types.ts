@@ -636,8 +636,12 @@ export type Scenario = {
 }
 
 export type RawScenariosDefinition = {
-	[name : ScenarioName] : RawScenario;
+	[name : ScenarioName] : RawScenario | RawScenario[];
 };
+
+export type ScenariosDefinitionUnextended = {
+	[name : ScenarioName] : RawScenario;
+}
 
 export type ScenariosDefinition = {
 	[name : ScenarioName] : Scenario;

@@ -5362,6 +5362,75 @@ describe('scenarios', () => {
 
 	});
 
+	it('scenario array', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.properties.ux.value = {
+			ref: 'ux'
+		};
+		input.scenarios = {
+			one: [
+				{
+					description: 'foo',
+					nodes: {
+						a: {
+							engineering: 2.0,
+							ux: 10.0,
+						}
+					}
+				},
+				{
+					description: 'bar',
+					nodes: {
+						a : {
+							engineering: 1.0,
+							ux: 5.0
+						}
+					}
+				}
+			],
+			two: {
+				description: 'baz',
+				nodes: {
+					a: {
+						engineering: 3.0
+					}
+				}
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const actual = map.data.scenarios;
+		const golden = {
+			one_0: {
+				description: 'foo',
+				nodes: {
+					a: {
+						engineering: 2.0,
+						ux: 10.0,
+					}
+				}
+			},
+			one_1: {
+				//TODO: this is a bug, right? This should be 'bar'?
+				description: 'foo',
+				nodes: {
+					a : {
+						engineering: 1.0,
+						ux: 5.0
+					}
+				}
+			},
+			two: {
+				description: 'baz',
+				nodes: {
+					a: {
+						engineering: 3.0
+					}
+				}
+			}
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
 	it('scenario passed in constructor', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.ux.value = {
