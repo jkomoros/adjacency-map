@@ -353,6 +353,8 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		};
 		scenarios[scenarioName] = scenario;
 	}
+	//Put the scenarios back into original sorted (non topological) order
+	const sortedScenarios = Object.fromEntries(Object.keys(rawScenarios).map(scenarioName => [scenarioName, scenarios[scenarioName]]));
 	const tags : {[id : TagID]: Required<TagDefinition>} = {};
 	if (data.tags) {
 		for (const [tagID, rawTagDefinition] of Object.entries(data.tags)) {
@@ -375,7 +377,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		tags,
 		properties,
 		nodes,
-		scenarios
+		scenarios: sortedScenarios
 	};
 };
 
