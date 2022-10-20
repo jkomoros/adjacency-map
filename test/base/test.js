@@ -5410,8 +5410,7 @@ describe('scenarios', () => {
 				}
 			},
 			one_1: {
-				//TODO: this is a bug, right? This should be 'bar'?
-				description: 'foo',
+				description: 'bar',
 				nodes: {
 					a : {
 						engineering: 1.0,
