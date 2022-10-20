@@ -227,7 +227,7 @@ const data : RawMapDefinition = {
 		},
 		'implemented': [
 			{
-				extends: 'increased-certainty',
+				extends: 'increased-value',
 				nodes: {
 					base_pipeline: {
 						implemented: 1.0
