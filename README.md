@@ -51,7 +51,7 @@ To create a new one, copy `stub.SAMPLE.ts` to a new filename that omits `SAMPLE`
 The basic model of a diagram is composed of three things:
 1) A set of **properties** defining the numerical values to be calculated for each node, and how they are calculated.
 2) A set of **nodes** that define the primary output of the diagram, where each node will have one value for each property calculated. Each edge is affiliated with one property type. Nodes can explicitly set the values for each property, but more typically they define edges to implicitly describe their final values.
-3) A set of **edges** for each node, that are of a specific propery type and rely on other nodes, which, combined with the property's definition for how its value should be calculated, lead to the final output value for the node.
+3) A set of **edges** for each node, that are of a specific propery type and rely on other nodes, which, combined with the property's definition for how its value should be calculated, lead to the final output value for the node. Each node has 0 to n edges that point to nodes that are the parents of this node in the tree.
 
 There are other concepts, but they all build on or complicate this basic model.
 
