@@ -51,7 +51,29 @@ export const selectSummaryNodeID = createSelector(
 export const selectAdjacencyMap = createSelector(
 	selectData,
 	selectScenarioName,
-	(data, scenarioName) => data ? new AdjacencyMap(data, scenarioName) : null
+	(data, scenarioName) => {
+		if (!data) return null;
+		try {
+			return new AdjacencyMap(data, scenarioName);
+		} catch(err) {
+			console.warn(err);
+		}
+		return null;
+	}
+);
+
+export const selectAdjacencyMapError = createSelector(
+	selectData,
+	selectScenarioName,
+	(data, scenarioName) => {
+		if (!data) return '';
+		try {
+			new AdjacencyMap(data, scenarioName);
+		} catch(err) {
+			return String(err);
+		}
+		return '';
+	}
 );
 
 export const selectLegalScenarioNames = createSelector(
