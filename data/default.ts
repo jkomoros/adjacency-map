@@ -50,12 +50,12 @@ const data : RawMapDefinition = {
 			edges: [
 				{
 					type: 'engineering',
-					ref: 'base_pipeline',
+					parent: 'base_pipeline',
 					cost: 1.0
 				},
 				{
 					type: 'data',
-					ref: 'base_pipeline',
+					parent: 'base_pipeline',
 					cost: 6.0
 				}
 			],
@@ -68,12 +68,12 @@ const data : RawMapDefinition = {
 			edges: [
 				{
 					type: 'engineering',
-					ref: 'base_train',
+					parent: 'base_train',
 					cost: 1.0
 				},
 				{
 					type: 'ux',
-					ref: 'base_train',
+					parent: 'base_train',
 					cost: 1.0
 				}
 			],
@@ -87,12 +87,12 @@ const data : RawMapDefinition = {
 			edges: [
 				{
 					type: 'engineering',
-					ref: 'base_infer_colab',
+					parent: 'base_infer_colab',
 					cost: 5.0
 				},
 				{
 					type: 'ux',
-					ref: 'base_infer_colab',
+					parent: 'base_infer_colab',
 					cost: 10.0,
 				}
 			]
@@ -124,12 +124,12 @@ const data : RawMapDefinition = {
 			edges: [
 				{
 					type: 'engineering',
-					ref: 'base_infer_colab',
+					parent: 'base_infer_colab',
 					cost: 1.0
 				},
 				{
 					type: 'data',
-					ref: 'base_infer_colab',
+					parent: 'base_infer_colab',
 					cost: 5.0
 				}
 			]
@@ -140,12 +140,12 @@ const data : RawMapDefinition = {
 			edges: [
 				{
 					type: 'engineering',
-					ref: 'base_infer_colab',
+					parent: 'base_infer_colab',
 					cost: 10.0
 				},
 				{
 					type: 'data',
-					ref: 'base_infer_colab',
+					parent: 'base_infer_colab',
 					cost: 5.0
 				}
 			]

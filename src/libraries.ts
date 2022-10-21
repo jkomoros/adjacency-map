@@ -49,7 +49,7 @@ const baseProductPropertyDefinition = {
 	value: {
 		operator: '+',
 		a: {
-			ref: '.'
+			parent: '.'
 		},
 		b: {
 			constant: 'cost'
@@ -112,7 +112,7 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 			parentValue: {
 				description: 'The component of value that comes from the parent',
 				value: {
-					ref: 'value'
+					parent: 'value'
 				},
 				hide: true,
 				display: {
@@ -158,7 +158,7 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 				value: {
 					operator: '*',
 					a: {
-						ref: 'certainty'
+						parent: 'certainty'
 					},
 					b: {
 						result: 'incrementalCertainty'
@@ -228,7 +228,7 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 				value: {
 					operator: '+',
 					a: {
-						ref: '.'
+						parent: '.'
 					},
 					b: 1
 				}

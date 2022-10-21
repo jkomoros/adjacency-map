@@ -40,8 +40,8 @@ export type ValueDefintionEdgeConstant = {
 };
 
 //Selects the value in the parents of this type
-export type ValueDefinitionRefValue = {
-	ref: PropertyName
+export type ValueDefinitionParentValue = {
+	parent: PropertyName
 }
 
 //Selects the value in the root of this type
@@ -179,11 +179,11 @@ export type ValueDefinitionCollect = {
 	collect: ValueDefinition[]
 }
 
-//LengthOf returns an array that is the length of refs or egdes, wrapping around
+//LengthOf returns an array that is the length of parents or egdes, wrapping around
 //value if necessary. This is useful if you want an array of constant values as
 //long as edges, for example, but don't know any constants to fetch.
 export type ValueDefinitionLengthOf = {
-	lengthOf: 'refs' | 'edges' | 'input',
+	lengthOf: 'parents' | 'edges' | 'input',
 	value: ValueDefinition
 }
 
@@ -251,7 +251,7 @@ export type ValueDefinitionLeaf = number | boolean | null;
 export type ValueDefinition = ValueDefinitionLeaf |
 	ValueDefinitionLeaf[] |
 	ValueDefintionEdgeConstant |
-	ValueDefinitionRefValue |
+	ValueDefinitionParentValue |
 	ValueDefinitionRootValue |
 	ValueDefinitionResultValue |
 	ValueDefinitionCombine |
@@ -277,7 +277,7 @@ export type ValueDefinition = ValueDefinitionLeaf |
 //these types of proeprties.
 export type AllowedValueDefinitionVariableTypes = {
 	edgeConstant: boolean,
-	refValue: boolean,
+	parentValue: boolean,
 	rootValue: boolean,
 	resultValue: boolean,
 	input: boolean,
@@ -334,7 +334,7 @@ export type RawEdgeValue = {
 	//RESERVED_VALUE_DEFINITION_PROPERTIES
 	type: PropertyName,
 	//If ref is not provided, it implicitly references the root node.
-	ref? : NodeID,
+	parent? : NodeID,
 	implies? : ImpliesConfiguration,
 	[constant : ConstantType]: undefined | ValueDefinitionLeaf | PropertyName | NodeID | ImpliesConfiguration;
 };
@@ -365,7 +365,7 @@ export type EdgeValue = {
 	//RESERVED_VALUE_DEFINITION_PROPERTIES
 	type: PropertyName,
 	//If ref is not provided, it implicitly references the root node.
-	ref? : NodeID,
+	parent? : NodeID,
 	implies? : ImpliesConfiguration,
 	[constant : ConstantType]: undefined | number | PropertyName | NodeID | ImpliesConfiguration;
 };
@@ -374,7 +374,7 @@ export type ExpandedEdgeValue = Exclude<EdgeValue,ImpliesConfiguration> & {
 	//Source is the node that links to ref
 	source: NodeID;
 	//Ref is always filled, possibly with ROOT_ID
-	ref: NodeID;
+	parent: NodeID;
 	implied: number;
 };
 
@@ -382,7 +382,7 @@ export type ExpandedEdgeValue = Exclude<EdgeValue,ImpliesConfiguration> & {
 //node.
 export type RenderEdgeValue = {
 	source: NodeID,
-	ref: NodeID,
+	parent: NodeID,
 	width: number,
 	opacity: number,
 	color: Color,

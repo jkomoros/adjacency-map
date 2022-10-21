@@ -384,20 +384,20 @@ class MainView extends connect(store)(PageViewElement) {
 	_pathForEdge(edge : RenderEdgeValue, map : AdjacencyMap) : string {
 
 		const sourceNode = map.node(edge.source);
-		const refNode = map.node(edge.ref);
-		let midPoint = (sourceNode.x - refNode.x) * edge.bump + refNode.x;
+		const parentNode = map.node(edge.parent);
+		let midPoint = (sourceNode.x - parentNode.x) * edge.bump + parentNode.x;
 		let yBoost = 0.0;
 
 		//If the source and ref are both at the same y, then bumping won't show
 		//anyting by default. So instead of bumping the x left and right, bump
 		//the y up and down.
-		if (sourceNode.y == refNode.y) {
+		if (sourceNode.y == parentNode.y) {
 			//In this case just bump up and down
-			midPoint = (sourceNode.x + refNode.x) / 2;
-			yBoost = (sourceNode.x - refNode.x) / 2 * (edge.bump - 0.5);
+			midPoint = (sourceNode.x + parentNode.x) / 2;
+			yBoost = (sourceNode.x - parentNode.x) / 2 * (edge.bump - 0.5);
 		}
 
-		const result = `M ${refNode.x},${refNode.y}C${midPoint},${refNode.y - yBoost},${midPoint},${sourceNode.y - yBoost},${sourceNode.x},${sourceNode.y}`;
+		const result = `M ${parentNode.x},${parentNode.y}C${midPoint},${parentNode.y - yBoost},${midPoint},${sourceNode.y - yBoost},${sourceNode.x},${sourceNode.y}`;
 		return result;
 	}
 

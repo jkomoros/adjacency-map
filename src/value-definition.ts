@@ -6,7 +6,6 @@ import {
 	ValueDefinition,
 	ValueDefinitionArithmetic,
 	ValueDefinitionCombine,
-	ValueDefinitionRefValue,
 	ValueDefinitionResultValue,
 	ValueDefintionEdgeConstant,
 	ValueDefinitionClip,
@@ -35,7 +34,8 @@ import {
 	ValueDefinitionLet,
 	ValueDefinitionVariable,
 	ValueDefinitionLog,
-	ValueDefinitionGradient
+	ValueDefinitionGradient,
+	ValueDefinitionParentValue
 } from './types.js';
 
 import {
@@ -130,10 +130,10 @@ const valueDefinitionIsEdgeConstant = (definition : ValueDefinition) : definitio
 	return 'constant' in definition;
 };
 
-const valueDefinitionIsRefValue = (definition : ValueDefinition) : definition is ValueDefinitionRefValue => {
+const valueDefinitionIsParentValue = (definition : ValueDefinition) : definition is ValueDefinitionParentValue => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
-	return 'ref' in definition;
+	return 'parent' in definition;
 };
 
 const valueDefinitionIsRootValue = (definition : ValueDefinition) : definition is ValueDefinitionRootValue => {
@@ -261,7 +261,7 @@ const valueDefinitionIsLog = (definition : ValueDefinition): definition is Value
 
 const VALUE_DEFINITION_VARIABLE_TESTER : {[kind in keyof AllowedValueDefinitionVariableTypes]: (v : ValueDefinition) => boolean} ={
 	edgeConstant: valueDefinitionIsEdgeConstant,
-	refValue: valueDefinitionIsRefValue,
+	parentValue: valueDefinitionIsParentValue,
 	rootValue: valueDefinitionIsRootValue,
 	resultValue: valueDefinitionIsResultValue,
 	input: valueDefinitionIsInput,
@@ -277,7 +277,7 @@ const listNestedDefinitions = (definition : ValueDefinition) : ValueDefinition[]
 	if (valueDefinitionIsEdgeConstant(definition)) {
 		return [definition];
 	}
-	if (valueDefinitionIsRefValue(definition)) {
+	if (valueDefinitionIsParentValue(definition)) {
 		return [definition];
 	}
 	if (valueDefinitionIsRootValue(definition)) {
@@ -449,8 +449,8 @@ export const validateValueDefinition = (definition : ValueDefinition, args: Valu
 		if (constants[definition.constant] == undefined) throw new Error(definition.constant + ' for edge type value definition but that constant doesn\'t exist for that type.');
 		return;
 	}
-	if (valueDefinitionIsRefValue(definition)) {
-		if (args.exampleValues[definition.ref] == undefined) throw new Error(definition.ref + ' is not a defined edge type');
+	if (valueDefinitionIsParentValue(definition)) {
+		if (args.exampleValues[definition.parent] == undefined) throw new Error(definition.parent + ' is not a defined edge type');
 		return;
 	}
 	if (valueDefinitionIsRootValue(definition)) {
@@ -548,7 +548,7 @@ export const validateValueDefinition = (definition : ValueDefinition, args: Valu
 	}
 
 	if (valueDefinitionIsLengthOf(definition)) {
-		if (definition.lengthOf != 'refs' && definition.lengthOf != 'edges' && definition.lengthOf != 'input') throw new Error('lengthOf property must be either refs or edges or input');
+		if (definition.lengthOf != 'parents' && definition.lengthOf != 'edges' && definition.lengthOf != 'input') throw new Error('lengthOf property must be either refs or edges or input');
 		validateValueDefinition(definition.value, args);
 		return;
 	}
@@ -606,7 +606,7 @@ const cloneDefinition = (definition : ValueDefinition) : ValueDefinition => {
 export const cloneWithSelf = (definition: ValueDefinition, self : PropertyName) : ValueDefinition => {
 	const definitions = listNestedDefinitions(definition);
 	const includedPropertyNames = Object.fromEntries(definitions.map(def => {
-		if (valueDefinitionIsRefValue(def)) return def.ref;
+		if (valueDefinitionIsParentValue(def)) return def.parent;
 		if (valueDefinitionIsRootValue(def)) return def.root;
 		return '';
 	}).map(name => [name, true]));
@@ -615,8 +615,8 @@ export const cloneWithSelf = (definition: ValueDefinition, self : PropertyName) 
 	const clone = cloneDefinition(definition);
 	const clonedDefs = listNestedDefinitions(clone);
 	for (const clonedDef of clonedDefs) {
-		if (valueDefinitionIsRefValue(clonedDef) && clonedDef.ref == SELF_PROPERTY_NAME) {
-			clonedDef.ref = self;
+		if (valueDefinitionIsParentValue(clonedDef) && clonedDef.parent == SELF_PROPERTY_NAME) {
+			clonedDef.parent = self;
 		}
 		if (valueDefinitionIsRootValue(clonedDef) && clonedDef.root == SELF_PROPERTY_NAME) {
 			clonedDef.root = self;
@@ -629,7 +629,7 @@ export const cloneWithSelf = (definition: ValueDefinition, self : PropertyName) 
 //Returns true if the value definition relies on edge values
 export const valueDefinitionReliesOnEdges = (definition : ValueDefinition) : boolean => {
 	const defs = listNestedDefinitions(definition);
-	return defs.some(def => valueDefinitionIsRefValue(def) || valueDefinitionIsEdgeConstant(def));
+	return defs.some(def => valueDefinitionIsParentValue(def) || valueDefinitionIsEdgeConstant(def));
 };
 
 const tagSetForDefintion = (allTags : TagMap, selfTags : TagMap, which : WhichTagSet = 'all') : TagMap => {
@@ -666,8 +666,8 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 	if (valueDefinitionIsEdgeConstant(definition)) {
 		return args.edges.map(edge => edge[definition.constant] as number);
 	}
-	if (valueDefinitionIsRefValue(definition)) {
-		return args.refs.map(values => values[definition.ref]);
+	if (valueDefinitionIsParentValue(definition)) {
+		return args.refs.map(values => values[definition.parent]);
 	}
 	if (valueDefinitionIsRootValue(definition)) {
 		return [args.rootValue[definition.root]];
@@ -784,7 +784,7 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 		const result = [];
 		let length = 0;
 		switch(definition.lengthOf) {
-		case 'refs':
+		case 'parents':
 			length = args.refs.length;
 			break;
 		case 'edges':

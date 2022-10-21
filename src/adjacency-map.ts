@@ -94,7 +94,7 @@ import { TypedObject } from './typed-object.js';
 
 const BASE_ALLOWED_VARIABLE_TYPES : AllowedValueDefinitionVariableTypes = {
 	edgeConstant: true,
-	refValue: true,
+	parentValue: true,
 	resultValue: true,
 	rootValue: true,
 	input: false,
@@ -116,7 +116,7 @@ const ALLOWED_VARIABLES_FOR_CONTEXT = {
 	},
 	nodeOverride: {
 		edgeConstant: false,
-		refValue: false,
+		parentValue: false,
 		resultValue: false,
 		rootValue: false,
 		input: true,
@@ -133,7 +133,7 @@ export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 	for (const [id, value] of Object.entries(data.nodes)) {
 		const edges : {[id : NodeID] : true} = {};
 		for (const edge of value.edges || []) {
-			const ref = edge.ref || ROOT_ID;
+			const ref = edge.parent || ROOT_ID;
 			edges[ref] = true;
 		}
 		result[id] = edges;
@@ -160,7 +160,7 @@ const extractEdgesFromRawNodeDefinition = (nodeData : RawNodeDefinition) : EdgeV
 	if (Array.isArray(nodeData.edges)) {
 		for (const rawValue of nodeData.edges) {
 			const value : EdgeValue = {type: rawValue.type};
-			if (rawValue.ref != undefined) value.ref = rawValue.ref;
+			if (rawValue.parent != undefined) value.parent = rawValue.parent;
 			if (rawValue.implies != undefined) value.implies = rawValue.implies;
 			for (const entry of Object.entries(rawValue)) {
 				if (RESERVED_VALUE_DEFINITION_PROPERTIES[entry[0]]) continue;
@@ -171,12 +171,12 @@ const extractEdgesFromRawNodeDefinition = (nodeData : RawNodeDefinition) : EdgeV
 			edges.push(value);
 		}
 	} else {
-		for (const [ref, refData] of Object.entries(nodeData.edges)) {
+		for (const [parent, refData] of Object.entries(nodeData.edges)) {
 			if (Array.isArray(refData)) {
 				for (const rawValue of refData) {
 					const value : EdgeValue = {
 						type: rawValue.type,
-						ref
+						parent
 					};
 					if (rawValue.implies != undefined) value.implies = rawValue.implies;
 					for (const entry of Object.entries(rawValue)) {
@@ -193,7 +193,7 @@ const extractEdgesFromRawNodeDefinition = (nodeData : RawNodeDefinition) : EdgeV
 					for (const rawValue of iterValues) {
 						const value : EdgeValue = {
 							type,
-							ref
+							parent
 						};
 						if (rawValue.implies != undefined) value.implies = rawValue.implies;
 						for (const entry of Object.entries(rawValue)) {
@@ -575,7 +575,7 @@ export class AdjacencyMap {
 		for (const [child, definition] of Object.entries(this._data.nodes)) {
 			const edges = definition.edges || [];
 			for (const edge of edges) {
-				const parent = edge.ref || ROOT_ID;
+				const parent = edge.parent || ROOT_ID;
 				if (!children[parent]) children[parent] = {};
 				children[parent][child] = true;
 			}
@@ -785,19 +785,19 @@ const impliedPropertyNames = (config : ImpliesConfiguration | undefined, allName
 const completeEdgeSet = (source: NodeID, edges : EdgeValue[], data : MapDefinition) : ExpandedEdgeValue[] => {
 	const edgesByRef : {[ref : NodeID]: ExpandedEdgeValue[]} = {};
 	for (const edge of edges) {
-		const ref = edge.ref || ROOT_ID;
-		if (!edgesByRef[ref]) edgesByRef[ref] = [];
-		edgesByRef[ref].push({
+		const parent = edge.parent || ROOT_ID;
+		if (!edgesByRef[parent]) edgesByRef[parent] = [];
+		edgesByRef[parent].push({
 			...edge,
 			implied: FALSE_NUMBER,
 			source,
-			ref
+			parent
 		});
 	}
 	//Not actually all property names, but those that have not explicitly opted to be excluded.
 	const allPropertyNames : PropertyName[] = Object.keys(data.properties).filter(name => !data.properties[name].excludeFromDefaultImplication);
 	const result : ExpandedEdgeValue[] =[];
-	for (const [ref, refEdges] of Object.entries(edgesByRef)) {
+	for (const [parent, refEdges] of Object.entries(edgesByRef)) {
 		let impliedSet : PropertyNameSet = {};
 		const seenSet : PropertyNameSet = {};
 		for (const edge of refEdges) {
@@ -817,7 +817,7 @@ const completeEdgeSet = (source: NodeID, edges : EdgeValue[], data : MapDefiniti
 				type: impliedPropertyName,
 				implied: DEFAULT_TRUE_NUMBER,
 				source,
-				ref
+				parent
 			});
 		}
 	}
@@ -865,7 +865,7 @@ class AdjacencyMapNode {
 				const constants = typeDefinition.constants || {};
 				const defaultedEdges = rawEdges.map(edge => ({...constants, ...edge}));
 				//TODO: should we make it illegal to have an edge of same type and ref on a node? 
-				const refs = rawEdges.map(edge => this._map.node(edge.ref || '').values);
+				const refs = rawEdges.map(edge => this._map.node(edge.parent || '').values);
 				const args = {
 					edges: defaultedEdges,
 					refs,
@@ -1024,11 +1024,11 @@ class AdjacencyMapNode {
 		
 		const edgesByRef : {[source : NodeID]: {[edgeType : PropertyName]: ExpandedEdgeValue[]}} = {};
 		for (const edge of this.edges) {
-			if (!edgesByRef[edge.ref]) edgesByRef[edge.ref] = {};
-			if (!edgesByRef[edge.ref][edge.type]) edgesByRef[edge.ref][edge.type] = [];
-			edgesByRef[edge.ref][edge.type].push(edge);
+			if (!edgesByRef[edge.parent]) edgesByRef[edge.parent] = {};
+			if (!edgesByRef[edge.parent][edge.type]) edgesByRef[edge.parent][edge.type] = [];
+			edgesByRef[edge.parent][edge.type].push(edge);
 		}
-		for (const [ref, edgeMap] of Object.entries(edgesByRef)) {
+		for (const [parent, edgeMap] of Object.entries(edgesByRef)) {
 			const bundledEdges : RenderEdgeValue[] = [];
 			let resultsForRef :RenderEdgeValue[] = [];
 			for (const [edgeType, edges] of Object.entries(edgeMap)){
@@ -1058,7 +1058,7 @@ class AdjacencyMapNode {
 
 					const renderEdge = {
 						source,
-						ref,
+						parent,
 						width: wrappedWidths[i % wrappedWidths.length],
 						opacity: wrappedOpacities[i % wrappedOpacities.length],
 						color: unpackColor(wrappedColors[i % wrappedColors.length]),
@@ -1097,7 +1097,7 @@ class AdjacencyMapNode {
 				for (let i = 0; i < wrappedColors.length; i++) {
 					const renderEdge = {
 						source,
-						ref,
+						parent,
 						width: wrappedWidths[i % wrappedWidths.length],
 						opacity: wrappedOpacities[i % wrappedOpacities.length],
 						color: unpackColor(wrappedColors[i % wrappedColors.length]),
@@ -1142,7 +1142,7 @@ class AdjacencyMapNode {
 		let tags = this._map.rootTags;
 		const nodeIDsToExtendTagsFrom : {[nodeID : NodeID] : true} = {};
 		for (const edge of this.edges) {
-			if (this._map.data.properties[edge.type].extendTags) nodeIDsToExtendTagsFrom[edge.ref] = true;
+			if (this._map.data.properties[edge.type].extendTags) nodeIDsToExtendTagsFrom[edge.parent] = true;
 		}
 		for (const nodeID of Object.keys(nodeIDsToExtendTagsFrom)) {
 			tags = {...tags, ...this._map.node(nodeID).tags};

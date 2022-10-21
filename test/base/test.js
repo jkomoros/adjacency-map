@@ -70,7 +70,7 @@ const legalBaseInput = {
 			edges: [
 				{
 					type: "ux",
-					ref: "a"
+					parent: "a"
 				}
 			]
 		},
@@ -79,11 +79,11 @@ const legalBaseInput = {
 			edges: [
 				{
 					type: "engineering",
-					ref: "a"
+					parent: "a"
 				},
 				{
 					type: "ux",
-					ref: "b"
+					parent: "b"
 				}
 			]
 		},
@@ -92,7 +92,7 @@ const legalBaseInput = {
 			edges: [
 				{
 					type: "engineering",
-					ref: "b"
+					parent: "b"
 				}
 			]
 		}
@@ -428,7 +428,7 @@ describe('AdjacencyMap validation', () => {
 	it('barfs for a property definition that says no edges but has a value that relies on refs', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.foo = {
-			value: {ref: 'engineering'},
+			value: {parent: 'engineering'},
 			calculateWhen: 'always',
 		};
 		const errorExpected = true;
@@ -497,7 +497,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a graph with a direct cycle in it', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.b.edges.push({type: 'engineering', ref:'d'});
+		input.nodes.b.edges.push({type: 'engineering', parent:'d'});
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -511,7 +511,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for a graph with an indirect cycle in it', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.nodes.a.edges.push({type: 'engineering', ref:'d'});
+		input.nodes.a.edges.push({type: 'engineering', parent:'d'});
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -806,7 +806,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('barfs for TypeRef with non existing property', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.properties.engineering.value = {ref: 'foo'};
+		input.properties.engineering.value = {parent: 'foo'};
 		const errorExpected = true;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -820,7 +820,7 @@ describe('AdjacencyMap validation', () => {
 
 	it('allows TypeRef with existing property', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.properties.engineering.value = {ref: 'engineering'};
+		input.properties.engineering.value = {parent: 'engineering'};
 		const errorExpected = false;
 		const fn = () => {
 			new AdjacencyMap(input);
@@ -1665,7 +1665,7 @@ describe('AdjacencyMap validation', () => {
 	it('allows a refValue definition that references self', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.value = {
-			ref: '.'
+			parent: '.'
 		};
 		const errorExpected = false;
 		const fn = () => {
@@ -2822,38 +2822,38 @@ describe('AdjacencyMap root', () => {
 		const actual = map.edges;
 		const golden = [
 			{
-				"ref": "",
+				"parent": "",
 				"source": "a",
 				"type": "engineering",
 				"weight": 4,
 				implied: 0
 			},
 			{
-				"ref": "",
+				"parent": "",
 				"source": "a",
 				"type": "engineering",
 				implied: 0
 			},
 			{
-				"ref": "a",
+				"parent": "a",
 				"source": "b",
 				"type": "ux",
 				implied: 0
 			},
 			{
-				"ref": "a",
+				"parent": "a",
 				"source": "c",
 				"type": "engineering",
 				implied: 0
 			},
 			{
-				"ref": "b",
+				"parent": "b",
 				"source": "c",
 				"type": "ux",
 				implied: 0
 			},
 			{
-				"ref": "b",
+				"parent": "b",
 				"source": "d",
 				"type": "engineering",
 				implied: 0
@@ -3055,7 +3055,7 @@ engineering: 3`;
 
 	it('allows a named node with a RefValue', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.properties.engineering.value = {ref:'engineering'};
+		input.properties.engineering.value = {parent:'engineering'};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -3250,7 +3250,7 @@ engineering: 3`;
 
 	it('Tests a refValue ref calculation that uses self', async () => {
 		const input = deepCopy(legalBaseInput);
-		input.properties.engineering.value = {ref: '.'};
+		input.properties.engineering.value = {parent: '.'};
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.values;
@@ -3711,7 +3711,7 @@ engineering: 3`;
 		const input = deepCopy(legalBaseInput);
 		input.properties.engineering.combine = 'sum';
 		input.properties.engineering.value = {
-			lengthOf: 'refs',
+			lengthOf: 'parents',
 			value: 3
 		};
 		const map = new AdjacencyMap(input);
@@ -4369,7 +4369,7 @@ engineering: 3`;
 		input.nodes.b.tags = 'tagB';
 		input.nodes.b.edges.push({
 			type: 'engineering',
-			ref: 'a'
+			parent: 'a'
 		});
 		input.properties.engineering.value = {
 			has: 'tagB',
@@ -4398,7 +4398,7 @@ engineering: 3`;
 		input.nodes.b.tags = 'tagB';
 		input.nodes.b.edges.push({
 			type: 'engineering',
-			ref: 'a'
+			parent: 'a'
 		});
 		input.properties.engineering.value = {
 			has: 'tagA',
@@ -4427,7 +4427,7 @@ engineering: 3`;
 		input.nodes.b.tags = 'tagB';
 		input.nodes.b.edges.push({
 			type: 'engineering',
-			ref: 'a'
+			parent: 'a'
 		});
 		input.properties.engineering.value = {
 			has: 'tagB',
@@ -4456,7 +4456,7 @@ engineering: 3`;
 		input.nodes.b.tags = 'tagB';
 		input.nodes.b.edges.push({
 			type: 'engineering',
-			ref: 'a'
+			parent: 'a'
 		});
 		input.properties.engineering.value = {
 			has: 'tagA',
@@ -4543,7 +4543,7 @@ engineering: 3`;
 		};
 		input.nodes.b.edges.push({
 			type: 'engineering',
-			ref: 'a'
+			parent: 'a'
 		});
 		input.nodes.a.tags = 'tagA';
 		input.nodes.b.tags = 'tagB';
@@ -4580,7 +4580,7 @@ engineering: 3`;
 		};
 		input.nodes.b.edges.push({
 			type: 'engineering',
-			ref: 'a'
+			parent: 'a'
 		});
 		input.nodes.a.tags = 'tagA';
 		input.nodes.b.tags = 'tagB';
@@ -4742,7 +4742,7 @@ describe('wrapArrays', () => {
 
 const BASE_RENDER_EDGE = {
 	opacity: 0.4,
-	ref: '',
+	parent: '',
 	source: 'a',
 	width: 1.5,
 	color: color('#555'),
@@ -5139,26 +5139,26 @@ describe('impliedEdges', () => {
 		const golden = [
 			{
 				type: 'engineering',
-				ref: '',
+				parent: '',
 				source: 'a',
 				weight: 4,
 				implied: 0
 			},
 			{
 				type: 'engineering',
-				ref: '',
+				parent: '',
 				source: 'a',
 				implied: 0
 			},
 			{
 				type: 'ux',
-				ref: '',
+				parent: '',
 				source: 'a',
 				implied: 1
 			},
 			{
 				type: 'data',
-				ref: '',
+				parent: '',
 				source: 'a',
 				implied: 1
 			}
@@ -5175,26 +5175,26 @@ describe('impliedEdges', () => {
 		const golden = [
 			{
 				type: 'engineering',
-				ref: '',
+				parent: '',
 				source: 'a',
 				weight: 4,
 				implied: 0,
 			},
 			{
 				type: 'engineering',
-				ref: '',
+				parent: '',
 				source: 'a',
 				implied: 0
 			},
 			{
 				type: 'ux',
-				ref: '',
+				parent: '',
 				source: 'a',
 				implied: 1
 			},
 			{
 				type: 'data',
-				ref: '',
+				parent: '',
 				source: 'a',
 				implied: 1
 			}
@@ -5211,20 +5211,20 @@ describe('impliedEdges', () => {
 		const golden = [
 			{
 				type: 'engineering',
-				ref: '',
+				parent: '',
 				source: 'a',
 				weight: 4,
 				implied: 0
 			},
 			{
 				type: 'engineering',
-				ref: '',
+				parent: '',
 				source: 'a',
 				implied: 0
 			},
 			{
 				type: 'ux',
-				ref: '',
+				parent: '',
 				source: 'a',
 				implied: 1
 			}
@@ -5241,20 +5241,20 @@ describe('impliedEdges', () => {
 		const golden = [
 			{
 				type: 'engineering',
-				ref: '',
+				parent: '',
 				source: 'a',
 				weight: 4,
 				implied: 0
 			},
 			{
 				type: 'engineering',
-				ref: '',
+				parent: '',
 				source: 'a',
 				implied: 0
 			},
 			{
 				type: 'data',
-				ref: '',
+				parent: '',
 				source: 'a',
 				implied: 1
 			}
@@ -5272,20 +5272,20 @@ describe('impliedEdges', () => {
 		const golden = [
 			{
 				type: 'engineering',
-				ref: '',
+				parent: '',
 				source: 'a',
 				weight: 4,
 				implied: 0
 			},
 			{
 				type: 'engineering',
-				ref: '',
+				parent: '',
 				source: 'a',
 				implied: 0
 			},
 			{
 				type: 'data',
-				ref: '',
+				parent: '',
 				source: 'a',
 				implied: 1
 			}
@@ -5305,26 +5305,26 @@ describe('impliedEdges', () => {
 		const golden = [
 			{
 				type: 'engineering',
-				ref: '',
+				parent: '',
 				source: 'a',
 				weight: 4,
 				implied: 0
 			},
 			{
 				type: 'engineering',
-				ref: '',
+				parent: '',
 				source: 'a',
 				implied: 0
 			},
 			{
 				type: 'ux',
-				ref: '',
+				parent: '',
 				source: 'a',
 				implied: 1
 			},
 			{
 				type: 'data',
-				ref: '',
+				parent: '',
 				source: 'a',
 				implied: 1
 			}
@@ -5338,7 +5338,7 @@ describe('scenarios', () => {
 	it('base case', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.ux.value = {
-			ref: 'ux'
+			parent: 'ux'
 		};
 		input.scenarios = {
 			one: {
@@ -5365,7 +5365,7 @@ describe('scenarios', () => {
 	it('scenario array', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.ux.value = {
-			ref: 'ux'
+			parent: 'ux'
 		};
 		input.scenarios = {
 			one: [
@@ -5433,7 +5433,7 @@ describe('scenarios', () => {
 	it('scenario passed in constructor', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.properties.ux.value = {
-			ref: 'ux'
+			parent: 'ux'
 		};
 		input.scenarios = {
 			one: {
@@ -5546,7 +5546,7 @@ describe('scenarios', () => {
 		input.nodes.a.values = {
 			//ref type is illegal in this context
 			engineering: {
-				ref: '.'
+				parent: '.'
 			}
 		};
 		const fn = () => {
@@ -5798,7 +5798,7 @@ describe('edgeDefinition ergonomics', () => {
 		assert.deepStrictEqual(actualNodeA, goldenNodeA);
 	});
 
-	it('ref with array', async () => {
+	it('parent with array', async () => {
 		const input = {
 			properties: {
 				engineering: {
@@ -5837,12 +5837,12 @@ describe('edgeDefinition ergonomics', () => {
 			display: {},
 			edges: [
 				{
-					ref: '',
+					parent: '',
 					type: "engineering",
 					weight: 4.0
 				},
 				{
-					ref: '',
+					parent: '',
 					type: "engineering"
 				}
 			],
@@ -5854,7 +5854,7 @@ describe('edgeDefinition ergonomics', () => {
 		assert.deepStrictEqual(actualNodeA, goldenNodeA);
 	});
 
-	it('ref with map with array', async () => {
+	it('parent with map with array', async () => {
 		const input = {
 			properties: {
 				engineering: {
@@ -5892,12 +5892,12 @@ describe('edgeDefinition ergonomics', () => {
 			display: {},
 			edges: [
 				{
-					ref: '',
+					parent: '',
 					type: "engineering",
 					weight: 4.0
 				},
 				{
-					ref: '',
+					parent: '',
 					type: "engineering"
 				}
 			],
@@ -5909,7 +5909,7 @@ describe('edgeDefinition ergonomics', () => {
 		assert.deepStrictEqual(actualNodeA, goldenNodeA);
 	});
 
-	it('ref with map with single item', async () => {
+	it('parent with map with single item', async () => {
 		const input = {
 			properties: {
 				engineering: {
@@ -5944,7 +5944,7 @@ describe('edgeDefinition ergonomics', () => {
 			display: {},
 			edges: [
 				{
-					ref: '',
+					parent: '',
 					type: "engineering",
 					weight: 4.0
 				}

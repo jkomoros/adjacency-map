@@ -125,7 +125,7 @@ value: 3
 
 //Extract `property_name` value from the node that is referred to by each edge. `property_name` can be this property itself... or any other legal property name.
 value: {
-    ref: 'property_name',
+    parent: 'property_name',
 }
 
 //Extract the constants of the given name from each edge of this property type. (See `constants`, above).
@@ -137,7 +137,7 @@ value: {
 value: {
     operator: '+',
     a: {
-        ref: 'property_name',
+        parent: 'property_name',
     },
     b: {
         constant: 'weight'
@@ -158,13 +158,13 @@ The final value for a node has to reduce a potentially multi-entry array of numb
 Many values rely on there being edges to do their calculation (calculateWhen of 'edges'). Some values rely only on other properties in values, or are just constants. If calculateWhen is 'always', then this value will be calcluated on a node even if there are no edges (explicit or implied) to this node.
 
 If calculateWhen is 'always': 
-- the value must not include any `{constant: 'foo'}` or `{ref: 'foo'}` ValueDefinitions nested. 
+- the value must not include any `{constant: 'foo'}` or `{parent: 'foo'}` ValueDefinitions nested. 
 - `implies` must be unset or set to ''.
 - `excludeFromDefaultImplication` is automatically set to true.
 
 ### extendTags? : boolean
 
-If true, then the source node's base tag set will include any tags on the ref node. This allows tags to 'flow' through a graph additively.
+If true, then the source node's base tag set will include any tags on the parent node. This allows tags to 'flow' through a graph additively.
 
 ### display? : EdgeDisplay
 
@@ -174,7 +174,7 @@ Defines how to display this edge by default. See the `display` section below for
 
 A value of a given node will only have an interesting (non-root default) value set if there is at least one edge of that type incoming.
 
-Often you want values to 'flow' through nodes at long as there is any edge from one to the other, of any type. implies is machinery that allows the precense of one edge type from a ref/result node pair to imply other edges (with their constants all set to the default) as well.
+Often you want values to 'flow' through nodes at long as there is any edge from one to the other, of any type. implies is machinery that allows the precense of one edge type from a parent/result node pair to imply other edges (with their constants all set to the default) as well.
 
 This is where an edge can define a default implication of other edges whenever it shows up. Read more at 'Implied edges', below.
 
@@ -269,7 +269,7 @@ const data : RawMapDefinition = {
 
 The `root` property is essentially the `values` property of the implied node named '' in the nodes map.
 
-Edges that do not explicitly name a `ref` implicitly reference the root node.
+Edges that do not explicitly name a `parent` implicitly reference the root node.
 
 The default values for each node starts out as the values in root, with each value potentially be overriden by the node's own `values` property, or incoming edges of a given type.
 
@@ -283,8 +283,8 @@ Each edge notionally has the following properties:
 type: PropertyName,
 //source is never set explicitly, but implied by the node whose edge definition the edge shows up in
 source: NodeID
-//if ref is omitted it will implicitly be the root node, with id of ''
-ref?: NodeID,
+//if parent is omitted it will implicitly be the root node, with id of ''
+parent?: NodeID,
 //A way for a given edge to override the implies property of its property type, see 'Implied Edges', below
 implies?: ImpliesConfiguration
 //If an edge was implied into existence, it will have implied: true. Effectively a special constant. You may not explicitly define a value for implied in your configuration; it is set automaticlaly by the engine.
@@ -299,18 +299,18 @@ edges: [
     {
         //type is required in this form
         type: 'one'
-        //A ref that is omitted implies the root node, of name ''
-        ref: 'b',
+        //A parent that is omitted implies the root node, of name ''
+        parent: 'b',
         weight: 3
     },
     {
-        //ref, source, and any constants just get their default values.
+        //parent, source, and any constants just get their default values.
         type: 'two'
     }
 ]
 ```
 
-However, sometimes you have multiple edges to a given ref, and want to make it faster to manually configure them. You can also provide a map of nodeIDs to edges. Each edge in that list will then implicitly have its `ref` property set.
+However, sometimes you have multiple edges to a given parent, and want to make it faster to manually configure them. You can also provide a map of nodeIDs to edges. Each edge in that list will then implicitly have its `parent` property set.
 
 ```
 edges: {
@@ -380,7 +380,7 @@ edges: {
 
 ### Implied edges
 
-Typically edges are explicitly listed for each source/ref/type combination of nodes and type. However, sometimes you want the precense of one property type between a source/ref node pair to imply into existence other values, so those other property's value calculation can rely on that ref, too.
+Typically edges are explicitly listed for each source/parent/type combination of nodes and type. However, sometimes you want the precense of one property type between a source/parent node pair to imply into existence other values, so those other property's value calculation can rely on that parent, too.
 
 This where edge implication comes in. A given node can define an `ImplicationConfiguration`. A given PropertyDefinition can also define an implies configuration, which implicitly extends to all edges of that type.
 
@@ -389,13 +389,13 @@ An `ImplicationConfiguration` defines the set of other property names to imply i
 implies: [one, two]
 ```
 
-When the engine sees an `implies` configuration, it looks at all of the edges explicitly enumerated for a given source/ref node pair. If there are any edge types that are implied in the union of all explicit edges' `implies` property but not explicitly included then an edge is implied into existence for that source/ref/type. It will use the default values for constants, and also have `edge.implied` set to true.
+When the engine sees an `implies` configuration, it looks at all of the edges explicitly enumerated for a given source/parent node pair. If there are any edge types that are implied in the union of all explicit edges' `implies` property but not explicitly included then an edge is implied into existence for that source/parent/type. It will use the default values for constants, and also have `edge.implied` set to true.
 
 There are a few other ways to define implications.
 
 One is a value of `*`, which means, "imply all edge types that don't explicitly opt out via `excludeFromDefaultImplication`". This is useful in libraries and other contexts where the full set of property types isn't known.
 
-Finally, there is a type that allows you to *exclude* specific implications: `{exclude: [one]}`, which would be equivalent to including all edges in the implication set and then removing that type. Remember that the full set of edges to imply between a source/ref pair is the *union* of all `implies` property.
+Finally, there is a type that allows you to *exclude* specific implications: `{exclude: [one]}`, which would be equivalent to including all edges in the implication set and then removing that type. Remember that the full set of edges to imply between a source/parent pair is the *union* of all `implies` property.
 
 ## Value Definitions
 
@@ -407,7 +407,7 @@ They are also used in a lot of the `display` contexts (see 'Display', below).
 
 On a fundamental level, ValueDefinitions produce an array of at least one number as their result, based on their configuration.
 
-This is necessary because in many contexts there are multiple numbers to operate over, for example if there are multiple edges of a given property type on a node, which means that any ValueDefinition that references those ref parents or constants of a given type on edges will receive multiple inputs.
+This is necessary because in many contexts there are multiple numbers to operate over, for example if there are multiple edges of a given property type on a node, which means that any ValueDefinition that references those parents or constants of a given type on edges will receive multiple inputs.
 
 The simplest ValueDefinition is an array of numbers:
 ```
@@ -539,9 +539,9 @@ value: {
 //Evalues to, for example, [3, 5]
 ```
 
-#### ValueDefinitionRefValue
+#### ValueDefinitionParentValue
 
-Selects a final computed value out of the parent node for an edge (the 'ref'). Only defined PropertyNames may be used. Selects one number per node referenced.
+Selects a final computed value out of the parent node for an edge (the 'parent'). Only defined PropertyNames may be used. Selects one number per node referenced.
 
 If the ValueDefinition is in the context of a PropertyDefinition.value, then a PropertyName of '.' will automatically be replaced with the PropertyName being defined.
 
@@ -562,16 +562,16 @@ nodes: {
 edges: [
     {
         type: 'one',
-        ref: 'a'
+        parent: 'a'
     },
     {
         type: 'one',
-        ref: 'b'
+        parent: 'b'
     }
 ]
 value: {
     //Selects the property named 'one' for each node with an edge of this property type
-    ref: 'one'
+    parent: 'one'
 }
 //Evalutes to [3, 5]
 ```
@@ -618,7 +618,7 @@ value: {
 value: {
     combine: 'sum',
     input: {
-        ref: 'one'
+        parent: 'one'
     }
 }
 ```
@@ -880,7 +880,7 @@ value: {
 
 #### ValueDefinitionLengthOf
 
-Extends the input to be the same length as `edges`, `input`, or `refs`. This is useful in `display.edge` and `display.edgeCombiner` contexts where the number of returned values is important. 
+Extends the input to be the same length as `edges`, `input`, or `parents`. This is useful in `display.edge` and `display.edgeCombiner` contexts where the number of returned values is important. 
 
 `input` may be any ValueDefinition.
 
@@ -1014,11 +1014,11 @@ ValueDefinitions of type ValueDefinitionRefValue and ValueDefinitionEdgeValue wi
 
 Edges are more complex than nodes.
 
-At the high level, first, we collect every source/ref/type tuple of edges and run the `color`, `width`, and `opacity` value definitions for each. If they return an array of numbers, then one edge for each index is passed on to the next step. (The property of `color`, `width`, `opacity`, and `distinct` with the longest length defines the number of edges, with the other properties being wrapped around to achieve the target length.)
+At the high level, first, we collect every source/parent/type tuple of edges and run the `color`, `width`, and `opacity` value definitions for each. If they return an array of numbers, then one edge for each index is passed on to the next step. (The property of `color`, `width`, `opacity`, and `distinct` with the longest length defines the number of edges, with the other properties being wrapped around to achieve the target length.)
 
-For each source/ref/type tuple, a ValueDefintion of property `distinct` is also computed. For each edge in this step, if `distinct` for that edge index returns a truthy value, then that edge is added to the output step. If it returns a falsey value, it is instead added to the bundle of edges for the next step.
+For each source/parent/type tuple, a ValueDefintion of property `distinct` is also computed. For each edge in this step, if `distinct` for that edge index returns a truthy value, then that edge is added to the output step. If it returns a falsey value, it is instead added to the bundle of edges for the next step.
 
-Now, we have an array of final edges, and a bundle of edges to combine, possibly of different types. For each source/ref pair, we take all of the edges produced by the earlier step and pass them to the `edgeCombiner` ValueDefintiions. In this context, the input from the previous step is available as the `ValueDefintiinInput` input value. Again, the final length of the array returned from this step defines how many edges to render (with the longest property defining the target length, and other properties being wrapped around to be long enough).
+Now, we have an array of final edges, and a bundle of edges to combine, possibly of different types. For each source/parent pair, we take all of the edges produced by the earlier step and pass them to the `edgeCombiner` ValueDefintiions. In this context, the input from the previous step is available as the `ValueDefintiinInput` input value. Again, the final length of the array returned from this step defines how many edges to render (with the longest property defining the target length, and other properties being wrapped around to be long enough).
 
 The behavior of how edge collapsing works means that if *any* of the properties returns an array of more than one number, then those edges will not be collapsed.
 
@@ -1051,7 +1051,7 @@ The default defintion is implicitly the scenario named ''.
 
 When there is more than one scenario defined, the UI shows a drop down allowing the user to select which scenario to render. The URL also includes the selected scenario. Hitting the left/right arrows also cycles through different scenarios.
 
-The values for scenarios are any ValueDefinition. In this context, root, ref, result and edge constant statements are not allowed. The input will be the final result of what the node would have been had the scenario not applied.
+The values for scenarios are any ValueDefinition. In this context, root, parent, result and edge constant statements are not allowed. The input will be the final result of what the node would have been had the scenario not applied.
 
 So for example you could have the scenario define that the value for a node would be 4.0 more than it would have otherwise been:
 
