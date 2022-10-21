@@ -34,6 +34,7 @@ import {
 	selectSummaryNodeDisplayName,
 	selectSelectedNodeID,
 	selectShowHiddenValues,
+	selectAdjacencyMapError,
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -127,6 +128,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_showHiddenValues : boolean;
+
+	@state()
+	_dataError : string;
 
 	static override get styles() {
 		return [
@@ -292,6 +296,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._summaryTags = selectSummaryTags(state);
 		this._summaryValues = selectSummaryValues(state);
 		this._showHiddenValues = selectShowHiddenValues(state);
+		this._dataError = selectAdjacencyMapError(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
@@ -301,6 +306,10 @@ class MainView extends connect(store)(PageViewElement) {
 		}
 		if (changedProps.has('_hashForCurrentState')) {
 			store.dispatch(canonicalizeHash());
+		}
+		if (changedProps.has('_dataError') && this._dataError) {
+			alert(this._dataError);
+			console.warn(this._dataError);
 		}
 	}
 
