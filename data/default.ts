@@ -225,6 +225,7 @@ const data : RawMapDefinition = {
 				}
 			}
 		},
+		//This is a progression of sceanarios that build on each other.
 		'implemented': [
 			{
 				extends: 'increased-value',
