@@ -18,18 +18,6 @@ Check out this repo.
 
 Run `npm install` to install dependencies.
 
-### Installing on Apple Silicon
-
-The machinery to do screenshotting relies on a library that doesn't install cleanly on Apple Silicon.
-
-Can get everything but screenshots running with `npm install --only=prod`
-
-Install homebrew if not already installed
-
-Run `arch -arm64 brew install pkg-config cairo pango libpng jpeg giflib librsvg`
-
-Then run `npm install canvas` and `npm install`
-
 ## Running
 
 Run `npm run start` from command line.
