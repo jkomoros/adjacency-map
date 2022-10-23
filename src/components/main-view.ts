@@ -401,6 +401,11 @@ class MainView extends connect(store)(PageViewElement) {
 		return result;
 	}
 
+	_titleForEdge(edge : RenderEdgeValue) : string {
+		//TODO: better rendering
+		return JSON.stringify(edge.edges, null, '\t');
+	}
+
 	_handleSVGMouseMove(e : MouseEvent) {
 		const ele = e.composedPath()[0];
 		if (!(ele instanceof Element)) throw new Error('unexpected node');
@@ -431,7 +436,7 @@ class MainView extends connect(store)(PageViewElement) {
 
 		return html`<svg @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} class='main' viewBox='${a.viewBox}' width='${a.width * this._scale}' height='${a.height * this._scale}' style='max-width: 100%; height: auto; height: intrinsic;' font-family='sans-serif' font-size='10'>
 			<g fill="none" stroke-linecap="${strokeLinecap}" stroke-linejoin="${strokeLinejoin}">
-				${a.renderEdges.map(edge => svg`<path d="${this._pathForEdge(edge, a)}" stroke-width='${edge.width}' stroke-opacity='${edge.opacity}' stroke='${edge.color.rgbaStr}'></path>`)}
+				${a.renderEdges.map(edge => svg`<path d="${this._pathForEdge(edge, a)}" stroke-width='${edge.width}' stroke-opacity='${edge.opacity}' stroke='${edge.color.rgbaStr}'><title>${this._titleForEdge(edge)}</title></path>`)}
 			</g>
 			<g>
 				${Object.values(a.nodes).map(node => svg`<a transform="translate(${node.x},${node.y})">
