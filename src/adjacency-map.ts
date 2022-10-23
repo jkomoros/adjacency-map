@@ -1047,16 +1047,16 @@ class AdjacencyMapNode {
 			let resultsForRef :RenderEdgeValue[] = [];
 			for (const [edgeType, edges] of Object.entries(edgeMap)){
 				const edgeDefinition = this._map.data.properties[edgeType];
-				const colorDefinitionOrString = edgeDefinition.display.color || this._map.data.display.edge.color;
+				const colorDefinitionOrString = edgeDefinition.display.color == undefined ? this._map.data.display.edge.color : edgeDefinition.display.color;
 				const colorDefinition = wrapStringAsColor(colorDefinitionOrString);
 				const colors = this._edgeDefinitionHelper(colorDefinition, edges);
-				const widthDefinition = edgeDefinition.display.width || this._map.data.display.edge.width;
+				const widthDefinition = edgeDefinition.display.width == undefined ? this._map.data.display.edge.width : edgeDefinition.display.width;
 				const clippedWidthDefinition = {
 					clip: widthDefinition,
 					low: 0.0
 				};
 				const widths = this._edgeDefinitionHelper(clippedWidthDefinition, edges);
-				const opacityDefinition = edgeDefinition.display.opacity || this._map.data.display.edge.opacity;
+				const opacityDefinition = edgeDefinition.display.opacity == undefined ? this._map.data.display.edge.opacity : edgeDefinition.display.opacity;
 				const clippedOpacityDefinition = {
 					clip: opacityDefinition,
 					low: 0.0,
