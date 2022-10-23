@@ -155,6 +155,9 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 			certainty: {
 				description: 'A value between 0 and 1 denoting how certain the value is at this node',
 				combine: 'product',
+				display: {
+					width: 0
+				},
 				value: {
 					operator: '*',
 					a: {
