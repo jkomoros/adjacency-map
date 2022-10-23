@@ -378,11 +378,18 @@ export type ExpandedEdgeValue = Exclude<EdgeValue,ImpliesConfiguration> & {
 	implied: number;
 };
 
+export type RenderEdgeSubEdge = {
+	type: PropertyName,
+	implied: number,
+	[constant : ConstantType]: PropertyName | number
+}
+
 //The final edges to actually render, based on processing the EdgeValues for a
 //node.
 export type RenderEdgeValue = {
 	source: NodeID,
 	parent: NodeID,
+	edges: RenderEdgeSubEdge[],
 	width: number,
 	opacity: number,
 	color: Color,

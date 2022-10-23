@@ -4743,6 +4743,17 @@ describe('wrapArrays', () => {
 const BASE_RENDER_EDGE = {
 	opacity: 0.4,
 	parent: '',
+	edges: [
+		{
+			type: 'engineering',
+			implied: 0,
+			weight: 4
+		},
+		{
+			type: 'engineering',
+			implied: 0
+		}
+	],
 	source: 'a',
 	width: 1.5,
 	color: color('#555'),
@@ -4823,10 +4834,16 @@ describe('renderEdges', () => {
 		const golden = [
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					BASE_RENDER_EDGE.edges[0]
+				],
 				bump: 0.3
 			},
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					BASE_RENDER_EDGE.edges[1]
+				],
 				bump: 0.7
 			}
 		];
@@ -4849,10 +4866,23 @@ describe('renderEdges', () => {
 		const golden = [
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					{
+						type: 'engineering',
+						weight: 4,
+						implied: 0
+					}
+				],
 				bump: 0.3
 			},
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					{
+						type: 'engineering',
+						implied: 0
+					}
+				],
 				bump: 0.7
 			}
 		];
@@ -4872,6 +4902,17 @@ describe('renderEdges', () => {
 			//Everything merged together
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					...BASE_RENDER_EDGE.edges,
+					{
+						type: 'ux',
+						implied: 0
+					},
+					{
+						type: 'data',
+						implied: 0
+					}
+				],
 				width: BASE_RENDER_EDGE.width * 3
 			}
 		];
@@ -4897,15 +4938,38 @@ describe('renderEdges', () => {
 			//Each engineering node
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					{
+						type: 'engineering',
+						weight: 4,
+						implied: 0
+					}
+				],
 				bump: 0.09999999999999998
 			},
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					{
+						type: 'engineering',
+						implied: 0
+					}
+				],
 				bump: 0.5
 			},
 			//Everything else
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					{
+						type: 'ux',
+						implied: 0
+					},
+					{
+						type: 'data',
+						implied: 0
+					}
+				],
 				bump: 0.9,
 				width: BASE_RENDER_EDGE.width * 2
 			}
@@ -4941,20 +5005,38 @@ describe('renderEdges', () => {
 			//Each engineering node
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					BASE_RENDER_EDGE.edges[0]
+				],
 				bump: 0.0
 			},
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					BASE_RENDER_EDGE.edges[1]
+				],
 				bump: 1/3
 			},
 			//UX node
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					{
+						type: 'ux',
+						implied: 0
+					}
+				],
 				bump: 2/3
 			},
 			//data node
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					{
+						type: 'data',
+						implied: 0
+					}
+				],
 				bump: 1.0
 			}
 		];
@@ -4988,20 +5070,38 @@ describe('renderEdges', () => {
 			//Each engineering node
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					BASE_RENDER_EDGE.edges[0],
+				],
 				bump: 0.0
 			},
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					BASE_RENDER_EDGE.edges[1],
+				],
 				bump: 1/3
 			},
 			//UX node
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					{
+						type: 'ux',
+						implied: 0
+					}
+				],
 				bump: 2/3
 			},
 			//data node
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					{
+						type: 'data',
+						implied: 0
+					}
+				],
 				bump: 1.0
 			}
 		];
@@ -5038,11 +5138,23 @@ describe('renderEdges', () => {
 			//UX node
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					{
+						type: 'ux',
+						implied: 0
+					}
+				],
 				bump: 0.5
 			},
 			//data node
 			{
 				...BASE_RENDER_EDGE,
+				edges: [
+					{
+						type: 'data',
+						implied: 0
+					}
+				],
 				bump: 0.9
 			}
 		];

@@ -33,7 +33,8 @@ import {
 	TagConstantName,
 	AllowedValueDefinitionVariableTypes,
 	ValudeDefinitionValidationArgs,
-	ScenariosDefinitionUnextended
+	ScenariosDefinitionUnextended,
+	RenderEdgeSubEdge
 } from './types.js';
 
 import {
@@ -825,6 +826,19 @@ const completeEdgeSet = (source: NodeID, edges : EdgeValue[], data : MapDefiniti
 	return result;
 };
 
+const expandedEdgeToRenderEdgeSubEdge = (input : ExpandedEdgeValue) : RenderEdgeSubEdge => {
+	const result : RenderEdgeSubEdge = {type: '', implied: 0};
+	for (const [key, value] of Object.entries(input)) {
+		if (key == 'type') {
+			result[key] = value as PropertyName;
+			continue;
+		}
+		if (typeof value != 'number') continue;
+		result[key] = value;
+	}
+	return result;
+};
+
 class AdjacencyMapNode {
 	_id : NodeID;
 	_map : AdjacencyMap;
@@ -1054,11 +1068,16 @@ class AdjacencyMapNode {
 
 				const [wrappedColors, wrappedWidths, wrappedOpacities, wrappedDistincts] = wrapArrays(colors, widths, opacities, distincts);
 
+				const collapsed = wrappedColors.length == 1;
+
 				for (let i = 0; i < wrappedColors.length; i++) {
+
+					const subEdges = collapsed ? edges.map(edge => expandedEdgeToRenderEdgeSubEdge(edge)): [expandedEdgeToRenderEdgeSubEdge(edges[i % edges.length])];
 
 					const renderEdge = {
 						source,
 						parent,
+						edges: subEdges,
 						width: wrappedWidths[i % wrappedWidths.length],
 						opacity: wrappedOpacities[i % wrappedOpacities.length],
 						color: unpackColor(wrappedColors[i % wrappedColors.length]),
@@ -1094,10 +1113,13 @@ class AdjacencyMapNode {
 
 				const [wrappedColors, wrappedWidths, wrappedOpacities] = wrapArrays(colors, widths, opacities);
 
+				const collapsed = wrappedColors.length == 1;
+
 				for (let i = 0; i < wrappedColors.length; i++) {
 					const renderEdge = {
 						source,
 						parent,
+						edges: collapsed ? bundledEdges.map(edge => edge.edges).flat() : bundledEdges[i % bundledEdges.length].edges,
 						width: wrappedWidths[i % wrappedWidths.length],
 						opacity: wrappedOpacities[i % wrappedOpacities.length],
 						color: unpackColor(wrappedColors[i % wrappedColors.length]),
