@@ -403,7 +403,7 @@ class MainView extends connect(store)(PageViewElement) {
 
 	_titleForEdge(edge : RenderEdgeValue) : string {
 		//TODO: better rendering
-		return JSON.stringify(edge.edges, null, '\t');
+		return edge.edges.map(edge => edge.type).join(', ');
 	}
 
 	_handleSVGMouseMove(e : MouseEvent) {
