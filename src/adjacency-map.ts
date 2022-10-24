@@ -89,6 +89,7 @@ import {
 
 import {
 	assertUnreachable,
+	idToDisplayName,
 	wrapArrays
 } from './util.js';
 import { TypedObject } from './typed-object.js';
@@ -301,10 +302,14 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		const rawValues = rawNode.values || {};
 		const values = {...rawValues};
 		const tags = makeTagMap(rawNode.tags);
+		let displayName = rawNode.displayName;
+		if (displayName === undefined) displayName = idToDisplayName(id);
+		if (displayName === '') displayName = id;
 		nodes[id] = {
 			...rawNode,
 			tags,
 			edges,
+			displayName,
 			values,
 			display: {
 				...rawNodeDisplay

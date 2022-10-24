@@ -223,6 +223,8 @@ A description of what this node represents, for displaying in tooltips in the UI
 
 Sometimes the ID of the node is ugly (e.g. uses underscores). If the displayName is set, that will be used for rendering it in the UI instead of the ID.
 
+If the displayName is not set, it will automatically use a displayName that transforms `foo-bar_baz` to `Foo Bar Baz`. You can explicitly set the displayName to `` to opt out and use the id.
+
 ### display? : NodeDisplay
 
 Configures how this particular node will be displayed. See 'Display' section below for more on configuring display.

@@ -427,7 +427,7 @@ export type RawNodeDefinition = {
 
 export type NodeDefinition = {
 	description: string,
-	displayName?: string,
+	displayName: string,
 	tags: TagMap,
 	display: Partial<NodeDisplay>,
 	edges: EdgeValue[],

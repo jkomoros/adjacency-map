@@ -18,6 +18,10 @@ export const randomString = (length : number, rnd : RandomGenerator = Math.rando
 	return text;
 };
 
+export const idToDisplayName = (id = '') : string => {
+	return id.split('_').join('-').split('-').map(w => (w[0] || '').toUpperCase() + w.substr(1).toLowerCase()).join(' ');
+};
+
 export function shuffleInPlace<T>(array : T[], rnd : RandomGenerator = Math.random) : T[] {
 	let currentIndex = array.length;
 	let randomIndex;
