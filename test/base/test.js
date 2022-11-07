@@ -2908,7 +2908,7 @@ describe('AdjacencyMap node', () => {
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.fullDescription();
-		const golden = `a
+		const golden = `A
 Node a
 
 ux: 0
@@ -2925,7 +2925,7 @@ engineering: 3`;
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.fullDescription();
-		const golden = `a
+		const golden = `A
 Node a
 
 ux: 0
@@ -2943,7 +2943,7 @@ Tag A`;
 		const map = new AdjacencyMap(input);
 		const node = map.node('a');
 		const actual = node.fullDescription(true);
-		const golden = `a
+		const golden = `A
 Node a
 
 data: 0
@@ -5891,6 +5891,7 @@ describe('edgeDefinition ergonomics', () => {
 			}
 		};
 		const goldenNodeA = {
+			displayName: "A",
 			description: "Node a",
 			display: {},
 			edges: [
@@ -5945,6 +5946,7 @@ describe('edgeDefinition ergonomics', () => {
 			}
 		};
 		const goldenNodeA = {
+			displayName: "A",
 			description: "Node a",
 			display: {},
 			edges: [
@@ -6000,6 +6002,7 @@ describe('edgeDefinition ergonomics', () => {
 			}
 		};
 		const goldenNodeA = {
+			displayName: "A",
 			description: "Node a",
 			display: {},
 			edges: [
@@ -6052,6 +6055,7 @@ describe('edgeDefinition ergonomics', () => {
 			}
 		};
 		const goldenNodeA = {
+			displayName: "A",
 			description: "Node a",
 			display: {},
 			edges: [
