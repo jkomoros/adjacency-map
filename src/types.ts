@@ -698,6 +698,10 @@ export type URLHashArgs = {
 	s? : ScenarioName
 };
 
+export type ScenariosOverlays = {
+	[filename in DataFilename]?: ScenariosDefinition;
+};
+
 export type AppState = {
 	page : string;
 	pageExtra : string;
@@ -712,9 +716,7 @@ export type DataState = {
 	hoveredNodeID? : NodeID;
 	selectedNodeID? : NodeID;
 	showHiddenValues: boolean;
-	scenariosOverlays: {
-		[filename in DataFilename]?: ScenariosDefinition;
-	}
+	scenariosOverlays: ScenariosOverlays;
 }
 
 export type RootState = {
