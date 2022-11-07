@@ -8,6 +8,7 @@ import { connect } from "pwa-helpers/connect-mixin.js";
 import { store } from "../store.js";
 
 import {
+	beginEditingScenario,
 	nextScenarioName,
 	previousScenarioName,
 	updateFilename,
@@ -67,7 +68,8 @@ import {
 
 import {
 	SVG_HEIGHT,
-	SVG_WIDTH
+	SVG_WIDTH,
+	ENABLE_EDITING_SCENARIOS
 } from '../constants.js';
 
 import {
@@ -78,7 +80,8 @@ import {
 
 import {
 	VISIBILITY_ICON,
-	VISIBILITY_OFF_ICON
+	VISIBILITY_OFF_ICON,
+	PLUS_ICON
 } from './my-icons.js';
 
 @customElement('main-view')
@@ -238,6 +241,7 @@ class MainView extends connect(store)(PageViewElement) {
 				<select id='scenarios' .value=${this._scenarioName} @change=${this._handleScenarioNameChanged}>
 					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName}>${scenarioName || 'Default'}</option>`)}
 				</select>` : ''}
+				${ENABLE_EDITING_SCENARIOS ? html`<button class='small' title='Create a new scenario based on the current scenario' @click=${this._handleCreateScenarioClicked}>${PLUS_ICON}</button>` : ''}
 				<div class='summary'>
 					<div>
 						<label>Node</label> <strong>${this._summaryNodeDisplayName === undefined ? html`<em>Union of all nodes</em>` : (this._summaryNodeDisplayName || html`<em>Root</em>`)}</strong>
@@ -343,6 +347,10 @@ class MainView extends connect(store)(PageViewElement) {
 
 	_handleShowHiddenValuesClicked() {
 		store.dispatch(updateShowHiddenValues(!this._showHiddenValues));
+	}
+
+	_handleCreateScenarioClicked() {
+		store.dispatch(beginEditingScenario());
 	}
 
 	_handleHashChange() {

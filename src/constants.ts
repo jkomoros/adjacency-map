@@ -5,6 +5,8 @@ import {
 
 export const ROOT_ID : NodeID = '';
 
+export const ENABLE_EDITING_SCENARIOS = false;
+
 export const DEFAULT_SCENARIO_NAME : ScenarioName = '';
 
 /*
