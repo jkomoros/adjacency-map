@@ -6,6 +6,8 @@ export const UPDATE_HOVERED_NODE_ID = 'UPDATE_HOVERED_NODE_ID';
 export const UPDATE_SELECTED_NODE_ID = 'UPDATE_SELECTED_NODE_ID';
 export const UPDATE_SHOW_HIDDEN_VALUES = 'UPDATE_SHOW_HIDDEN_VALUES';
 
+export const BEGIN_EDITING_SCENARIO = 'BEGIN_EDITING_SCENARIO';
+
 export const DEFAULT_FILE_NAME = 'default';
 //Also in tools/config.ts
 export const DATA_DIRECTORY = 'data';
@@ -20,7 +22,8 @@ import {
 	selectSelectedNodeID,
 	selectLegalScenarioNames,
 	selectScale,
-	selectScenarioName
+	selectScenarioName,
+	selectCurrentScenarioOverlay
 } from '../selectors.js';
 
 import {
@@ -124,4 +127,14 @@ export const updateWithMainPageExtra : AppActionCreator = (pageExtra) => (dispat
 
 	//Each of these will return if a no op
 	dispatch(updateFilename(filename, true));
+};
+
+export const beginEditingScenario : AppActionCreator = (scenarioName? : ScenarioName) => (dispatch, getState) =>{
+	if (!scenarioName) scenarioName = selectScenarioName(getState()) + '-customized';
+	const scenarioOverlay = selectCurrentScenarioOverlay(getState());
+	if (scenarioOverlay[scenarioName]) throw new Error('Scenario name already exists');
+	dispatch({
+		type: BEGIN_EDITING_SCENARIO,
+		scenarioName
+	});
 };

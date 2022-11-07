@@ -42,7 +42,7 @@ const selectRawData = createSelector(
 	(filename) => DATA[filename]
 );
 
-const selectCurrentScenarioOverlay = createSelector(
+export const selectCurrentScenarioOverlay = createSelector(
 	selectFilename,
 	selectScenariosOverlays,
 	(filename, overlays) => overlays[filename] || {}

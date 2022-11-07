@@ -9,7 +9,8 @@ import {
 	UPDATE_SCENARIO_NAME,
 	UPDATE_HOVERED_NODE_ID,
 	UPDATE_SELECTED_NODE_ID,
-	UPDATE_SHOW_HIDDEN_VALUES
+	UPDATE_SHOW_HIDDEN_VALUES,
+	BEGIN_EDITING_SCENARIO
 } from "../actions/data.js";
 
 import {
@@ -57,6 +58,18 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			showHiddenValues: action.showHiddenValues
+		};
+	case BEGIN_EDITING_SCENARIO:
+		return {
+			...state,
+			scenarioName: action.scenarioName,
+			scenariosOverlays: {
+				...state.scenariosOverlays,
+				[state.filename]: {
+					...(state.scenariosOverlays[state.filename] || {}),
+					[action.scenarioName]: {}
+				}
+			}
 		};
 	default:
 		return state;
