@@ -36,6 +36,7 @@ import {
 	selectSelectedNodeID,
 	selectShowHiddenValues,
 	selectAdjacencyMapError,
+	selectCurrentScenarioEditable,
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -98,6 +99,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_scale : number;
+
+	@state()
+	_scenarioEditable : boolean;
 
 	@state()
 	_legalFilenames : DataFilename[];
@@ -301,6 +305,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._summaryValues = selectSummaryValues(state);
 		this._showHiddenValues = selectShowHiddenValues(state);
 		this._dataError = selectAdjacencyMapError(state);
+		this._scenarioEditable = selectCurrentScenarioEditable(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {

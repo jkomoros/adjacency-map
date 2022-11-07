@@ -94,6 +94,12 @@ export const selectLegalScenarioNames = createSelector(
 	(map) => map ? ['', ...Object.keys(map.data.scenarios || {})] : ['']
 );
 
+export const selectCurrentScenarioEditable = createSelector(
+	selectScenarioName,
+	selectCurrentScenarioOverlay,
+	(scenarioName, overlay) => overlay[scenarioName] ? true : false
+);
+
 export const selectHashForCurrentState = createSelector(
 	selectScenarioName,
 	(scenarioName) => {
