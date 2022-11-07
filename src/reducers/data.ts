@@ -21,7 +21,8 @@ const INITIAL_STATE : DataState = {
 	scale: 1.0,
 	scenarioName: '',
 	hoveredNodeID: undefined,
-	showHiddenValues: false
+	showHiddenValues: false,
+	scenariosOverlays: {}
 };
 
 const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState => {

@@ -712,6 +712,9 @@ export type DataState = {
 	hoveredNodeID? : NodeID;
 	selectedNodeID? : NodeID;
 	showHiddenValues: boolean;
+	scenariosOverlays: {
+		[filename in DataFilename]?: ScenariosDefinition;
+	}
 }
 
 export type RootState = {

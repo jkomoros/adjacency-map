@@ -31,14 +31,27 @@ export const selectScenarioName = (state : RootState) => state.data ? state.data
 export const selectHoveredNodeID = (state : RootState) => state.data ? state.data.hoveredNodeID : undefined;
 export const selectSelectedNodeID = (state : RootState) => state.data ? state.data.selectedNodeID : undefined;
 export const selectShowHiddenValues = (state : RootState) => state.data ? state.data.showHiddenValues : false;
+const selectScenariosOverlays = (state : RootState) => state.data ? state.data.scenariosOverlays : {};
 
 //This doesn't actually need state, but in other ways its like a selector so kind of pretend like it is
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const selectLegalFilenames = (_state : RootState) => Object.keys(DATA) as DataFilename[];
 
-export const selectData = createSelector(
+const selectRawData = createSelector(
 	selectFilename,
 	(filename) => DATA[filename]
+);
+
+const selectCurrentScenarioOverlay = createSelector(
+	selectFilename,
+	selectScenariosOverlays,
+	(filename, overlays) => overlays[filename] || {}
+);
+
+export const selectData = createSelector(
+	selectRawData,
+	selectCurrentScenarioOverlay,
+	(rawData, overlay) => ({...rawData, scenarios: {...rawData.scenarios, ...overlay}})
 );
 
 //The node that should be used for the summary readout
