@@ -566,7 +566,9 @@ export const validateValueDefinition = (definition : ValueDefinition, args: Valu
 
 	if (valueDefinitionIsTagConstant(definition)) {
 		const tagNames = Object.keys(args.data.tags);
-		if (tagNames.length == 0) throw new Error('No tags defined');
+		//If there are no tags defined, then that's OK, we'll just return null.
+		//This happens e.g. if you include the 'product' library and don't have any tags.
+		if (tagNames.length == 0) return;
 		//All tags must have the same constant sets
 		const firstTagValues = args.data.tags[tagNames[0]];
 		if (firstTagValues.constants[definition.tagConstant] === undefined) throw new Error('Invalid tagConstant: ' + definition.tagConstant);
