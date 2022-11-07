@@ -166,6 +166,20 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('allows product library use', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.import = 'product';
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('allows base input with node with no edges', async () => {
 		const input = deepCopy(legalBaseInput);
 		delete input.nodes.a.edges;
