@@ -239,7 +239,7 @@ class MainView extends connect(store)(PageViewElement) {
 				${this._legalScenarioNames.length > 1 ? html`
 				<label for='scenarios'>Scenario</label>
 				<select id='scenarios' .value=${this._scenarioName} @change=${this._handleScenarioNameChanged}>
-					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName}>${scenarioName || 'Default'}</option>`)}
+					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName} .selected=${scenarioName == this._scenarioName}>${scenarioName || 'Default'}</option>`)}
 				</select>` : ''}
 				${ENABLE_EDITING_SCENARIOS ? html`<button class='small' title='Create a new scenario based on the current scenario' @click=${this._handleCreateScenarioClicked}>${PLUS_ICON}</button>` : ''}
 				<div class='summary'>
