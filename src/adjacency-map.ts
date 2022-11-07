@@ -412,6 +412,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 };
 
 const validateDisplay = (data : Partial<NodeDisplay> | Partial<EdgeDisplay> | Partial<EdgeCombinerDisplay>, args : ValudeDefinitionValidationArgs) : void => {
+	args = {...args, skipDependencies: true};
 	for (const [displayName, displayValue] of Object.entries(data)) {
 		if (typeof displayValue == 'string') {
 			if (valueDefinitionIsStringType(displayValue)) {

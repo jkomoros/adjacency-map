@@ -312,7 +312,8 @@ export type ValudeDefinitionValidationArgs = {
 	data : MapDefinition, 
 	allowedVariables: AllowedValueDefinitionVariableTypes, 
 	propertyDefinition? : PropertyDefinition,
-	variables? : {[name : VariableName]: true}
+	variables? : {[name : VariableName]: true},
+	skipDependencies? : boolean
 };
 
 export type LayoutInfo = {
