@@ -699,7 +699,7 @@ export type URLHashArgs = {
 };
 
 export type ScenariosOverlays = {
-	[filename in DataFilename]?: ScenariosDefinition;
+	[filename in DataFilename]?: RawScenariosDefinition;
 };
 
 export type AppState = {

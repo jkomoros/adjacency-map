@@ -15,6 +15,9 @@ import {
 
 import {
 	DataState,
+	DataFilename,
+	ScenarioName,
+	ScenariosOverlays,
 } from "../types.js";
 
 const INITIAL_STATE : DataState = {
@@ -24,6 +27,20 @@ const INITIAL_STATE : DataState = {
 	hoveredNodeID: undefined,
 	showHiddenValues: false,
 	scenariosOverlays: {}
+};
+
+const addScenarioToScenariosOverlay = (filename: DataFilename, currentScenarioName : ScenarioName, newScenarioName: ScenarioName, currentOverlay : ScenariosOverlays) : ScenariosOverlays => {
+	return {
+		...currentOverlay,
+		[filename]: {
+			...(currentOverlay[filename] || {}),
+			[newScenarioName]: {
+				extends: currentScenarioName,
+				description: 'A custom scenario based on ' + currentScenarioName,
+				nodes: {}
+			}
+		}
+	};
 };
 
 const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState => {
@@ -63,16 +80,7 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			scenarioName: action.scenarioName,
-			scenariosOverlays: {
-				...state.scenariosOverlays,
-				[state.filename]: {
-					...(state.scenariosOverlays[state.filename] || {}),
-					[action.scenarioName]: {
-						description: 'Custom scenario based on ' + state.filename,
-						nodes: {}
-					}
-				}
-			}
+			scenariosOverlays: addScenarioToScenariosOverlay(state.filename, state.scenarioName, action.scenarioName, state.scenariosOverlays)
 		};
 	default:
 		return state;
