@@ -67,7 +67,10 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 				...state.scenariosOverlays,
 				[state.filename]: {
 					...(state.scenariosOverlays[state.filename] || {}),
-					[action.scenarioName]: {}
+					[action.scenarioName]: {
+						description: 'Custom scenario based on ' + state.filename,
+						nodes: {}
+					}
 				}
 			}
 		};
