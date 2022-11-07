@@ -30,9 +30,7 @@ export const BASE_EDGE_DISPLAY : EdgeDisplay = {
 	color: {
 		color: '#555'
 	},
-	opacity: {
-		result: 'certainty'
-	},
+	opacity: 0.4,
 	distinct: false
 };
 
@@ -62,6 +60,9 @@ const baseProductPropertyDefinition = {
 		color: 'red',
 		width: {
 			constant: 'cost'
+		},
+		opacity: {
+			result: 'certainty'
 		},
 		distinct: true
 	},
