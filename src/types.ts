@@ -699,7 +699,10 @@ export type URLHashArgs = {
 };
 
 export type ScenariosOverlays = {
-	[filename in DataFilename]?: RawScenariosDefinition;
+	[filename in DataFilename]?: {
+		//We don'tj just use RawScenarioDefinition because we don't want to allow arrays of scenarios.
+		[scenarioName : ScenarioName] : RawScenario
+	};
 };
 
 export type AppState = {
