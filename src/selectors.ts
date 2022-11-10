@@ -103,7 +103,7 @@ export const selectCurrentScenarioEditable = createSelector(
 export const selectSelectedNodeFieldsEdited = createSelector(
 	selectCurrentScenarioOverlay,
 	selectScenarioName,
-	selectSummaryNodeID,
+	selectSelectedNodeID,
 	(overlay, scenarioName, nodeID) => {
 		const scenario = overlay[scenarioName];
 		//This will happen if hte current scenario isn't editable

@@ -7,6 +7,9 @@ export const UPDATE_SELECTED_NODE_ID = 'UPDATE_SELECTED_NODE_ID';
 export const UPDATE_SHOW_HIDDEN_VALUES = 'UPDATE_SHOW_HIDDEN_VALUES';
 
 export const BEGIN_EDITING_SCENARIO = 'BEGIN_EDITING_SCENARIO';
+export const BEGIN_EDITING_NODE_VALUE = 'BEGIN_EDITING_NODE_VALUE';
+export const EDITING_UPDATE_NODE_VALUE = 'EDITING_UPDATE_NODE_VALUE';
+export const REMOVE_EDITING_NODE_VALUE = 'REMOVE_EDITING_NODE_VALUE';
 
 export const DEFAULT_FILE_NAME = 'default';
 //Also in tools/config.ts
@@ -23,7 +26,9 @@ import {
 	selectLegalScenarioNames,
 	selectScale,
 	selectScenarioName,
-	selectCurrentScenarioOverlay
+	selectCurrentScenarioOverlay,
+	selectCurrentScenarioEditable,
+	selectSelectedNodeFieldsEdited
 } from '../selectors.js';
 
 import {
@@ -33,6 +38,7 @@ import {
 import {
 	DataFilename,
 	NodeID,
+	PropertyName,
 	ScenarioName
 } from '../types.js';
 
@@ -136,5 +142,44 @@ export const beginEditingScenario : AppActionCreator = (scenarioName? : Scenario
 	dispatch({
 		type: BEGIN_EDITING_SCENARIO,
 		scenarioName
+	});
+};
+
+export const beginEditingNodeValue : AppActionCreator = (propertyName : PropertyName) => (dispatch, getState) => {
+	const state = getState();
+	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
+	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
+	const editableFields = selectSelectedNodeFieldsEdited(state);
+	//That field is already editable
+	if (editableFields[propertyName]) return;
+	dispatch({
+		type: BEGIN_EDITING_NODE_VALUE,
+		propertyName
+	});
+};
+
+export const editingUpdateNodeValue : AppActionCreator = (propertyName : PropertyName, value : number | string) => (dispatch, getState) => {
+	const state = getState();
+	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
+	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
+	const editableFields = selectSelectedNodeFieldsEdited(state);
+	if (!editableFields[propertyName]) dispatch(beginEditingNodeValue(propertyName));
+	if (typeof value == 'string') value = parseFloat(value);
+	dispatch({
+		type: EDITING_UPDATE_NODE_VALUE,
+		propertyName,
+		value
+	});
+};
+
+export const removeEditingNodeValue : AppActionCreator = (propertyName : PropertyName) => (dispatch, getState) => {
+	const state = getState();
+	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
+	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
+	const editableFields = selectSelectedNodeFieldsEdited(state);
+	if (!editableFields[propertyName]) return;
+	dispatch({
+		type: REMOVE_EDITING_NODE_VALUE,
+		propertyName
 	});
 };

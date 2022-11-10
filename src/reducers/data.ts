@@ -10,7 +10,10 @@ import {
 	UPDATE_HOVERED_NODE_ID,
 	UPDATE_SELECTED_NODE_ID,
 	UPDATE_SHOW_HIDDEN_VALUES,
-	BEGIN_EDITING_SCENARIO
+	BEGIN_EDITING_SCENARIO,
+	BEGIN_EDITING_NODE_VALUE,
+	EDITING_UPDATE_NODE_VALUE,
+	REMOVE_EDITING_NODE_VALUE
 } from "../actions/data.js";
 
 import {
@@ -18,7 +21,13 @@ import {
 	DataFilename,
 	ScenarioName,
 	ScenariosOverlays,
+	NodeID,
+	PropertyName
 } from "../types.js";
+
+import {
+	deepCopy
+} from "../util.js";
 
 const INITIAL_STATE : DataState = {
 	filename: DEFAULT_FILE_NAME,
@@ -41,6 +50,48 @@ const addScenarioToScenariosOverlay = (filename: DataFilename, currentScenarioNa
 			}
 		}
 	};
+};
+
+const beginEditingNodeValueInOverlay = (filename: DataFilename, scenarioName: ScenarioName, currentOverlay: ScenariosOverlays, nodeID : NodeID, propertyName : PropertyName) : ScenariosOverlays => {
+	const result = deepCopy(currentOverlay);
+	const filenameOverlay = result[filename];
+	if (filenameOverlay == undefined) throw new Error('filename overlay unexpectededly not set');
+	const scenarioOverlay = filenameOverlay[scenarioName];
+	if (scenarioOverlay == undefined) throw new Error('scenarioOverlay unexpectedly not set');
+	const nodes = scenarioOverlay.nodes;
+	if (!nodes[nodeID]) nodes[nodeID] = {};
+	const node = nodes[nodeID];
+	//TODO: set this to the value the node currently calculates to.
+	node[propertyName] = 0;
+	return result;
+};
+
+const editingUpdateNodeValueInOverlay = (filename: DataFilename, scenarioName: ScenarioName, currentOverlay: ScenariosOverlays, nodeID : NodeID, propertyName : PropertyName, value: number) : ScenariosOverlays => {
+	const result = deepCopy(currentOverlay);
+	const filenameOverlay = result[filename];
+	if (filenameOverlay == undefined) throw new Error('filename overlay unexpectededly not set');
+	const scenarioOverlay = filenameOverlay[scenarioName];
+	if (scenarioOverlay == undefined) throw new Error('scenarioOverlay unexpectedly not set');
+	const nodes = scenarioOverlay.nodes;
+	if (!nodes[nodeID]) throw new Error('unexpectedly nodes was not set');
+	const node = nodes[nodeID];
+	node[propertyName] = value;
+	return result;
+};
+
+const removeEditingNodeValueInOverlay = (filename: DataFilename, scenarioName: ScenarioName, currentOverlay: ScenariosOverlays, nodeID : NodeID, propertyName : PropertyName) : ScenariosOverlays => {
+	const result = deepCopy(currentOverlay);
+	const filenameOverlay = result[filename];
+	if (filenameOverlay == undefined) throw new Error('filename overlay unexpectededly not set');
+	const scenarioOverlay = filenameOverlay[scenarioName];
+	if (scenarioOverlay == undefined) throw new Error('scenarioOverlay unexpectedly not set');
+	const nodes = scenarioOverlay.nodes;
+	if (!nodes[nodeID]) throw new Error('nodes unexpectedly not set');
+	const node = nodes[nodeID];
+	delete node[propertyName];
+	//If that was the last property then remove the item
+	if (Object.keys(node).length == 0) delete node[nodeID];
+	return result;
 };
 
 const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState => {
@@ -81,6 +132,21 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 			...state,
 			scenarioName: action.scenarioName,
 			scenariosOverlays: addScenarioToScenariosOverlay(state.filename, state.scenarioName, action.scenarioName, state.scenariosOverlays)
+		};
+	case BEGIN_EDITING_NODE_VALUE:
+		return {
+			...state,
+			scenariosOverlays: beginEditingNodeValueInOverlay(state.filename, state.scenarioName, state.scenariosOverlays, state.selectedNodeID as NodeID, action.propertyName)
+		};
+	case EDITING_UPDATE_NODE_VALUE:
+		return {
+			...state,
+			scenariosOverlays: editingUpdateNodeValueInOverlay(state.filename, state.scenarioName, state.scenariosOverlays, state.selectedNodeID as NodeID, action.propertyName, action.value)
+		};
+	case REMOVE_EDITING_NODE_VALUE:
+		return {
+			...state,
+			scenariosOverlays: removeEditingNodeValueInOverlay(state.filename, state.scenarioName, state.scenariosOverlays, state.selectedNodeID as NodeID, action.propertyName)
 		};
 	default:
 		return state;
