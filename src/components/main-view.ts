@@ -265,7 +265,7 @@ class MainView extends connect(store)(PageViewElement) {
 		: html``}
 					<div>
 						<label>Values <button class='small' title='Show hidden values'>${this._showHiddenValues ? VISIBILITY_ICON : VISIBILITY_OFF_ICON}</button><input type='checkbox' .checked=${this._showHiddenValues} @change=${this._handleShowHiddenValuesClicked}></input></label>
-						${Object.entries(this._summaryValues).filter(entry => this._showHiddenValues || !this._adjacencyMap?.data.properties[entry[0]].hide).map(entry => html`<div><strong title='${this._adjacencyMap?.data.properties[entry[0]].description || ''}' class='${this._adjacencyMap?.data.properties[entry[0]].hide || false ? 'hidden' : ''}'>${entry[0]}</strong>: ${parseFloat(entry[1].toFixed(2))}</div>`)}
+						${Object.entries(this._summaryValues).filter(entry => this._showHiddenValues || !this._adjacencyMap?.data.properties[entry[0]].hide).map(entry => this._htmlForValue(entry[0], entry[1]))}
 					</div>
 					${Object.keys(this._summaryTags).length && this._adjacencyMap ? 
 		html`<label>Tags</label>
@@ -277,6 +277,12 @@ class MainView extends connect(store)(PageViewElement) {
 				${this._svg()}
 			</div>
 		`;
+	}
+
+	_htmlForValue(propertyName : PropertyName, value : number) : TemplateResult {
+		if (!this._adjacencyMap) return html``;
+		const property = this._adjacencyMap.data.properties[propertyName];
+		return html`<div><strong title='${property.description || ''}' class='${property.hide || false ? 'hidden' : ''}'>${propertyName}</strong>: ${parseFloat(value.toFixed(2))}</div>`;
 	}
 
 	_htmlForTag(tagName : TagID, tagMap : TagMap) : TemplateResult {
