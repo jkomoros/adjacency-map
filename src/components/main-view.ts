@@ -87,6 +87,7 @@ import {
 import {
 	VISIBILITY_ICON,
 	VISIBILITY_OFF_ICON,
+	EDIT_ICON,
 	PLUS_ICON,
 	CANCEL_ICON
 } from './my-icons.js';
@@ -287,7 +288,7 @@ class MainView extends connect(store)(PageViewElement) {
 		if (!this._adjacencyMap) return html``;
 		const property = this._adjacencyMap.data.properties[propertyName];
 
-		let inner = html`${parseFloat(value.toFixed(2))}${this._scenarioEditable && this._selectedNodeID != undefined ? html`<button class='small' @click=${this._handleEditNodePropertyClicked} title='Edit this property' data-property-name=${propertyName}>${PLUS_ICON}</button>` : ''}`;
+		let inner = html`${parseFloat(value.toFixed(2))}${this._scenarioEditable && this._selectedNodeID != undefined ? html`<button class='small' @click=${this._handleEditNodePropertyClicked} title='Edit this property' data-property-name=${propertyName}>${EDIT_ICON}</button>` : ''}`;
 		if (this._summaryNodeEditableFields[propertyName]) {
 			inner = html`<input type='number' .value=${String(value)} @change=${this._handleUpdateNodeProperty} data-property-name=${propertyName}></input><button class='small' title='Unset this property' @click=${this._handleRemoveNodePropertyClicked} data-property-name=${propertyName}>${CANCEL_ICON}</button>`;
 		}
