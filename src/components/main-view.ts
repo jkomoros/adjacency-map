@@ -8,9 +8,12 @@ import { connect } from "pwa-helpers/connect-mixin.js";
 import { store } from "../store.js";
 
 import {
+	beginEditingNodeValue,
 	beginEditingScenario,
+	editingUpdateNodeValue,
 	nextScenarioName,
 	previousScenarioName,
+	removeEditingNodeValue,
 	updateFilename,
 	updateHoveredNodeID,
 	updateScale,
@@ -84,7 +87,8 @@ import {
 import {
 	VISIBILITY_ICON,
 	VISIBILITY_OFF_ICON,
-	PLUS_ICON
+	PLUS_ICON,
+	CANCEL_ICON
 } from './my-icons.js';
 
 @customElement('main-view')
@@ -282,7 +286,12 @@ class MainView extends connect(store)(PageViewElement) {
 	_htmlForValue(propertyName : PropertyName, value : number) : TemplateResult {
 		if (!this._adjacencyMap) return html``;
 		const property = this._adjacencyMap.data.properties[propertyName];
-		return html`<div><strong title='${property.description || ''}' class='${property.hide || false ? 'hidden' : ''}'>${propertyName}</strong>: ${parseFloat(value.toFixed(2))}</div>`;
+
+		let inner = html`${parseFloat(value.toFixed(2))}${this._scenarioEditable && this._selectedNodeID != undefined ? html`<button class='small' @click=${this._handleEditNodePropertyClicked} title='Edit this property' data-property-name=${propertyName}>${PLUS_ICON}</button>` : ''}`;
+		if (this._summaryNodeEditableFields[propertyName]) {
+			inner = html`<input type='number' .value=${String(value)} @change=${this._handleUpdateNodeProperty} data-property-name=${propertyName}></input><button class='small' title='Unset this property' @click=${this._handleRemoveNodePropertyClicked} data-property-name=${propertyName}>${CANCEL_ICON}</button>`;
+		}
+		return html`<div><strong title='${property.description || ''}' class='${property.hide || false ? 'hidden' : ''}'>${propertyName}</strong>: ${inner}</div>`;
 	}
 
 	_htmlForTag(tagName : TagID, tagMap : TagMap) : TemplateResult {
@@ -360,6 +369,43 @@ class MainView extends connect(store)(PageViewElement) {
 		} else if (e.key == 'ArrowLeft') {
 			store.dispatch(previousScenarioName());
 		}
+	}
+
+	_handleEditNodePropertyClicked(e : MouseEvent) {
+		let buttonEle : HTMLButtonElement | null = null;
+		for (const ele of e.composedPath()) {
+			if (!(ele instanceof HTMLButtonElement)) continue;
+			buttonEle = ele;
+		}
+		if (!buttonEle) throw new Error('Couldnt find button ele as expected');
+		const propertyName = buttonEle.dataset.propertyName;
+		if (!propertyName) throw new Error('propertyName unexpectedly missing');
+		store.dispatch(beginEditingNodeValue(propertyName));
+	}
+
+	_handleRemoveNodePropertyClicked(e :MouseEvent) {
+		let buttonEle : HTMLButtonElement | null = null;
+		for (const ele of e.composedPath()) {
+			if (!(ele instanceof HTMLButtonElement)) continue;
+			buttonEle = ele;
+		}
+		if (!buttonEle) throw new Error('Couldnt find button ele as expected');
+		const propertyName = buttonEle.dataset.propertyName;
+		if (!propertyName) throw new Error('propertyName unexpectedly missing');
+		store.dispatch(removeEditingNodeValue(propertyName));
+	}
+
+	_handleUpdateNodeProperty(e: Event) {
+		let inputEle : HTMLInputElement | null = null;
+		for (const ele of e.composedPath()) {
+			if (!(ele instanceof HTMLInputElement)) continue;
+			inputEle = ele;
+		}
+		if (!inputEle) throw new Error('Couldnt find input ele as expected');
+		const propertyName = inputEle.dataset.propertyName;
+		if (!propertyName) throw new Error('propertyName unexpectedly missing');
+		const value = parseFloat(inputEle.value);
+		store.dispatch(editingUpdateNodeValue(propertyName, value));
 	}
 
 	_handleShowHiddenValuesClicked() {
