@@ -633,7 +633,10 @@ export type RawScenario = {
 	//Scenarios may override root nodes by using id of ROOT_ID.
 	nodes: {
 		[id : NodeID] : {
-			values?: NodeValuesOverride
+			values?: NodeValuesOverride,
+			edges?: {
+				add?: RawEdgeInput
+			}
 		}
 	}
 }
@@ -641,6 +644,9 @@ export type RawScenario = {
 export type ScenarioNode = {
 	values: {
 		[propertyName : PropertyName]: ValueDefinition
+	}
+	edges: {
+		add: EdgeValue[]
 	}
 }
 

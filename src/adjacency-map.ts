@@ -361,16 +361,22 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		if (!scenarioToExtend) throw new Error('Scenario ' + scenarioName + ' extends a non-existent scenario ' + rawScenario.extends);
 
 		//Create a full overlay
-		const nodes : {[id : NodeID]: {values: {[property : PropertyName] : ValueDefinition}}} = {};
+		const nodes : {[id : NodeID]: ScenarioNode} = {};
 		for (const [id, baseNode] of Object.entries(scenarioToExtend.nodes)) {
 			nodes[id] = {
-				values: {...(baseNode.values || {})}
+				values: {...(baseNode.values || {})},
+				edges: {
+					add: extractEdgesFromRawEdgeInput(baseNode.edges?.add)
+				}
 			};
 		}
 		for (const [id, node] of Object.entries(rawScenario.nodes)) {
-			const existingNode = nodes[id] || emptyScenarioNode();
+			const existingNode : ScenarioNode = nodes[id] || emptyScenarioNode();
 			nodes[id] = {
 				values: {...existingNode.values, ...(node.values || {})},
+				edges: {
+					add: [...existingNode.edges.add, ...extractEdgesFromRawEdgeInput(node?.edges?.add)]
+				}
 			};
 		}
 
@@ -538,6 +544,9 @@ const validateData = (data : MapDefinition) : void => {
 		for (const [nodeName, nodeDefinition] of Object.entries(scenario.nodes)) {
 			if (nodeName != ROOT_ID && !data.nodes[nodeName]) throw new Error('All node ids in a scenario must be either ROOT_ID or included in nodes');
 			validateNodeValues(data, nodeDefinition.values);
+			for (const edgesValues of Object.values(nodeDefinition.edges)) {
+				validateEdges(data, nodeName, edgesValues);
+			}
 		}
 	}
 
@@ -801,8 +810,15 @@ const impliedPropertyNames = (config : ImpliesConfiguration | undefined, allName
 	return assertUnreachable(config);
 };
 
-const completeEdgeSet = (source: NodeID, data : MapDefinition, edges? : EdgeValue[]) : ExpandedEdgeValue[] => {
-	if (!edges) edges = [];
+const edgesWithScenarioModifications = (baseEdges : EdgeValue[], additions: EdgeValue[]) : EdgeValue[] => {
+	const result : EdgeValue[] = baseEdges ? [...baseEdges] : [];
+	for (const additionEdge of additions) {
+		result.push(additionEdge);
+	}
+	return result;
+};
+
+const completeEdgeSet = (source: NodeID, data : MapDefinition, edges : EdgeValue[]) : ExpandedEdgeValue[] => {
 	const edgesByRef : {[ref : NodeID]: ExpandedEdgeValue[]} = {};
 	for (const edge of edges) {
 		const parent = edge.parent || ROOT_ID;
@@ -1004,7 +1020,10 @@ class AdjacencyMapNode {
 
 	get edges() : ExpandedEdgeValue[] {
 		if (!this._cachedEdges) {
-			this._cachedEdges = completeEdgeSet(this.id, this._map.data, this?._data?.edges);
+			const scenarioNode = this._scenarioNode;
+			const baseEdges = this?._data?.edges || [];
+			const modifiedEdges = edgesWithScenarioModifications(baseEdges, scenarioNode.edges.add);
+			this._cachedEdges = completeEdgeSet(this.id, this._map.data, modifiedEdges);
 		}
 		return this._cachedEdges;
 	}

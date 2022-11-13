@@ -1063,10 +1063,12 @@ const data : RawMapDefinition = {
     scenarios: {
         scenario_name_1: {
             node_a: {
-                one: {
-                    operator: '+',
-                    a: 'input',
-                    b: 4.0
+                values: {
+                    one: {
+                        operator: '+',
+                        a: 'input',
+                        b: 4.0
+                    }
                 }
             }
         }
@@ -1079,6 +1081,26 @@ If the ValueDefinition evalutes to more than one number, only the first will be 
 
 Scenarios may extend other scenarios, effectively overlaying any of their properties, by defining the `extends` parameter. Scenarios may not extend another scenario that also depends on them (which would form a cycle);
 
+The value that you set each override node to can override values, or modify edges:
+```
+//In a context where a node value is accepted
+{
+    values: {
+        property_one: 3
+    },
+    edges: {
+        //Add more edges to this node. Note that you can also define edges to add in any
+        //of the ways you can define edges on a normal node (e.g. also a map).
+        add: [
+            {
+                parent: 'nodeA'
+                type: 'property_one'
+            }
+        ]
+    }
+}
+```
+
 Finally, sometimes you have a sequence of scenarios, all of which should extend the one previous to them, animating in new states. If you provide an array of scenarios, then they will be expanded into a set:
 
 ```
@@ -1088,9 +1110,7 @@ const data : RawMapDefinition = {
         //Normal scenarios and arrays may be intermixed
         scenario_name_a: {
             node_a:{
-                values: {
-                    //...
-                }
+                //...
             }
         }
         scenario_name_b: [
@@ -1099,18 +1119,14 @@ const data : RawMapDefinition = {
                 //The first one in a sequence may extend a different sceario
                 extends: 'scenario_name_a'
                 node_a: {
-                    values: {
-                        //...
-                    }
+                    //...
                 }
             },
             //The name of this scenario will be `scenario_name_b_1`
             {
                 //The `extends` will automatically be `scenario_nambe_b_0`. If one were provided explicitly here it would be overriden.
                 node_b: {
-                    values: {
-                        //...
-                    }
+                    //...
                 }
             }
         ]

@@ -5545,6 +5545,9 @@ describe('scenarios', () => {
 						values: {
 							engineering: 2.0,
 							ux: 10.0,
+						},
+						edges: {
+							add: []
 						}
 					}
 				}
@@ -5556,6 +5559,9 @@ describe('scenarios', () => {
 						values: {
 							engineering: 1.0,
 							ux: 5.0
+						},
+						edges: {
+							add: []
 						}
 					}
 				}
@@ -5566,6 +5572,9 @@ describe('scenarios', () => {
 					a: {
 						values: {
 							engineering: 3.0
+						},
+						edges: {
+							add: []
 						}
 					}
 				}
@@ -5919,6 +5928,151 @@ describe('scenarios', () => {
 			data: 0,
 			ux: 2,
 			engineering: 10,
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates edges in a scenario with indirect extension', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			one: {
+				nodes: {
+					a: {
+						values: {
+							engineering: 10
+						}
+					},
+					b: {
+						values: {
+							engineering: 3
+						},
+						edges: {
+							add: [
+								{
+									ref: 'a',
+									type: 'data'
+								}
+							]
+						}
+					}
+				}
+			},
+			two: {
+				extends: 'one',
+				nodes: {
+					b: {
+						values: {
+							ux: 5
+						},
+						edges: {
+							add: [
+								{
+									ref: 'a',
+									type: 'ux'
+								}
+							]
+						}
+					}
+				}
+			},
+			three: {
+				extends: 'two',
+				nodes: {
+					a: {
+						values: {
+							ux: 2
+						}
+					}
+				}
+			}
+		};
+		const map = new AdjacencyMap(input, 'three');
+		const node = map.node('b');
+		const actual = node.edges;
+		const golden = [
+			{
+				implied: 0,
+				parent: 'a',
+				source: 'b',
+				type: 'ux'
+			},
+			{
+				implied: 0,
+				parent: '',
+				source: 'b',
+				type: 'data'
+			},
+			{
+				implied: 0,
+				parent: '',
+				source: 'b',
+				type: 'ux'
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('Correctly calculates a scenario with indirect extension', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			one: {
+				nodes: {
+					a: {
+						values: {
+							engineering: 10
+						}
+					},
+					b: {
+						values: {
+							engineering: 3
+						},
+						edges: {
+							add: [
+								{
+									parent: 'a',
+									type: 'data'
+								}
+							]
+						}
+					}
+				}
+			},
+			two: {
+				extends: 'one',
+				nodes: {
+					b: {
+						values: {
+							ux: 5
+						},
+						edges: {
+							add: [
+								{
+									parent: 'a',
+									type: 'ux'
+								}
+							]
+						}
+					}
+				}
+			},
+			three: {
+				extends: 'two',
+				nodes: {
+					a: {
+						values: {
+							ux: 2
+						}
+					}
+				}
+			}
+		};
+		const map = new AdjacencyMap(input, 'three');
+		const node = map.node('b');
+		const actual = node.values;
+		const golden = {
+			data: 2,
+			engineering: 3,
+			ux: 5
 		};
 		assert.deepStrictEqual(actual, golden);
 	});
