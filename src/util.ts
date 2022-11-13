@@ -1,7 +1,15 @@
 import { ENABLE_EDITING_SCENARIOS } from './constants.js';
 import {
-	RandomGenerator, ScenariosOverlays
+	RandomGenerator,
+	ScenariosOverlays,
+	ScenarioNode
 } from './types.js';
+
+export const emptyScenarioNode = () : ScenarioNode => {
+	return {
+		values: {}
+	};
+};
 
 export const camelCaseFilename = (name : string) : string => {
 	return name.split('-').map((piece, index) => index == 0 ? piece : piece[0].toUpperCase() + piece.slice(1)).join('');

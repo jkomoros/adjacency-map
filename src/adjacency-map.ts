@@ -89,9 +89,11 @@ import {
 
 import {
 	assertUnreachable,
+	emptyScenarioNode,
 	idToDisplayName,
 	wrapArrays
 } from './util.js';
+
 import { TypedObject } from './typed-object.js';
 
 const BASE_ALLOWED_VARIABLE_TYPES : AllowedValueDefinitionVariableTypes = {
@@ -364,7 +366,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 			};
 		}
 		for (const [id, node] of Object.entries(rawScenario.nodes)) {
-			const existingNode = nodes[id] || {};
+			const existingNode = nodes[id] || emptyScenarioNode();
 			nodes[id] = {
 				values: {...existingNode.values, ...(node.values || {})},
 			};

@@ -30,7 +30,8 @@ import {
 } from "../types.js";
 
 import {
-	deepCopy
+	deepCopy,
+	emptyScenarioNode
 } from "../util.js";
 
 const INITIAL_STATE : DataState = {
@@ -73,7 +74,7 @@ const beginEditingNodeValueInOverlay = (filename: DataFilename, scenarioName: Sc
 	const scenarioOverlay = filenameOverlay[scenarioName];
 	if (scenarioOverlay == undefined) throw new Error('scenarioOverlay unexpectedly not set');
 	const nodes = scenarioOverlay.nodes;
-	if (!nodes[nodeID]) nodes[nodeID] = {values: {}};
+	if (!nodes[nodeID]) nodes[nodeID] = emptyScenarioNode();
 	const node = nodes[nodeID];
 	const values = node.values;
 	values[propertyName] = value;
