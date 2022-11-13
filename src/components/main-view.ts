@@ -258,7 +258,7 @@ class MainView extends connect(store)(PageViewElement) {
 				${ENABLE_EDITING_SCENARIOS ? html`<button class='small' title='Create a new scenario based on the current scenario' @click=${this._handleCreateScenarioClicked}>${PLUS_ICON}</button>` : ''}
 				<div class='summary'>
 					<div>
-						<label>Node</label> <strong>${this._summaryNodeDisplayName === undefined ? html`<em>Union of all nodes</em>` : (this._summaryNodeDisplayName || html`<em>Root</em>`)}</strong>
+						<label>Node</label> <strong>${this._summaryNodeDisplayName === undefined ? html`<em>Union of all nodes</em>${this._scenarioEditable ? html`<br/>Select a node to edit it</strong>` : ''}` : (this._summaryNodeDisplayName || html`<em>Root</em>`)}</strong>
 					</div>
 					<div>
 						<label>Description</label> ${this._summaryDescription}
