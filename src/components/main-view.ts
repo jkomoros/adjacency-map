@@ -11,6 +11,7 @@ import {
 	beginEditingNodeValue,
 	beginEditingScenario,
 	editingUpdateNodeValue,
+	loadScenariosOverlays,
 	nextScenarioName,
 	previousScenarioName,
 	removeEditingNodeValue,
@@ -96,6 +97,7 @@ import {
 	PLUS_ICON,
 	CANCEL_ICON
 } from './my-icons.js';
+import { fetchOverlaysFromStorage, storeOverlaysToStorage } from '../util.js';
 
 @customElement('main-view')
 class MainView extends connect(store)(PageViewElement) {
@@ -360,6 +362,9 @@ class MainView extends connect(store)(PageViewElement) {
 			alert(this._dataError);
 			console.warn(this._dataError);
 		}
+		if (changedProps.has('_scenariosOverlays')) {
+			storeOverlaysToStorage(this._scenariosOverlays);
+		}
 	}
 
 	override firstUpdated() {
@@ -369,6 +374,9 @@ class MainView extends connect(store)(PageViewElement) {
 		store.dispatch(canonicalizePath());
 		window.addEventListener('hashchange', () => this._handleHashChange());
 		this._handleHashChange();
+
+		//Fetch overlays from localStorage;
+		store.dispatch(loadScenariosOverlays(fetchOverlaysFromStorage()));
 	}
 
 	_handleKeyDown(e : KeyboardEvent) {
