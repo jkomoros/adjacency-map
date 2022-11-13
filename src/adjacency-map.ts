@@ -35,7 +35,8 @@ import {
 	ScenariosDefinitionUnextended,
 	RenderEdgeSubEdge,
 	RawEdgeInput,
-	ScenarioNode
+	ScenarioNode,
+	NodeValuesOverride
 } from './types.js';
 
 import {
@@ -446,6 +447,15 @@ const validateEdges = (data : MapDefinition, nodeID: NodeID, edges?: EdgeValue[]
 	}
 };
 
+const validateNodeValues = (data : MapDefinition, values?: NodeValuesOverride) : void => {
+	if (!values) return;
+	if (typeof values != 'object') throw new Error('values if provided must be an object');
+	for (const [valueName, valueValue] of Object.entries(values)) {
+		if (!data.properties[valueName]) throw new Error('values property ' + valueName + ' is not defined in properties');
+		validateValueDefinition(valueValue, {exampleValues: {}, data, allowedVariables: ALLOWED_VARIABLES_FOR_CONTEXT.nodeOverride});
+	}
+};
+
 const validateData = (data : MapDefinition) : void => {
 	if (!data) throw new Error('No data provided');
 	if (!data.nodes) throw new Error('No nodes provided');
@@ -457,13 +467,7 @@ const validateData = (data : MapDefinition) : void => {
 		if (!nodeData.description) throw new Error(nodeName + ' has no description');
 		validateEdges(data, nodeName, nodeData.edges);
 		validateDisplay(nodeData.display, {exampleValues, data, allowedVariables:ALLOWED_VARIABLES_FOR_CONTEXT.nodeDisplay});
-		if (nodeData.values) {
-			if (typeof nodeData.values != 'object') throw new Error('values if provided must be an object');
-			for (const [valueName, valueValue] of Object.entries(nodeData.values)) {
-				if (!data.properties[valueName]) throw new Error('values property ' + valueName + ' is not defined in properties');
-				validateValueDefinition(valueValue, {exampleValues: {}, data, allowedVariables: ALLOWED_VARIABLES_FOR_CONTEXT.nodeOverride});
-			}
-		}
+		validateNodeValues(data, nodeData.values);
 		for (const tagID of Object.keys(nodeData.tags)) {
 			if (!data.tags[tagID]) throw new Error(nodeName + ' defined an unknown tag: ' + tagID);
 		}
@@ -533,11 +537,7 @@ const validateData = (data : MapDefinition) : void => {
 		if (!scenario.nodes || typeof scenario.nodes != 'object') throw new Error('Scenario must have nodes');
 		for (const [nodeName, nodeDefinition] of Object.entries(scenario.nodes)) {
 			if (nodeName != ROOT_ID && !data.nodes[nodeName]) throw new Error('All node ids in a scenario must be either ROOT_ID or included in nodes');
-			const nodeValues = nodeDefinition.values || {};
-			for (const [propertyName, propertyValue] of Object.entries(nodeValues)) {
-				if (!data.properties[propertyName]) throw new Error('All properties in scenarios for a node must be named properties');
-				validateValueDefinition(propertyValue, {exampleValues: {}, data, allowedVariables: ALLOWED_VARIABLES_FOR_CONTEXT.nodeOverride});
-			}
+			validateNodeValues(data, nodeDefinition.values);
 		}
 	}
 
