@@ -43,6 +43,7 @@ import {
 	selectCurrentScenarioEditable,
 	selectSelectedNodeFieldsEdited,
 	selectScenariosOverlays,
+	selectCurrentScenarioEditedNodes
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -62,6 +63,7 @@ import {
 	DataFilename,
 	NodeID,
 	NodeValues,
+	NodeValuesOverride,
 	PropertyName,
 	RenderEdgeValue,
 	RootState,
@@ -118,6 +120,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_scenariosOverlays : ScenariosOverlays;
+
+	@state()
+	_editedNodes: {[id : NodeID]: NodeValuesOverride}
 
 	@state()
 	_legalFilenames : DataFilename[];
@@ -235,6 +240,11 @@ class MainView extends connect(store)(PageViewElement) {
 					stroke-width: 0.2em !important;
 				}
 
+				circle.edited {
+					stroke-width: 0.2em !important;
+					stroke-dasharray: 0.2em;
+				}
+
 				svg text {
 					user-select: none;
 					pointer-events: none;
@@ -335,6 +345,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._scenarioEditable = selectCurrentScenarioEditable(state);
 		this._summaryNodeEditableFields = selectSelectedNodeFieldsEdited(state);
 		this._scenariosOverlays = selectScenariosOverlays(state);
+		this._editedNodes = selectCurrentScenarioEditedNodes(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
@@ -525,7 +536,7 @@ class MainView extends connect(store)(PageViewElement) {
 			</g>
 			<g>
 				${Object.values(a.nodes).map(node => svg`<a transform="translate(${node.x},${node.y})">
-					<circle class='${this._selectedNodeID == node.id ? 'selected' : ''}' @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} id="${'node:' + node.id}" fill="${node.color.rgbaStr}" r="${node.radius}" opacity="${node.opacity}" stroke="${node.strokeColor.rgbaStr}" stroke-width="${node.strokeWidth}" stroke-opacity="${node.strokeOpacity}"></circle>
+					<circle class='${this._selectedNodeID == node.id ? 'selected' : ''} ${this._editedNodes && this._editedNodes[node.id] ? 'edited' : ''}' @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} id="${'node:' + node.id}" fill="${node.color.rgbaStr}" r="${node.radius}" opacity="${node.opacity}" stroke="${node.strokeColor.rgbaStr}" stroke-width="${node.strokeWidth}" stroke-opacity="${node.strokeOpacity}"></circle>
 					<title>${node.fullDescription()}</title>
 					<text dy="0.32em" x="${(node.children.length == 0 ? 1 : -1) * node.radius * 2}" text-anchor="${node.children.length == 0 ? 'start' : 'end'}" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}">${node.displayName}</text>
 				</a>`)}
