@@ -436,6 +436,16 @@ const validateDisplay = (data : Partial<NodeDisplay> | Partial<EdgeDisplay> | Pa
 	}
 };
 
+const validateEdges = (data : MapDefinition, nodeID: NodeID, edges?: EdgeValue[]) : void => {
+	if (!edges) edges = [];
+	for (const edge of edges) {
+		if (!edge.type) throw new Error(nodeID + ' has an edge with no type');
+		if (!data.properties[edge.type]) throw new Error(nodeID + ' has an edge of type ' + edge.type + ' which is not included in types');
+		if (data.properties[edge.type].calculateWhen == 'always') throw new Error(nodeID + ' has an edge of type ' + edge.type + ' but that edge type does not allow any edges');
+		if (Object.keys(explicitlyEnumaratedImpliedPropertyNames(edge.implies)).some(propertyName => !data.properties[propertyName] || data.properties[propertyName].calculateWhen == 'always')) throw new Error(nodeID + ' has an edge that has an implication that explicitly implies a property that doesn\'t exist or is noEdges');
+	}
+};
+
 const validateData = (data : MapDefinition) : void => {
 	if (!data) throw new Error('No data provided');
 	if (!data.nodes) throw new Error('No nodes provided');
@@ -445,13 +455,7 @@ const validateData = (data : MapDefinition) : void => {
 	for (const [nodeName, nodeData] of Object.entries(data.nodes)) {
 		if (nodeName == ROOT_ID) throw new Error('Nodes may not have the same id as root: "' + ROOT_ID + '"');
 		if (!nodeData.description) throw new Error(nodeName + ' has no description');
-		const nodeEdges = nodeData.edges || [];
-		for (const edge of nodeEdges) {
-			if (!edge.type) throw new Error(nodeName + ' has an edge with no type');
-			if (!data.properties[edge.type]) throw new Error(nodeName + ' has an edge of type ' + edge.type + ' which is not included in types');
-			if (data.properties[edge.type].calculateWhen == 'always') throw new Error(nodeName + ' has an edge of type ' + edge.type + ' but that edge type does not allow any edges');
-			if (Object.keys(explicitlyEnumaratedImpliedPropertyNames(edge.implies)).some(propertyName => !data.properties[propertyName] || data.properties[propertyName].calculateWhen == 'always')) throw new Error(nodeName + ' has an edge that has an implication that explicitly implies a property that doesn\'t exist or is noEdges');
-		}
+		validateEdges(data, nodeName, nodeData.edges);
 		validateDisplay(nodeData.display, {exampleValues, data, allowedVariables:ALLOWED_VARIABLES_FOR_CONTEXT.nodeDisplay});
 		if (nodeData.values) {
 			if (typeof nodeData.values != 'object') throw new Error('values if provided must be an object');
