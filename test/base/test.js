@@ -27,6 +27,7 @@ import {
 
 import {
 	deepCopy,
+	deepEqual,
 	wrapArrays
 } from '../../src/util.js';
 
@@ -6294,4 +6295,87 @@ describe('edgeDefinition ergonomics', () => {
 		const actualNodeA = actualFull.nodes.a;
 		assert.deepStrictEqual(actualNodeA, goldenNodeA);
 	});
+});
+
+describe('deepEqual', () => {
+	it('true/true', async () => {
+		const one = true;
+		const two = true;
+		const golden = true;
+		const actual = deepEqual(one, two);
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('true/false', async () => {
+		const one = true;
+		const two = false;
+		const golden = false;
+		const actual = deepEqual(one, two);
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('abc/abc', async () => {
+		const one = 'abc';
+		const two = 'abc';
+		const golden = true;
+		const actual = deepEqual(one, two);
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('obj / obj', async () => {
+		const one = {};
+		const two = {};
+		const golden = true;
+		const actual = deepEqual(one, two);
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('obj.a / obj.b', async () => {
+		const one = {a: 'abc'};
+		const two = {b: 'abc'};
+		const golden = false;
+		const actual = deepEqual(one, two);
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('obj.a / obj.a', async () => {
+		const one = {a: 'abc'};
+		const two = {a: 'abc'};
+		const golden = true;
+		const actual = deepEqual(one, two);
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('obj.a / obj.a,b', async () => {
+		const one = {a: 'abc'};
+		const two = {a: 'abc', b: 'abc'};
+		const golden = false;
+		const actual = deepEqual(one, two);
+		assert.deepStrictEqual(actual, golden);
+	});
+	
+	it('array / array', async () => {
+		const one = [0, 1, {a: 'foo'}];
+		const two = [0, 1, {a: 'foo'}];
+		const golden = true;
+		const actual = deepEqual(one, two);
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('array / array.diff', async () => {
+		const one = [0, 1, {a: 'foo'}];
+		const two = [0, 1, {b: 'foo'}];
+		const golden = false;
+		const actual = deepEqual(one, two);
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('array / array.diff', async () => {
+		const one = [0, 1, {a: 'foo'}];
+		const two = [0, {a: 'foo'}];
+		const golden = false;
+		const actual = deepEqual(one, two);
+		assert.deepStrictEqual(actual, golden);
+	});
+
 });

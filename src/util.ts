@@ -106,6 +106,26 @@ export function deepCopy<T extends object>(obj : T) : T {
 	return JSON.parse(JSON.stringify(obj));
 }
 
+export const deepEqual = (one : unknown, two: unknown) : boolean => {
+	if (one == two) return true;
+	if (typeof one != typeof two) return false;
+	//If it wasn' an object then the direct equality check abovewas sufficient
+	if (!one || !two || typeof one != 'object' || typeof two != 'object') return false;
+	if (Array.isArray(one)) {
+		if (!Array.isArray(two)) return false;
+		if (one.length != two.length) return false;
+		for (let i = 0; i < one.length; i++) {
+			if (!deepEqual(one[i], two[i])) return false;
+		}
+		return true;
+	}
+	if (Object.keys(one).length != Object.keys(two).length) return false;
+	for (const [key, value] of Object.entries(one)) {
+		if ((two as {[name : string] : unknown})[key] != value) return false;
+	}
+	return true;
+};
+
 //From https://blog.trannhat.xyz/generate-a-hash-from-string-in-javascript/
 export const hash = (s : string) : number => s.split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a;},0);
 
