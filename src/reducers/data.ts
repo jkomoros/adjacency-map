@@ -63,7 +63,7 @@ const removeScenarioFromScenariosOverlay = (filename : DataFilename, scenarioNam
 	return result;
 };
 
-const beginEditingNodeValueInOverlay = (filename: DataFilename, scenarioName: ScenarioName, currentOverlay: ScenariosOverlays, nodeID : NodeID, propertyName : PropertyName) : ScenariosOverlays => {
+const beginEditingNodeValueInOverlay = (filename: DataFilename, scenarioName: ScenarioName, currentOverlay: ScenariosOverlays, nodeID : NodeID, propertyName : PropertyName, value : number) : ScenariosOverlays => {
 	const result = deepCopy(currentOverlay);
 	const filenameOverlay = result[filename];
 	if (filenameOverlay == undefined) throw new Error('filename overlay unexpectededly not set');
@@ -72,8 +72,7 @@ const beginEditingNodeValueInOverlay = (filename: DataFilename, scenarioName: Sc
 	const nodes = scenarioOverlay.nodes;
 	if (!nodes[nodeID]) nodes[nodeID] = {};
 	const node = nodes[nodeID];
-	//TODO: set this to the value the node currently calculates to.
-	node[propertyName] = 0;
+	node[propertyName] = value;
 	return result;
 };
 
@@ -153,7 +152,7 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 	case BEGIN_EDITING_NODE_VALUE:
 		return {
 			...state,
-			scenariosOverlays: beginEditingNodeValueInOverlay(state.filename, state.scenarioName, state.scenariosOverlays, state.selectedNodeID as NodeID, action.propertyName)
+			scenariosOverlays: beginEditingNodeValueInOverlay(state.filename, state.scenarioName, state.scenariosOverlays, state.selectedNodeID as NodeID, action.propertyName, action.value)
 		};
 	case EDITING_UPDATE_NODE_VALUE:
 		return {

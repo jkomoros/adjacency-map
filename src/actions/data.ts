@@ -159,7 +159,7 @@ export const removeEditingScenario : AppActionCreator = (scenarioName? : Scenari
 	});
 };
 
-export const beginEditingNodeValue : AppActionCreator = (propertyName : PropertyName) => (dispatch, getState) => {
+export const beginEditingNodeValue : AppActionCreator = (propertyName : PropertyName, value : number) => (dispatch, getState) => {
 	const state = getState();
 	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
 	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
@@ -168,7 +168,8 @@ export const beginEditingNodeValue : AppActionCreator = (propertyName : Property
 	if (editableFields[propertyName]) return;
 	dispatch({
 		type: BEGIN_EDITING_NODE_VALUE,
-		propertyName
+		propertyName,
+		value
 	});
 };
 
