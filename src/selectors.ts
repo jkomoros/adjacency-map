@@ -100,16 +100,23 @@ export const selectCurrentScenarioEditable = createSelector(
 	(scenarioName, overlay) => overlay[scenarioName] ? true : false
 );
 
-export const selectSelectedNodeFieldsEdited = createSelector(
+export const selectCurrentScenarioEditedNodes = createSelector(
 	selectCurrentScenarioOverlay,
 	selectScenarioName,
-	selectSelectedNodeID,
-	(overlay, scenarioName, nodeID) => {
+	(overlay, scenarioName) => {
 		const scenario = overlay[scenarioName];
 		//This will happen if hte current scenario isn't editable
 		if (!scenario) return {};
+		return scenario.nodes;
+	}
+);
+
+export const selectSelectedNodeFieldsEdited = createSelector(
+	selectCurrentScenarioEditedNodes,
+	selectSelectedNodeID,
+	(nodes, nodeID) => {
 		if (nodeID == undefined) return {};
-		const nodeOverride = scenario.nodes[nodeID] || {};
+		const nodeOverride = nodes[nodeID] || {};
 		return Object.fromEntries(Object.keys(nodeOverride).map(key => [key, true]));
 	}
 );
