@@ -205,6 +205,16 @@ const data : RawMapDefinition = {
 							a: 'input',
 							b: 0.08
 						}
+					},
+					edges: {
+						//Add an extra edge in this scenario
+						add: [
+							{
+								type: 'engineering',
+								parent: 'base_train',
+								cost: 5
+							}
+						]
 					}
 				},
 				extended_infer_gui: {
