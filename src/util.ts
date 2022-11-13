@@ -1,3 +1,4 @@
+import { ENABLE_EDITING_SCENARIOS } from './constants.js';
 import {
 	RandomGenerator, ScenariosOverlays
 } from './types.js';
@@ -45,6 +46,7 @@ export const fetchOverlaysFromStorage = () : ScenariosOverlays => {
 };
 
 export const storeOverlaysToStorage = (overlays : ScenariosOverlays) => {
+	if (!ENABLE_EDITING_SCENARIOS) return;
 	window.localStorage.setItem(SCENARIOS_OVERLAYS_LOCAL_STORAGE_KEY, JSON.stringify(overlays, null, '\t'));
 };
 
