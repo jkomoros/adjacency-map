@@ -97,7 +97,11 @@ import {
 	PLUS_ICON,
 	CANCEL_ICON
 } from './my-icons.js';
-import { fetchOverlaysFromStorage, storeOverlaysToStorage } from '../util.js';
+
+import {
+	fetchOverlaysFromStorage,
+	storeOverlaysToStorage
+} from '../util.js';
 
 @customElement('main-view')
 class MainView extends connect(store)(PageViewElement) {
