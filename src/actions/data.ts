@@ -150,9 +150,12 @@ export const removeEditingScenario : AppActionCreator = (scenarioName? : Scenari
 	if (scenarioName === undefined) scenarioName = selectScenarioName(getState());
 	const scenarioOverlay = selectCurrentScenarioOverlay(getState());
 	if (!scenarioOverlay[scenarioName]) throw new Error('Scenario name doesn\'t exist');
+	const nextScenarioName = scenarioOverlay[scenarioName].extends || '';
 	dispatch({
 		type: REMOVE_EDITING_SCENARIO,
-		scenarioName
+		scenarioName,
+		//nextScenarioName will only be used if the currentScenarioName is scenarioName.
+		nextScenarioName
 	});
 };
 

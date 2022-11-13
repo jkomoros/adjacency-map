@@ -147,8 +147,7 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 	case REMOVE_EDITING_SCENARIO: 
 		return {
 			...state,
-			//TODO: if the current scenario is removed, go back to the scenario we extended
-			scenarioName: state.scenarioName == action.scenarioName ? '' : state.scenarioName,
+			scenarioName: state.scenarioName == action.scenarioName ? action.nextScenarioName : state.scenarioName,
 			scenariosOverlays: removeScenarioFromScenariosOverlay(state.filename, action.scenarioName, state.scenariosOverlays)
 		};
 	case BEGIN_EDITING_NODE_VALUE:
