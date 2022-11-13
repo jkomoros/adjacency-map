@@ -414,12 +414,14 @@ export type TreeGraph = {
 	children? : TreeGraph[];
 }
 
+export type RawEdgeInput = RawEdgeValue[] | RawEdgeMap;
+
 export type RawNodeDefinition = {
 	description: string,
 	displayName? : string,
 	display?: Partial<NodeDisplay>,
 	tags? : TagID | TagID[] | TagMap,
-	edges?: RawEdgeValue[] | RawEdgeMap,
+	edges?: RawEdgeInput,
 	//If any values are provided here, they will be set on the node, overriding
 	//any other edge values that or root values. They may use
 	//ValueDefinitionInput in their definition.

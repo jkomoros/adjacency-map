@@ -26,7 +26,6 @@ import {
 	ScenariosDefinition,
 	Scenario,
 	ScenarioName,
-	RawNodeDefinition,
 	TagDefinition,
 	TagID,
 	TagMap,
@@ -34,7 +33,8 @@ import {
 	AllowedValueDefinitionVariableTypes,
 	ValudeDefinitionValidationArgs,
 	ScenariosDefinitionUnextended,
-	RenderEdgeSubEdge
+	RenderEdgeSubEdge,
+	RawEdgeInput
 } from './types.js';
 
 import {
@@ -157,11 +157,11 @@ const scenarioNameGraph = (scenarios :ScenariosDefinitionUnextended) : SimpleGra
 
 //There are a number of different ways to conveniently define edges, this
 //function converts all of them to the base type.
-const extractEdgesFromRawNodeDefinition = (nodeData : RawNodeDefinition) : EdgeValue[] => {
-	if (!nodeData.edges) return [];
+const extractEdgesFromRawEdgeInput = (input? : RawEdgeInput) : EdgeValue[] => {
+	if (!input) return [];
 	const edges : EdgeValue [] = [];
-	if (Array.isArray(nodeData.edges)) {
-		for (const rawValue of nodeData.edges) {
+	if (Array.isArray(input)) {
+		for (const rawValue of input) {
 			const value : EdgeValue = {type: rawValue.type};
 			if (rawValue.parent != undefined) value.parent = rawValue.parent;
 			if (rawValue.implies != undefined) value.implies = rawValue.implies;
@@ -174,7 +174,7 @@ const extractEdgesFromRawNodeDefinition = (nodeData : RawNodeDefinition) : EdgeV
 			edges.push(value);
 		}
 	} else {
-		for (const [parent, refData] of Object.entries(nodeData.edges)) {
+		for (const [parent, refData] of Object.entries(input)) {
 			if (Array.isArray(refData)) {
 				for (const rawValue of refData) {
 					const value : EdgeValue = {
@@ -298,7 +298,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 	}
 	const nodes : {[id : NodeID]: NodeDefinition} = {};
 	for (const [id, rawNode] of Object.entries(data.nodes || {})) {
-		const edges : EdgeValue[] = extractEdgesFromRawNodeDefinition(rawNode);
+		const edges : EdgeValue[] = extractEdgesFromRawEdgeInput(rawNode.edges);
 		const rawNodeDisplay = rawNode.display || {};
 		const rawValues = rawNode.values || {};
 		const values = {...rawValues};
