@@ -7,6 +7,7 @@ export const UPDATE_SELECTED_NODE_ID = 'UPDATE_SELECTED_NODE_ID';
 export const UPDATE_SHOW_HIDDEN_VALUES = 'UPDATE_SHOW_HIDDEN_VALUES';
 
 export const BEGIN_EDITING_SCENARIO = 'BEGIN_EDITING_SCENARIO';
+export const REMOVE_EDITING_SCENARIO = 'REMOVE_EDITING_SCENARIO';
 export const BEGIN_EDITING_NODE_VALUE = 'BEGIN_EDITING_NODE_VALUE';
 export const EDITING_UPDATE_NODE_VALUE = 'EDITING_UPDATE_NODE_VALUE';
 export const REMOVE_EDITING_NODE_VALUE = 'REMOVE_EDITING_NODE_VALUE';
@@ -141,6 +142,16 @@ export const beginEditingScenario : AppActionCreator = (scenarioName? : Scenario
 	if (scenarioOverlay[scenarioName]) throw new Error('Scenario name already exists');
 	dispatch({
 		type: BEGIN_EDITING_SCENARIO,
+		scenarioName
+	});
+};
+
+export const removeEditingScenario : AppActionCreator = (scenarioName? : ScenarioName) => (dispatch, getState) =>{
+	if (scenarioName === undefined) scenarioName = selectScenarioName(getState());
+	const scenarioOverlay = selectCurrentScenarioOverlay(getState());
+	if (!scenarioOverlay[scenarioName]) throw new Error('Scenario name doesn\'t exist');
+	dispatch({
+		type: REMOVE_EDITING_SCENARIO,
 		scenarioName
 	});
 };

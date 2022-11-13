@@ -11,6 +11,7 @@ import {
 	UPDATE_SELECTED_NODE_ID,
 	UPDATE_SHOW_HIDDEN_VALUES,
 	BEGIN_EDITING_SCENARIO,
+	REMOVE_EDITING_SCENARIO,
 	BEGIN_EDITING_NODE_VALUE,
 	EDITING_UPDATE_NODE_VALUE,
 	REMOVE_EDITING_NODE_VALUE
@@ -50,6 +51,16 @@ const addScenarioToScenariosOverlay = (filename: DataFilename, currentScenarioNa
 			}
 		}
 	};
+};
+
+const removeScenarioFromScenariosOverlay = (filename : DataFilename, scenarioName : ScenarioName, currentOverlay : ScenariosOverlays) : ScenariosOverlays => {
+	const result = deepCopy(currentOverlay);
+	const fileOverlay = result[filename];
+	if (fileOverlay) {
+		delete fileOverlay[scenarioName];
+		if (Object.keys(fileOverlay).length == 0) delete result[filename];
+	}
+	return result;
 };
 
 const beginEditingNodeValueInOverlay = (filename: DataFilename, scenarioName: ScenarioName, currentOverlay: ScenariosOverlays, nodeID : NodeID, propertyName : PropertyName) : ScenariosOverlays => {
@@ -132,6 +143,13 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 			...state,
 			scenarioName: action.scenarioName,
 			scenariosOverlays: addScenarioToScenariosOverlay(state.filename, state.scenarioName, action.scenarioName, state.scenariosOverlays)
+		};
+	case REMOVE_EDITING_SCENARIO: 
+		return {
+			...state,
+			//TODO: if the current scenario is removed, go back to the scenario we extended
+			scenarioName: state.scenarioName == action.scenarioName ? '' : state.scenarioName,
+			scenariosOverlays: removeScenarioFromScenariosOverlay(state.filename, action.scenarioName, state.scenariosOverlays)
 		};
 	case BEGIN_EDITING_NODE_VALUE:
 		return {
