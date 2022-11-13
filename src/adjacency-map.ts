@@ -34,7 +34,8 @@ import {
 	ValudeDefinitionValidationArgs,
 	ScenariosDefinitionUnextended,
 	RenderEdgeSubEdge,
-	RawEdgeInput
+	RawEdgeInput,
+	ScenarioNode
 } from './types.js';
 
 import {
@@ -869,6 +870,10 @@ class AdjacencyMapNode {
 		this._isRoot = id == ROOT_ID;
 	}
 
+	get _scenarioNode() : ScenarioNode {
+		return this._map.scenario.nodes[this.id] || emptyScenarioNode();
+	}
+
 	_computeValues() : NodeValues {
 		const partialResult : NodeValues = {};
 		const edgeByType : {[type : PropertyName] : EdgeValue[]} = {};
@@ -876,8 +881,7 @@ class AdjacencyMapNode {
 			if (!edgeByType[edge.type]) edgeByType[edge.type] = [];
 			edgeByType[edge.type].push(edge);
 		}
-		const scenarioNode = this._map.scenario.nodes[this.id] || emptyScenarioNode();
-		const scenarioNodeValues = scenarioNode.values;
+		const scenarioNodeValues = this._scenarioNode.values;
 		//Iterate through edges in propertyNames order to make sure that any
 		//ValueDefinitionResultValue will have the values they already rely on
 		//calculated.
