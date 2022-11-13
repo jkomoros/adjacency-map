@@ -256,7 +256,7 @@ class MainView extends connect(store)(PageViewElement) {
 				<select id='filenames' .value=${this._filename} @change=${this._handleFilenameChanged}>
 					${this._legalFilenames.map(filename => html`<option .value=${filename}>${filename}${this._scenariosOverlays && this._scenariosOverlays[filename] ? html` (*)` : ''}</option>`)}
 				</select>` : ''}
-				${this._legalScenarioNames.length > 1 ? html`
+				${this._legalScenarioNames.length > 1 || ENABLE_EDITING_SCENARIOS ? html`
 				<label for='scenarios'>Scenario</label>
 				<select id='scenarios' .value=${this._scenarioName} @change=${this._handleScenarioNameChanged}>
 					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName} .selected=${scenarioName == this._scenarioName}>${scenarioName || 'Default'}</option>`)}
