@@ -5759,7 +5759,7 @@ describe('scenarios', () => {
 		assert.throws(fn);
 	});
 
-	it('barfs for scenario with extension of root scenario', async () => {
+	it('allows scenario with extension of root scenario', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.scenarios = {
 			one: {
@@ -5774,7 +5774,7 @@ describe('scenarios', () => {
 		const fn = () => {
 			new AdjacencyMap(input);
 		};
-		assert.throws(fn);
+		assert.doesNotThrow(fn);
 	});
 
 	it('barfs for scenario with extension of non-exsitent other scenario', async () => {

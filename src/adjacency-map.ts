@@ -145,10 +145,11 @@ export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
 };
 
 const scenarioNameGraph = (scenarios :ScenariosDefinitionUnextended) : SimpleGraph => {
-	const result : SimpleGraph = {};
+	const result : SimpleGraph = {'': {}};
 	for (const [scenarioID, scenarioDefinition] of Object.entries(scenarios)) {
 		const children : {[otherID : NodeID] : true} = {};
-		if (scenarioDefinition.extends !== undefined) children[scenarioDefinition.extends] = true;
+		const extendsVal = scenarioDefinition.extends || '';
+		children[extendsVal] = true;
 		result[scenarioID] = children;
 	}
 	return result;
@@ -351,8 +352,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 	topologicalScenarios.reverse();
 	const scenarios : ScenariosDefinition = {};
 	for (const scenarioName of topologicalScenarios) {
-		const rawScenario = expandedScenarios[scenarioName];
-		if (rawScenario.extends === '') throw new Error('Scenario ' + scenarioName + ' extends the root scenario which is not allowed');
+		const rawScenario = expandedScenarios[scenarioName] || {description: '', nodes: {}};
 		const scenarioToExtend : Scenario = rawScenario.extends !== undefined ? scenarios[rawScenario.extends] : {description: '', nodes: {}};
 		if (!scenarioToExtend) throw new Error('Scenario ' + scenarioName + ' extends a non-existent scenario ' + rawScenario.extends);
 
