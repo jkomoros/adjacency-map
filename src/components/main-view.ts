@@ -16,6 +16,7 @@ import {
 	previousScenarioName,
 	removeEditingNodeValue,
 	removeEditingScenario,
+	resetScenariosOverlays,
 	updateFilename,
 	updateHoveredNodeID,
 	updateScale,
@@ -95,7 +96,8 @@ import {
 	VISIBILITY_OFF_ICON,
 	EDIT_ICON,
 	PLUS_ICON,
-	CANCEL_ICON
+	CANCEL_ICON,
+	DELETE_FOREVER_ICON
 } from './my-icons.js';
 
 import {
@@ -272,6 +274,7 @@ class MainView extends connect(store)(PageViewElement) {
 				<select id='filenames' .value=${this._filename} @change=${this._handleFilenameChanged}>
 					${this._legalFilenames.map(filename => html`<option .value=${filename}>${filename}${this._scenariosOverlays && this._scenariosOverlays[filename] ? html` (*)` : ''}</option>`)}
 				</select>` : ''}
+				${ENABLE_EDITING_SCENARIOS && Object.keys(this._scenariosOverlays).length > 0 ? html`<button class='small' title='Remove all edits across all files' @click=${this._handleResetOverlaysClicked}>${DELETE_FOREVER_ICON}</button>` : ''}
 				${this._legalScenarioNames.length > 1 || ENABLE_EDITING_SCENARIOS ? html`
 				<label for='scenarios'>Scenario</label>
 				<select id='scenarios' .value=${this._scenarioName} @change=${this._handleScenarioNameChanged}>
@@ -400,6 +403,10 @@ class MainView extends connect(store)(PageViewElement) {
 		} else if (e.key == 'ArrowLeft') {
 			store.dispatch(previousScenarioName());
 		}
+	}
+
+	_handleResetOverlaysClicked() {
+		store.dispatch(resetScenariosOverlays());
 	}
 
 	_handleEditNodePropertyClicked(e : MouseEvent) {
