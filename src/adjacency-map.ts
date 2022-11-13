@@ -876,7 +876,7 @@ class AdjacencyMapNode {
 			if (!edgeByType[edge.type]) edgeByType[edge.type] = [];
 			edgeByType[edge.type].push(edge);
 		}
-		const scenarioNode = this._map.scenario.nodes[this.id] || {values: {}};
+		const scenarioNode = this._map.scenario.nodes[this.id] || emptyScenarioNode();
 		const scenarioNodeValues = scenarioNode.values;
 		//Iterate through edges in propertyNames order to make sure that any
 		//ValueDefinitionResultValue will have the values they already rely on
