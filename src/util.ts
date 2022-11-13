@@ -2,7 +2,8 @@ import { ENABLE_EDITING_SCENARIOS } from './constants.js';
 import {
 	RandomGenerator,
 	ScenariosOverlays,
-	ScenarioNode
+	ScenarioNode,
+	RenderEdgeValue
 } from './types.js';
 
 export const emptyScenarioNode = () : ScenarioNode => {
@@ -12,6 +13,15 @@ export const emptyScenarioNode = () : ScenarioNode => {
 			add: []
 		}
 	};
+};
+
+export const renderEdgeStableID = (edge : RenderEdgeValue) : string => {
+	const result : string[] = [
+		edge.parent,
+		edge.source,
+		...edge.edges.map(subEdge => subEdge.type)
+	];
+	return result.join('_');
 };
 
 export const camelCaseFilename = (name : string) : string => {
