@@ -632,7 +632,9 @@ export type RawScenario = {
 	extends? : ScenarioName,
 	//Scenarios may override root nodes by using id of ROOT_ID.
 	nodes: {
-		[id : NodeID] : Partial<ScenarioNode>;
+		[id : NodeID] : {
+			values?: NodeValuesOverride
+		}
 	}
 }
 
