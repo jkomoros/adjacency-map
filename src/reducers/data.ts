@@ -10,6 +10,7 @@ import {
 	UPDATE_HOVERED_NODE_ID,
 	UPDATE_SELECTED_NODE_ID,
 	UPDATE_SHOW_HIDDEN_VALUES,
+	LOAD_SCENARIOS_OVERLAYS,
 	BEGIN_EDITING_SCENARIO,
 	REMOVE_EDITING_SCENARIO,
 	BEGIN_EDITING_NODE_VALUE,
@@ -136,6 +137,11 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			showHiddenValues: action.showHiddenValues
+		};
+	case LOAD_SCENARIOS_OVERLAYS:
+		return {
+			...state,
+			scenariosOverlays: action.overlays
 		};
 	case BEGIN_EDITING_SCENARIO:
 		return {
