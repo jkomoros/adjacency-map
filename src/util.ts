@@ -1,5 +1,5 @@
 import {
-	RandomGenerator
+	RandomGenerator, ScenariosOverlays
 } from './types.js';
 
 export const camelCaseFilename = (name : string) : string => {
@@ -35,6 +35,18 @@ export function shuffleInPlace<T>(array : T[], rnd : RandomGenerator = Math.rand
   
 	return array;
 }
+
+const SCENARIOS_OVERLAYS_LOCAL_STORAGE_KEY = 'scenarios';
+
+export const fetchOverlaysFromStorage = () : ScenariosOverlays => {
+	const rawObject = window.localStorage.getItem(SCENARIOS_OVERLAYS_LOCAL_STORAGE_KEY);
+	if (!rawObject) return {};
+	return JSON.parse(rawObject) as ScenariosOverlays;
+};
+
+export const storeOverlaysToStorage = (overlays : ScenariosOverlays) => {
+	window.localStorage.setItem(SCENARIOS_OVERLAYS_LOCAL_STORAGE_KEY, JSON.stringify(overlays, null, '\t'));
+};
 
 export const assertUnreachable = (x : never) : never => {
 	throw new Error('Exhaustiveness check failed: ' + String(x));
