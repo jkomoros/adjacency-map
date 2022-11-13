@@ -2517,7 +2517,9 @@ describe('AdjacencyMap validation', () => {
 			'1' : {
 				nodes: {
 					'invalid': {
-						'ux': 0,
+						values: {
+							'ux': 0,
+						}
 					}
 				}
 			}
@@ -2539,7 +2541,9 @@ describe('AdjacencyMap validation', () => {
 			'1' : {
 				nodes: {
 					'a': {
-						'invalid': 0
+						values: {
+							'invalid': 0
+						}
 					}
 				}
 			}
@@ -5470,8 +5474,10 @@ describe('scenarios', () => {
 			one: {
 				nodes: {
 					a: {
-						engineering: 2.0,
-						ux: 10.0,
+						values: {
+							engineering: 2.0,
+							ux: 10.0,
+						}
 					}
 				}
 			}
@@ -5499,8 +5505,10 @@ describe('scenarios', () => {
 					description: 'foo',
 					nodes: {
 						a: {
-							engineering: 2.0,
-							ux: 10.0,
+							values: {
+								engineering: 2.0,
+								ux: 10.0,
+							}
 						}
 					}
 				},
@@ -5508,8 +5516,10 @@ describe('scenarios', () => {
 					description: 'bar',
 					nodes: {
 						a : {
-							engineering: 1.0,
-							ux: 5.0
+							values: {
+								engineering: 1.0,
+								ux: 5.0
+							}
 						}
 					}
 				}
@@ -5518,7 +5528,9 @@ describe('scenarios', () => {
 				description: 'baz',
 				nodes: {
 					a: {
-						engineering: 3.0
+						values: {
+							engineering: 3.0
+						}
 					}
 				}
 			}
@@ -5530,8 +5542,10 @@ describe('scenarios', () => {
 				description: 'foo',
 				nodes: {
 					a: {
-						engineering: 2.0,
-						ux: 10.0,
+						values: {
+							engineering: 2.0,
+							ux: 10.0,
+						}
 					}
 				}
 			},
@@ -5539,8 +5553,10 @@ describe('scenarios', () => {
 				description: 'bar',
 				nodes: {
 					a : {
-						engineering: 1.0,
-						ux: 5.0
+						values: {
+							engineering: 1.0,
+							ux: 5.0
+						}
 					}
 				}
 			},
@@ -5548,7 +5564,9 @@ describe('scenarios', () => {
 				description: 'baz',
 				nodes: {
 					a: {
-						engineering: 3.0
+						values: {
+							engineering: 3.0
+						}
 					}
 				}
 			}
@@ -5565,8 +5583,10 @@ describe('scenarios', () => {
 			one: {
 				nodes: {
 					a: {
-						engineering: 2.0,
-						ux: 10.0,
+						values: {
+							engineering: 2.0,
+							ux: 10.0,
+						}
 					}
 				}
 			}
@@ -5585,11 +5605,13 @@ describe('scenarios', () => {
 			one: {
 				nodes: {
 					a: {
-						engineering: {
-							operator: '+',
-							a: 'input',
-							b: 3.0
-						},
+						values: {
+							engineering: {
+								operator: '+',
+								a: 'input',
+								b: 3.0
+							},
+						}
 					}
 				}
 			}
@@ -5606,11 +5628,13 @@ describe('scenarios', () => {
 			one: {
 				nodes: {
 					a: {
-						engineering: {
-							operator: '+',
-							a: 'input',
-							b: 3.0
-						},
+						values: {
+							engineering: {
+								operator: '+',
+								a: 'input',
+								b: 3.0
+							},
+						}
 					}
 				}
 			}
@@ -5628,11 +5652,13 @@ describe('scenarios', () => {
 			one: {
 				nodes: {
 					a: {
-						engineering: {
-							operator: '+',
-							a: 'input',
-							b: 3.0
-						},
+						values: {
+							engineering: {
+								operator: '+',
+								a: 'input',
+								b: 3.0
+							},
+						}
 					}
 				}
 			}
@@ -5687,11 +5713,13 @@ describe('scenarios', () => {
 			one: {
 				nodes: {
 					'': {
-						engineering: {
-							operator: '+',
-							a: 'input',
-							b: 3.0
-						},
+						values: {
+							engineering: {
+								operator: '+',
+								a: 'input',
+								b: 3.0
+							},
+						}
 					}
 				}
 			}
@@ -5708,13 +5736,15 @@ describe('scenarios', () => {
 			one: {
 				nodes: {
 					a: {
-						engineering: {
-							operator: '+',
-							a: 'input',
-							b: {
-								result: 'ux'
-							}
-						},
+						values: {
+							engineering: {
+								operator: '+',
+								a: 'input',
+								b: {
+									result: 'ux'
+								}
+							},
+						}
 					}
 				}
 			}
@@ -5732,7 +5762,9 @@ describe('scenarios', () => {
 				extends: 'three',
 				nodes: {
 					a: {
-						engineering: 10
+						values: {
+							engineering: 10
+						}
 					}
 				}
 			},
@@ -5740,7 +5772,9 @@ describe('scenarios', () => {
 				extends: 'one',
 				nodes: {
 					b: {
-						ux: 5
+						values: {
+							ux: 5
+						}
 					}
 				}
 			},
@@ -5748,7 +5782,9 @@ describe('scenarios', () => {
 				extends: 'two',
 				nodes: {
 					c: {
-						ux: 8
+						values: {
+							ux: 8
+						}
 					}
 				}
 			}
@@ -5766,7 +5802,9 @@ describe('scenarios', () => {
 				extends: '',
 				nodes: {
 					a: {
-						engineering: 10
+						values: {
+							engineering: 10
+						}
 					}
 				}
 			}
@@ -5784,7 +5822,9 @@ describe('scenarios', () => {
 				extends: 'invalid',
 				nodes: {
 					a: {
-						engineering: 10
+						values: {
+							engineering: 10
+						}
 					}
 				}
 			}
@@ -5801,10 +5841,14 @@ describe('scenarios', () => {
 			one: {
 				nodes: {
 					a: {
-						engineering: 10
+						values: {
+							engineering: 10
+						}
 					},
 					b: {
-						engineering: 3
+						values: {
+							engineering: 3
+						}
 					}
 				}
 			},
@@ -5812,7 +5856,9 @@ describe('scenarios', () => {
 				extends: 'one',
 				nodes: {
 					b: {
-						ux: 5
+						values: {
+							ux: 5
+						}
 					}
 				}
 			}
@@ -5834,10 +5880,14 @@ describe('scenarios', () => {
 			one: {
 				nodes: {
 					a: {
-						engineering: 10
+						values: {
+							engineering: 10
+						}
 					},
 					b: {
-						engineering: 3
+						values: {
+							engineering: 3
+						}
 					}
 				}
 			},
@@ -5845,7 +5895,9 @@ describe('scenarios', () => {
 				extends: 'one',
 				nodes: {
 					b: {
-						ux: 5
+						values: {
+							ux: 5
+						}
 					}
 				}
 			},
@@ -5853,7 +5905,9 @@ describe('scenarios', () => {
 				extends: 'two',
 				nodes: {
 					a: {
-						ux: 2
+						values: {
+							ux: 2
+						}
 					}
 				}
 			}

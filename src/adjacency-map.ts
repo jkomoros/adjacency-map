@@ -357,13 +357,17 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		if (!scenarioToExtend) throw new Error('Scenario ' + scenarioName + ' extends a non-existent scenario ' + rawScenario.extends);
 
 		//Create a full overlay
-		const nodes : {[id : NodeID]: {[property : PropertyName] : ValueDefinition}} = {};
+		const nodes : {[id : NodeID]: {values: {[property : PropertyName] : ValueDefinition}}} = {};
 		for (const [id, baseNode] of Object.entries(scenarioToExtend.nodes)) {
-			nodes[id] = {...baseNode};
+			nodes[id] = {
+				values: {...(baseNode.values || {})}
+			};
 		}
 		for (const [id, node] of Object.entries(rawScenario.nodes)) {
 			const existingNode = nodes[id] || {};
-			nodes[id] = {...existingNode, ...node};
+			nodes[id] = {
+				values: {...existingNode.values, ...(node.values || {})},
+			};
 		}
 
 		const scenario : Scenario = {
@@ -520,8 +524,9 @@ const validateData = (data : MapDefinition) : void => {
 	for (const [scenarioName, scenario] of Object.entries(data.scenarios)) {
 		if (scenarioName == DEFAULT_SCENARIO_NAME) throw new Error('The default scenario name is implied and should not be enumerated');
 		if (!scenario.nodes || typeof scenario.nodes != 'object') throw new Error('Scenario must have nodes');
-		for (const [nodeName, nodeValues] of Object.entries(scenario.nodes)) {
+		for (const [nodeName, nodeDefinition] of Object.entries(scenario.nodes)) {
 			if (nodeName != ROOT_ID && !data.nodes[nodeName]) throw new Error('All node ids in a scenario must be either ROOT_ID or included in nodes');
+			const nodeValues = nodeDefinition.values || {};
 			for (const [propertyName, propertyValue] of Object.entries(nodeValues)) {
 				if (!data.properties[propertyName]) throw new Error('All properties in scenarios for a node must be named properties');
 				validateValueDefinition(propertyValue, {exampleValues: {}, data, allowedVariables: ALLOWED_VARIABLES_FOR_CONTEXT.nodeOverride});
@@ -681,7 +686,7 @@ export class AdjacencyMap {
 	get rootValues() : NodeValues {
 		if (!this._cachedRoot) {
 			const baseObject = Object.fromEntries(this.propertyNames.map(typ => [typ, 0.0]));
-			const scenarioNode = this.scenario.nodes[ROOT_ID] || {};
+			const scenarioNode = this.scenario.nodes[ROOT_ID] || {values:{}};
 			const result = {...baseObject, ...this._data.root};
 			const args : ValueDefinitionCalculationArgs = {
 				refs: [],
@@ -692,7 +697,7 @@ export class AdjacencyMap {
 				selfTags: {},
 				definition: this._data
 			};
-			for (const [propertyName, valueDefinition] of Object.entries(scenarioNode)) {
+			for (const [propertyName, valueDefinition] of Object.entries(scenarioNode.values)) {
 				result[propertyName] = calculateValue(valueDefinition, {...args, input: [result[propertyName]]})[0];
 			}
 			this._cachedRoot = result;
@@ -868,7 +873,8 @@ class AdjacencyMapNode {
 			if (!edgeByType[edge.type]) edgeByType[edge.type] = [];
 			edgeByType[edge.type].push(edge);
 		}
-		const scenarioNode = this._map.scenario.nodes[this.id] || {};
+		const scenarioNode = this._map.scenario.nodes[this.id] || {values: {}};
+		const scenarioNodeValues = scenarioNode.values;
 		//Iterate through edges in propertyNames order to make sure that any
 		//ValueDefinitionResultValue will have the values they already rely on
 		//calculated.
@@ -917,7 +923,7 @@ class AdjacencyMapNode {
 			}
 
 			//Finally, do the scenario overriding if applicable
-			if (scenarioNode[type]) {
+			if (scenarioNodeValues[type]) {
 				const scenarioArgs : ValueDefinitionCalculationArgs = {
 					refs: [],
 					edges: [],
@@ -928,7 +934,7 @@ class AdjacencyMapNode {
 					definition: this._map.data,
 					input: [partialResult[type]]
 				};
-				partialResult[type] = calculateValue(scenarioNode[type], scenarioArgs)[0];
+				partialResult[type] = calculateValue(scenarioNodeValues[type], scenarioArgs)[0];
 			}
 
 		}

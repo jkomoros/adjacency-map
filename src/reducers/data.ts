@@ -25,7 +25,8 @@ import {
 	ScenarioName,
 	ScenariosOverlays,
 	NodeID,
-	PropertyName
+	PropertyName,
+	ScenarioNode
 } from "../types.js";
 
 import {
@@ -72,9 +73,10 @@ const beginEditingNodeValueInOverlay = (filename: DataFilename, scenarioName: Sc
 	const scenarioOverlay = filenameOverlay[scenarioName];
 	if (scenarioOverlay == undefined) throw new Error('scenarioOverlay unexpectedly not set');
 	const nodes = scenarioOverlay.nodes;
-	if (!nodes[nodeID]) nodes[nodeID] = {};
+	if (!nodes[nodeID]) nodes[nodeID] = {values: {}};
 	const node = nodes[nodeID];
-	node[propertyName] = value;
+	const values = node.values;
+	values[propertyName] = value;
 	return result;
 };
 
@@ -87,8 +89,14 @@ const editingUpdateNodeValueInOverlay = (filename: DataFilename, scenarioName: S
 	const nodes = scenarioOverlay.nodes;
 	if (!nodes[nodeID]) throw new Error('unexpectedly nodes was not set');
 	const node = nodes[nodeID];
-	node[propertyName] = value;
+	const values = node.values;
+	values[propertyName] = value;
 	return result;
+};
+
+const scenarioNodeIsEmpty = (node: ScenarioNode) : boolean => {
+	//TODO: when we add in e.g. edges, extend this definition
+	return Object.keys(node.values).length == 0;
 };
 
 const removeEditingNodeValueInOverlay = (filename: DataFilename, scenarioName: ScenarioName, currentOverlay: ScenariosOverlays, nodeID : NodeID, propertyName : PropertyName) : ScenariosOverlays => {
@@ -100,9 +108,9 @@ const removeEditingNodeValueInOverlay = (filename: DataFilename, scenarioName: S
 	const nodes = scenarioOverlay.nodes;
 	if (!nodes[nodeID]) throw new Error('nodes unexpectedly not set');
 	const node = nodes[nodeID];
-	delete node[propertyName];
+	delete node.values[propertyName];
 	//If that was the last property then remove the item
-	if (Object.keys(node).length == 0) delete node[nodeID];
+	if (scenarioNodeIsEmpty(node)) delete nodes[nodeID];
 	return result;
 };
 

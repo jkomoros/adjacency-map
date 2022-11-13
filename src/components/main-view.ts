@@ -130,7 +130,7 @@ class MainView extends connect(store)(PageViewElement) {
 	_scenariosOverlays : ScenariosOverlays;
 
 	@state()
-	_editedNodes: {[id : NodeID]: NodeValuesOverride}
+	_editedNodes: {[id : NodeID]: {values?: NodeValuesOverride}}
 
 	@state()
 	_legalFilenames : DataFilename[];

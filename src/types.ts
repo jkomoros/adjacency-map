@@ -630,18 +630,28 @@ export type RawScenario = {
 	extends? : ScenarioName,
 	//Scenarios may override root nodes by using id of ROOT_ID.
 	nodes: {
-		[id : NodeID] : NodeValuesOverride
+		[id : NodeID] : {
+			values?: NodeValuesOverride
+		}
+	}
+}
+
+export type ScenarioNode = {
+	values: {
+		[propertyName : PropertyName]: ValueDefinition
 	}
 }
 
 export type Scenario = {
 	description : string,
 	nodes: {
-		[id : NodeID] : {
-			[propertyName : PropertyName]: ValueDefinition
-		};
+		[id : NodeID] : ScenarioNode
 	}
 }
+
+export type ScenarioWithExtends = Scenario & {
+	extends?: ScenarioName
+};
 
 export type RawScenariosDefinition = {
 	[name : ScenarioName] : RawScenario | RawScenario[];
@@ -701,7 +711,7 @@ export type URLHashArgs = {
 export type ScenariosOverlays = {
 	[filename in DataFilename]?: {
 		//We don'tj just use RawScenarioDefinition because we don't want to allow arrays of scenarios.
-		[scenarioName : ScenarioName] : RawScenario
+		[scenarioName : ScenarioName] : ScenarioWithExtends
 	};
 };
 

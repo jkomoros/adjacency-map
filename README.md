@@ -1088,7 +1088,9 @@ const data : RawMapDefinition = {
         //Normal scenarios and arrays may be intermixed
         scenario_name_a: {
             node_a:{
-                //...
+                values: {
+                    //...
+                }
             }
         }
         scenario_name_b: [
@@ -1097,14 +1099,18 @@ const data : RawMapDefinition = {
                 //The first one in a sequence may extend a different sceario
                 extends: 'scenario_name_a'
                 node_a: {
-                    //...
+                    values: {
+                        //...
+                    }
                 }
             },
             //The name of this scenario will be `scenario_name_b_1`
             {
                 //The `extends` will automatically be `scenario_nambe_b_0`. If one were provided explicitly here it would be overriden.
                 node_b: {
-                    //...
+                    values: {
+                        //...
+                    }
                 }
             }
         ]

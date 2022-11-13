@@ -198,16 +198,20 @@ const data : RawMapDefinition = {
 			description: 'Override to increase the certainty of certain values, which increases downstream certainty too',
 			nodes: {
 				im_to_im_infer: {
-					//Take the value it was in the base and add 0.08 to it.
-					certainty: {
-						operator: '+',
-						a: 'input',
-						b: 0.08
+					values: {
+						//Take the value it was in the base and add 0.08 to it.
+						certainty: {
+							operator: '+',
+							a: 'input',
+							b: 0.08
+						}
 					}
 				},
 				extended_infer_gui: {
-					//Just override the value of the node's value to 0.8
-					certainty: 0.8
+					values: {
+						//Just override the value of the node's value to 0.8
+						certainty: 0.8
+					}
 				}
 			}
 		},
@@ -216,11 +220,13 @@ const data : RawMapDefinition = {
 			extends: 'increased-certainty',
 			nodes: {
 				extended_im_to_im_infer_gui: {
-					//Multiply the previous baseline value by 1.5
-					value: {
-						operator: '*',
-						a: 'input',
-						b: 1.5
+					values: {
+						//Multiply the previous baseline value by 1.5
+						value: {
+							operator: '*',
+							a: 'input',
+							b: 1.5
+						}
 					}
 				}
 			}
@@ -231,21 +237,27 @@ const data : RawMapDefinition = {
 				extends: 'increased-value',
 				nodes: {
 					base_pipeline: {
-						implemented: 1.0
+						values: {
+							implemented: 1.0
+						}
 					}
 				}
 			},
 			{
 				nodes: {
 					base_train: {
-						implemented: 1.0
+						values: {
+							implemented: 1.0
+						}
 					}
 				}
 			},
 			{
 				nodes: {
 					base_infer_colab: {
-						implemented: 1.0
+						values: {
+							implemented: 1.0
+						}
 					}
 				}
 			}

@@ -19,6 +19,7 @@ import {
 import {
 	DataFilename,
 	RootState,
+	ScenarioNode,
 	URLHashArgs
 } from './types.js';
 
@@ -116,8 +117,8 @@ export const selectSelectedNodeFieldsEdited = createSelector(
 	selectSelectedNodeID,
 	(nodes, nodeID) => {
 		if (nodeID == undefined) return {};
-		const nodeOverride = nodes[nodeID] || {};
-		return Object.fromEntries(Object.keys(nodeOverride).map(key => [key, true]));
+		const nodeOverride : ScenarioNode = nodes[nodeID] || {values:{}};
+		return Object.fromEntries(Object.keys(nodeOverride.values).map(key => [key, true]));
 	}
 );
 
