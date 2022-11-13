@@ -11,6 +11,7 @@ import {
 	UPDATE_SELECTED_NODE_ID,
 	UPDATE_SHOW_HIDDEN_VALUES,
 	LOAD_SCENARIOS_OVERLAYS,
+	RESET_SCENARIOS_OVERLAYS,
 	BEGIN_EDITING_SCENARIO,
 	REMOVE_EDITING_SCENARIO,
 	BEGIN_EDITING_NODE_VALUE,
@@ -142,6 +143,11 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			scenariosOverlays: action.overlays
+		};
+	case RESET_SCENARIOS_OVERLAYS:
+		return {
+			...state,
+			scenariosOverlays: {}
 		};
 	case BEGIN_EDITING_SCENARIO:
 		return {

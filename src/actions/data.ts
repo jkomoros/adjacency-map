@@ -7,6 +7,7 @@ export const UPDATE_SELECTED_NODE_ID = 'UPDATE_SELECTED_NODE_ID';
 export const UPDATE_SHOW_HIDDEN_VALUES = 'UPDATE_SHOW_HIDDEN_VALUES';
 
 export const LOAD_SCENARIOS_OVERLAYS = 'LOAD_SCENARIOS_OVERLAYS';
+export const RESET_SCENARIOS_OVERLAYS = 'RESET_SCENARIOS_OVERLAYS';
 export const BEGIN_EDITING_SCENARIO = 'BEGIN_EDITING_SCENARIO';
 export const REMOVE_EDITING_SCENARIO = 'REMOVE_EDITING_SCENARIO';
 export const BEGIN_EDITING_NODE_VALUE = 'BEGIN_EDITING_NODE_VALUE';
@@ -142,6 +143,12 @@ export const loadScenariosOverlays = (overlays : ScenariosOverlays) : AnyAction 
 	return {
 		type: LOAD_SCENARIOS_OVERLAYS,
 		overlays
+	};
+};
+
+export const resetScenariosOverlays = () : AnyAction => {
+	return {
+		type: RESET_SCENARIOS_OVERLAYS
 	};
 };
 
