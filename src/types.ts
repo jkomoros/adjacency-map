@@ -435,7 +435,7 @@ export type NodeDefinition = {
 	values: NodeValuesOverride
 };
 
-type NodeValuesOverride = {
+export type NodeValuesOverride = {
 	[propertyName: PropertyName]: ValueDefinition
 }
 
