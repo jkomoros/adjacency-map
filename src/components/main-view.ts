@@ -41,6 +41,7 @@ import {
 	selectAdjacencyMapError,
 	selectCurrentScenarioEditable,
 	selectSelectedNodeFieldsEdited,
+	selectScenariosOverlays,
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -64,6 +65,7 @@ import {
 	RenderEdgeValue,
 	RootState,
 	ScenarioName,
+	ScenariosOverlays,
 	TagID,
 	TagMap,
 } from '../types.js';
@@ -112,6 +114,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_summaryNodeEditableFields: {[type : PropertyName]: boolean}
+
+	@state()
+	_scenariosOverlays : ScenariosOverlays;
 
 	@state()
 	_legalFilenames : DataFilename[];
@@ -248,7 +253,7 @@ class MainView extends connect(store)(PageViewElement) {
 				${this._legalFilenames && this._legalFilenames.length > 1 ? html`
 				<label for='filenames'>File</label>
 				<select id='filenames' .value=${this._filename} @change=${this._handleFilenameChanged}>
-					${this._legalFilenames.map(filename => html`<option .value=${filename}>${filename}</option>`)}
+					${this._legalFilenames.map(filename => html`<option .value=${filename}>${filename}${this._scenariosOverlays && this._scenariosOverlays[filename] ? html` (*)` : ''}</option>`)}
 				</select>` : ''}
 				${this._legalScenarioNames.length > 1 ? html`
 				<label for='scenarios'>Scenario</label>
@@ -328,6 +333,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._dataError = selectAdjacencyMapError(state);
 		this._scenarioEditable = selectCurrentScenarioEditable(state);
 		this._summaryNodeEditableFields = selectSelectedNodeFieldsEdited(state);
+		this._scenariosOverlays = selectScenariosOverlays(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
