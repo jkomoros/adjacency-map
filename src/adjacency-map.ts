@@ -796,7 +796,8 @@ const impliedPropertyNames = (config : ImpliesConfiguration | undefined, allName
 	return assertUnreachable(config);
 };
 
-const completeEdgeSet = (source: NodeID, edges : EdgeValue[], data : MapDefinition) : ExpandedEdgeValue[] => {
+const completeEdgeSet = (source: NodeID, data : MapDefinition, edges? : EdgeValue[]) : ExpandedEdgeValue[] => {
+	if (!edges) edges = [];
 	const edgesByRef : {[ref : NodeID]: ExpandedEdgeValue[]} = {};
 	for (const edge of edges) {
 		const parent = edge.parent || ROOT_ID;
@@ -995,11 +996,7 @@ class AdjacencyMapNode {
 
 	get edges() : ExpandedEdgeValue[] {
 		if (!this._cachedEdges) {
-			if (this._data && this._data.edges) {
-				this._cachedEdges = completeEdgeSet(this.id, this._data.edges, this._map.data);
-			} else {
-				this._cachedEdges = [];
-			}
+			this._cachedEdges = completeEdgeSet(this.id, this._map.data, this?._data?.edges);
 		}
 		return this._cachedEdges;
 	}
