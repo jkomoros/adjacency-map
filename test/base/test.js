@@ -5550,6 +5550,7 @@ describe('scenarios', () => {
 						edges: {
 							add: [],
 							remove: [],
+							modify: []
 						}
 					}
 				}
@@ -5564,7 +5565,8 @@ describe('scenarios', () => {
 						},
 						edges: {
 							add: [],
-							remove: []
+							remove: [],
+							modify: []
 						}
 					}
 				}
@@ -5578,7 +5580,8 @@ describe('scenarios', () => {
 						},
 						edges: {
 							add: [],
-							remove: []
+							remove: [],
+							modify: []
 						}
 					}
 				}
@@ -5955,6 +5958,11 @@ describe('scenarios', () => {
 								{
 									parent: 'a',
 									type: 'data'
+								},
+								{
+									parent: 'a',
+									type: 'engineering',
+									weight: 5
 								}
 							],
 							remove: [
@@ -5979,6 +5987,13 @@ describe('scenarios', () => {
 								{
 									parent: 'a',
 									type: 'ux'
+								}
+							],
+							modify: [
+								{
+									parent: 'a',
+									type: 'engineering',
+									weight: 2
 								}
 							]
 						}
@@ -6010,6 +6025,16 @@ describe('scenarios', () => {
 				implied: 0,
 				parent: 'a',
 				source: 'b',
+				type: 'engineering',
+				//TODO: this is the result that is currently returned, but the result is weird.
+				//You'd expect the additions/removals/modifications from different scenarios to stack, but actually it's
+				//All removals, then all modifications, then all additions
+				weight: 5
+			},
+			{
+				implied: 0,
+				parent: 'a',
+				source: 'b',
 				type: 'ux'
 			}
 		];
@@ -6035,6 +6060,11 @@ describe('scenarios', () => {
 								{
 									parent: 'a',
 									type: 'data'
+								},
+								{
+									parent: 'a',
+									type: 'engineering',
+									weight: 5
 								}
 							],
 							remove: [
@@ -6059,6 +6089,13 @@ describe('scenarios', () => {
 								{
 									parent: 'a',
 									type: 'ux'
+								}
+							],
+							modify: [
+								{
+									parent: 'a',
+									type: 'engineering',
+									weight: 2
 								}
 							]
 						}

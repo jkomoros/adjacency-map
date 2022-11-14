@@ -367,7 +367,8 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 				values: {...(baseNode.values || {})},
 				edges: {
 					add: extractEdgesFromRawEdgeInput(baseNode.edges?.add),
-					remove: extractEdgesFromRawEdgeInput(baseNode.edges?.remove)
+					remove: extractEdgesFromRawEdgeInput(baseNode.edges?.remove),
+					modify: extractEdgesFromRawEdgeInput(baseNode.edges?.modify)
 				}
 			};
 		}
@@ -377,7 +378,8 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 				values: {...existingNode.values, ...(node.values || {})},
 				edges: {
 					add: [...existingNode.edges.add, ...extractEdgesFromRawEdgeInput(node?.edges?.add)],
-					remove: [...existingNode.edges.remove, ...extractEdgesFromRawEdgeInput(node?.edges?.remove)]
+					remove: [...existingNode.edges.remove, ...extractEdgesFromRawEdgeInput(node?.edges?.remove)],
+					modify: [...existingNode.edges.modify, ...extractEdgesFromRawEdgeInput(node?.edges?.modify)]
 				}
 			};
 		}
@@ -818,7 +820,7 @@ const getEdgeValueMatchID = (value : EdgeValue) : EdgeValueMatchID => {
 	return value.type + '@@' + (value.parent || '');
 };
 
-const edgesWithScenarioModifications = (baseEdges : EdgeValue[], additions: EdgeValue[], removals: EdgeValue[]) : EdgeValue[] => {
+const edgesWithScenarioModifications = (baseEdges : EdgeValue[], additions: EdgeValue[], removals: EdgeValue[], modifications: EdgeValue[]) : EdgeValue[] => {
 	const result : EdgeValue[] = baseEdges ? [...baseEdges] : [];
 
 	//We'll filter down to only removals that mostly overlap.
@@ -835,11 +837,22 @@ const edgesWithScenarioModifications = (baseEdges : EdgeValue[], additions: Edge
 		return !removalEdges;
 	});
 
-	for (const additionEdge of additions) {
-		filteredResult.push(additionEdge);
+	const modifyMap : {[id : string]: EdgeValue} = {};
+	for (const edge of modifications) {
+		const id = getEdgeValueMatchID(edge);
+		modifyMap[id] = edge;
 	}
 
-	return filteredResult;
+	const modifiedResult = filteredResult.map(edge => {
+		const id = getEdgeValueMatchID(edge);
+		return modifyMap[id] ? modifyMap[id] : edge;
+	});
+
+	for (const additionEdge of additions) {
+		modifiedResult.push(additionEdge);
+	}
+
+	return modifiedResult;
 };
 
 const completeEdgeSet = (source: NodeID, data : MapDefinition, edges : EdgeValue[]) : ExpandedEdgeValue[] => {
@@ -1046,7 +1059,7 @@ class AdjacencyMapNode {
 		if (!this._cachedEdges) {
 			const scenarioNode = this._scenarioNode;
 			const baseEdges = this?._data?.edges || [];
-			const modifiedEdges = edgesWithScenarioModifications(baseEdges, scenarioNode.edges.add, scenarioNode.edges.remove);
+			const modifiedEdges = edgesWithScenarioModifications(baseEdges, scenarioNode.edges.add, scenarioNode.edges.remove, scenarioNode.edges.modify);
 			this._cachedEdges = completeEdgeSet(this.id, this._map.data, modifiedEdges);
 		}
 		return this._cachedEdges;

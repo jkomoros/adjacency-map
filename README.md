@@ -1104,6 +1104,14 @@ The value that you set each override node to can override values, or modify edge
                 parent: 'nodeB',
                 type: 'property_two'
             }
+        ],
+        modify: [
+            //edges matching the same parent + type will be replaced in their entirety by this
+            {
+                parent: 'nodeA',
+                type: 'property_three',
+                weight: 5
+            }
         ]
     }
 }
