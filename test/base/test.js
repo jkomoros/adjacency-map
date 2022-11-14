@@ -5950,7 +5950,7 @@ describe('scenarios', () => {
 						edges: {
 							add: [
 								{
-									ref: 'a',
+									parent: 'a',
 									type: 'data'
 								}
 							]
@@ -5968,7 +5968,7 @@ describe('scenarios', () => {
 						edges: {
 							add: [
 								{
-									ref: 'a',
+									parent: 'a',
 									type: 'ux'
 								}
 							]
@@ -5999,13 +5999,13 @@ describe('scenarios', () => {
 			},
 			{
 				implied: 0,
-				parent: '',
+				parent: 'a',
 				source: 'b',
 				type: 'data'
 			},
 			{
 				implied: 0,
-				parent: '',
+				parent: 'a',
 				source: 'b',
 				type: 'ux'
 			}
