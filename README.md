@@ -1096,6 +1096,14 @@ The value that you set each override node to can override values, or modify edge
                 parent: 'nodeA'
                 type: 'property_one'
             }
+        ],
+        //Any edges that have the given node as the source, and match parent+type
+        //will be removed.
+        remove: [
+            {
+                parent: 'nodeB',
+                type: 'property_two'
+            }
         ]
     }
 }

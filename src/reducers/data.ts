@@ -96,9 +96,10 @@ const editingUpdateNodeValueInOverlay = (filename: DataFilename, scenarioName: S
 };
 
 const scenarioNodeIsEmpty = (node: ScenarioNode) : boolean => {
-	//TODO: when we add in e.g. edges, extend this definition
 	if (Object.keys(node.values).length > 0) return false;
-	if (node.edges.add.length > 0) return false;
+	for (const values of Object.values(node.edges)) {
+		if (values.length > 0) return false;
+	}
 	return true;
 };
 

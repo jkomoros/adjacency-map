@@ -10,7 +10,8 @@ export const emptyScenarioNode = () : ScenarioNode => {
 	return {
 		values: {},
 		edges: {
-			add: []
+			add: [],
+			remove: []
 		}
 	};
 };

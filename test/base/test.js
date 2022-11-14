@@ -5548,7 +5548,8 @@ describe('scenarios', () => {
 							ux: 10.0,
 						},
 						edges: {
-							add: []
+							add: [],
+							remove: [],
 						}
 					}
 				}
@@ -5562,7 +5563,8 @@ describe('scenarios', () => {
 							ux: 5.0
 						},
 						edges: {
-							add: []
+							add: [],
+							remove: []
 						}
 					}
 				}
@@ -5575,7 +5577,8 @@ describe('scenarios', () => {
 							engineering: 3.0
 						},
 						edges: {
-							add: []
+							add: [],
+							remove: []
 						}
 					}
 				}
@@ -5933,7 +5936,7 @@ describe('scenarios', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
-	it('Correctly calculates edges in a scenario with indirect extension', async () => {
+	it('Correctly calculates edges in a scenario with indirect extension and add', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.scenarios = {
 			one: {
@@ -5952,6 +5955,12 @@ describe('scenarios', () => {
 								{
 									parent: 'a',
 									type: 'data'
+								}
+							],
+							remove: [
+								{
+									parent: 'a',
+									type: 'ux'
 								}
 							]
 						}
@@ -5995,12 +6004,6 @@ describe('scenarios', () => {
 				implied: 0,
 				parent: 'a',
 				source: 'b',
-				type: 'ux'
-			},
-			{
-				implied: 0,
-				parent: 'a',
-				source: 'b',
 				type: 'data'
 			},
 			{
@@ -6032,6 +6035,12 @@ describe('scenarios', () => {
 								{
 									parent: 'a',
 									type: 'data'
+								}
+							],
+							remove: [
+								{
+									parent: 'a',
+									type: 'ux'
 								}
 							]
 						}

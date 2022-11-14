@@ -366,7 +366,8 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 			nodes[id] = {
 				values: {...(baseNode.values || {})},
 				edges: {
-					add: extractEdgesFromRawEdgeInput(baseNode.edges?.add)
+					add: extractEdgesFromRawEdgeInput(baseNode.edges?.add),
+					remove: extractEdgesFromRawEdgeInput(baseNode.edges?.remove)
 				}
 			};
 		}
@@ -375,7 +376,8 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 			nodes[id] = {
 				values: {...existingNode.values, ...(node.values || {})},
 				edges: {
-					add: [...existingNode.edges.add, ...extractEdgesFromRawEdgeInput(node?.edges?.add)]
+					add: [...existingNode.edges.add, ...extractEdgesFromRawEdgeInput(node?.edges?.add)],
+					remove: [...existingNode.edges.remove, ...extractEdgesFromRawEdgeInput(node?.edges?.remove)]
 				}
 			};
 		}
@@ -810,12 +812,35 @@ const impliedPropertyNames = (config : ImpliesConfiguration | undefined, allName
 	return assertUnreachable(config);
 };
 
-const edgesWithScenarioModifications = (baseEdges : EdgeValue[], additions: EdgeValue[]) : EdgeValue[] => {
+type EdgeValueMatchID = string;
+
+const getEdgeValueMatchID = (value : EdgeValue) : EdgeValueMatchID => {
+	return value.type + '@@' + (value.parent || '');
+};
+
+const edgesWithScenarioModifications = (baseEdges : EdgeValue[], additions: EdgeValue[], removals: EdgeValue[]) : EdgeValue[] => {
 	const result : EdgeValue[] = baseEdges ? [...baseEdges] : [];
-	for (const additionEdge of additions) {
-		result.push(additionEdge);
+
+	//We'll filter down to only removals that mostly overlap.
+	const removalsMap : {[id : string]: EdgeValue[]} = {};
+	for (const edge of removals) {
+		const id = getEdgeValueMatchID(edge);
+		if (!removalsMap[id]) removalsMap[id] = [];
+		removalsMap[id] = [...removalsMap[id], edge];
 	}
-	return result;
+
+	//Actually remove items that are in removals.
+	const filteredResult = result.filter(edge => {
+		const id = getEdgeValueMatchID(edge);
+		const removalEdges = removalsMap[id];
+		return !removalEdges;
+	});
+
+	for (const additionEdge of additions) {
+		filteredResult.push(additionEdge);
+	}
+
+	return filteredResult;
 };
 
 const completeEdgeSet = (source: NodeID, data : MapDefinition, edges : EdgeValue[]) : ExpandedEdgeValue[] => {
@@ -1022,7 +1047,7 @@ class AdjacencyMapNode {
 		if (!this._cachedEdges) {
 			const scenarioNode = this._scenarioNode;
 			const baseEdges = this?._data?.edges || [];
-			const modifiedEdges = edgesWithScenarioModifications(baseEdges, scenarioNode.edges.add);
+			const modifiedEdges = edgesWithScenarioModifications(baseEdges, scenarioNode.edges.add, scenarioNode.edges.remove);
 			this._cachedEdges = completeEdgeSet(this.id, this._map.data, modifiedEdges);
 		}
 		return this._cachedEdges;
