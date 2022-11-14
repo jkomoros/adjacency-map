@@ -214,6 +214,12 @@ const data : RawMapDefinition = {
 								parent: 'base_train',
 								cost: 5
 							}
+						],
+						remove: [
+							{
+								type: 'engineering',
+								parent: 'base_infer_colab'
+							}
 						]
 					}
 				},
