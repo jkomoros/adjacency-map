@@ -335,7 +335,11 @@ class MainView extends connect(store)(PageViewElement) {
 	}
 
 	_htmlForEdge(edge : ExpandedEdgeValue) : TemplateResult {
-		return html`<div>Type: <strong>${edge.type}</strong> Parent: <strong>${edge.parent}</strong> Source: <strong>${edge.source}</strong></div>`;
+		return html`<ul>
+				<li>Type: <strong>${edge.type}</strong></li>
+				<li>Parent: <strong>${edge.parent}</strong></li>
+				<li>Source: <strong>${edge.source}</strong></li>
+			</ul>`;
 	}
 
 	_htmlForTag(tagName : TagID, tagMap : TagMap) : TemplateResult {
