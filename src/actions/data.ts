@@ -45,6 +45,7 @@ import {
 
 import {
 	DataFilename,
+	EdgeValue,
 	NodeID,
 	PropertyName,
 	ScenarioName,
@@ -242,22 +243,21 @@ export const addEditingNodeEdge : AppActionCreator = (propertyName? : PropertyNa
 		propertyName = map.propertyNames[0];
 	}
 	if (parent == undefined) parent == ROOT_ID;
+	const edge : EdgeValue = {type: propertyName, parent};
 	//TODO: if property/parent are already present in an additions list and they
 	//were set automatically, then set another pair so as to not overlap.
 	dispatch({
 		type: ADD_EDITING_NODE_EDGE,
-		propertyName,
-		parent
+		edge
 	});
 };
 
-export const removeEditingNodeEdge : AppActionCreator = (propertyName : PropertyName, parent: NodeID) => (dispatch, getState) => {
+export const removeEditingNodeEdge : AppActionCreator = (edge : EdgeValue) => (dispatch, getState) => {
 	const state = getState();
 	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
 	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
 	dispatch({
 		type: REMOVE_EDITING_NODE_EDGE,
-		propertyName,
-		parent
+		edge
 	});
 };

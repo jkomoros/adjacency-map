@@ -29,7 +29,8 @@ import {
 	ScenariosOverlays,
 	NodeID,
 	PropertyName,
-	ScenarioNode
+	ScenarioNode,
+	EdgeValue
 } from "../types.js";
 
 import {
@@ -118,15 +119,15 @@ const removeEditingNodeValueInOverlay = (state : DataState, propertyName : Prope
 	return result;
 };
 
-const addEditingNodeEdgeInOverlay = (state : DataState, propertyName : PropertyName, parent: NodeID) : ScenariosOverlays => {
+const addEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : ScenariosOverlays => {
 	const [result, node] = prepareToEditNodeInOverlay(state);
-	node.edges.add.push({parent, type: propertyName});
+	node.edges.add.push(edge);
 	return result;
 };
 
-const removeEditingNodeEdgeInOverlay = (state : DataState, propertyName : PropertyName, parent: NodeID) : ScenariosOverlays => {
+const removeEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : ScenariosOverlays => {
 	const [result, node] = prepareToEditNodeInOverlay(state);
-	const id = getEdgeValueMatchID({type: propertyName, parent});
+	const id = getEdgeValueMatchID(edge);
 	let changesMade = false;
 	for (let i = 0; i < node.edges.add.length; i++) {
 		const addition = node.edges.add[i];
@@ -143,7 +144,7 @@ const removeEditingNodeEdgeInOverlay = (state : DataState, propertyName : Proper
 		break;
 	}
 	if (!changesMade) {
-		node.edges.remove.push({type: propertyName, parent});
+		node.edges.remove.push(edge);
 	}
 	return result;
 };
@@ -226,12 +227,12 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 	case ADD_EDITING_NODE_EDGE:
 		return {
 			...state,
-			scenariosOverlays: addEditingNodeEdgeInOverlay(state, action.property, action.parent)
+			scenariosOverlays: addEditingNodeEdgeInOverlay(state, action.edge)
 		};
 	case REMOVE_EDITING_NODE_EDGE:
 		return {
 			...state,
-			scenariosOverlays: removeEditingNodeEdgeInOverlay(state, action.property, action.parent)
+			scenariosOverlays: removeEditingNodeEdgeInOverlay(state, action.edge)
 		};
 	default:
 		return state;
