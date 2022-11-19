@@ -108,7 +108,8 @@ import {
 import {
 	fetchOverlaysFromStorage,
 	storeOverlaysToStorage,
-	renderEdgeStableID
+	renderEdgeStableID,
+	constantsForEdge
 } from '../util.js';
 
 @customElement('main-view')
@@ -339,6 +340,7 @@ class MainView extends connect(store)(PageViewElement) {
 				<li>Type: <strong>${edge.type}</strong></li>
 				<li>Parent: <strong>${edge.parent}</strong></li>
 				<li>Source: <strong>${edge.source}</strong></li>
+				${Object.entries(constantsForEdge(edge)).map(entry => html`<li>${entry[0]}: <strong>${entry[1]}</strong></li>`)}
 			</ul>`;
 	}
 
