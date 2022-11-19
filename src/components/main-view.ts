@@ -46,7 +46,8 @@ import {
 	selectCurrentScenarioEditable,
 	selectSelectedNodeFieldsEdited,
 	selectScenariosOverlays,
-	selectCurrentScenarioEditedNodes
+	selectCurrentScenarioEditedNodes,
+	selectSummaryNodeID
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -269,6 +270,7 @@ class MainView extends connect(store)(PageViewElement) {
 	}
 
 	override render() : TemplateResult {
+		const node = (this._adjacencyMap && this._summaryNodeID) ? this._adjacencyMap.node(this._summaryNodeID) : null;
 		return html`
 			<div class='controls'>
 				${this._legalFilenames && this._legalFilenames.length > 1 ? html`
@@ -302,6 +304,9 @@ class MainView extends connect(store)(PageViewElement) {
 					${Object.keys(this._summaryTags).length && this._adjacencyMap ? 
 		html`<label>Tags</label>
 				${Object.keys(this._adjacencyMap.data.tags).map(tagName => this._htmlForTag(tagName, this._summaryTags))}`
+		: ''}
+					${node && node.edges.length ? html`<label>Edges</label>
+					${node.edges.filter(edge => !edge.implied).map(edge => html`<div>Type: <strong>${edge.type}</strong> Parent: <strong>${edge.parent}</strong> Source: <strong>${edge.source}</strong></div>`)}` 
 		: ''}
 				</div>
 			</div>
@@ -348,6 +353,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._hashForCurrentState = selectHashForCurrentState(state);
 		this._summaryDescription = selectSummaryDescription(state);
 		this._selectedNodeID = selectSelectedNodeID(state);
+		this._summaryNodeID = selectSummaryNodeID(state);
 		this._summaryNodeDisplayName = selectSummaryNodeDisplayName(state);
 		this._summaryTags = selectSummaryTags(state);
 		this._summaryValues = selectSummaryValues(state);
