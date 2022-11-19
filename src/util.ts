@@ -3,8 +3,11 @@ import {
 	RandomGenerator,
 	ScenariosOverlays,
 	ScenarioNode,
-	RenderEdgeValue
+	RenderEdgeValue,
+	ExpandedEdgeValue,
+	ConstantType
 } from './types.js';
+import { RESERVED_EDGE_CONSTANT_NAMES } from './value-definition.js';
 
 export const emptyScenarioNode = () : ScenarioNode => {
 	return {
@@ -71,6 +74,16 @@ export const fetchOverlaysFromStorage = () : ScenariosOverlays => {
 export const storeOverlaysToStorage = (overlays : ScenariosOverlays) => {
 	if (!ENABLE_EDITING_SCENARIOS) return;
 	window.localStorage.setItem(SCENARIOS_OVERLAYS_LOCAL_STORAGE_KEY, JSON.stringify(overlays, null, '\t'));
+};
+
+export const constantsForEdge = (edge : ExpandedEdgeValue) : {[name : ConstantType]: number} => {
+	const result : {[name : ConstantType]: number} = {};
+	for (const [property, value] of Object.entries(edge)) {
+		if (RESERVED_EDGE_CONSTANT_NAMES[property]) continue;
+		if (typeof value != 'number') throw new Error('Illegal constant value');
+		result[property] = value;
+	}
+	return result;
 };
 
 export const assertUnreachable = (x : never) : never => {
