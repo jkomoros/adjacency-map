@@ -5,6 +5,7 @@ export const UPDATE_SCENARIO_NAME = 'UPDATE_SCENARIO_NAME';
 export const UPDATE_HOVERED_NODE_ID = 'UPDATE_HOVERED_NODE_ID';
 export const UPDATE_SELECTED_NODE_ID = 'UPDATE_SELECTED_NODE_ID';
 export const UPDATE_SHOW_HIDDEN_VALUES = 'UPDATE_SHOW_HIDDEN_VALUES';
+export const TOGGLE_SHOW_EDGES = 'TOGGLE_SHOW_EDGES';
 
 export const LOAD_SCENARIOS_OVERLAYS = 'LOAD_SCENARIOS_OVERLAYS';
 export const RESET_SCENARIOS_OVERLAYS = 'RESET_SCENARIOS_OVERLAYS';
@@ -213,4 +214,10 @@ export const removeEditingNodeValue : AppActionCreator = (propertyName : Propert
 		type: REMOVE_EDITING_NODE_VALUE,
 		propertyName
 	});
+};
+
+export const toggleShowEdges = () : AnyAction => {
+	return {
+		type: TOGGLE_SHOW_EDGES
+	};
 };

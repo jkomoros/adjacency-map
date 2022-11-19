@@ -744,6 +744,7 @@ export type DataState = {
 	hoveredNodeID? : NodeID;
 	selectedNodeID? : NodeID;
 	showHiddenValues: boolean;
+	showEdges: boolean;
 	scenariosOverlays: ScenariosOverlays;
 }
 

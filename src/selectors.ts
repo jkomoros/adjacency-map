@@ -31,6 +31,7 @@ export const selectScale = (state : RootState) => state.data ? state.data.scale 
 export const selectScenarioName = (state : RootState) => state.data ? state.data.scenarioName : '';
 export const selectHoveredNodeID = (state : RootState) => state.data ? state.data.hoveredNodeID : undefined;
 export const selectSelectedNodeID = (state : RootState) => state.data ? state.data.selectedNodeID : undefined;
+export const selectShowEdges = (state : RootState) => state.data ? state.data.showEdges : false;
 export const selectShowHiddenValues = (state : RootState) => state.data ? state.data.showHiddenValues : false;
 export const selectScenariosOverlays = (state : RootState) => state.data ? state.data.scenariosOverlays : {};
 
