@@ -67,7 +67,7 @@ import {
 
 import {
 	DataFilename,
-	ExpandedEdgeValue,
+	EdgeValue,
 	NodeID,
 	NodeValues,
 	NodeValuesOverride,
@@ -312,8 +312,8 @@ class MainView extends connect(store)(PageViewElement) {
 		html`<label>Tags</label>
 				${Object.keys(this._adjacencyMap.data.tags).map(tagName => this._htmlForTag(tagName, this._summaryTags))}`
 		: ''}
-					${node && node.edges.length ? html`<details .open=${this._showEdges} @toggle=${this._handleShowEdgesToggleClicked}><summary><label>Edges</label></summary>
-					${node.edges.filter(edge => !edge.implied).map(edge => this._htmlForEdge(edge))}
+					${node && node.edgesWithFinalScenarioModifications.length ? html`<details .open=${this._showEdges} @toggle=${this._handleShowEdgesToggleClicked}><summary><label>Edges</label></summary>
+					${node.edgesWithFinalScenarioModifications.map(edge => this._htmlForEdge(edge))}
 					</details>` 
 		: ''}
 				</div>
@@ -335,11 +335,10 @@ class MainView extends connect(store)(PageViewElement) {
 		return html`<div><strong title='${property.description || ''}' class='${property.hide || false ? 'hidden' : ''}'>${propertyName}</strong>: ${inner}</div>`;
 	}
 
-	_htmlForEdge(edge : ExpandedEdgeValue) : TemplateResult {
+	_htmlForEdge(edge : EdgeValue) : TemplateResult {
 		return html`<ul>
 				<li>Type: <strong>${edge.type}</strong></li>
 				<li>Parent: <strong>${edge.parent}</strong></li>
-				<li>Source: <strong>${edge.source}</strong></li>
 				${Object.entries(constantsForEdge(edge)).map(entry => html`<li>${entry[0]}: <strong>${entry[1]}</strong></li>`)}
 			</ul>`;
 	}
