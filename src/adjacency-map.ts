@@ -829,8 +829,11 @@ const getEdgeValueMatchID = (value : EdgeValue) : EdgeValueMatchID => {
 	return value.type + '@@' + (value.parent || '');
 };
 
-const edgesWithScenarioModifications = (baseEdges : EdgeValue[], modifications : ScenarioNodeEdges) : EdgeValue[] => {
+const edgesWithScenarioModifications = (baseEdges : EdgeValue[], modifications? : ScenarioNodeEdges) : EdgeValue[] => {
+
 	let result : EdgeValue[] = baseEdges ? [...baseEdges] : [];
+
+	if (!modifications) return result;
 
 	if (modifications.extended) {
 		result = edgesWithScenarioModifications(result, modifications.extended);
@@ -1068,12 +1071,26 @@ class AdjacencyMapNode {
 		return result;
 	}
 
+	//The base edges without any scenario modifications or extensions
+	get baseEdges() : EdgeValue[] {
+		return this?._data?.edges || [];
+	}
+
+	//The base edges with all scenario modifications applied up to but NOT
+	//including the final scenario. (That is, scenario.extends and backwards.)
+	get edgesWithPreviousScenarioModifications() : EdgeValue[] {
+		return edgesWithScenarioModifications(this.baseEdges, this._scenarioNode.edges.extended);
+	}
+
+	//The base edges with all scenario modifications applied but not expanded.
+	get edgesWithFinalScenarioModifications() : EdgeValue[] {
+		return edgesWithScenarioModifications(this.baseEdges, this._scenarioNode.edges);
+	}
+
+	//All edges
 	get edges() : ExpandedEdgeValue[] {
 		if (!this._cachedEdges) {
-			const scenarioNode = this._scenarioNode;
-			const baseEdges = this?._data?.edges || [];
-			const modifiedEdges = edgesWithScenarioModifications(baseEdges, scenarioNode.edges);
-			this._cachedEdges = completeEdgeSet(this.id, this._map.data, modifiedEdges);
+			this._cachedEdges = completeEdgeSet(this.id, this._map.data, this.edgesWithFinalScenarioModifications);
 		}
 		return this._cachedEdges;
 	}
