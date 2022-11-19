@@ -67,6 +67,7 @@ import {
 
 import {
 	DataFilename,
+	ExpandedEdgeValue,
 	NodeID,
 	NodeValues,
 	NodeValuesOverride,
@@ -311,7 +312,7 @@ class MainView extends connect(store)(PageViewElement) {
 				${Object.keys(this._adjacencyMap.data.tags).map(tagName => this._htmlForTag(tagName, this._summaryTags))}`
 		: ''}
 					${node && node.edges.length ? html`<details .open=${this._showEdges} @toggle=${this._handleShowEdgesToggleClicked}><summary><label>Edges</label></summary>
-					${node.edges.filter(edge => !edge.implied).map(edge => html`<div>Type: <strong>${edge.type}</strong> Parent: <strong>${edge.parent}</strong> Source: <strong>${edge.source}</strong></div>`)}
+					${node.edges.filter(edge => !edge.implied).map(edge => this._htmlForEdge(edge))}
 					</details>` 
 		: ''}
 				</div>
@@ -331,6 +332,10 @@ class MainView extends connect(store)(PageViewElement) {
 			inner = html`<input type='number' .value=${String(value)} @change=${this._handleUpdateNodeProperty} data-property-name=${propertyName}></input><button class='small' title='Unset this property' @click=${this._handleRemoveNodePropertyClicked} data-property-name=${propertyName}>${CANCEL_ICON}</button>`;
 		}
 		return html`<div><strong title='${property.description || ''}' class='${property.hide || false ? 'hidden' : ''}'>${propertyName}</strong>: ${inner}</div>`;
+	}
+
+	_htmlForEdge(edge : ExpandedEdgeValue) : TemplateResult {
+		return html`<div>Type: <strong>${edge.type}</strong> Parent: <strong>${edge.parent}</strong> Source: <strong>${edge.source}</strong></div>`;
 	}
 
 	_htmlForTag(tagName : TagID, tagMap : TagMap) : TemplateResult {
