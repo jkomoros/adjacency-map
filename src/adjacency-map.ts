@@ -93,6 +93,7 @@ import {
 import {
 	assertUnreachable,
 	emptyScenarioNode,
+	getEdgeValueMatchID,
 	idToDisplayName,
 	wrapArrays
 } from './util.js';
@@ -821,12 +822,6 @@ const impliedPropertyNames = (config : ImpliesConfiguration | undefined, allName
 		return Object.fromEntries(allNames.filter(name => !excludeSet[name]).map(name => [name, true]));
 	}
 	return assertUnreachable(config);
-};
-
-type EdgeValueMatchID = string;
-
-const getEdgeValueMatchID = (value : EdgeValue) : EdgeValueMatchID => {
-	return value.type + '@@' + (value.parent || '');
 };
 
 const edgesWithScenarioModifications = (baseEdges : EdgeValue[], modifications? : ScenarioNodeEdges) : EdgeValue[] => {

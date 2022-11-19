@@ -6,9 +6,13 @@ import {
 	RenderEdgeValue,
 	ExpandedEdgeValue,
 	ConstantType,
-	EdgeValue
+	EdgeValue,
+	EdgeValueMatchID
 } from './types.js';
-import { RESERVED_EDGE_CONSTANT_NAMES } from './value-definition.js';
+
+import {
+	RESERVED_EDGE_CONSTANT_NAMES
+} from './value-definition.js';
 
 export const emptyScenarioNode = () : ScenarioNode => {
 	return {
@@ -85,6 +89,10 @@ export const constantsForEdge = (edge : ExpandedEdgeValue | EdgeValue) : {[name 
 		result[property] = value;
 	}
 	return result;
+};
+
+export const getEdgeValueMatchID = (value : EdgeValue) : EdgeValueMatchID => {
+	return value.type + '@@' + (value.parent || '');
 };
 
 export const assertUnreachable = (x : never) : never => {

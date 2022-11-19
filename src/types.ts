@@ -398,6 +398,8 @@ export type RenderEdgeValue = {
 	bump: number
 }
 
+export type EdgeValueMatchID = string;
+
 export type SimpleGraph = {
 	[id : NodeID] : {
 		[other : NodeID]: true
