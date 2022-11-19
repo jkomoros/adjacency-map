@@ -643,15 +643,18 @@ export type RawScenario = {
 	}
 }
 
+export type ScenarioNodeEdges = {
+	extended? : ScenarioNodeEdges,
+	add: EdgeValue[],
+	remove: EdgeValue[],
+	modify: EdgeValue[]
+}
+
 export type ScenarioNode = {
 	values: {
 		[propertyName : PropertyName]: ValueDefinition
 	}
-	edges: {
-		add: EdgeValue[],
-		remove: EdgeValue[],
-		modify: EdgeValue[],
-	}
+	edges: ScenarioNodeEdges
 }
 
 export type Scenario = {

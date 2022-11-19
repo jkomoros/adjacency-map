@@ -36,7 +36,8 @@ import {
 	RenderEdgeSubEdge,
 	RawEdgeInput,
 	ScenarioNode,
-	NodeValuesOverride
+	NodeValuesOverride,
+	ScenarioNodeEdges
 } from './types.js';
 
 import {
@@ -360,28 +361,36 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		const scenarioToExtend : Scenario = rawScenario.extends !== undefined ? scenarios[rawScenario.extends] : {description: '', nodes: {}};
 		if (!scenarioToExtend) throw new Error('Scenario ' + scenarioName + ' extends a non-existent scenario ' + rawScenario.extends);
 
-		//Create a full overlay
+		//Create a FULL overlay of every node that has ever been touched in any
+		//of the scenarios in our `extends` chain. We do this by propogating
+		//every node from the previous scenario in our extends chain, and then
+		//overlaying our modifications... which the previous one did too, and on
+		//and on back to an extends of hte root scenario.
+
 		const nodes : {[id : NodeID]: ScenarioNode} = {};
 		for (const [id, baseNode] of Object.entries(scenarioToExtend.nodes)) {
 			nodes[id] = {
 				values: {...(baseNode.values || {})},
 				edges: {
-					add: extractEdgesFromRawEdgeInput(baseNode.edges?.add),
-					remove: extractEdgesFromRawEdgeInput(baseNode.edges?.remove),
-					modify: extractEdgesFromRawEdgeInput(baseNode.edges?.modify)
+					extended: baseNode.edges,
+					add: [],
+					remove: [],
+					modify: []
 				}
 			};
 		}
 		for (const [id, node] of Object.entries(rawScenario.nodes)) {
 			const existingNode : ScenarioNode = nodes[id] || emptyScenarioNode();
-			nodes[id] = {
+			const newNode : ScenarioNode = {
 				values: {...existingNode.values, ...(node.values || {})},
 				edges: {
-					add: [...existingNode.edges.add, ...extractEdgesFromRawEdgeInput(node?.edges?.add)],
-					remove: [...existingNode.edges.remove, ...extractEdgesFromRawEdgeInput(node?.edges?.remove)],
-					modify: [...existingNode.edges.modify, ...extractEdgesFromRawEdgeInput(node?.edges?.modify)]
+					add: extractEdgesFromRawEdgeInput(node?.edges?.add),
+					remove: extractEdgesFromRawEdgeInput(node?.edges?.remove),
+					modify: extractEdgesFromRawEdgeInput(node?.edges?.modify)
 				}
 			};
+			if (existingNode.edges.extended) newNode.edges.extended = existingNode.edges.extended;
+			nodes[id] = newNode;
 		}
 
 		const scenario : Scenario = {
@@ -548,9 +557,9 @@ const validateData = (data : MapDefinition) : void => {
 		for (const [nodeName, nodeDefinition] of Object.entries(scenario.nodes)) {
 			if (nodeName != ROOT_ID && !data.nodes[nodeName]) throw new Error('All node ids in a scenario must be either ROOT_ID or included in nodes');
 			validateNodeValues(data, nodeDefinition.values);
-			for (const edgesValues of Object.values(nodeDefinition.edges)) {
-				validateEdges(data, nodeName, edgesValues);
-			}
+			validateEdges(data, nodeName, nodeDefinition.edges.add);
+			validateEdges(data, nodeName, nodeDefinition.edges.modify);
+			validateEdges(data, nodeName, nodeDefinition.edges.remove);
 		}
 	}
 
@@ -820,12 +829,16 @@ const getEdgeValueMatchID = (value : EdgeValue) : EdgeValueMatchID => {
 	return value.type + '@@' + (value.parent || '');
 };
 
-const edgesWithScenarioModifications = (baseEdges : EdgeValue[], additions: EdgeValue[], removals: EdgeValue[], modifications: EdgeValue[]) : EdgeValue[] => {
-	const result : EdgeValue[] = baseEdges ? [...baseEdges] : [];
+const edgesWithScenarioModifications = (baseEdges : EdgeValue[], modifications : ScenarioNodeEdges) : EdgeValue[] => {
+	let result : EdgeValue[] = baseEdges ? [...baseEdges] : [];
+
+	if (modifications.extended) {
+		result = edgesWithScenarioModifications(result, modifications.extended);
+	}
 
 	//We'll filter down to only removals that mostly overlap.
 	const removalsMap : {[id : string]: true} = {};
-	for (const edge of removals) {
+	for (const edge of modifications.remove) {
 		const id = getEdgeValueMatchID(edge);
 		removalsMap[id] = true;
 	}
@@ -838,7 +851,7 @@ const edgesWithScenarioModifications = (baseEdges : EdgeValue[], additions: Edge
 	});
 
 	const modifyMap : {[id : string]: EdgeValue} = {};
-	for (const edge of modifications) {
+	for (const edge of modifications.modify) {
 		const id = getEdgeValueMatchID(edge);
 		modifyMap[id] = edge;
 	}
@@ -848,7 +861,7 @@ const edgesWithScenarioModifications = (baseEdges : EdgeValue[], additions: Edge
 		return modifyMap[id] ? modifyMap[id] : edge;
 	});
 
-	for (const additionEdge of additions) {
+	for (const additionEdge of modifications.add) {
 		modifiedResult.push(additionEdge);
 	}
 
@@ -1059,7 +1072,7 @@ class AdjacencyMapNode {
 		if (!this._cachedEdges) {
 			const scenarioNode = this._scenarioNode;
 			const baseEdges = this?._data?.edges || [];
-			const modifiedEdges = edgesWithScenarioModifications(baseEdges, scenarioNode.edges.add, scenarioNode.edges.remove, scenarioNode.edges.modify);
+			const modifiedEdges = edgesWithScenarioModifications(baseEdges, scenarioNode.edges);
 			this._cachedEdges = completeEdgeSet(this.id, this._map.data, modifiedEdges);
 		}
 		return this._cachedEdges;
