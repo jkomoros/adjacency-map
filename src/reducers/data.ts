@@ -17,7 +17,8 @@ import {
 	REMOVE_EDITING_SCENARIO,
 	BEGIN_EDITING_NODE_VALUE,
 	EDITING_UPDATE_NODE_VALUE,
-	REMOVE_EDITING_NODE_VALUE
+	REMOVE_EDITING_NODE_VALUE,
+	ADD_EDITING_NODE_EDGE
 } from "../actions/data.js";
 
 import {
@@ -120,6 +121,19 @@ const removeEditingNodeValueInOverlay = (filename: DataFilename, scenarioName: S
 	return result;
 };
 
+const addEditingNodeEdgeInOverlay = (filename: DataFilename, scenarioName: ScenarioName, currentOverlay: ScenariosOverlays, nodeID : NodeID, propertyName : PropertyName, parent: NodeID) : ScenariosOverlays => {
+	const result = deepCopy(currentOverlay);
+	const filenameOverlay = result[filename];
+	if (filenameOverlay == undefined) throw new Error('filename overlay unexpectededly not set');
+	const scenarioOverlay = filenameOverlay[scenarioName];
+	if (scenarioOverlay == undefined) throw new Error('scenarioOverlay unexpectedly not set');
+	const nodes = scenarioOverlay.nodes;
+	if (!nodes[nodeID]) throw new Error('nodes unexpectedly not set');
+	const node = nodes[nodeID];
+	node.edges.add.push({parent, type: propertyName});
+	return result;
+};
+
 const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState => {
 	switch (action.type) {
 	case UPDATE_FILENAME:
@@ -194,6 +208,11 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			scenariosOverlays: removeEditingNodeValueInOverlay(state.filename, state.scenarioName, state.scenariosOverlays, state.selectedNodeID as NodeID, action.propertyName)
+		};
+	case ADD_EDITING_NODE_EDGE:
+		return {
+			...state,
+			scenariosOverlays: addEditingNodeEdgeInOverlay(state.filename, state.scenarioName, state.scenariosOverlays, state.selectedNodeID as NodeID, action.property, action.parent)
 		};
 	default:
 		return state;
