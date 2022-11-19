@@ -69,7 +69,7 @@ import {
 	calculateValueLeaf, 
 	cloneWithSelf, 
 	extractRequiredDependencies, 
-	RESERVED_VALUE_DEFINITION_PROPERTIES, 
+	RESERVED_EDGE_CONSTANT_NAMES,
 	validateValueDefinition,
 	valueDefinitionIsLeaf,
 	valueDefinitionIsStringType,
@@ -171,7 +171,7 @@ const extractEdgesFromRawEdgeInput = (input? : RawEdgeInput) : EdgeValue[] => {
 			if (rawValue.parent != undefined) value.parent = rawValue.parent;
 			if (rawValue.implies != undefined) value.implies = rawValue.implies;
 			for (const entry of Object.entries(rawValue)) {
-				if (RESERVED_VALUE_DEFINITION_PROPERTIES[entry[0]]) continue;
+				if (RESERVED_EDGE_CONSTANT_NAMES[entry[0]]) continue;
 				const val = entry[1] as ValueDefinition;
 				if (!valueDefinitionIsLeaf(val)) continue;
 				value[entry[0]] = calculateValueLeaf(val);
@@ -188,7 +188,7 @@ const extractEdgesFromRawEdgeInput = (input? : RawEdgeInput) : EdgeValue[] => {
 					};
 					if (rawValue.implies != undefined) value.implies = rawValue.implies;
 					for (const entry of Object.entries(rawValue)) {
-						if (RESERVED_VALUE_DEFINITION_PROPERTIES[entry[0]]) continue;
+						if (RESERVED_EDGE_CONSTANT_NAMES[entry[0]]) continue;
 						const val = entry[1] as ValueDefinition;
 						if (!valueDefinitionIsLeaf(val)) continue;
 						value[entry[0]] = calculateValueLeaf(val);
@@ -205,7 +205,7 @@ const extractEdgesFromRawEdgeInput = (input? : RawEdgeInput) : EdgeValue[] => {
 						};
 						if (rawValue.implies != undefined) value.implies = rawValue.implies;
 						for (const entry of Object.entries(rawValue)) {
-							if (RESERVED_VALUE_DEFINITION_PROPERTIES[entry[0]]) continue;
+							if (RESERVED_EDGE_CONSTANT_NAMES[entry[0]]) continue;
 							const val = entry[1] as ValueDefinition;
 							if (!valueDefinitionIsLeaf(val)) continue;
 							value[entry[0]] = calculateValueLeaf(val);
@@ -521,7 +521,7 @@ const validateData = (data : MapDefinition) : void => {
 		if (Object.keys(explicitlyEnumeratedImpliedPropertyNames(propertyDefinition.implies)).some(propertyName => !data.properties[propertyName] || data.properties[propertyName].calculateWhen == 'always')) throw new Error(type + 'has an implication that explicitly implies a property that doesn\'t exist or is noEdges');
 		if (propertyDefinition.constants) {
 			for (const [constantName, constantValue] of Object.entries(propertyDefinition.constants)) {
-				if (RESERVED_VALUE_DEFINITION_PROPERTIES[constantName]) throw new Error(constantName + ' was present in constants for ' + type + ' but is reserved');
+				if (RESERVED_EDGE_CONSTANT_NAMES[constantName]) throw new Error(constantName + ' was present in constants for ' + type + ' but is reserved');
 				if (typeof constantValue != 'number') throw new Error(type + ' constant ' + constantName + ' was not number as expected');
 			}
 		}

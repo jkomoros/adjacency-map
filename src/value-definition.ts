@@ -64,7 +64,8 @@ import {
 	TypedObject
 } from './typed-object.js';
 
-export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
+//These are the names that are not allowed to be used as constants on edges.
+export const RESERVED_EDGE_CONSTANT_NAMES : {[name : string] : true} = {
 	'ref': true,
 	'type': true,
 	'implies': true,
@@ -75,7 +76,7 @@ export const RESERVED_VALUE_DEFINITION_PROPERTIES : {[name : string] : true} = {
 
 //Constants that are allowed to be relied on even if the constants dict doesn't
 //define them because the engine will add them. Always a subset of
-//RESERVED_VALUE_DEFINITION_PROPERTIES.
+//RESERVED_EDGE_CONSTANT_NAMES.
 export const ALLOWED_CONSTANTS : {[name : string] : true} = {
 	'implied' : true
 };
@@ -440,7 +441,7 @@ export const validateValueDefinition = (definition : ValueDefinition, args: Valu
 	}
 
 	if (valueDefinitionIsEdgeConstant(definition)) {
-		if (RESERVED_VALUE_DEFINITION_PROPERTIES[definition.constant]) {
+		if (RESERVED_EDGE_CONSTANT_NAMES[definition.constant]) {
 			if (!ALLOWED_CONSTANTS[definition.constant]) throw new Error(definition.constant + ' is a reserved edge property name');
 			//Constants here are allowed to be relied on no matter what.
 			return;

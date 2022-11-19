@@ -332,7 +332,7 @@ export type NodeID = string;
 
 export type RawEdgeValue = {
 	//Any of the exlicitly enumerated properties should be added to
-	//RESERVED_VALUE_DEFINITION_PROPERTIES
+	//RESERVED_EDGE_CONSTANT_NAMES
 	type: PropertyName,
 	//If ref is not provided, it implicitly references the root node.
 	parent? : NodeID,
@@ -363,7 +363,7 @@ export type RawEdgeMap = {
 
 export type EdgeValue = {
 	//Any of the exlicitly enumerated properties should be added to
-	//RESERVED_VALUE_DEFINITION_PROPERTIES
+	//RESERVED_EDGE_CONSTANT_NAMES
 	type: PropertyName,
 	//If ref is not provided, it implicitly references the root node.
 	parent? : NodeID,
