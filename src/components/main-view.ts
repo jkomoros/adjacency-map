@@ -18,6 +18,7 @@ import {
 	removeEditingNodeValue,
 	removeEditingScenario,
 	resetScenariosOverlays,
+	toggleShowEdges,
 	updateFilename,
 	updateHoveredNodeID,
 	updateScale,
@@ -47,7 +48,8 @@ import {
 	selectSelectedNodeFieldsEdited,
 	selectScenariosOverlays,
 	selectCurrentScenarioEditedNodes,
-	selectSummaryNodeID
+	selectSummaryNodeID,
+	selectShowEdges
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -167,6 +169,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_showHiddenValues : boolean;
+
+	@state()
+	_showEdges : boolean;
 
 	@state()
 	_dataError : string;
@@ -305,8 +310,9 @@ class MainView extends connect(store)(PageViewElement) {
 		html`<label>Tags</label>
 				${Object.keys(this._adjacencyMap.data.tags).map(tagName => this._htmlForTag(tagName, this._summaryTags))}`
 		: ''}
-					${node && node.edges.length ? html`<label>Edges</label>
-					${node.edges.filter(edge => !edge.implied).map(edge => html`<div>Type: <strong>${edge.type}</strong> Parent: <strong>${edge.parent}</strong> Source: <strong>${edge.source}</strong></div>`)}` 
+					${node && node.edges.length ? html`<details .open=${this._showEdges} @toggle=${this._handleShowEdgesToggleClicked}><summary><label>Edges</label></summary>
+					${node.edges.filter(edge => !edge.implied).map(edge => html`<div>Type: <strong>${edge.type}</strong> Parent: <strong>${edge.parent}</strong> Source: <strong>${edge.source}</strong></div>`)}
+					</details>` 
 		: ''}
 				</div>
 			</div>
@@ -357,6 +363,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._summaryNodeDisplayName = selectSummaryNodeDisplayName(state);
 		this._summaryTags = selectSummaryTags(state);
 		this._summaryValues = selectSummaryValues(state);
+		this._showEdges = selectShowEdges(state);
 		this._showHiddenValues = selectShowHiddenValues(state);
 		this._dataError = selectAdjacencyMapError(state);
 		this._scenarioEditable = selectCurrentScenarioEditable(state);
@@ -415,6 +422,10 @@ class MainView extends connect(store)(PageViewElement) {
 
 	_handleResetOverlaysClicked() {
 		store.dispatch(resetScenariosOverlays());
+	}
+
+	_handleShowEdgesToggleClicked() {
+		store.dispatch(toggleShowEdges());
 	}
 
 	_handleEditNodePropertyClicked(e : MouseEvent) {
