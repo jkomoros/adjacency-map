@@ -5,7 +5,8 @@ import {
 	ScenarioNode,
 	RenderEdgeValue,
 	ExpandedEdgeValue,
-	ConstantType
+	ConstantType,
+	EdgeValue
 } from './types.js';
 import { RESERVED_EDGE_CONSTANT_NAMES } from './value-definition.js';
 
@@ -76,7 +77,7 @@ export const storeOverlaysToStorage = (overlays : ScenariosOverlays) => {
 	window.localStorage.setItem(SCENARIOS_OVERLAYS_LOCAL_STORAGE_KEY, JSON.stringify(overlays, null, '\t'));
 };
 
-export const constantsForEdge = (edge : ExpandedEdgeValue) : {[name : ConstantType]: number} => {
+export const constantsForEdge = (edge : ExpandedEdgeValue | EdgeValue) : {[name : ConstantType]: number} => {
 	const result : {[name : ConstantType]: number} = {};
 	for (const [property, value] of Object.entries(edge)) {
 		if (RESERVED_EDGE_CONSTANT_NAMES[property]) continue;
