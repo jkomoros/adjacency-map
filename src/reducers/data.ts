@@ -18,7 +18,8 @@ import {
 	BEGIN_EDITING_NODE_VALUE,
 	EDITING_UPDATE_NODE_VALUE,
 	REMOVE_EDITING_NODE_VALUE,
-	ADD_EDITING_NODE_EDGE
+	ADD_EDITING_NODE_EDGE,
+	REMOVE_EDITING_NODE_EDGE
 } from "../actions/data.js";
 
 import {
@@ -33,7 +34,8 @@ import {
 
 import {
 	deepCopy,
-	emptyScenarioNode
+	emptyScenarioNode,
+	getEdgeValueMatchID
 } from "../util.js";
 
 const INITIAL_STATE : DataState = {
@@ -134,6 +136,37 @@ const addEditingNodeEdgeInOverlay = (filename: DataFilename, scenarioName: Scena
 	return result;
 };
 
+const removeEditingNodeEdgeInOverlay = (filename: DataFilename, scenarioName: ScenarioName, currentOverlay: ScenariosOverlays, nodeID : NodeID, propertyName : PropertyName, parent: NodeID) : ScenariosOverlays => {
+	const result = deepCopy(currentOverlay);
+	const filenameOverlay = result[filename];
+	if (filenameOverlay == undefined) throw new Error('filename overlay unexpectededly not set');
+	const scenarioOverlay = filenameOverlay[scenarioName];
+	if (scenarioOverlay == undefined) throw new Error('scenarioOverlay unexpectedly not set');
+	const nodes = scenarioOverlay.nodes;
+	if (!nodes[nodeID]) throw new Error('nodes unexpectedly not set');
+	const node = nodes[nodeID];
+	const id = getEdgeValueMatchID({type: propertyName, parent});
+	let changesMade = false;
+	for (let i = 0; i < node.edges.add.length; i++) {
+		const addition = node.edges.add[i];
+		if (getEdgeValueMatchID(addition) != id) continue;
+		changesMade = true;
+		node.edges.add.splice(i);
+		break;
+	}
+	for (let i = 0; i < node.edges.modify.length; i++) {
+		const modification = node.edges.modify[i];
+		if (getEdgeValueMatchID(modification) != id) continue;
+		changesMade = true;
+		node.edges.modify.splice(i);
+		break;
+	}
+	if (!changesMade) {
+		node.edges.remove.push({type: propertyName, parent});
+	}
+	return result;
+};
+
 const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState => {
 	switch (action.type) {
 	case UPDATE_FILENAME:
@@ -213,6 +246,11 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			scenariosOverlays: addEditingNodeEdgeInOverlay(state.filename, state.scenarioName, state.scenariosOverlays, state.selectedNodeID as NodeID, action.property, action.parent)
+		};
+	case REMOVE_EDITING_NODE_EDGE:
+		return {
+			...state,
+			scenariosOverlays: removeEditingNodeEdgeInOverlay(state.filename, state.scenarioName, state.scenariosOverlays, state.selectedNodeID as NodeID, action.property, action.parent)
 		};
 	default:
 		return state;
