@@ -66,7 +66,7 @@ import {
 
 //These are the names that are not allowed to be used as constants on edges.
 export const RESERVED_EDGE_CONSTANT_NAMES : {[name : string] : true} = {
-	'ref': true,
+	'parent': true,
 	'type': true,
 	'implies': true,
 	//on ExpandedEdgeValue
