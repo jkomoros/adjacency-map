@@ -72,7 +72,11 @@ const removeScenarioFromScenariosOverlay = (filename : DataFilename, scenarioNam
 	return result;
 };
 
-const beginEditingNodeValueInOverlay = (filename: DataFilename, scenarioName: ScenarioName, currentOverlay: ScenariosOverlays, nodeID : NodeID, propertyName : PropertyName, value : number) : ScenariosOverlays => {
+const prepareToEditNodeInOverlay = (state : DataState) : [ScenariosOverlays, ScenarioNode, NodeID, {[id : NodeID]: ScenarioNode}] => {
+	const filename = state.filename;
+	const scenarioName = state.scenarioName;
+	const currentOverlay = state.scenariosOverlays;
+	const nodeID = state.selectedNodeID as NodeID;
 	const result = deepCopy(currentOverlay);
 	const filenameOverlay = result[filename];
 	if (filenameOverlay == undefined) throw new Error('filename overlay unexpectededly not set');
@@ -81,20 +85,18 @@ const beginEditingNodeValueInOverlay = (filename: DataFilename, scenarioName: Sc
 	const nodes = scenarioOverlay.nodes;
 	if (!nodes[nodeID]) nodes[nodeID] = emptyScenarioNode();
 	const node = nodes[nodeID];
+	return [result, node, nodeID, nodes];
+};
+
+const beginEditingNodeValueInOverlay = (state : DataState, propertyName : PropertyName, value : number) : ScenariosOverlays => {
+	const [result, node] = prepareToEditNodeInOverlay(state);
 	const values = node.values;
 	values[propertyName] = value;
 	return result;
 };
 
-const editingUpdateNodeValueInOverlay = (filename: DataFilename, scenarioName: ScenarioName, currentOverlay: ScenariosOverlays, nodeID : NodeID, propertyName : PropertyName, value: number) : ScenariosOverlays => {
-	const result = deepCopy(currentOverlay);
-	const filenameOverlay = result[filename];
-	if (filenameOverlay == undefined) throw new Error('filename overlay unexpectededly not set');
-	const scenarioOverlay = filenameOverlay[scenarioName];
-	if (scenarioOverlay == undefined) throw new Error('scenarioOverlay unexpectedly not set');
-	const nodes = scenarioOverlay.nodes;
-	if (!nodes[nodeID]) throw new Error('unexpectedly nodes was not set');
-	const node = nodes[nodeID];
+const editingUpdateNodeValueInOverlay = (state : DataState, propertyName : PropertyName, value: number) : ScenariosOverlays => {
+	const [result, node] = prepareToEditNodeInOverlay(state);
 	const values = node.values;
 	values[propertyName] = value;
 	return result;
@@ -108,43 +110,22 @@ const scenarioNodeIsEmpty = (node: ScenarioNode) : boolean => {
 	return true;
 };
 
-const removeEditingNodeValueInOverlay = (filename: DataFilename, scenarioName: ScenarioName, currentOverlay: ScenariosOverlays, nodeID : NodeID, propertyName : PropertyName) : ScenariosOverlays => {
-	const result = deepCopy(currentOverlay);
-	const filenameOverlay = result[filename];
-	if (filenameOverlay == undefined) throw new Error('filename overlay unexpectededly not set');
-	const scenarioOverlay = filenameOverlay[scenarioName];
-	if (scenarioOverlay == undefined) throw new Error('scenarioOverlay unexpectedly not set');
-	const nodes = scenarioOverlay.nodes;
-	if (!nodes[nodeID]) throw new Error('nodes unexpectedly not set');
-	const node = nodes[nodeID];
+const removeEditingNodeValueInOverlay = (state : DataState, propertyName : PropertyName) : ScenariosOverlays => {
+	const [result, node, nodeID, nodes] = prepareToEditNodeInOverlay(state);
 	delete node.values[propertyName];
 	//If that was the last property then remove the item
 	if (scenarioNodeIsEmpty(node)) delete nodes[nodeID];
 	return result;
 };
 
-const addEditingNodeEdgeInOverlay = (filename: DataFilename, scenarioName: ScenarioName, currentOverlay: ScenariosOverlays, nodeID : NodeID, propertyName : PropertyName, parent: NodeID) : ScenariosOverlays => {
-	const result = deepCopy(currentOverlay);
-	const filenameOverlay = result[filename];
-	if (filenameOverlay == undefined) throw new Error('filename overlay unexpectededly not set');
-	const scenarioOverlay = filenameOverlay[scenarioName];
-	if (scenarioOverlay == undefined) throw new Error('scenarioOverlay unexpectedly not set');
-	const nodes = scenarioOverlay.nodes;
-	if (!nodes[nodeID]) throw new Error('nodes unexpectedly not set');
-	const node = nodes[nodeID];
+const addEditingNodeEdgeInOverlay = (state : DataState, propertyName : PropertyName, parent: NodeID) : ScenariosOverlays => {
+	const [result, node] = prepareToEditNodeInOverlay(state);
 	node.edges.add.push({parent, type: propertyName});
 	return result;
 };
 
-const removeEditingNodeEdgeInOverlay = (filename: DataFilename, scenarioName: ScenarioName, currentOverlay: ScenariosOverlays, nodeID : NodeID, propertyName : PropertyName, parent: NodeID) : ScenariosOverlays => {
-	const result = deepCopy(currentOverlay);
-	const filenameOverlay = result[filename];
-	if (filenameOverlay == undefined) throw new Error('filename overlay unexpectededly not set');
-	const scenarioOverlay = filenameOverlay[scenarioName];
-	if (scenarioOverlay == undefined) throw new Error('scenarioOverlay unexpectedly not set');
-	const nodes = scenarioOverlay.nodes;
-	if (!nodes[nodeID]) throw new Error('nodes unexpectedly not set');
-	const node = nodes[nodeID];
+const removeEditingNodeEdgeInOverlay = (state : DataState, propertyName : PropertyName, parent: NodeID) : ScenariosOverlays => {
+	const [result, node] = prepareToEditNodeInOverlay(state);
 	const id = getEdgeValueMatchID({type: propertyName, parent});
 	let changesMade = false;
 	for (let i = 0; i < node.edges.add.length; i++) {
@@ -230,27 +211,27 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 	case BEGIN_EDITING_NODE_VALUE:
 		return {
 			...state,
-			scenariosOverlays: beginEditingNodeValueInOverlay(state.filename, state.scenarioName, state.scenariosOverlays, state.selectedNodeID as NodeID, action.propertyName, action.value)
+			scenariosOverlays: beginEditingNodeValueInOverlay(state, action.propertyName, action.value)
 		};
 	case EDITING_UPDATE_NODE_VALUE:
 		return {
 			...state,
-			scenariosOverlays: editingUpdateNodeValueInOverlay(state.filename, state.scenarioName, state.scenariosOverlays, state.selectedNodeID as NodeID, action.propertyName, action.value)
+			scenariosOverlays: editingUpdateNodeValueInOverlay(state, action.propertyName, action.value)
 		};
 	case REMOVE_EDITING_NODE_VALUE:
 		return {
 			...state,
-			scenariosOverlays: removeEditingNodeValueInOverlay(state.filename, state.scenarioName, state.scenariosOverlays, state.selectedNodeID as NodeID, action.propertyName)
+			scenariosOverlays: removeEditingNodeValueInOverlay(state, action.propertyName)
 		};
 	case ADD_EDITING_NODE_EDGE:
 		return {
 			...state,
-			scenariosOverlays: addEditingNodeEdgeInOverlay(state.filename, state.scenarioName, state.scenariosOverlays, state.selectedNodeID as NodeID, action.property, action.parent)
+			scenariosOverlays: addEditingNodeEdgeInOverlay(state, action.property, action.parent)
 		};
 	case REMOVE_EDITING_NODE_EDGE:
 		return {
 			...state,
-			scenariosOverlays: removeEditingNodeEdgeInOverlay(state.filename, state.scenarioName, state.scenariosOverlays, state.selectedNodeID as NodeID, action.property, action.parent)
+			scenariosOverlays: removeEditingNodeEdgeInOverlay(state, action.property, action.parent)
 		};
 	default:
 		return state;
