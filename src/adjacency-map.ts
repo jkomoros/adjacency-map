@@ -462,7 +462,7 @@ const validateEdges = (data : MapDefinition, nodeID: NodeID, edges?: EdgeValue[]
 		if (!edge.type) throw new Error(nodeID + ' has an edge with no type');
 		if (!data.properties[edge.type]) throw new Error(nodeID + ' has an edge of type ' + edge.type + ' which is not included in types');
 		if (data.properties[edge.type].calculateWhen == 'always') throw new Error(nodeID + ' has an edge of type ' + edge.type + ' but that edge type does not allow any edges');
-		if (Object.keys(explicitlyEnumaratedImpliedPropertyNames(edge.implies)).some(propertyName => !data.properties[propertyName] || data.properties[propertyName].calculateWhen == 'always')) throw new Error(nodeID + ' has an edge that has an implication that explicitly implies a property that doesn\'t exist or is noEdges');
+		if (Object.keys(explicitlyEnumeratedImpliedPropertyNames(edge.implies)).some(propertyName => !data.properties[propertyName] || data.properties[propertyName].calculateWhen == 'always')) throw new Error(nodeID + ' has an edge that has an implication that explicitly implies a property that doesn\'t exist or is noEdges');
 	}
 };
 
@@ -518,7 +518,7 @@ const validateData = (data : MapDefinition) : void => {
 		if (propertyDefinition.calculateWhen == 'always' && propertyDefinition.implies) throw new Error(type + ' sets noEdges but also sets an implies value.');
 		if (propertyDefinition.combine && !COMBINERS[propertyDefinition.combine]) throw new Error('Unknown combiner: ' + propertyDefinition.combine);
 		if (propertyDefinition.description && typeof propertyDefinition.description != 'string') throw new Error(type + ' has a description not of type string');
-		if (Object.keys(explicitlyEnumaratedImpliedPropertyNames(propertyDefinition.implies)).some(propertyName => !data.properties[propertyName] || data.properties[propertyName].calculateWhen == 'always')) throw new Error(type + 'has an implication that explicitly implies a property that doesn\'t exist or is noEdges');
+		if (Object.keys(explicitlyEnumeratedImpliedPropertyNames(propertyDefinition.implies)).some(propertyName => !data.properties[propertyName] || data.properties[propertyName].calculateWhen == 'always')) throw new Error(type + 'has an implication that explicitly implies a property that doesn\'t exist or is noEdges');
 		if (propertyDefinition.constants) {
 			for (const [constantName, constantValue] of Object.entries(propertyDefinition.constants)) {
 				if (RESERVED_VALUE_DEFINITION_PROPERTIES[constantName]) throw new Error(constantName + ' was present in constants for ' + type + ' but is reserved');
@@ -807,7 +807,7 @@ const wrapStringAsColor = (input : string | ValueDefinition) : ValueDefinition =
 
 type PropertyNameSet = {[name : PropertyName]: true};
 
-const explicitlyEnumaratedImpliedPropertyNames = (config : ImpliesConfiguration | undefined) : PropertyNameSet => {
+const explicitlyEnumeratedImpliedPropertyNames = (config : ImpliesConfiguration | undefined) : PropertyNameSet => {
 	if (!Array.isArray(config)) return {};
 	return Object.fromEntries(config.map(name => [name, true]));
 };
