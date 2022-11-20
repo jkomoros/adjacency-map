@@ -92,6 +92,7 @@ import {
 
 import {
 	assertUnreachable,
+	edgeEquivalent,
 	emptyScenarioNode,
 	getEdgeValueMatchID,
 	idToDisplayName,
@@ -1087,6 +1088,30 @@ class AdjacencyMapNode {
 	//The base edges with all scenario modifications applied but not expanded, skipping any removal steps.
 	get edgesWithFinalScenarioModificationsNoRemovals() : EdgeValue[] {
 		return edgesWithScenarioModifications(this.baseEdges, this._scenarioNode.edges, true);
+	}
+
+	//An array of booleans of length
+	//edgesWithFinalScenarioModificationsNoRemovals, where it's true for each
+	//one that is removed.
+	get edgesWithFinalScenariosAreRemoved() : boolean[] {
+		const final = this.edgesWithFinalScenarioModifications;
+		const noRemovals = this.edgesWithFinalScenarioModificationsNoRemovals;
+		//Final is a subset of noRemovals
+
+		//The index into final that we are.
+		let j = 0;
+		const result : boolean[] = [];
+		for (let i = 0; i < noRemovals.length; i++) {
+			const noRemovalEdge = noRemovals[i];
+			const finalEdge = final[j];
+			if (edgeEquivalent(noRemovalEdge, finalEdge)) {
+				result.push(false);
+				j++;
+			} else {
+				result.push(true);
+			}
+		}
+		return result;
 	}
 
 	//All edges
