@@ -81,6 +81,15 @@ export const storeOverlaysToStorage = (overlays : ScenariosOverlays) => {
 	window.localStorage.setItem(SCENARIOS_OVERLAYS_LOCAL_STORAGE_KEY, JSON.stringify(overlays, null, '\t'));
 };
 
+export const edgeEquivalent = (one : EdgeValue | ExpandedEdgeValue, two : EdgeValue | ExpandedEdgeValue) : boolean => {
+	if (one == two) return true;
+	if (Object.keys(one).length != Object.keys(two).length) return false;
+	for (const key of Object.keys(one)) {
+		if (one[key] != two[key]) return false;
+	}
+	return true;
+};
+
 export const constantsForEdge = (edge : ExpandedEdgeValue | EdgeValue) : {[name : ConstantType]: number} => {
 	const result : {[name : ConstantType]: number} = {};
 	for (const [property, value] of Object.entries(edge)) {
