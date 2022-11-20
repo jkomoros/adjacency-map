@@ -824,7 +824,7 @@ const impliedPropertyNames = (config : ImpliesConfiguration | undefined, allName
 	return assertUnreachable(config);
 };
 
-const edgesWithScenarioModifications = (baseEdges : EdgeValue[], modifications? : ScenarioNodeEdges) : EdgeValue[] => {
+const edgesWithScenarioModifications = (baseEdges : EdgeValue[], modifications? : ScenarioNodeEdges, skipRemovalsAtTopLevel = false) : EdgeValue[] => {
 
 	let result : EdgeValue[] = baseEdges ? [...baseEdges] : [];
 
@@ -836,9 +836,11 @@ const edgesWithScenarioModifications = (baseEdges : EdgeValue[], modifications? 
 
 	//We'll filter down to only removals that mostly overlap.
 	const removalsMap : {[id : string]: true} = {};
-	for (const edge of modifications.remove) {
-		const id = getEdgeValueMatchID(edge);
-		removalsMap[id] = true;
+	if (!skipRemovalsAtTopLevel) {
+		for (const edge of modifications.remove) {
+			const id = getEdgeValueMatchID(edge);
+			removalsMap[id] = true;
+		}
 	}
 
 	//Actually remove items that are in removals.
