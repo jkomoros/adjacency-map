@@ -1084,6 +1084,11 @@ class AdjacencyMapNode {
 		return edgesWithScenarioModifications(this.baseEdges, this._scenarioNode.edges);
 	}
 
+	//The base edges with all scenario modifications applied but not expanded, skipping any removal steps.
+	get edgesWithFinalScenarioModificationsNoRemovals() : EdgeValue[] {
+		return edgesWithScenarioModifications(this.baseEdges, this._scenarioNode.edges, true);
+	}
+
 	//All edges
 	get edges() : ExpandedEdgeValue[] {
 		if (!this._cachedEdges) {
