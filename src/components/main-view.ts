@@ -209,6 +209,10 @@ class MainView extends connect(store)(PageViewElement) {
 					width: 100%;
 				}
 
+				ul.removed {
+					text-decoration: line-through;
+				}
+
 				.container.needs-margin-left frame-visualization {
 					margin-left: var(--controls-width);
 				}
@@ -278,6 +282,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	override render() : TemplateResult {
 		const node = (this._adjacencyMap && this._summaryNodeID) ? this._adjacencyMap.node(this._summaryNodeID) : null;
+		const nodeEdges = node ? node.edgesWithFinalScenarioModificationsNoRemovals : [];
+		const nodeEdgesAreRemovals = node ? node.edgesWithFinalScenariosAreRemoved : [];
+		if (nodeEdges.length != nodeEdgesAreRemovals.length) throw new Error('edges not the same length unexpectedly');
 		return html`
 			<div class='controls'>
 				${this._legalFilenames && this._legalFilenames.length > 1 ? html`
@@ -312,8 +319,8 @@ class MainView extends connect(store)(PageViewElement) {
 		html`<label>Tags</label>
 				${Object.keys(this._adjacencyMap.data.tags).map(tagName => this._htmlForTag(tagName, this._summaryTags))}`
 		: ''}
-					${node && node.edgesWithFinalScenarioModifications.length ? html`<details .open=${this._showEdges} @toggle=${this._handleShowEdgesToggleClicked}><summary><label>Edges</label></summary>
-					${node.edgesWithFinalScenarioModifications.map(edge => this._htmlForEdge(edge))}
+					${nodeEdges.length ? html`<details .open=${this._showEdges} @toggle=${this._handleShowEdgesToggleClicked}><summary><label>Edges</label></summary>
+					${nodeEdges.map((edge, i) => this._htmlForEdge(edge, nodeEdgesAreRemovals[i]))}
 					</details>` 
 		: ''}
 				</div>
@@ -335,8 +342,8 @@ class MainView extends connect(store)(PageViewElement) {
 		return html`<div><strong title='${property.description || ''}' class='${property.hide || false ? 'hidden' : ''}'>${propertyName}</strong>: ${inner}</div>`;
 	}
 
-	_htmlForEdge(edge : EdgeValue) : TemplateResult {
-		return html`<ul>
+	_htmlForEdge(edge : EdgeValue, isRemoved : boolean) : TemplateResult {
+		return html`<ul class='${isRemoved ? 'removed' : ''}'>
 				<li>Type: <strong>${edge.type}</strong></li>
 				<li>Parent: <strong>${edge.parent}</strong></li>
 				${Object.entries(constantsForEdge(edge)).map(entry => html`<li>${entry[0]}: <strong>${entry[1]}</strong></li>`)}
