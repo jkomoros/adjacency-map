@@ -344,9 +344,9 @@ class MainView extends connect(store)(PageViewElement) {
 	}
 
 	_htmlForEdge(edge : EdgeValue, index : number, isRemoved : boolean) : TemplateResult {
-		return html`<ul class='${isRemoved ? 'removed' : ''}'>
+		return html`<ul class='${isRemoved ? 'removed' : ''}' data-index=${index}>
 				${this._scenarioEditable ? html`<li class='buttons'>
-					${isRemoved ? html`<button class='small' data-index=${index} @click=${this._handleUndoRemoveEdgeClicked}>${UNDO_ICON}</button>` : html`<button class='small' data-index=${index} @click=${this._handleRemoveEdgeClicked}>${CANCEL_ICON}</button>`}
+					${isRemoved ? html`<button class='small' @click=${this._handleUndoRemoveEdgeClicked}>${UNDO_ICON}</button>` : html`<button class='small' @click=${this._handleRemoveEdgeClicked}>${CANCEL_ICON}</button>`}
 				</li>` : ''}
 				<li>Type: <strong>${edge.type}</strong></li>
 				<li>Parent: <strong>${edge.parent}</strong></li>
