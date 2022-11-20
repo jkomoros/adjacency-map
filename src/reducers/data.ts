@@ -19,7 +19,8 @@ import {
 	EDITING_UPDATE_NODE_VALUE,
 	REMOVE_EDITING_NODE_VALUE,
 	ADD_EDITING_NODE_EDGE,
-	REMOVE_EDITING_NODE_EDGE
+	REMOVE_EDITING_NODE_EDGE,
+	MODIFY_EDITING_NODE_EDGE
 } from "../actions/data.js";
 
 import {
@@ -149,6 +150,22 @@ const removeEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : S
 	return result;
 };
 
+const modifyEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : ScenariosOverlays => { 
+	const [result, node] = prepareToEditNodeInOverlay(state);
+	const id = getEdgeValueMatchID(edge);
+	for (let i = 0; i < node.edges.add.length; i++) {
+		if (getEdgeValueMatchID(node.edges.add[i]) != id) continue;
+		node.edges.add[i] = edge;
+		break;
+	}
+	for (let i = 0; i < node.edges.modify.length; i++) {
+		if (getEdgeValueMatchID(node.edges.modify[i]) != id) continue;
+		node.edges.modify[i] = edge;
+		break;
+	}
+	return result;
+};
+
 const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState => {
 	switch (action.type) {
 	case UPDATE_FILENAME:
@@ -233,6 +250,11 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			scenariosOverlays: removeEditingNodeEdgeInOverlay(state, action.edge)
+		};
+	case MODIFY_EDITING_NODE_EDGE:
+		return {
+			...state,
+			scenariosOverlays: modifyEditingNodeEdgeInOverlay(state, action.edge)
 		};
 	default:
 		return state;

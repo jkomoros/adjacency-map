@@ -14,9 +14,9 @@ export const REMOVE_EDITING_SCENARIO = 'REMOVE_EDITING_SCENARIO';
 export const BEGIN_EDITING_NODE_VALUE = 'BEGIN_EDITING_NODE_VALUE';
 export const EDITING_UPDATE_NODE_VALUE = 'EDITING_UPDATE_NODE_VALUE';
 export const REMOVE_EDITING_NODE_VALUE = 'REMOVE_EDITING_NODE_VALUE';
-//TODO: add a MODIFY_EDITING_NODE_EDGE
 export const ADD_EDITING_NODE_EDGE = 'ADD_EDITING_NODE_EDGE';
 export const REMOVE_EDITING_NODE_EDGE = 'REMOVE_EDITING_NODE_EDGE';
+export const MODIFY_EDITING_NODE_EDGE = 'MODIFY_EDITING_NODE_EDGE';
 
 export const DEFAULT_FILE_NAME = 'default';
 //Also in tools/config.ts
@@ -258,6 +258,16 @@ export const removeEditingNodeEdge : AppActionCreator = (edge : EdgeValue) => (d
 	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
 	dispatch({
 		type: REMOVE_EDITING_NODE_EDGE,
+		edge
+	});
+};
+
+export const modifyEditingNodeEdge : AppActionCreator = (edge : EdgeValue) => (dispatch, getState) => {
+	const state = getState();
+	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
+	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
+	dispatch({
+		type: MODIFY_EDITING_NODE_EDGE,
 		edge
 	});
 };
