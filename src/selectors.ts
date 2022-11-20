@@ -9,7 +9,8 @@ import {
 } from './adjacency-map.js';
 
 import {
-	DEFAULT_SCENARIO_NAME
+	DEFAULT_SCENARIO_NAME,
+	ENABLE_EDITING_SCENARIOS
 } from './constants.js';
 
 import {
@@ -99,13 +100,15 @@ export const selectLegalScenarioNames = createSelector(
 export const selectCurrentScenarioEditable = createSelector(
 	selectScenarioName,
 	selectCurrentScenarioOverlay,
-	(scenarioName, overlay) => overlay[scenarioName] ? true : false
+	(scenarioName, overlay) => overlay[scenarioName] ? ENABLE_EDITING_SCENARIOS : false
 );
 
 export const selectCurrentScenarioEditedNodes = createSelector(
+	selectCurrentScenarioEditable,
 	selectCurrentScenarioOverlay,
 	selectScenarioName,
-	(overlay, scenarioName) => {
+	(editable, overlay, scenarioName) => {
+		if (!editable) return {};
 		const scenario = overlay[scenarioName];
 		//This will happen if hte current scenario isn't editable
 		if (!scenario) return {};
