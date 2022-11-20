@@ -9,12 +9,14 @@ import { connect } from "pwa-helpers/connect-mixin.js";
 import { store } from "../store.js";
 
 import {
+	addEditingNodeEdge,
 	beginEditingNodeValue,
 	beginEditingScenario,
 	editingUpdateNodeValue,
 	loadScenariosOverlays,
 	nextScenarioName,
 	previousScenarioName,
+	removeEditingNodeEdge,
 	removeEditingNodeValue,
 	removeEditingScenario,
 	resetScenariosOverlays,
@@ -449,12 +451,32 @@ class MainView extends connect(store)(PageViewElement) {
 		store.dispatch(toggleShowEdges());
 	}
 
-	_handleUndoRemoveEdgeClicked() {
-		alert('Not yet implemented');
+	_edgeActionClicked(e : MouseEvent) : EdgeValue {
+		let ulEle : HTMLUListElement | null = null;
+		for (const ele of e.composedPath()) {
+			if (!(ele instanceof HTMLUListElement)) continue;
+			ulEle = ele;
+		}
+		if (!ulEle) throw new Error('Couldnt find ul ele as expected');
+		const rawIndex = ulEle.dataset.index;
+		if (!rawIndex) throw new Error('No edge index as expected');
+		const index = parseInt(rawIndex);
+		const node = (this._adjacencyMap && this._summaryNodeID) ? this._adjacencyMap.node(this._summaryNodeID) : null;
+		if (!node) throw new Error('No node');
+		const edges = node.edgesWithFinalScenarioModificationsNoRemovals;
+		const edge = edges[index];
+		if (!edge) throw new Error('No edge');
+		return edge;
 	}
 
-	_handleRemoveEdgeClicked() {
-		alert('Not yet implemented');
+	_handleUndoRemoveEdgeClicked(e : MouseEvent) {
+		const edge = this._edgeActionClicked(e);
+		store.dispatch(addEditingNodeEdge(edge));
+	}
+
+	_handleRemoveEdgeClicked(e : MouseEvent) {
+		const edge = this._edgeActionClicked(e);
+		store.dispatch(removeEditingNodeEdge(edge));
 	}
 
 	_handleEditNodePropertyClicked(e : MouseEvent) {
