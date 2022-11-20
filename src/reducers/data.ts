@@ -44,6 +44,7 @@ const INITIAL_STATE : DataState = {
 	filename: DEFAULT_FILE_NAME,
 	scale: 1.0,
 	scenarioName: '',
+	selectedNodeID: undefined,
 	hoveredNodeID: undefined,
 	showHiddenValues: false,
 	showEdges: false,
