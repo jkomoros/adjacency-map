@@ -101,6 +101,7 @@ import {
 	VISIBILITY_OFF_ICON,
 	EDIT_ICON,
 	PLUS_ICON,
+	UNDO_ICON,
 	CANCEL_ICON,
 	DELETE_FOREVER_ICON
 } from './my-icons.js';
@@ -320,7 +321,7 @@ class MainView extends connect(store)(PageViewElement) {
 				${Object.keys(this._adjacencyMap.data.tags).map(tagName => this._htmlForTag(tagName, this._summaryTags))}`
 		: ''}
 					${nodeEdges.length ? html`<details .open=${this._showEdges} @toggle=${this._handleShowEdgesToggleClicked}><summary><label>Edges</label></summary>
-					${nodeEdges.map((edge, i) => this._htmlForEdge(edge, nodeEdgesAreRemovals[i]))}
+					${nodeEdges.map((edge, i) => this._htmlForEdge(edge, i, nodeEdgesAreRemovals[i]))}
 					</details>` 
 		: ''}
 				</div>
@@ -342,8 +343,11 @@ class MainView extends connect(store)(PageViewElement) {
 		return html`<div><strong title='${property.description || ''}' class='${property.hide || false ? 'hidden' : ''}'>${propertyName}</strong>: ${inner}</div>`;
 	}
 
-	_htmlForEdge(edge : EdgeValue, isRemoved : boolean) : TemplateResult {
+	_htmlForEdge(edge : EdgeValue, index : number, isRemoved : boolean) : TemplateResult {
 		return html`<ul class='${isRemoved ? 'removed' : ''}'>
+				${this._scenarioEditable ? html`<li class='buttons'>
+					${isRemoved ? html`<button class='small' data-index=${index} @click=${this._handleUndoRemoveEdgeClicked}>${UNDO_ICON}</button>` : html`<button class='small' data-index=${index} @click=${this._handleRemoveEdgeClicked}>${CANCEL_ICON}</button>`}
+				</li>` : ''}
 				<li>Type: <strong>${edge.type}</strong></li>
 				<li>Parent: <strong>${edge.parent}</strong></li>
 				${Object.entries(constantsForEdge(edge)).map(entry => html`<li>${entry[0]}: <strong>${entry[1]}</strong></li>`)}
@@ -443,6 +447,14 @@ class MainView extends connect(store)(PageViewElement) {
 
 	_handleShowEdgesToggleClicked() {
 		store.dispatch(toggleShowEdges());
+	}
+
+	_handleUndoRemoveEdgeClicked() {
+		alert('Not yet implemented');
+	}
+
+	_handleRemoveEdgeClicked() {
+		alert('Not yet implemented');
 	}
 
 	_handleEditNodePropertyClicked(e : MouseEvent) {
