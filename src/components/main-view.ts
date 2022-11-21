@@ -14,6 +14,7 @@ import {
 	beginEditingScenario,
 	editingUpdateNodeValue,
 	loadScenariosOverlays,
+	modifyEditingNodeEdge,
 	nextScenarioName,
 	previousScenarioName,
 	removeEditingNodeEdge,
@@ -346,11 +347,14 @@ class MainView extends connect(store)(PageViewElement) {
 	}
 
 	_htmlForEdge(edge : EdgeValue, index : number, isRemoved : boolean) : TemplateResult {
+		const properties = Object.entries(this._adjacencyMap?.data.properties || {});
 		return html`<ul class='${isRemoved ? 'removed' : ''}' data-index=${index}>
 				${this._scenarioEditable ? html`<li class='buttons'>
 					${isRemoved ? html`<button class='small' @click=${this._handleUndoRemoveEdgeClicked}>${UNDO_ICON}</button>` : html`<button class='small' @click=${this._handleRemoveEdgeClicked}>${CANCEL_ICON}</button>`}
 				</li>` : ''}
-				<li>Type: <strong>${edge.type}</strong></li>
+				<li>Type: ${this._scenarioEditable ? html`<select .value=${edge.type} @change=${this._handleEdgeTypeChanged}>
+					${properties.map(entry => html`<option .value=${entry[0]} .title=${entry[1].description || entry[0]}>${entry[0]}</option>`)}
+				</select>` : html`<strong>${edge.type}</strong>`}</li>
 				<li>Parent: <strong>${edge.parent}</strong></li>
 				${Object.entries(constantsForEdge(edge)).map(entry => html`<li>${entry[0]}: <strong>${entry[1]}</strong></li>`)}
 			</ul>`;
@@ -451,7 +455,7 @@ class MainView extends connect(store)(PageViewElement) {
 		store.dispatch(toggleShowEdges());
 	}
 
-	_edgeActionClicked(e : MouseEvent) : EdgeValue {
+	_edgeActionClicked(e : Event) : EdgeValue {
 		let ulEle : HTMLUListElement | null = null;
 		for (const ele of e.composedPath()) {
 			if (!(ele instanceof HTMLUListElement)) continue;
@@ -477,6 +481,15 @@ class MainView extends connect(store)(PageViewElement) {
 	_handleRemoveEdgeClicked(e : MouseEvent) {
 		const edge = this._edgeActionClicked(e);
 		store.dispatch(removeEditingNodeEdge(edge));
+	}
+
+	_handleEdgeTypeChanged(e : Event) {
+		const edge = this._edgeActionClicked(e);
+		if (!e.target) throw new Error('No select');
+		if (!(e.target instanceof HTMLSelectElement)) throw new Error('not select element');
+		const newPropertyName : PropertyName = e.target.value;
+		const newEdge = {...edge, type: newPropertyName};
+		store.dispatch(modifyEditingNodeEdge(newEdge));
 	}
 
 	_handleEditNodePropertyClicked(e : MouseEvent) {
