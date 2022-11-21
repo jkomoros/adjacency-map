@@ -1105,14 +1105,15 @@ The value that you set each override node to can override values, or modify edge
                 type: 'property_two'
             }
         ],
-        modify: [
-            //edges matching the same parent + type will be replaced in their entirety by this
-            {
+        modify: {
+            //edges matching the same parent + type will be replaced in their entirety by this. 
+            //The key is the previous propertyName + '+' + parent node ID to modify.
+            'property_three+nodeA' : {
                 parent: 'nodeA',
                 type: 'property_three',
                 weight: 5
             }
-        ]
+        }
     }
 }
 ```

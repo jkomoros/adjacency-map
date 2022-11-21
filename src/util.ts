@@ -20,7 +20,7 @@ export const emptyScenarioNode = () : ScenarioNode => {
 		edges: {
 			add: [],
 			remove: [],
-			modify: []
+			modify: {}
 		}
 	};
 };
@@ -101,7 +101,7 @@ export const constantsForEdge = (edge : ExpandedEdgeValue | EdgeValue) : {[name 
 };
 
 export const getEdgeValueMatchID = (value : EdgeValue) : EdgeValueMatchID => {
-	return value.type + '@@' + (value.parent || '');
+	return value.type + '+' + (value.parent || '');
 };
 
 export const assertUnreachable = (x : never) : never => {

@@ -377,7 +377,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 					extended: baseNode.edges,
 					add: [],
 					remove: [],
-					modify: []
+					modify: {}
 				}
 			};
 		}
@@ -388,7 +388,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 				edges: {
 					add: extractEdgesFromRawEdgeInput(node?.edges?.add),
 					remove: extractEdgesFromRawEdgeInput(node?.edges?.remove),
-					modify: extractEdgesFromRawEdgeInput(node?.edges?.modify)
+					modify: node?.edges?.modify || {}
 				}
 			};
 			if (existingNode.edges.extended) newNode.edges.extended = existingNode.edges.extended;
@@ -560,7 +560,7 @@ const validateData = (data : MapDefinition) : void => {
 			if (nodeName != ROOT_ID && !data.nodes[nodeName]) throw new Error('All node ids in a scenario must be either ROOT_ID or included in nodes');
 			validateNodeValues(data, nodeDefinition.values);
 			validateEdges(data, nodeName, nodeDefinition.edges.add);
-			validateEdges(data, nodeName, nodeDefinition.edges.modify);
+			validateEdges(data, nodeName, Object.values(nodeDefinition.edges.modify));
 			validateEdges(data, nodeName, nodeDefinition.edges.remove);
 		}
 	}
@@ -851,11 +851,7 @@ const edgesWithScenarioModifications = (baseEdges : EdgeValue[], modifications? 
 		return !removalEdges;
 	});
 
-	const modifyMap : {[id : string]: EdgeValue} = {};
-	for (const edge of modifications.modify) {
-		const id = getEdgeValueMatchID(edge);
-		modifyMap[id] = edge;
-	}
+	const modifyMap = modifications.modify;
 
 	const modifiedResult = filteredResult.map(edge => {
 		const id = getEdgeValueMatchID(edge);

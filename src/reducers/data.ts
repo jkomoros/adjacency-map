@@ -109,7 +109,7 @@ const scenarioNodeIsEmpty = (node: ScenarioNode) : boolean => {
 	if (Object.keys(node.values).length > 0) return false;
 	if (node.edges.add.length > 0) return false;
 	if (node.edges.remove.length > 0) return false;
-	if (node.edges.modify.length > 0) return false;
+	if (Object.keys(node.edges.modify).length > 0) return false;
 	return true;
 };
 
@@ -132,11 +132,10 @@ const addEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : Scen
 		node.edges.remove.splice(i);
 		break;
 	}
-	for (let i = 0; i < node.edges.modify.length; i++) {
-		const modification = node.edges.modify[i];
-		if (getEdgeValueMatchID(modification) != id) continue;
+	for (const previousID of Object.keys(node.edges.modify)) {
+		if (previousID != id) continue;
 		changesMade = true;
-		node.edges.modify.splice(i);
+		node.edges.modify[previousID] = edge;
 		break;
 	}
 	if (!changesMade) node.edges.add.push(edge);
@@ -154,11 +153,10 @@ const removeEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : S
 		node.edges.add.splice(i);
 		break;
 	}
-	for (let i = 0; i < node.edges.modify.length; i++) {
-		const modification = node.edges.modify[i];
-		if (getEdgeValueMatchID(modification) != id) continue;
+	for (const previousID of Object.keys(node.edges.modify)) {
+		if (previousID != id) continue;
 		changesMade = true;
-		node.edges.modify.splice(i);
+		delete node.edges.modify[previousID];
 		break;
 	}
 	if (!changesMade) {
@@ -178,13 +176,14 @@ const modifyEditingNodeEdgeInOverlay = (state : DataState, previousEdge : EdgeVa
 		node.edges.add[i] = newEdge;
 		changesMade = true;
 	}
-	for (let i = 0; i < node.edges.modify.length; i++) {
-		if (getEdgeValueMatchID(node.edges.modify[i]) != id) continue;
-		node.edges.modify[i] = newEdge;
+	for (const previousID of Object.keys(node.edges.modify)) {
+		if (previousID != id) continue;
+		delete node.edges.modify[previousID];
+		node.edges.modify[previousID] = newEdge;
 		changesMade = true;
 	}
 	//It's possible it's a modify that comes from a scneario above us.
-	if (!changesMade) node.edges.modify.push(newEdge);
+	if (!changesMade) node.edges.modify[id] = newEdge;
 	return result;
 };
 

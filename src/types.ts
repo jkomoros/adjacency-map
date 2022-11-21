@@ -398,6 +398,7 @@ export type RenderEdgeValue = {
 	bump: number
 }
 
+//Get one from util:getEdgeValueMatchID. `type` + '+' + `parentNodeID`
 export type EdgeValueMatchID = string;
 
 export type SimpleGraph = {
@@ -639,7 +640,9 @@ export type RawScenario = {
 			edges?: {
 				add?: RawEdgeInput,
 				remove?: RawEdgeInput,
-				modify?: RawEdgeInput
+				modify?: {
+					[previousID : EdgeValueMatchID]: EdgeValue
+				}
 			}
 		}
 	}
@@ -649,7 +652,9 @@ export type ScenarioNodeEdges = {
 	extended? : ScenarioNodeEdges,
 	add: EdgeValue[],
 	remove: EdgeValue[],
-	modify: EdgeValue[]
+	modify: {
+		[previousID : EdgeValueMatchID]: EdgeValue,
+	}
 }
 
 export type ScenarioNode = {
