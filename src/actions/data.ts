@@ -5,7 +5,7 @@ export const UPDATE_SCENARIO_NAME = 'UPDATE_SCENARIO_NAME';
 export const UPDATE_HOVERED_NODE_ID = 'UPDATE_HOVERED_NODE_ID';
 export const UPDATE_SELECTED_NODE_ID = 'UPDATE_SELECTED_NODE_ID';
 export const UPDATE_SHOW_HIDDEN_VALUES = 'UPDATE_SHOW_HIDDEN_VALUES';
-export const TOGGLE_SHOW_EDGES = 'TOGGLE_SHOW_EDGES';
+export const SET_SHOW_EDGES = 'SET_SHOW_EDGES';
 
 export const LOAD_SCENARIOS_OVERLAYS = 'LOAD_SCENARIOS_OVERLAYS';
 export const RESET_SCENARIOS_OVERLAYS = 'RESET_SCENARIOS_OVERLAYS';
@@ -36,7 +36,8 @@ import {
 	selectCurrentScenarioOverlay,
 	selectCurrentScenarioEditable,
 	selectSelectedNodeFieldsEdited,
-	selectAdjacencyMap
+	selectAdjacencyMap,
+	selectShowEdges
 } from '../selectors.js';
 
 import {
@@ -225,10 +226,12 @@ export const removeEditingNodeValue : AppActionCreator = (propertyName : Propert
 	});
 };
 
-export const toggleShowEdges = () : AnyAction => {
-	return {
-		type: TOGGLE_SHOW_EDGES
-	};
+export const setShowEdges : AppActionCreator = (on : boolean) => (dispatch, getState) => {
+	if (selectShowEdges(getState()) == on) return;
+	dispatch({
+		type: SET_SHOW_EDGES,
+		on
+	});
 };
 
 export const addEditingNodeEdge : AppActionCreator = (edge? : EdgeValue) => (dispatch, getState) => {

@@ -21,7 +21,7 @@ import {
 	removeEditingNodeValue,
 	removeEditingScenario,
 	resetScenariosOverlays,
-	toggleShowEdges,
+	setShowEdges,
 	updateFilename,
 	updateHoveredNodeID,
 	updateScale,
@@ -452,7 +452,7 @@ class MainView extends connect(store)(PageViewElement) {
 	}
 
 	_handleShowEdgesToggleClicked() {
-		store.dispatch(toggleShowEdges());
+		store.dispatch(setShowEdges(!this._showEdges));
 	}
 
 	_edgeActionClicked(e : Event) : EdgeValue {
