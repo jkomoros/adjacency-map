@@ -170,16 +170,22 @@ const removeEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : S
 const modifyEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : ScenariosOverlays => { 
 	const [result, node] = prepareToEditNodeInOverlay(state);
 	const id = getEdgeValueMatchID(edge);
+	let changesMade = false;
+	//TODO: wait this doesnt' work, because if you modify the type, then the
+	//type/parent will no longer match so it won't see it needs to modify the
+	//existing edge recrod.
 	for (let i = 0; i < node.edges.add.length; i++) {
 		if (getEdgeValueMatchID(node.edges.add[i]) != id) continue;
 		node.edges.add[i] = edge;
-		break;
+		changesMade = true;
 	}
 	for (let i = 0; i < node.edges.modify.length; i++) {
 		if (getEdgeValueMatchID(node.edges.modify[i]) != id) continue;
 		node.edges.modify[i] = edge;
-		break;
+		changesMade = true;
 	}
+	//It's possible it's a modify that comes from a scneario above us.
+	if (!changesMade) node.edges.modify.push(edge);
 	return result;
 };
 
