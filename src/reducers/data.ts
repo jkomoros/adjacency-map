@@ -167,25 +167,24 @@ const removeEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : S
 	return result;
 };
 
-const modifyEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : ScenariosOverlays => { 
+//We accept previousEdge and newEdge because we might have made a modification
+//to type/parent which would change which one we're touching.
+const modifyEditingNodeEdgeInOverlay = (state : DataState, previousEdge : EdgeValue, newEdge : EdgeValue) : ScenariosOverlays => { 
 	const [result, node] = prepareToEditNodeInOverlay(state);
-	const id = getEdgeValueMatchID(edge);
+	const id = getEdgeValueMatchID(previousEdge);
 	let changesMade = false;
-	//TODO: wait this doesnt' work, because if you modify the type, then the
-	//type/parent will no longer match so it won't see it needs to modify the
-	//existing edge recrod.
 	for (let i = 0; i < node.edges.add.length; i++) {
 		if (getEdgeValueMatchID(node.edges.add[i]) != id) continue;
-		node.edges.add[i] = edge;
+		node.edges.add[i] = newEdge;
 		changesMade = true;
 	}
 	for (let i = 0; i < node.edges.modify.length; i++) {
 		if (getEdgeValueMatchID(node.edges.modify[i]) != id) continue;
-		node.edges.modify[i] = edge;
+		node.edges.modify[i] = newEdge;
 		changesMade = true;
 	}
 	//It's possible it's a modify that comes from a scneario above us.
-	if (!changesMade) node.edges.modify.push(edge);
+	if (!changesMade) node.edges.modify.push(newEdge);
 	return result;
 };
 
@@ -277,7 +276,7 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 	case MODIFY_EDITING_NODE_EDGE:
 		return {
 			...state,
-			scenariosOverlays: modifyEditingNodeEdgeInOverlay(state, action.edge)
+			scenariosOverlays: modifyEditingNodeEdgeInOverlay(state, action.previousEdge, action.edge)
 		};
 	default:
 		return state;

@@ -489,7 +489,7 @@ class MainView extends connect(store)(PageViewElement) {
 		if (!(e.target instanceof HTMLSelectElement)) throw new Error('not select element');
 		const newPropertyName : PropertyName = e.target.value;
 		const newEdge = {...edge, type: newPropertyName};
-		store.dispatch(modifyEditingNodeEdge(newEdge));
+		store.dispatch(modifyEditingNodeEdge(edge, newEdge));
 	}
 
 	_handleEditNodePropertyClicked(e : MouseEvent) {
