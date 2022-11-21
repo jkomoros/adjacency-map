@@ -234,6 +234,8 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 	case RESET_SCENARIOS_OVERLAYS:
 		return {
 			...state,
+			//TODO: go back to the scenario we extended that we were on previously if it exists
+			scenarioName: '',
 			scenariosOverlays: {}
 		};
 	case BEGIN_EDITING_SCENARIO:
