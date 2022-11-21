@@ -123,7 +123,23 @@ const removeEditingNodeValueInOverlay = (state : DataState, propertyName : Prope
 
 const addEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : ScenariosOverlays => {
 	const [result, node] = prepareToEditNodeInOverlay(state);
-	node.edges.add.push(edge);
+	const id = getEdgeValueMatchID(edge);
+	let changesMade = false;
+	for (let i = 0; i < node.edges.remove.length; i++) {
+		const removal = node.edges.remove[i];
+		if (getEdgeValueMatchID(removal) != id) continue;
+		changesMade = true;
+		node.edges.remove.splice(i);
+		break;
+	}
+	for (let i = 0; i < node.edges.modify.length; i++) {
+		const modification = node.edges.modify[i];
+		if (getEdgeValueMatchID(modification) != id) continue;
+		changesMade = true;
+		node.edges.modify.splice(i);
+		break;
+	}
+	if (!changesMade) node.edges.add.push(edge);
 	return result;
 };
 
