@@ -86,10 +86,11 @@ import {
 } from '../types.js';
 
 import {
-	AdjacencyMap
+	AdjacencyMap, AdjacencyMapNode
 } from '../adjacency-map.js';
 
 import {
+	ROOT_ID,
 	SVG_HEIGHT,
 	SVG_WIDTH,
 	ENABLE_EDITING_SCENARIOS
@@ -325,7 +326,7 @@ class MainView extends connect(store)(PageViewElement) {
 				${Object.keys(this._adjacencyMap.data.tags).map(tagName => this._htmlForTag(tagName, this._summaryTags))}`
 		: ''}
 					${nodeEdges.length ? html`<details .open=${this._showEdges} @toggle=${this._handleShowEdgesToggleClicked}><summary><label>Edges</label></summary>
-					${nodeEdges.map((edge, i) => this._htmlForEdge(edge, i, nodeModMap))}
+					${nodeEdges.map((edge, i) => this._htmlForEdge(edge, i, node, nodeModMap))}
 					</details>` 
 		: ''}
 				</div>
@@ -347,20 +348,24 @@ class MainView extends connect(store)(PageViewElement) {
 		return html`<div><strong title='${property.description || ''}' class='${property.hide || false ? 'hidden' : ''}'>${propertyName}</strong>: ${inner}</div>`;
 	}
 
-	_htmlForEdge(edge : EdgeValue, index : number, modMap : EdgeValueModificationMap) : TemplateResult {
+	_htmlForEdge(edge : EdgeValue, index : number, node : AdjacencyMapNode | null, modMap : EdgeValueModificationMap) : TemplateResult {
 		let previousID = modMap[getEdgeValueMatchID(edge)];
 		const isRemoved = previousID === null;
+		const nodeID = node ? node.id : '';
 		if (previousID === null) previousID = '';
 		if (previousID === undefined) previousID = getEdgeValueMatchID(edge);
 		const properties = Object.entries(this._adjacencyMap?.data.properties || {});
+		const nodeIDs = Object.keys(this._adjacencyMap?.data.nodes || {});
 		return html`<ul class='${isRemoved ? 'removed' : ''}' data-index=${index} data-previous-id=${previousID}>
 				${this._scenarioEditable ? html`<li class='buttons'>
 					${isRemoved ? html`<button class='small' @click=${this._handleUndoRemoveEdgeClicked}>${UNDO_ICON}</button>` : html`<button class='small' @click=${this._handleRemoveEdgeClicked}>${CANCEL_ICON}</button>`}
 				</li>` : ''}
-				<li>Type: ${this._scenarioEditable && !isRemoved? html`<select .value=${edge.type} @change=${this._handleEdgeTypeChanged}>
+				<li>Type: ${this._scenarioEditable && !isRemoved ? html`<select .value=${edge.type} @change=${this._handleEdgeTypeChanged}>
 					${properties.map(entry => html`<option .value=${entry[0]} .title=${entry[1].description || entry[0]} .selected=${edge.type == entry[0]}>${entry[0]}</option>`)}
 				</select>` : html`<strong>${edge.type}</strong>`}</li>
-				<li>Parent: <strong>${edge.parent}</strong></li>
+				<li>Parent: ${this._scenarioEditable && !isRemoved ? html`<select .value=${edge.parent || ''} @change=${this._handleEdgeParentChanged}>
+					${[ROOT_ID, ...nodeIDs].map(id => html`<option .value=${id} .selected=${(edge.parent || '') == id} .disabled=${id == nodeID}>${id || 'Root'}</option>`)}
+				</select>` : html`<strong>${edge.parent}</strong>`}</li>
 				${Object.entries(constantsForEdge(edge)).map(entry => html`<li>${entry[0]}: <strong>${entry[1]}</strong></li>`)}
 			</ul>`;
 	}
@@ -496,6 +501,15 @@ class MainView extends connect(store)(PageViewElement) {
 		if (!(e.target instanceof HTMLSelectElement)) throw new Error('not select element');
 		const newPropertyName : PropertyName = e.target.value;
 		const newEdge = {...edge, type: newPropertyName};
+		store.dispatch(modifyEditingNodeEdge(previousEdgeID, newEdge));
+	}
+
+	_handleEdgeParentChanged(e : Event) {
+		const [edge, previousEdgeID] = this._edgeActionClicked(e);
+		if (!e.target) throw new Error('No select');
+		if (!(e.target instanceof HTMLSelectElement)) throw new Error('not select element');
+		const newParent : NodeID = e.target.value;
+		const newEdge = {...edge, parent: newParent};
 		store.dispatch(modifyEditingNodeEdge(previousEdgeID, newEdge));
 	}
 
