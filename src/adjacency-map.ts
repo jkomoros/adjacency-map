@@ -838,11 +838,9 @@ const edgesWithScenarioModifications = (baseEdges : EdgeValue[], modifications? 
 
 	//We'll filter down to only removals that mostly overlap.
 	const removalsMap : {[id : string]: true} = {};
-	if (!skipRemovalsAtTopLevel) {
-		for (const edge of modifications.remove) {
-			const id = getEdgeValueMatchID(edge);
-			removalsMap[id] = true;
-		}
+	for (const edge of modifications.remove) {
+		const id = getEdgeValueMatchID(edge);
+		removalsMap[id] = true;
 	}
 
 	//Actually remove items that are in removals.
@@ -850,7 +848,7 @@ const edgesWithScenarioModifications = (baseEdges : EdgeValue[], modifications? 
 		const id = getEdgeValueMatchID(edge);
 		if (!removalsMap[id]) return true;
 		modMap[id] = null;
-		return false;
+		return skipRemovalsAtTopLevel;
 	});
 
 	const modifyMap = modifications.modify;
