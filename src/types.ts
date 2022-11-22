@@ -401,6 +401,9 @@ export type RenderEdgeValue = {
 //Get one from util:getEdgeValueMatchID. `type` + '+' + `parentNodeID`
 export type EdgeValueMatchID = string;
 
+//Map of final ID -> the previous ID, or null if a removal, or omitted if the ID doesn't change.
+export type EdgeValueModificationMap = {[newID : EdgeValueMatchID] : EdgeValueMatchID | null};
+
 export type SimpleGraph = {
 	[id : NodeID] : {
 		[other : NodeID]: true
