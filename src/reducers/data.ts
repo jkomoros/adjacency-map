@@ -179,7 +179,6 @@ const modifyEditingNodeEdgeInOverlay = (state : DataState, previousEdge : EdgeVa
 	//We use id/previousID because the thing we're keying off of is not our ID
 	for (const previousID of Object.keys(node.edges.modify)) {
 		if (previousID != id) continue;
-		delete node.edges.modify[previousID];
 		node.edges.modify[previousID] = newEdge;
 		changesMade = true;
 	}
