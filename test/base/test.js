@@ -5856,6 +5856,30 @@ describe('scenarios', () => {
 		assert.throws(fn);
 	});
 
+	it('barfs for a scenario that adds an edge that makes it not a dag', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			one: {
+				nodes: {
+					a: {
+						edges: {
+							add: [
+								{
+									type: 'engineering',
+									parent: 'c'
+								}
+							]
+						}
+					}
+				}
+			}
+		};
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		assert.throws(fn);
+	});
+
 	it('Correctly calculates a scenario with direct extension', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.scenarios = {

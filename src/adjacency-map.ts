@@ -584,11 +584,13 @@ const validateData = (data : MapDefinition) : void => {
 			assertUnreachable(displayKey);
 		}
 	}
-
-	try {
-		topologicalSort(extractSimpleGraph(data));
-	} catch (err) {
-		throw new Error('The edges provided did not form a DAG');
+	const scenarioNames = [DEFAULT_SCENARIO_NAME, ...Object.keys(data.scenarios)];
+	for (const scenarioName of scenarioNames) {
+		try {
+			topologicalSort(extractSimpleGraph(data, scenarioName));
+		} catch (err) {
+			throw new Error('The edges provided did not form a DAG in scenario ' + scenarioName);
+		}
 	}
 };
 
