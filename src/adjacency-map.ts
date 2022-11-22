@@ -137,11 +137,15 @@ const ALLOWED_VARIABLES_FOR_CONTEXT = {
 //If an edge is bumped, this is the amount we aim to bump it by by default.
 const TARGET_BUMP = 0.4;
 
-export const extractSimpleGraph = (data : MapDefinition) : SimpleGraph => {
+export const extractSimpleGraph = (data : MapDefinition, scenarioName : ScenarioName = DEFAULT_SCENARIO_NAME) : SimpleGraph => {
 	const result : SimpleGraph = {};
+	const scenario : Scenario = data.scenarios && data.scenarios[scenarioName] ? data.scenarios[scenarioName] : {description: '', nodes: {}};
+	const scenarioNodes = scenario.nodes;
 	for (const [id, value] of Object.entries(data.nodes)) {
+		const scenarioNode = scenarioNodes[id] || emptyScenarioNode();
 		const edges : {[id : NodeID] : true} = {};
-		for (const edge of value.edges || []) {
+		const [finalEdges] = edgesWithScenarioModifications(value.edges, scenarioNode.edges);
+		for (const edge of finalEdges) {
 			const ref = edge.parent || ROOT_ID;
 			edges[ref] = true;
 		}
