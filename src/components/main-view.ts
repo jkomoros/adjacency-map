@@ -71,6 +71,7 @@ import {
 import {
 	DataFilename,
 	EdgeValue,
+	EdgeValueModificationMap,
 	NodeID,
 	NodeValues,
 	NodeValuesOverride,
@@ -113,7 +114,8 @@ import {
 	fetchOverlaysFromStorage,
 	storeOverlaysToStorage,
 	renderEdgeStableID,
-	constantsForEdge
+	constantsForEdge,
+	getEdgeValueMatchID
 } from '../util.js';
 
 @customElement('main-view')
@@ -286,9 +288,7 @@ class MainView extends connect(store)(PageViewElement) {
 
 	override render() : TemplateResult {
 		const node = (this._adjacencyMap && this._summaryNodeID) ? this._adjacencyMap.node(this._summaryNodeID) : null;
-		const nodeEdges = node ? node.edgesWithFinalScenarioModificationsNoRemovals : [];
-		const nodeEdgesAreRemovals = node ? node.edgesWithFinalScenariosAreRemoved : [];
-		if (nodeEdges.length != nodeEdgesAreRemovals.length) throw new Error('edges not the same length unexpectedly');
+		const [nodeEdges, nodeModMap] = node ? node.edgesForUI : [[] , {}];
 		return html`
 			<div class='controls'>
 				${this._legalFilenames && this._legalFilenames.length > 1 ? html`
@@ -324,7 +324,7 @@ class MainView extends connect(store)(PageViewElement) {
 				${Object.keys(this._adjacencyMap.data.tags).map(tagName => this._htmlForTag(tagName, this._summaryTags))}`
 		: ''}
 					${nodeEdges.length ? html`<details .open=${this._showEdges} @toggle=${this._handleShowEdgesToggleClicked}><summary><label>Edges</label></summary>
-					${nodeEdges.map((edge, i) => this._htmlForEdge(edge, i, nodeEdgesAreRemovals[i]))}
+					${nodeEdges.map((edge, i) => this._htmlForEdge(edge, i, nodeModMap))}
 					</details>` 
 		: ''}
 				</div>
@@ -346,7 +346,8 @@ class MainView extends connect(store)(PageViewElement) {
 		return html`<div><strong title='${property.description || ''}' class='${property.hide || false ? 'hidden' : ''}'>${propertyName}</strong>: ${inner}</div>`;
 	}
 
-	_htmlForEdge(edge : EdgeValue, index : number, isRemoved : boolean) : TemplateResult {
+	_htmlForEdge(edge : EdgeValue, index : number, modMap : EdgeValueModificationMap) : TemplateResult {
+		const isRemoved = modMap[getEdgeValueMatchID(edge)] === null;
 		const properties = Object.entries(this._adjacencyMap?.data.properties || {});
 		return html`<ul class='${isRemoved ? 'removed' : ''}' data-index=${index}>
 				${this._scenarioEditable ? html`<li class='buttons'>
@@ -467,7 +468,7 @@ class MainView extends connect(store)(PageViewElement) {
 		const index = parseInt(rawIndex);
 		const node = (this._adjacencyMap && this._summaryNodeID) ? this._adjacencyMap.node(this._summaryNodeID) : null;
 		if (!node) throw new Error('No node');
-		const edges = node.edgesWithFinalScenarioModificationsNoRemovals;
+		const [edges] = node.edgesForUI;
 		const edge = edges[index];
 		if (!edge) throw new Error('No edge');
 		return edge;

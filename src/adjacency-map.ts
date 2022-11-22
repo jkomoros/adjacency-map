@@ -37,7 +37,8 @@ import {
 	RawEdgeInput,
 	ScenarioNode,
 	NodeValuesOverride,
-	ScenarioNodeEdges
+	ScenarioNodeEdges,
+	EdgeValueModificationMap
 } from './types.js';
 
 import {
@@ -92,7 +93,6 @@ import {
 
 import {
 	assertUnreachable,
-	edgeEquivalent,
 	emptyScenarioNode,
 	getEdgeValueMatchID,
 	idToDisplayName,
@@ -825,14 +825,15 @@ const impliedPropertyNames = (config : ImpliesConfiguration | undefined, allName
 	return assertUnreachable(config);
 };
 
-const edgesWithScenarioModifications = (baseEdges : EdgeValue[], modifications? : ScenarioNodeEdges, skipRemovalsAtTopLevel = false) : EdgeValue[] => {
+const edgesWithScenarioModifications = (baseEdges : EdgeValue[], modifications? : ScenarioNodeEdges, skipRemovalsAtTopLevel = false) : [EdgeValue[], EdgeValueModificationMap] => {
 
 	let result : EdgeValue[] = baseEdges ? [...baseEdges] : [];
+	const modMap : EdgeValueModificationMap = {};
 
-	if (!modifications) return result;
+	if (!modifications) return [result, modMap];
 
 	if (modifications.extended) {
-		result = edgesWithScenarioModifications(result, modifications.extended);
+		[result] = edgesWithScenarioModifications(result, modifications.extended);
 	}
 
 	//We'll filter down to only removals that mostly overlap.
@@ -847,22 +848,26 @@ const edgesWithScenarioModifications = (baseEdges : EdgeValue[], modifications? 
 	//Actually remove items that are in removals.
 	const filteredResult = result.filter(edge => {
 		const id = getEdgeValueMatchID(edge);
-		const removalEdges = removalsMap[id];
-		return !removalEdges;
+		if (!removalsMap[id]) return true;
+		modMap[id] = null;
+		return false;
 	});
 
 	const modifyMap = modifications.modify;
 
 	const modifiedResult = filteredResult.map(edge => {
 		const id = getEdgeValueMatchID(edge);
-		return modifyMap[id] ? modifyMap[id] : edge;
+		if (!modifyMap[id]) return edge;
+		const newEdge = modifyMap[id];
+		modMap[getEdgeValueMatchID(newEdge)] = id;
+		return newEdge;
 	});
 
 	for (const additionEdge of modifications.add) {
 		modifiedResult.push(additionEdge);
 	}
 
-	return modifiedResult;
+	return [modifiedResult, modMap];
 };
 
 const completeEdgeSet = (source: NodeID, data : MapDefinition, edges : EdgeValue[]) : ExpandedEdgeValue[] => {
@@ -1072,36 +1077,13 @@ class AdjacencyMapNode {
 
 	//The base edges with all scenario modifications applied but not expanded.
 	get edgesWithFinalScenarioModifications() : EdgeValue[] {
-		return edgesWithScenarioModifications(this.baseEdges, this._scenarioNode.edges);
+		const [result] = edgesWithScenarioModifications(this.baseEdges, this._scenarioNode.edges);
+		return result;
 	}
 
 	//The base edges with all scenario modifications applied but not expanded, skipping any removal steps.
-	get edgesWithFinalScenarioModificationsNoRemovals() : EdgeValue[] {
+	get edgesForUI() : [EdgeValue[], EdgeValueModificationMap] {
 		return edgesWithScenarioModifications(this.baseEdges, this._scenarioNode.edges, true);
-	}
-
-	//An array of booleans of length
-	//edgesWithFinalScenarioModificationsNoRemovals, where it's true for each
-	//one that is removed.
-	get edgesWithFinalScenariosAreRemoved() : boolean[] {
-		const final = this.edgesWithFinalScenarioModifications;
-		const noRemovals = this.edgesWithFinalScenarioModificationsNoRemovals;
-		//Final is a subset of noRemovals
-
-		//The index into final that we are.
-		let j = 0;
-		const result : boolean[] = [];
-		for (let i = 0; i < noRemovals.length; i++) {
-			const noRemovalEdge = noRemovals[i];
-			const finalEdge = final[j];
-			if (edgeEquivalent(noRemovalEdge, finalEdge)) {
-				result.push(false);
-				j++;
-			} else {
-				result.push(true);
-			}
-		}
-		return result;
 	}
 
 	//All edges
