@@ -47,6 +47,7 @@ import {
 import {
 	DataFilename,
 	EdgeValue,
+	EdgeValueMatchID,
 	NodeID,
 	PropertyName,
 	ScenarioName,
@@ -267,13 +268,13 @@ export const removeEditingNodeEdge : AppActionCreator = (edge : EdgeValue) => (d
 
 //We accept both a previousEdge and newEdge because it's possible the
 //modification is the type/parent which is how we detect which edge is which.
-export const modifyEditingNodeEdge : AppActionCreator = (previousEdge : EdgeValue, newEdge : EdgeValue) => (dispatch, getState) => {
+export const modifyEditingNodeEdge : AppActionCreator = (previousEdgeID : EdgeValueMatchID, newEdge : EdgeValue) => (dispatch, getState) => {
 	const state = getState();
 	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
 	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
 	dispatch({
 		type: MODIFY_EDITING_NODE_EDGE,
-		previousEdge,
+		previousEdgeID,
 		edge: newEdge
 	});
 };

@@ -71,6 +71,7 @@ import {
 import {
 	DataFilename,
 	EdgeValue,
+	EdgeValueMatchID,
 	EdgeValueModificationMap,
 	NodeID,
 	NodeValues,
@@ -347,9 +348,12 @@ class MainView extends connect(store)(PageViewElement) {
 	}
 
 	_htmlForEdge(edge : EdgeValue, index : number, modMap : EdgeValueModificationMap) : TemplateResult {
-		const isRemoved = modMap[getEdgeValueMatchID(edge)] === null;
+		let previousID = modMap[getEdgeValueMatchID(edge)];
+		const isRemoved = previousID === null;
+		if (previousID === null) previousID = '';
+		if (previousID === undefined) previousID = getEdgeValueMatchID(edge);
 		const properties = Object.entries(this._adjacencyMap?.data.properties || {});
-		return html`<ul class='${isRemoved ? 'removed' : ''}' data-index=${index}>
+		return html`<ul class='${isRemoved ? 'removed' : ''}' data-index=${index} data-previous-id=${previousID}>
 				${this._scenarioEditable ? html`<li class='buttons'>
 					${isRemoved ? html`<button class='small' @click=${this._handleUndoRemoveEdgeClicked}>${UNDO_ICON}</button>` : html`<button class='small' @click=${this._handleRemoveEdgeClicked}>${CANCEL_ICON}</button>`}
 				</li>` : ''}
@@ -456,7 +460,7 @@ class MainView extends connect(store)(PageViewElement) {
 		store.dispatch(setShowEdges(!this._showEdges));
 	}
 
-	_edgeActionClicked(e : Event) : EdgeValue {
+	_edgeActionClicked(e : Event) : [EdgeValue, EdgeValueMatchID] {
 		let ulEle : HTMLUListElement | null = null;
 		for (const ele of e.composedPath()) {
 			if (!(ele instanceof HTMLUListElement)) continue;
@@ -471,26 +475,28 @@ class MainView extends connect(store)(PageViewElement) {
 		const [edges] = node.edgesForUI;
 		const edge = edges[index];
 		if (!edge) throw new Error('No edge');
-		return edge;
+		const rawPreviousID = ulEle.dataset.previousId;
+		if (rawPreviousID == undefined) throw new Error('No previous id');
+		return [edge, rawPreviousID];
 	}
 
 	_handleUndoRemoveEdgeClicked(e : MouseEvent) {
-		const edge = this._edgeActionClicked(e);
+		const [edge] = this._edgeActionClicked(e);
 		store.dispatch(addEditingNodeEdge(edge));
 	}
 
 	_handleRemoveEdgeClicked(e : MouseEvent) {
-		const edge = this._edgeActionClicked(e);
+		const [edge] = this._edgeActionClicked(e);
 		store.dispatch(removeEditingNodeEdge(edge));
 	}
 
 	_handleEdgeTypeChanged(e : Event) {
-		const edge = this._edgeActionClicked(e);
+		const [edge, previousEdgeID] = this._edgeActionClicked(e);
 		if (!e.target) throw new Error('No select');
 		if (!(e.target instanceof HTMLSelectElement)) throw new Error('not select element');
 		const newPropertyName : PropertyName = e.target.value;
 		const newEdge = {...edge, type: newPropertyName};
-		store.dispatch(modifyEditingNodeEdge(edge, newEdge));
+		store.dispatch(modifyEditingNodeEdge(previousEdgeID, newEdge));
 	}
 
 	_handleEditNodePropertyClicked(e : MouseEvent) {
