@@ -1070,12 +1070,6 @@ class AdjacencyMapNode {
 		return this?._data?.edges || [];
 	}
 
-	//The base edges with all scenario modifications applied up to but NOT
-	//including the final scenario. (That is, scenario.extends and backwards.)
-	get edgesWithPreviousScenarioModifications() : EdgeValue[] {
-		return edgesWithScenarioModifications(this.baseEdges, this._scenarioNode.edges.extended);
-	}
-
 	//The base edges with all scenario modifications applied but not expanded.
 	get edgesWithFinalScenarioModifications() : EdgeValue[] {
 		return edgesWithScenarioModifications(this.baseEdges, this._scenarioNode.edges);
