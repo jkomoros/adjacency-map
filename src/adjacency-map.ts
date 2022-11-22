@@ -924,7 +924,7 @@ const expandedEdgeToRenderEdgeSubEdge = (input : ExpandedEdgeValue) : RenderEdge
 	return result;
 };
 
-class AdjacencyMapNode {
+export class AdjacencyMapNode {
 	_id : NodeID;
 	_map : AdjacencyMap;
 	_data : NodeDefinition | undefined;
