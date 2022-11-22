@@ -325,7 +325,7 @@ class MainView extends connect(store)(PageViewElement) {
 		html`<label>Tags</label>
 				${Object.keys(this._adjacencyMap.data.tags).map(tagName => this._htmlForTag(tagName, this._summaryTags))}`
 		: ''}
-					${nodeEdges.length ? html`<details .open=${this._showEdges} @toggle=${this._handleShowEdgesToggleClicked}><summary><label>Edges</label></summary>
+					${nodeEdges.length ? html`<details .open=${this._showEdges}><summary @click=${this._handleShowEdgesToggleClicked}><label>Edges</label></summary>
 					${nodeEdges.map((edge, i) => this._htmlForEdge(edge, i, node, nodeModMap))}
 					</details>` 
 		: ''}
