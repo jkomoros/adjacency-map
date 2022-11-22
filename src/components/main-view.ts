@@ -358,7 +358,7 @@ class MainView extends connect(store)(PageViewElement) {
 					${isRemoved ? html`<button class='small' @click=${this._handleUndoRemoveEdgeClicked}>${UNDO_ICON}</button>` : html`<button class='small' @click=${this._handleRemoveEdgeClicked}>${CANCEL_ICON}</button>`}
 				</li>` : ''}
 				<li>Type: ${this._scenarioEditable ? html`<select .value=${edge.type} @change=${this._handleEdgeTypeChanged}>
-					${properties.map(entry => html`<option .value=${entry[0]} .title=${entry[1].description || entry[0]}>${entry[0]}</option>`)}
+					${properties.map(entry => html`<option .value=${entry[0]} .title=${entry[1].description || entry[0]} .selected=${edge.type == entry[0]}>${entry[0]}</option>`)}
 				</select>` : html`<strong>${edge.type}</strong>`}</li>
 				<li>Parent: <strong>${edge.parent}</strong></li>
 				${Object.entries(constantsForEdge(edge)).map(entry => html`<li>${entry[0]}: <strong>${entry[1]}</strong></li>`)}
