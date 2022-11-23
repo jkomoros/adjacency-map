@@ -352,14 +352,16 @@ class MainView extends connect(store)(PageViewElement) {
 	_htmlForEdge(edge : EdgeValue, index : number, node : AdjacencyMapNode | null, modMap : EdgeValueModificationMap, legalParentIDs : {[id : NodeID] : true}) : TemplateResult {
 		let previousID = modMap[getEdgeValueMatchID(edge)];
 		const isRemoved = previousID === null;
+		const hasModifications = previousID != null && previousID != undefined;
 		const nodeID = node ? node.id : '';
 		if (previousID === null) previousID = '';
 		if (previousID === undefined) previousID = getEdgeValueMatchID(edge);
 		const properties = Object.entries(this._adjacencyMap?.data.properties || {});
 		const nodeIDs = Object.keys(this._adjacencyMap?.data.nodes || {});
-		return html`<ul class='${isRemoved ? 'removed' : ''}' data-index=${index} data-previous-id=${previousID}>
+		return html`<ul class='${isRemoved ? 'removed' : ''}' data-index=${index} data-previous-id=${previousID} data-has-modifications=${hasModifications ? '1' : '0'}>
 				${this._scenarioEditable ? html`<li class='buttons'>
-					${isRemoved ? html`<button class='small' @click=${this._handleUndoRemoveEdgeClicked}>${UNDO_ICON}</button>` : html`<button class='small' @click=${this._handleRemoveEdgeClicked}>${CANCEL_ICON}</button>`}
+					${isRemoved || hasModifications ? html`<button class='small' @click=${this._handleUndoRemoveEdgeClicked} title='Undo changes'>${UNDO_ICON}</button>` : ''}
+					${!isRemoved ? html`<button class='small' @click=${this._handleRemoveEdgeClicked}>${CANCEL_ICON}</button>` : ''}
 				</li>` : ''}
 				<li>Type: ${this._scenarioEditable && !isRemoved ? html`<select .value=${edge.type} @change=${this._handleEdgeTypeChanged}>
 					${properties.map(entry => html`<option .value=${entry[0]} .title=${entry[1].description || entry[0]} .selected=${edge.type == entry[0]}>${entry[0]}</option>`)}
@@ -466,7 +468,7 @@ class MainView extends connect(store)(PageViewElement) {
 		store.dispatch(setShowEdges(!this._showEdges));
 	}
 
-	_edgeActionClicked(e : Event) : [EdgeValue, EdgeValueMatchID] {
+	_edgeActionClicked(e : Event) : [edge : EdgeValue, previousID : EdgeValueMatchID, hasModifications : boolean] {
 		let ulEle : HTMLUListElement | null = null;
 		for (const ele of e.composedPath()) {
 			if (!(ele instanceof HTMLUListElement)) continue;
@@ -483,12 +485,20 @@ class MainView extends connect(store)(PageViewElement) {
 		if (!edge) throw new Error('No edge');
 		const rawPreviousID = ulEle.dataset.previousId;
 		if (rawPreviousID == undefined) throw new Error('No previous id');
-		return [edge, rawPreviousID];
+		const rawHasModifications = ulEle.dataset.hasModifications;
+		if (rawHasModifications == undefined) throw new Error('No has Modifications');
+		const hasModifications = parseInt(rawHasModifications);
+		return [edge, rawPreviousID, hasModifications ? true : false];
 	}
 
 	_handleUndoRemoveEdgeClicked(e : MouseEvent) {
-		const [edge] = this._edgeActionClicked(e);
-		store.dispatch(addEditingNodeEdge(edge));
+		const [edge, previousID, hasModifications] = this._edgeActionClicked(e);
+		if (hasModifications) {
+			//Passing undefined for second argument will remove all modifications
+			store.dispatch(modifyEditingNodeEdge(previousID));
+		} else {
+			store.dispatch(addEditingNodeEdge(edge));
+		}
 	}
 
 	_handleRemoveEdgeClicked(e : MouseEvent) {
