@@ -370,7 +370,7 @@ class MainView extends connect(store)(PageViewElement) {
 					${[ROOT_ID, ...nodeIDs].map(id => html`<option .value=${id} .selected=${(edge.parent || '') == id} .disabled=${id == nodeID || !legalParentIDs[id]}>${id || 'Root'}</option>`)}
 				</select>` : html`<strong>${edge.parent}</strong>`}</li>
 				${Object.entries(constantsForEdge(edge)).map(entry => html`<li>${entry[0]}: ${this._scenarioEditable && !isRemoved ? 
-		html`<input type='number' .value=${String(entry[1])} data-property-name=${entry[0]} @change=${this._handleEdgeConstantChanged}></input>` :
+		html`<input type='number' .value=${String(entry[1])} data-property-name=${entry[0]} @change=${this._handleEdgeConstantChanged}></input><button class='small' data-property-name=${entry[0]} @click=${this._handleEdgeRemoveConstant}>${CANCEL_ICON}</button>` :
 		html`<strong>${entry[1]}</strong>`}</li>`)}
 			</ul>`;
 	}
@@ -535,6 +535,23 @@ class MainView extends connect(store)(PageViewElement) {
 		const propertyName = e.target.dataset.propertyName;
 		if (!propertyName) throw new Error('No property name');
 		const newEdge = {...edge, [propertyName]: value};
+		store.dispatch(modifyEditingNodeEdge(previousEdgeID, newEdge));
+	}
+
+	_handleEdgeRemoveConstant(e : Event) {
+		const [edge, previousEdgeID] = this._edgeActionClicked(e);
+		let buttonEle : HTMLButtonElement | null = null;
+		for (const ele of e.composedPath()) {
+			if (ele instanceof HTMLButtonElement) {
+				buttonEle = ele;
+				break;
+			}
+		}
+		if (!buttonEle) throw new Error('No button');
+		const propertyName = buttonEle.dataset.propertyName;
+		if (!propertyName) throw new Error('No property name');
+		const newEdge = {...edge};
+		delete newEdge[propertyName];
 		store.dispatch(modifyEditingNodeEdge(previousEdgeID, newEdge));
 	}
 
