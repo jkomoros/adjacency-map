@@ -642,7 +642,9 @@ export type RawScenario = {
 			values?: NodeValuesOverride,
 			edges?: {
 				add?: RawEdgeInput,
-				remove?: RawEdgeInput,
+				remove?: {
+					[previousID : EdgeValueMatchID]: true
+				},
 				modify?: {
 					[previousID : EdgeValueMatchID]: EdgeValue
 				}
@@ -654,7 +656,9 @@ export type RawScenario = {
 export type ScenarioNodeEdges = {
 	extended? : ScenarioNodeEdges,
 	add: EdgeValue[],
-	remove: EdgeValue[],
+	remove: {
+		[previousID : EdgeValueMatchID] : true
+	},
 	modify: {
 		[previousID : EdgeValueMatchID]: EdgeValue,
 	}

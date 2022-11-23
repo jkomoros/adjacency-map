@@ -215,12 +215,9 @@ const data : RawMapDefinition = {
 								cost: 5
 							}
 						],
-						remove: [
-							{
-								type: 'engineering',
-								parent: 'base_infer_colab'
-							}
-						]
+						remove: {
+							'engineering+base_infer_colab': true
+						}
 					}
 				},
 				extended_infer_gui: {

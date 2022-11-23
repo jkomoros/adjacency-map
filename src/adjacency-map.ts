@@ -380,7 +380,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 				edges: {
 					extended: baseNode.edges,
 					add: [],
-					remove: [],
+					remove: {},
 					modify: {}
 				}
 			};
@@ -391,7 +391,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 				values: {...existingNode.values, ...(node.values || {})},
 				edges: {
 					add: extractEdgesFromRawEdgeInput(node?.edges?.add),
-					remove: extractEdgesFromRawEdgeInput(node?.edges?.remove),
+					remove: node.edges?.remove || {},
 					modify: node?.edges?.modify || {}
 				}
 			};
@@ -565,7 +565,7 @@ const validateData = (data : MapDefinition) : void => {
 			validateNodeValues(data, nodeDefinition.values);
 			validateEdges(data, nodeName, nodeDefinition.edges.add);
 			validateEdges(data, nodeName, Object.values(nodeDefinition.edges.modify));
-			validateEdges(data, nodeName, nodeDefinition.edges.remove);
+			//Skip validating remove which isn't actually edges
 		}
 	}
 
@@ -842,17 +842,10 @@ const edgesWithScenarioModifications = (baseEdges : EdgeValue[], modifications? 
 		[result] = edgesWithScenarioModifications(result, modifications.extended);
 	}
 
-	//We'll filter down to only removals that mostly overlap.
-	const removalsMap : {[id : string]: true} = {};
-	for (const edge of modifications.remove) {
-		const id = getEdgeValueMatchID(edge);
-		removalsMap[id] = true;
-	}
-
 	//Actually remove items that are in removals.
 	const filteredResult = result.filter(edge => {
 		const id = getEdgeValueMatchID(edge);
-		if (!removalsMap[id]) return true;
+		if (!modifications.remove[id]) return true;
 		modMap[id] = null;
 		return skipRemovalsAtTopLevel;
 	});

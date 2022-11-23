@@ -1097,14 +1097,10 @@ The value that you set each override node to can override values, or modify edge
                 type: 'property_one'
             }
         ],
-        //Any edges that have the given node as the source, and match parent+type
-        //will be removed.
-        remove: [
-            {
-                parent: 'nodeB',
-                type: 'property_two'
-            }
-        ],
+        //Any edges that have the given `PROPERTY_NAME+PARENT_NODE_ID` will be removed
+        remove: {
+            'property_two+nodeB': true
+        },
         modify: {
             //edges matching the same parent + type will be replaced in their entirety by this. 
             //The key is the previous propertyName + '+' + parent node ID to modify.

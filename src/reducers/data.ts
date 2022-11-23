@@ -109,7 +109,7 @@ const editingUpdateNodeValueInOverlay = (state : DataState, propertyName : Prope
 const scenarioNodeIsEmpty = (node: ScenarioNode) : boolean => {
 	if (Object.keys(node.values).length > 0) return false;
 	if (node.edges.add.length > 0) return false;
-	if (node.edges.remove.length > 0) return false;
+	if (Object.keys(node.edges.remove).length > 0) return false;
 	if (Object.keys(node.edges.modify).length > 0) return false;
 	return true;
 };
@@ -126,11 +126,10 @@ const addEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : Scen
 	const [result, node] = prepareToEditNodeInOverlay(state);
 	const id = getEdgeValueMatchID(edge);
 	let changesMade = false;
-	for (let i = 0; i < node.edges.remove.length; i++) {
-		const removal = node.edges.remove[i];
-		if (getEdgeValueMatchID(removal) != id) continue;
+	for (const removal of Object.keys(node.edges.remove)) {
+		if (removal != id) continue;
 		changesMade = true;
-		node.edges.remove.splice(i);
+		delete node.edges.remove[removal];
 		break;
 	}
 	for (const previousID of Object.keys(node.edges.modify)) {
@@ -161,7 +160,7 @@ const removeEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : S
 		break;
 	}
 	if (!changesMade) {
-		node.edges.remove.push(edge);
+		node.edges.remove[id] = true;
 	}
 	return result;
 };

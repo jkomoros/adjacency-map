@@ -5549,7 +5549,7 @@ describe('scenarios', () => {
 						},
 						edges: {
 							add: [],
-							remove: [],
+							remove: {},
 							modify: {}
 						}
 					}
@@ -5566,11 +5566,11 @@ describe('scenarios', () => {
 						edges: {
 							extended: {
 								add: [],
-								remove: [],
+								remove: {},
 								modify: {}
 							},
 							add: [],
-							remove: [],
+							remove: {},
 							modify: {}
 						}
 					}
@@ -5585,7 +5585,7 @@ describe('scenarios', () => {
 						},
 						edges: {
 							add: [],
-							remove: [],
+							remove: {},
 							modify: {}
 						}
 					}
@@ -6023,12 +6023,9 @@ describe('scenarios', () => {
 									weight: 5
 								}
 							],
-							remove: [
-								{
-									parent: 'a',
-									type: 'ux'
-								}
-							]
+							remove: {
+								'ux+a': true
+							}
 						}
 					}
 				}
