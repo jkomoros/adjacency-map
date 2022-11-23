@@ -291,6 +291,7 @@ class MainView extends connect(store)(PageViewElement) {
 	override render() : TemplateResult {
 		const node = (this._adjacencyMap && this._summaryNodeID) ? this._adjacencyMap.node(this._summaryNodeID) : null;
 		const [nodeEdges, nodeModMap] = node ? node.edgesForUI : [[] , {}];
+		const nodeLegalParentIDs = node ? node.legalParentIDs : {};
 		return html`
 			<div class='controls'>
 				${this._legalFilenames && this._legalFilenames.length > 1 ? html`
@@ -326,7 +327,7 @@ class MainView extends connect(store)(PageViewElement) {
 				${Object.keys(this._adjacencyMap.data.tags).map(tagName => this._htmlForTag(tagName, this._summaryTags))}`
 		: ''}
 					${nodeEdges.length ? html`<details .open=${this._showEdges}><summary @click=${this._handleShowEdgesToggleClicked}><label>Edges</label></summary>
-					${nodeEdges.map((edge, i) => this._htmlForEdge(edge, i, node, nodeModMap))}
+					${nodeEdges.map((edge, i) => this._htmlForEdge(edge, i, node, nodeModMap, nodeLegalParentIDs))}
 					</details>` 
 		: ''}
 				</div>
@@ -348,7 +349,7 @@ class MainView extends connect(store)(PageViewElement) {
 		return html`<div><strong title='${property.description || ''}' class='${property.hide || false ? 'hidden' : ''}'>${propertyName}</strong>: ${inner}</div>`;
 	}
 
-	_htmlForEdge(edge : EdgeValue, index : number, node : AdjacencyMapNode | null, modMap : EdgeValueModificationMap) : TemplateResult {
+	_htmlForEdge(edge : EdgeValue, index : number, node : AdjacencyMapNode | null, modMap : EdgeValueModificationMap, legalParentIDs : {[id : NodeID] : true}) : TemplateResult {
 		let previousID = modMap[getEdgeValueMatchID(edge)];
 		const isRemoved = previousID === null;
 		const nodeID = node ? node.id : '';
@@ -364,7 +365,7 @@ class MainView extends connect(store)(PageViewElement) {
 					${properties.map(entry => html`<option .value=${entry[0]} .title=${entry[1].description || entry[0]} .selected=${edge.type == entry[0]}>${entry[0]}</option>`)}
 				</select>` : html`<strong>${edge.type}</strong>`}</li>
 				<li>Parent: ${this._scenarioEditable && !isRemoved ? html`<select .value=${edge.parent || ''} @change=${this._handleEdgeParentChanged}>
-					${[ROOT_ID, ...nodeIDs].map(id => html`<option .value=${id} .selected=${(edge.parent || '') == id} .disabled=${id == nodeID}>${id || 'Root'}</option>`)}
+					${[ROOT_ID, ...nodeIDs].map(id => html`<option .value=${id} .selected=${(edge.parent || '') == id} .disabled=${id == nodeID || !legalParentIDs[id]}>${id || 'Root'}</option>`)}
 				</select>` : html`<strong>${edge.parent}</strong>`}</li>
 				${Object.entries(constantsForEdge(edge)).map(entry => html`<li>${entry[0]}: <strong>${entry[1]}</strong></li>`)}
 			</ul>`;
