@@ -369,7 +369,9 @@ class MainView extends connect(store)(PageViewElement) {
 				<li>Parent: ${this._scenarioEditable && !isRemoved ? html`<select .value=${edge.parent || ''} @change=${this._handleEdgeParentChanged}>
 					${[ROOT_ID, ...nodeIDs].map(id => html`<option .value=${id} .selected=${(edge.parent || '') == id} .disabled=${id == nodeID || !legalParentIDs[id]}>${id || 'Root'}</option>`)}
 				</select>` : html`<strong>${edge.parent}</strong>`}</li>
-				${Object.entries(constantsForEdge(edge)).map(entry => html`<li>${entry[0]}: <strong>${entry[1]}</strong></li>`)}
+				${Object.entries(constantsForEdge(edge)).map(entry => html`<li>${entry[0]}: ${this._scenarioEditable && !isRemoved ? 
+		html`<input type='number' .value=${String(entry[1])} data-property-name=${entry[0]} @change=${this._handleEdgeConstantChanged}></input>` :
+		html`<strong>${entry[1]}</strong>`}</li>`)}
 			</ul>`;
 	}
 
@@ -522,6 +524,17 @@ class MainView extends connect(store)(PageViewElement) {
 		if (!(e.target instanceof HTMLSelectElement)) throw new Error('not select element');
 		const newParent : NodeID = e.target.value;
 		const newEdge = {...edge, parent: newParent};
+		store.dispatch(modifyEditingNodeEdge(previousEdgeID, newEdge));
+	}
+
+	_handleEdgeConstantChanged(e : Event) {
+		const [edge, previousEdgeID] = this._edgeActionClicked(e);
+		if (!e.target) throw new Error('No input');
+		if (!(e.target instanceof HTMLInputElement)) throw new Error('not input element');
+		const value = parseFloat(e.target.value);
+		const propertyName = e.target.dataset.propertyName;
+		if (!propertyName) throw new Error('No property name');
+		const newEdge = {...edge, [propertyName]: value};
 		store.dispatch(modifyEditingNodeEdge(previousEdgeID, newEdge));
 	}
 
