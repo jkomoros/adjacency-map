@@ -168,22 +168,30 @@ const removeEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : S
 
 //We accept previousEdge and newEdge because we might have made a modification
 //to type/parent which would change which one we're touching.
-const modifyEditingNodeEdgeInOverlay = (state : DataState, previousEdgeID: EdgeValueMatchID, newEdge : EdgeValue) : ScenariosOverlays => { 
+const modifyEditingNodeEdgeInOverlay = (state : DataState, previousEdgeID: EdgeValueMatchID, newEdge? : EdgeValue) : ScenariosOverlays => { 
 	const [result, node] = prepareToEditNodeInOverlay(state);
 	let changesMade = false;
 	for (let i = 0; i < node.edges.add.length; i++) {
 		if (getEdgeValueMatchID(node.edges.add[i]) != previousEdgeID) continue;
-		node.edges.add[i] = newEdge;
+		if (!newEdge) {
+			node.edges.add.splice(i);
+		} else {
+			node.edges.add[i] = newEdge;
+		}
 		changesMade = true;
 	}
 	//We use id/previousID because the thing we're keying off of is not our ID
 	for (const previousID of Object.keys(node.edges.modify)) {
 		if (previousID != previousEdgeID) continue;
-		node.edges.modify[previousID] = newEdge;
+		if (!newEdge) {
+			delete node.edges.modify[previousID];
+		} else {
+			node.edges.modify[previousID] = newEdge;
+		}
 		changesMade = true;
 	}
 	//It's possible it's a modify that comes from a scneario above us.
-	if (!changesMade) node.edges.modify[previousEdgeID] = newEdge;
+	if (!changesMade && newEdge) node.edges.modify[previousEdgeID] = newEdge;
 	return result;
 };
 
