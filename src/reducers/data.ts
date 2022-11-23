@@ -142,25 +142,27 @@ const addEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : Scen
 	return result;
 };
 
-const removeEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : ScenariosOverlays => {
+const removeEditingNodeEdgeInOverlay = (state : DataState, previousID : EdgeValueMatchID) : ScenariosOverlays => {
 	const [result, node] = prepareToEditNodeInOverlay(state);
-	const id = getEdgeValueMatchID(edge);
 	let changesMade = false;
 	for (let i = 0; i < node.edges.add.length; i++) {
 		const addition = node.edges.add[i];
-		if (getEdgeValueMatchID(addition) != id) continue;
+		if (getEdgeValueMatchID(addition) != previousID) continue;
 		changesMade = true;
 		node.edges.add.splice(i);
 		break;
 	}
-	for (const previousID of Object.keys(node.edges.modify)) {
-		if (previousID != id) continue;
-		changesMade = true;
+	for (const modifyID of Object.keys(node.edges.modify)) {
+		//The previousID might not match what we were handed; we want to remove
+		//the given edge anywhere it shows up.
+		if (modifyID != previousID) continue;
+		//DON'T mark changesMade, because we need to get rid of not just
+		//changes, gbut also the whole item, which requires removing it.
 		delete node.edges.modify[previousID];
 		break;
 	}
 	if (!changesMade) {
-		node.edges.remove[id] = true;
+		node.edges.remove[previousID] = true;
 	}
 	return result;
 };
@@ -279,7 +281,7 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 	case REMOVE_EDITING_NODE_EDGE:
 		return {
 			...state,
-			scenariosOverlays: removeEditingNodeEdgeInOverlay(state, action.edge)
+			scenariosOverlays: removeEditingNodeEdgeInOverlay(state, action.previousEdgeID)
 		};
 	case MODIFY_EDITING_NODE_EDGE:
 		return {

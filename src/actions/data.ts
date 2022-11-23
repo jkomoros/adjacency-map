@@ -61,6 +61,7 @@ import {
 import {
 	ROOT_ID
 } from '../constants.js';
+import { getEdgeValueMatchID } from '../util.js';
 
 export const updateFilename : AppActionCreator = (filename : DataFilename, skipCanonicalize = false) => (dispatch, getState) => {
 	const state = getState();
@@ -256,13 +257,14 @@ export const addEditingNodeEdge : AppActionCreator = (edge? : EdgeValue) => (dis
 	});
 };
 
-export const removeEditingNodeEdge : AppActionCreator = (edge : EdgeValue) => (dispatch, getState) => {
+export const removeEditingNodeEdge : AppActionCreator = (edge : EdgeValue | EdgeValueMatchID) => (dispatch, getState) => {
 	const state = getState();
 	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
 	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
+	const previousEdgeID = typeof edge == 'string' ? edge : getEdgeValueMatchID(edge);
 	dispatch({
 		type: REMOVE_EDITING_NODE_EDGE,
-		edge
+		previousEdgeID
 	});
 };
 

@@ -502,8 +502,9 @@ class MainView extends connect(store)(PageViewElement) {
 	}
 
 	_handleRemoveEdgeClicked(e : MouseEvent) {
-		const [edge] = this._edgeActionClicked(e);
-		store.dispatch(removeEditingNodeEdge(edge));
+		const result = this._edgeActionClicked(e);
+		const previousEdgeID = result[1];
+		store.dispatch(removeEditingNodeEdge(previousEdgeID));
 	}
 
 	_handleEdgeTypeChanged(e : Event) {
