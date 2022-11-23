@@ -5968,6 +5968,35 @@ describe('scenarios', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it ('Correctly calculates legalParentIDs for a node in a scenario', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.scenarios = {
+			one: {
+				nodes: {
+					b: {
+						values: {},
+						edges: {
+							add: [
+								{
+									type: 'engineering',
+									parent: 'a'
+								}
+							]
+						}
+					}
+				}
+			}
+		};
+		const map = new AdjacencyMap(input, 'one');
+		const node = map.node('b');
+		const actual = node.legalParentIDs;
+		const golden = {
+			'': true,
+			'a': true
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
 	it('Correctly calculates edges in a scenario with indirect extension and add', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.scenarios = {

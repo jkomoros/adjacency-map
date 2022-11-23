@@ -1090,6 +1090,25 @@ export class AdjacencyMapNode {
 		return edgesWithScenarioModifications(this.baseEdges, this._scenarioNode.edges, true);
 	}
 
+	//parents that it is legal for us to have set.
+	get legalParentIDs() : {[id : NodeID] : true} {
+		const result : {[id : NodeID]: true} = {[ROOT_ID]: true};
+		const graph = extractSimpleGraph(this._map.data, this._map.scenarioName);
+		const currentNodeID = this._id;
+		for (const nodeID of Object.keys(this._map.data.nodes)) {
+			if (nodeID == currentNodeID) continue;
+			const extendedGraph = {...graph, [currentNodeID]: {...graph[currentNodeID]}};
+			extendedGraph[currentNodeID][nodeID] = true;
+			try {
+				topologicalSort(extendedGraph);
+			} catch(err) {
+				continue;
+			}
+			result[nodeID] = true;
+		}
+		return result;
+	}
+
 	//All edges
 	get edges() : ExpandedEdgeValue[] {
 		if (!this._cachedEdges) {
