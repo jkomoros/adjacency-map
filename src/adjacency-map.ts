@@ -1134,11 +1134,7 @@ export class AdjacencyMapNode {
 		//Don't include parent IDs to check that would form a DAG.
 		const allIDs = Object.keys(this.legalParentIDs);
 		const result : {[name : PropertyName]: NodeID | null} = {};
-		//TODO: skip for hidden propertie and ones of type always
-		for (const propertyName of this._map.propertyNames) {
-			const propertyDefinition = this._map.data.properties[propertyName];
-			if (propertyDefinition.calculateWhen != 'edges') continue;
-			if (propertyDefinition.hide) continue;
+		for (const propertyName of this._map.legalEdgePropertyNames) {
 			const occupiedIDs = occupiedNamesAndIDs[propertyName] || {};
 			for (const id of allIDs) {
 				if (occupiedIDs[id]) continue;
