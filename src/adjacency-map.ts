@@ -1127,6 +1127,9 @@ export class AdjacencyMapNode {
 		const result : {[name : PropertyName]: NodeID | null} = {};
 		//TODO: skip for hidden propertie and ones of type always
 		for (const propertyName of this._map.propertyNames) {
+			const propertyDefinition = this._map.data.properties[propertyName];
+			if (propertyDefinition.calculateWhen != 'edges') continue;
+			if (propertyDefinition.hide) continue;
 			const occupiedIDs = occupiedNamesAndIDs[propertyName] || {};
 			for (const id of allIDs) {
 				if (occupiedIDs[id]) continue;
