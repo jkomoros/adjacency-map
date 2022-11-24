@@ -76,6 +76,7 @@ import {
 	NodeID,
 	NodeValues,
 	NodeValuesOverride,
+	PropertyDefinition,
 	PropertyName,
 	RenderEdgeValue,
 	RootState,
@@ -362,7 +363,7 @@ class MainView extends connect(store)(PageViewElement) {
 		const nodeID = node ? node.id : '';
 		if (previousID === null) previousID = '';
 		if (previousID === undefined) previousID = getEdgeValueMatchID(edge);
-		const properties = Object.entries(this._adjacencyMap?.data.properties || {});
+		const properties = node ? node._map.legalEdgePropertyNames.map(propertyName => [propertyName, node._map.data.properties[propertyName]] as [PropertyName, PropertyDefinition]) : [];
 		const nodeIDs = Object.keys(this._adjacencyMap?.data.nodes || {});
 		const allowedMissingConstants = node ? node.allowedMissingConstants(edge) : {};
 		return html`<ul class='${isRemoved ? 'removed' : ''}' data-index=${index} data-previous-id=${previousID} data-has-modifications=${hasModifications ? '1' : '0'}>
