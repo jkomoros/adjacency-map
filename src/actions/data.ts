@@ -62,6 +62,7 @@ import {
 	ROOT_ID
 } from '../constants.js';
 import { getEdgeValueMatchID } from '../util.js';
+import { RESERVED_EDGE_CONSTANT_NAMES } from '../value-definition.js';
 
 export const updateFilename : AppActionCreator = (filename : DataFilename, skipCanonicalize = false) => (dispatch, getState) => {
 	const state = getState();
@@ -274,6 +275,20 @@ export const modifyEditingNodeEdge : AppActionCreator = (previousEdgeID : EdgeVa
 	const state = getState();
 	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
 	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
+	//Remove any constants that are no longer valid for this edge type.
+	if (newEdge) {
+		const map = selectAdjacencyMap(state);
+		if (!map) throw new Error('No map');
+		const propertyDefinition = map.data.properties[newEdge.type];
+		if (!propertyDefinition) throw new Error('Invalid property');
+		const constants = propertyDefinition.constants || {};
+		newEdge = {...newEdge};
+		for (const key of Object.keys(newEdge)) {
+			if (RESERVED_EDGE_CONSTANT_NAMES[key]) continue;
+			if (constants[key] !== undefined) continue;
+			delete newEdge[key];
+		}
+	}
 	dispatch({
 		type: MODIFY_EDITING_NODE_EDGE,
 		previousEdgeID,
