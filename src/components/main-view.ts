@@ -235,6 +235,10 @@ class MainView extends connect(store)(PageViewElement) {
 					justify-content: flex-end;
 				}
 
+				ul {
+					padding-inline-start: 1em;
+				}
+
 				.tag {
 					background-color: red;
 					font-size: 0.8em;
