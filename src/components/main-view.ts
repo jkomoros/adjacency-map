@@ -239,6 +239,10 @@ class MainView extends connect(store)(PageViewElement) {
 					padding-inline-start: 1em;
 				}
 
+				ul input, ul select {
+					max-width: 10em;
+				}
+
 				.tag {
 					background-color: red;
 					font-size: 0.8em;
