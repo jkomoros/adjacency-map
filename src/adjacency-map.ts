@@ -1112,6 +1112,11 @@ export class AdjacencyMapNode {
 		return result;
 	}
 
+	get legalAdditionalPropertyNames() : {[name : PropertyName]: NodeID} {
+		//TODO: caculate more of these
+		return Object.fromEntries(this._map.propertyNames.map(propertyName => [propertyName, ROOT_ID]));
+	}
+
 	//All edges
 	get edges() : ExpandedEdgeValue[] {
 		if (!this._cachedEdges) {

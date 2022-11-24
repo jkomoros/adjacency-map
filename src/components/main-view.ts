@@ -293,7 +293,7 @@ class MainView extends connect(store)(PageViewElement) {
 		const [nodeEdges, nodeModMap] = node ? node.edgesForUI : [[] , {}];
 		const nodeLegalParentIDs = node ? node.legalParentIDs : {};
 		//TODO: only show ones that will ve legal to add
-		const nodeLegalPropertyNames = node ? Object.fromEntries(node._map.propertyNames.map(propertyName => [propertyName, ROOT_ID])) : {};
+		const nodeLegalPropertyNames = node ? node.legalAdditionalPropertyNames : {};
 		return html`
 			<div class='controls'>
 				${this._legalFilenames && this._legalFilenames.length > 1 ? html`
