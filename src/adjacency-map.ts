@@ -1112,9 +1112,30 @@ export class AdjacencyMapNode {
 		return result;
 	}
 
-	get legalAdditionalPropertyNames() : {[name : PropertyName]: NodeID} {
-		//TODO: caculate more of these
-		return Object.fromEntries(this._map.propertyNames.map(propertyName => [propertyName, ROOT_ID]));
+	//Returns a propertyName and the name of hte ID to add so if you use the
+	//propertyName+ParentID then it would be a unique edge. Most of the time the
+	//parentNodeID is just root, but technically it might not be. If a
+	//propertyName is null then it is illegal and should be grayed out.
+	get legalAdditionalPropertyNames() : {[name : PropertyName]: NodeID | null} {
+		const occupiedNamesAndIDs : {[name : PropertyName]: {[id : NodeID] : true}} = {};
+		for (const edge of this.edges) {
+			if (!occupiedNamesAndIDs[edge.type]) occupiedNamesAndIDs[edge.type] = {};
+			occupiedNamesAndIDs[edge.type][edge.parent] = true;
+		}
+		//Don't include parent IDs to check that would form a DAG.
+		const allIDs = Object.keys(this.legalParentIDs);
+		const result : {[name : PropertyName]: NodeID | null} = {};
+		//TODO: skip for hidden propertie and ones of type always
+		for (const propertyName of this._map.propertyNames) {
+			const occupiedIDs = occupiedNamesAndIDs[propertyName] || {};
+			for (const id of allIDs) {
+				if (occupiedIDs[id]) continue;
+				result[propertyName] = id;
+				break;
+			}
+			if (result[propertyName] == undefined) result[propertyName] = null;
+		}
+		return result;
 	}
 
 	//All edges

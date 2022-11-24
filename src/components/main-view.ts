@@ -332,7 +332,7 @@ class MainView extends connect(store)(PageViewElement) {
 					${nodeEdges.map((edge, i) => this._htmlForEdge(edge, i, node, nodeModMap, nodeLegalParentIDs))}
 					${this._scenarioEditable ? html`<select @change=${this._handleAddNewEdgeChanged} .value=${''}>
 						<option value='' .selected=${true}>Add a new edge of type...</option>
-						${Object.entries(nodeLegalPropertyNames).map(entry => html`<option .value=${entry[0]} data-node-id=${entry[1]}>${entry[0]}</option>`)}
+						${Object.entries(nodeLegalPropertyNames).map(entry => html`<option .value=${entry[0]} data-node-id=${entry[1] == null ? '@INVALID@' : entry[1]} .disabled=${entry[1] == null}>${entry[0]}</option>`)}
 					</select>` : ''}
 					</details>` 
 		: ''}
