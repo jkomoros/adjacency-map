@@ -648,6 +648,15 @@ export class AdjacencyMap {
 		return this._cachedPropertyNames;
 	}
 
+	get legalEdgePropertyNames() : PropertyName[] {
+		return this.propertyNames.filter(propertyName => {
+			const definition = this._data.properties[propertyName];
+			if (definition.calculateWhen != 'edges') return false;
+			if (definition.hide) return false;
+			return true;
+		});
+	}
+
 	get scenarioName() : ScenarioName {
 		return this._scenarioName;
 	}
