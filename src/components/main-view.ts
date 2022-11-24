@@ -358,6 +358,7 @@ class MainView extends connect(store)(PageViewElement) {
 		if (previousID === undefined) previousID = getEdgeValueMatchID(edge);
 		const properties = Object.entries(this._adjacencyMap?.data.properties || {});
 		const nodeIDs = Object.keys(this._adjacencyMap?.data.nodes || {});
+		const allowedMissingConstants = node ? node.allowedMissingConstants(edge) : {};
 		return html`<ul class='${isRemoved ? 'removed' : ''}' data-index=${index} data-previous-id=${previousID} data-has-modifications=${hasModifications ? '1' : '0'}>
 				${this._scenarioEditable ? html`<li class='buttons'>
 					${isRemoved || hasModifications ? html`<button class='small' @click=${this._handleUndoRemoveEdgeClicked} title='Undo changes'>${UNDO_ICON}</button>` : ''}
@@ -372,6 +373,12 @@ class MainView extends connect(store)(PageViewElement) {
 				${Object.entries(constantsForEdge(edge)).map(entry => html`<li>${entry[0]}: ${this._scenarioEditable && !isRemoved ? 
 		html`<input type='number' .value=${String(entry[1])} data-property-name=${entry[0]} @change=${this._handleEdgeConstantChanged}></input><button class='small' data-property-name=${entry[0]} @click=${this._handleEdgeRemoveConstant}>${CANCEL_ICON}</button>` :
 		html`<strong>${entry[1]}</strong>`}</li>`)}
+			${this._scenarioEditable && !isRemoved && Object.keys(allowedMissingConstants).length ? 
+		html`<select @change=${this._handleAddEdgeConstantChanged}>
+			<option value=''>Add a constant...</option>
+			${Object.entries(allowedMissingConstants).map(entry => html`<option .value=${entry[0]} data-default-value=${entry[1]}>${entry[0]}</option>`)}
+		</select>` :
+		''}
 			</ul>`;
 	}
 
@@ -535,6 +542,22 @@ class MainView extends connect(store)(PageViewElement) {
 		const propertyName = e.target.dataset.propertyName;
 		if (!propertyName) throw new Error('No property name');
 		const newEdge = {...edge, [propertyName]: value};
+		store.dispatch(modifyEditingNodeEdge(previousEdgeID, newEdge));
+	}
+
+	_handleAddEdgeConstantChanged(e : Event) {
+		const [edge, previousEdgeID] = this._edgeActionClicked(e);
+		if (!e.target) throw new Error('No input');
+		if (!(e.target instanceof HTMLSelectElement)) throw new Error('not select element');
+		const ele : HTMLSelectElement = e.target;
+		const propertyName = ele.value;
+		//Must have been the first item
+		if (!propertyName) return;
+		const option = ele.selectedOptions[0];
+		const rawDefaultValue = option.dataset.defaultValue;
+		if (!rawDefaultValue) throw new Error('No default');
+		const defaultValue = parseFloat(rawDefaultValue);
+		const newEdge = {...edge, [propertyName]: defaultValue};
 		store.dispatch(modifyEditingNodeEdge(previousEdgeID, newEdge));
 	}
 
