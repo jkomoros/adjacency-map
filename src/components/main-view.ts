@@ -292,6 +292,8 @@ class MainView extends connect(store)(PageViewElement) {
 		const node = (this._adjacencyMap && this._summaryNodeID) ? this._adjacencyMap.node(this._summaryNodeID) : null;
 		const [nodeEdges, nodeModMap] = node ? node.edgesForUI : [[] , {}];
 		const nodeLegalParentIDs = node ? node.legalParentIDs : {};
+		//TODO: only show ones that will ve legal to add
+		const nodeLegalPropertyNames = node ? Object.fromEntries(node._map.propertyNames.map(propertyName => [propertyName, ROOT_ID])) : {};
 		return html`
 			<div class='controls'>
 				${this._legalFilenames && this._legalFilenames.length > 1 ? html`
@@ -328,6 +330,10 @@ class MainView extends connect(store)(PageViewElement) {
 		: ''}
 					${nodeEdges.length ? html`<details .open=${this._showEdges}><summary @click=${this._handleShowEdgesToggleClicked}><label>Edges</label></summary>
 					${nodeEdges.map((edge, i) => this._htmlForEdge(edge, i, node, nodeModMap, nodeLegalParentIDs))}
+					${this._scenarioEditable ? html`<select @change=${this._handleAddNewEdgeChanged} .value=${''}>
+						<option value='' .selected=${true}>Add a new edge of type...</option>
+						${Object.entries(nodeLegalPropertyNames).map(entry => html`<option .value=${entry[0]} data-node-id=${entry[1]}>${entry[0]}</option>`)}
+					</select>` : ''}
 					</details>` 
 		: ''}
 				</div>
@@ -560,6 +566,20 @@ class MainView extends connect(store)(PageViewElement) {
 		const newEdge = {...edge, [propertyName]: defaultValue};
 		store.dispatch(modifyEditingNodeEdge(previousEdgeID, newEdge));
 		ele.selectedIndex = 0;
+	}
+
+	_handleAddNewEdgeChanged(e : Event) {
+		if (!e.target) throw new Error('no select');
+		if (!(e.target instanceof HTMLSelectElement)) throw new Error('Not a select');
+		const selectEle : HTMLSelectElement = e.target;
+		const propertyName = selectEle.value;
+		const selectedOption = selectEle.selectedOptions[0];
+		if (!selectedOption) throw new Error('No selected option');
+		const rawNodeID = selectEle.selectedOptions[0].dataset.nodeId;
+		if (rawNodeID == undefined) throw new Error('No node ID');
+		const nodeID : NodeID = rawNodeID;
+		selectEle.selectedIndex = 0;
+		store.dispatch(addEditingNodeEdge({type: propertyName, parent:nodeID}));
 	}
 
 	_handleEdgeRemoveConstant(e : Event) {
