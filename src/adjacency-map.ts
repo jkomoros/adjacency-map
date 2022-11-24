@@ -38,7 +38,8 @@ import {
 	ScenarioNode,
 	NodeValuesOverride,
 	ScenarioNodeEdges,
-	EdgeValueModificationMap
+	EdgeValueModificationMap,
+	ConstantType
 } from './types.js';
 
 import {
@@ -93,6 +94,7 @@ import {
 
 import {
 	assertUnreachable,
+	constantsForEdge,
 	emptyScenarioNode,
 	getEdgeValueMatchID,
 	idToDisplayName,
@@ -1081,6 +1083,14 @@ export class AdjacencyMapNode {
 	//The base edges with all scenario modifications applied but not expanded, skipping any removal steps.
 	get edgesForUI() : [EdgeValue[], EdgeValueModificationMap] {
 		return edgesWithScenarioModifications(this.baseEdges, this._scenarioNode.edges, true);
+	}
+
+	allowedMissingConstants(edge : EdgeValue) : {[name : ConstantType]: number} {
+		const typeInfo = this._map.data.properties[edge.type];
+		if (!typeInfo) return {};
+		if (!typeInfo.constants) return {};
+		const existingConstants = constantsForEdge(edge);
+		return Object.fromEntries(Object.entries(typeInfo.constants).filter(entry => !(entry[0] in existingConstants)));
 	}
 
 	//parents that it is legal for us to have set.
