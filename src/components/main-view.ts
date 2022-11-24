@@ -374,8 +374,8 @@ class MainView extends connect(store)(PageViewElement) {
 		html`<input type='number' .value=${String(entry[1])} data-property-name=${entry[0]} @change=${this._handleEdgeConstantChanged}></input><button class='small' data-property-name=${entry[0]} @click=${this._handleEdgeRemoveConstant}>${CANCEL_ICON}</button>` :
 		html`<strong>${entry[1]}</strong>`}</li>`)}
 			${this._scenarioEditable && !isRemoved && Object.keys(allowedMissingConstants).length ? 
-		html`<select @change=${this._handleAddEdgeConstantChanged}>
-			<option value=''>Add a constant...</option>
+		html`<select @change=${this._handleAddEdgeConstantChanged} .value=${''}>
+			<option value='' .selected=${true}>Add a constant...</option>
 			${Object.entries(allowedMissingConstants).map(entry => html`<option .value=${entry[0]} data-default-value=${entry[1]}>${entry[0]}</option>`)}
 		</select>` :
 		''}
@@ -559,6 +559,7 @@ class MainView extends connect(store)(PageViewElement) {
 		const defaultValue = parseFloat(rawDefaultValue);
 		const newEdge = {...edge, [propertyName]: defaultValue};
 		store.dispatch(modifyEditingNodeEdge(previousEdgeID, newEdge));
+		ele.selectedIndex = 0;
 	}
 
 	_handleEdgeRemoveConstant(e : Event) {
