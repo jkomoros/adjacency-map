@@ -7,7 +7,8 @@ import {
 	ExpandedEdgeValue,
 	ConstantType,
 	EdgeValue,
-	EdgeValueMatchID
+	EdgeValueMatchID,
+	EdgeIdentifier
 } from './types.js';
 
 import {
@@ -32,6 +33,15 @@ export const renderEdgeStableID = (edge : RenderEdgeValue) : string => {
 		...edge.edges.map(subEdge => subEdge.type)
 	];
 	return result.join('_');
+};
+
+export const edgeIdentifierEquivalent = (a? : EdgeIdentifier, b? : EdgeIdentifier) : boolean => {
+	if (a == b) return true;
+	if (!a || !b) return false;
+	if (a.parent != b.parent) return false;
+	if (a.source != b.source) return false;
+	if (a.type != b.type) return false;
+	return true;
 };
 
 export const camelCaseFilename = (name : string) : string => {
