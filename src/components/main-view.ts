@@ -53,7 +53,8 @@ import {
 	selectScenariosOverlays,
 	selectCurrentScenarioEditedNodes,
 	selectSummaryNodeID,
-	selectShowEdges
+	selectShowEdges,
+	selectHoveredEdgeID
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -120,7 +121,8 @@ import {
 	storeOverlaysToStorage,
 	renderEdgeStableID,
 	constantsForEdge,
-	getEdgeValueMatchID
+	getEdgeValueMatchID,
+	edgeIdentifierEquivalent
 } from '../util.js';
 
 @customElement('main-view')
@@ -181,6 +183,9 @@ class MainView extends connect(store)(PageViewElement) {
 	_summaryValues : NodeValues;
 
 	@state()
+	_hoveredEdgeID : EdgeIdentifier | undefined;
+
+	@state()
 	_showHiddenValues : boolean;
 
 	@state()
@@ -222,6 +227,10 @@ class MainView extends connect(store)(PageViewElement) {
 
 				ul.removed {
 					text-decoration: line-through;
+				}
+
+				ul.hovered {
+					background-color: var(--disabled-color);
 				}
 
 				.container.needs-margin-left frame-visualization {
@@ -376,7 +385,12 @@ class MainView extends connect(store)(PageViewElement) {
 		const properties = node ? node._map.legalEdgePropertyNames.map(propertyName => [propertyName, node._map.data.properties[propertyName]] as [PropertyName, PropertyDefinition]) : [];
 		const nodeIDs = Object.keys(this._adjacencyMap?.data.nodes || {});
 		const allowedMissingConstants = node ? node.allowedMissingConstants(edge) : {};
-		return html`<ul class='${isRemoved ? 'removed' : ''}' data-index=${index} data-previous-id=${previousID} data-has-modifications=${hasModifications ? '1' : '0'} @mousemove=${this._handleEdgeMouseMove}>
+		const edgeIdentifier : EdgeIdentifier = {
+			source: this._summaryNodeID || ROOT_ID,
+			parent: edge.parent || ROOT_ID,
+			type: edge.type
+		};
+		return html`<ul class='${isRemoved ? 'removed' : ''} ${edgeIdentifierEquivalent(this._hoveredEdgeID, edgeIdentifier) ? 'hovered' : ''}' data-index=${index} data-previous-id=${previousID} data-has-modifications=${hasModifications ? '1' : '0'} @mousemove=${this._handleEdgeMouseMove}>
 				${this._scenarioEditable ? html`<li class='buttons'>
 					${isRemoved || hasModifications ? html`<button class='small' @click=${this._handleUndoRemoveEdgeClicked} title='Undo changes'>${UNDO_ICON}</button>` : ''}
 					${!isRemoved ? html`<button class='small' @click=${this._handleRemoveEdgeClicked}>${CANCEL_ICON}</button>` : ''}
@@ -429,6 +443,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._summaryNodeDisplayName = selectSummaryNodeDisplayName(state);
 		this._summaryTags = selectSummaryTags(state);
 		this._summaryValues = selectSummaryValues(state);
+		this._hoveredEdgeID = selectHoveredEdgeID(state);
 		this._showEdges = selectShowEdges(state);
 		this._showHiddenValues = selectShowHiddenValues(state);
 		this._dataError = selectAdjacencyMapError(state);
