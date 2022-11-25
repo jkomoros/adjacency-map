@@ -476,8 +476,8 @@ class MainView extends connect(store)(PageViewElement) {
 		e.stopPropagation();
 		const [edge] = this._edgeActionClicked(e);
 		const identifier : EdgeIdentifier = {
-			source: this._summaryNodeID || '',
-			parent: edge.parent || '',
+			source: this._summaryNodeID || ROOT_ID,
+			parent: edge.parent || ROOT_ID,
 			type: edge.type
 		};
 		store.dispatch(updateHoveredEdgeID(identifier));
