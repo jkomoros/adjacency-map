@@ -53,6 +53,18 @@ export const edgeIdentifierFromEdge = (edge : EdgeValue | ExpandedEdgeValue, sou
 	};
 };
 
+export const edgeIdentifiersFromRenderEdge = (renderEdge : RenderEdgeValue) : EdgeIdentifier[] => {
+	const result : EdgeIdentifier[] = [];
+	for (const subEdge of renderEdge.edges) {
+		result.push({
+			source: renderEdge.source,
+			parent: renderEdge.parent,
+			type: subEdge.type
+		});
+	}
+	return result;
+};
+
 export const camelCaseFilename = (name : string) : string => {
 	return name.split('-').map((piece, index) => index == 0 ? piece : piece[0].toUpperCase() + piece.slice(1)).join('');
 };
