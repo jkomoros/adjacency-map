@@ -23,6 +23,7 @@ import {
 	resetScenariosOverlays,
 	setShowEdges,
 	updateFilename,
+	updateHoveredEdgeID,
 	updateHoveredNodeID,
 	updateScale,
 	updateScenarioName,
@@ -70,6 +71,7 @@ import {
 
 import {
 	DataFilename,
+	EdgeIdentifier,
 	EdgeValue,
 	EdgeValueMatchID,
 	EdgeValueModificationMap,
@@ -304,7 +306,7 @@ class MainView extends connect(store)(PageViewElement) {
 		//TODO: only show ones that will ve legal to add
 		const nodeLegalPropertyNames = node ? node.legalAdditionalPropertyNames : {};
 		return html`
-			<div class='controls'>
+			<div class='controls' @mousemove=${this._handleControlsMouseMove}>
 				${this._legalFilenames && this._legalFilenames.length > 1 ? html`
 				<label for='filenames'>File</label>
 				<select id='filenames' .value=${this._filename} @change=${this._handleFilenameChanged}>
@@ -374,7 +376,7 @@ class MainView extends connect(store)(PageViewElement) {
 		const properties = node ? node._map.legalEdgePropertyNames.map(propertyName => [propertyName, node._map.data.properties[propertyName]] as [PropertyName, PropertyDefinition]) : [];
 		const nodeIDs = Object.keys(this._adjacencyMap?.data.nodes || {});
 		const allowedMissingConstants = node ? node.allowedMissingConstants(edge) : {};
-		return html`<ul class='${isRemoved ? 'removed' : ''}' data-index=${index} data-previous-id=${previousID} data-has-modifications=${hasModifications ? '1' : '0'}>
+		return html`<ul class='${isRemoved ? 'removed' : ''}' data-index=${index} data-previous-id=${previousID} data-has-modifications=${hasModifications ? '1' : '0'} @mousemove=${this._handleEdgeMouseMove}>
 				${this._scenarioEditable ? html`<li class='buttons'>
 					${isRemoved || hasModifications ? html`<button class='small' @click=${this._handleUndoRemoveEdgeClicked} title='Undo changes'>${UNDO_ICON}</button>` : ''}
 					${!isRemoved ? html`<button class='small' @click=${this._handleRemoveEdgeClicked}>${CANCEL_ICON}</button>` : ''}
@@ -463,6 +465,22 @@ class MainView extends connect(store)(PageViewElement) {
 
 		//Fetch overlays from localStorage;
 		store.dispatch(loadScenariosOverlays(fetchOverlaysFromStorage()));
+	}
+
+	_handleControlsMouseMove() {
+		store.dispatch(updateHoveredEdgeID());
+	}
+
+	_handleEdgeMouseMove(e : MouseEvent) {
+		//Don't go back up and trigger for the whole controls
+		e.stopPropagation();
+		const [edge] = this._edgeActionClicked(e);
+		const identifier : EdgeIdentifier = {
+			source: this._summaryNodeID || '',
+			parent: edge.parent || '',
+			type: edge.type
+		};
+		store.dispatch(updateHoveredEdgeID(identifier));
 	}
 
 	_handleKeyDown(e : KeyboardEvent) {
