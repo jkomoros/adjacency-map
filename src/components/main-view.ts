@@ -123,7 +123,8 @@ import {
 	constantsForEdge,
 	getEdgeValueMatchID,
 	edgeIdentifierEquivalent,
-	edgeIdentifierFromEdge
+	edgeIdentifierFromEdge,
+	edgeIdentifiersFromRenderEdge
 } from '../util.js';
 
 @customElement('main-view')
@@ -303,6 +304,10 @@ class MainView extends connect(store)(PageViewElement) {
 
 				svg * {
 					transition: all 0.1s ease-in-out;
+				}
+
+				svg path.hovered {
+					stroke-dasharray: 1.0em;
 				}
 
 			`
@@ -747,7 +752,8 @@ class MainView extends connect(store)(PageViewElement) {
 	}
 
 	_svgForEdge(edge : RenderEdgeValue, map : AdjacencyMap) : TemplateResult {
-		return svg`<path d="${this._pathForEdge(edge, map)}" stroke-width='${edge.width}' stroke-opacity='${edge.opacity}' stroke='${edge.color.rgbaStr}'><title>${this._titleForEdge(edge)}</title></path>`;
+		const hovered = edgeIdentifiersFromRenderEdge(edge).some(id => edgeIdentifierEquivalent(this._hoveredEdgeID, id));
+		return svg`<path class='${hovered ? 'hovered' : ''}' d="${this._pathForEdge(edge, map)}" stroke-width='${edge.width}' stroke-opacity='${edge.opacity}' stroke='${edge.color.rgbaStr}'><title>${this._titleForEdge(edge)}</title></path>`;
 	}
 
 	_handleSVGMouseMove(e : MouseEvent) {
