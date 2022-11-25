@@ -8,6 +8,7 @@ import {
 	UPDATE_SCALE,
 	UPDATE_SCENARIO_NAME,
 	UPDATE_HOVERED_NODE_ID,
+	UPDATE_HOVERED_EDGE_ID,
 	UPDATE_SELECTED_NODE_ID,
 	SET_SHOW_EDGES,
 	UPDATE_SHOW_HIDDEN_VALUES,
@@ -47,6 +48,7 @@ const INITIAL_STATE : DataState = {
 	scenarioName: '',
 	selectedNodeID: undefined,
 	hoveredNodeID: undefined,
+	hoveredEdgeID: undefined,
 	showHiddenValues: false,
 	showEdges: false,
 	scenariosOverlays: {}
@@ -218,6 +220,11 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			hoveredNodeID: action.nodeID
+		};
+	case UPDATE_HOVERED_EDGE_ID:
+		return {
+			...state,
+			hoveredEdgeID: action.edgeID
 		};
 	case UPDATE_SELECTED_NODE_ID:
 		return {

@@ -3,6 +3,7 @@ export const UPDATE_SCALE = 'UPDATE_SCALE';
 export const UPDATE_SCENARIO_NAME = 'UPDATE_SCENARIO_NAME';
 
 export const UPDATE_HOVERED_NODE_ID = 'UPDATE_HOVERED_NODE_ID';
+export const UPDATE_HOVERED_EDGE_ID = 'UPDATE_HOVERED_EDGE_ID';
 export const UPDATE_SELECTED_NODE_ID = 'UPDATE_SELECTED_NODE_ID';
 export const UPDATE_SHOW_HIDDEN_VALUES = 'UPDATE_SHOW_HIDDEN_VALUES';
 export const SET_SHOW_EDGES = 'SET_SHOW_EDGES';
@@ -37,7 +38,8 @@ import {
 	selectCurrentScenarioEditable,
 	selectSelectedNodeFieldsEdited,
 	selectAdjacencyMap,
-	selectShowEdges
+	selectShowEdges,
+	selectHoveredEdgeID
 } from '../selectors.js';
 
 import {
@@ -46,6 +48,7 @@ import {
 
 import {
 	DataFilename,
+	EdgeIdentifier,
 	EdgeValue,
 	EdgeValueMatchID,
 	NodeID,
@@ -61,7 +64,7 @@ import {
 import {
 	ROOT_ID
 } from '../constants.js';
-import { getEdgeValueMatchID } from '../util.js';
+import { edgeIdentifierEquivalent, getEdgeValueMatchID } from '../util.js';
 import { RESERVED_EDGE_CONSTANT_NAMES } from '../value-definition.js';
 
 export const updateFilename : AppActionCreator = (filename : DataFilename, skipCanonicalize = false) => (dispatch, getState) => {
@@ -124,6 +127,17 @@ export const updateHoveredNodeID : AppActionCreator =  (nodeID? : NodeID) => (di
 	dispatch({
 		type: UPDATE_HOVERED_NODE_ID,
 		nodeID
+	});
+};
+
+export const updateHoveredEdgeID : AppActionCreator =  (edgeID? : EdgeIdentifier) => (dispatch, getState) => {
+	//This will get hit a lot so don't update state if hte nodeID hasn't changed.
+	const currentEdgeID = selectHoveredEdgeID(getState());
+	if (edgeIdentifierEquivalent(currentEdgeID, edgeID)) return;
+	if (edgeID) edgeID = {...edgeID};
+	dispatch({
+		type: UPDATE_HOVERED_EDGE_ID,
+		edgeID
 	});
 };
 
