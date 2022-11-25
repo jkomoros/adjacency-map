@@ -1,4 +1,4 @@
-import { ENABLE_EDITING_SCENARIOS } from './constants.js';
+import { ENABLE_EDITING_SCENARIOS, ROOT_ID } from './constants.js';
 import {
 	RandomGenerator,
 	ScenariosOverlays,
@@ -8,7 +8,8 @@ import {
 	ConstantType,
 	EdgeValue,
 	EdgeValueMatchID,
-	EdgeIdentifier
+	EdgeIdentifier,
+	NodeID
 } from './types.js';
 
 import {
@@ -42,6 +43,14 @@ export const edgeIdentifierEquivalent = (a? : EdgeIdentifier, b? : EdgeIdentifie
 	if (a.source != b.source) return false;
 	if (a.type != b.type) return false;
 	return true;
+};
+
+export const edgeIdentifierFromEdge = (edge : EdgeValue | ExpandedEdgeValue, sourceID : NodeID = ROOT_ID) : EdgeIdentifier => {
+	return {
+		source: edge.source == undefined ? sourceID : edge.source as NodeID,
+		parent: edge.parent || ROOT_ID,
+		type: edge.type
+	};
 };
 
 export const camelCaseFilename = (name : string) : string => {
