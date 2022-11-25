@@ -31,6 +31,7 @@ export const selectHash = (state : RootState) => state.app ? state.app.hash : ''
 export const selectScale = (state : RootState) => state.data ? state.data.scale : 1.0;
 export const selectScenarioName = (state : RootState) => state.data ? state.data.scenarioName : '';
 export const selectHoveredNodeID = (state : RootState) => state.data ? state.data.hoveredNodeID : undefined;
+export const selectHoveredEdgeID = (state : RootState) => state.data ? state.data.hoveredEdgeID : undefined;
 export const selectSelectedNodeID = (state : RootState) => state.data ? state.data.selectedNodeID : undefined;
 export const selectShowEdges = (state : RootState) => state.data ? state.data.showEdges : false;
 export const selectShowHiddenValues = (state : RootState) => state.data ? state.data.showHiddenValues : false;
