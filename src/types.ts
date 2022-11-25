@@ -379,6 +379,12 @@ export type ExpandedEdgeValue = Exclude<EdgeValue,ImpliesConfiguration> & {
 	implied: number;
 };
 
+export type EdgeIdentifier = {
+	source: NodeID,
+	parent: NodeID,
+	type: PropertyName
+};
+
 export type RenderEdgeSubEdge = {
 	type: PropertyName,
 	implied: number,
@@ -757,6 +763,7 @@ export type DataState = {
 	scenarioName : ScenarioName;
 	hoveredNodeID? : NodeID;
 	selectedNodeID? : NodeID;
+	hoveredEdgeID?: EdgeIdentifier;
 	showHiddenValues: boolean;
 	showEdges: boolean;
 	scenariosOverlays: ScenariosOverlays;
