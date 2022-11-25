@@ -122,7 +122,8 @@ import {
 	renderEdgeStableID,
 	constantsForEdge,
 	getEdgeValueMatchID,
-	edgeIdentifierEquivalent
+	edgeIdentifierEquivalent,
+	edgeIdentifierFromEdge
 } from '../util.js';
 
 @customElement('main-view')
@@ -385,11 +386,7 @@ class MainView extends connect(store)(PageViewElement) {
 		const properties = node ? node._map.legalEdgePropertyNames.map(propertyName => [propertyName, node._map.data.properties[propertyName]] as [PropertyName, PropertyDefinition]) : [];
 		const nodeIDs = Object.keys(this._adjacencyMap?.data.nodes || {});
 		const allowedMissingConstants = node ? node.allowedMissingConstants(edge) : {};
-		const edgeIdentifier : EdgeIdentifier = {
-			source: this._summaryNodeID || ROOT_ID,
-			parent: edge.parent || ROOT_ID,
-			type: edge.type
-		};
+		const edgeIdentifier = edgeIdentifierFromEdge(edge, this._summaryNodeID);
 		return html`<ul class='${isRemoved ? 'removed' : ''} ${edgeIdentifierEquivalent(this._hoveredEdgeID, edgeIdentifier) ? 'hovered' : ''}' data-index=${index} data-previous-id=${previousID} data-has-modifications=${hasModifications ? '1' : '0'} @mousemove=${this._handleEdgeMouseMove}>
 				${this._scenarioEditable ? html`<li class='buttons'>
 					${isRemoved || hasModifications ? html`<button class='small' @click=${this._handleUndoRemoveEdgeClicked} title='Undo changes'>${UNDO_ICON}</button>` : ''}
@@ -490,11 +487,7 @@ class MainView extends connect(store)(PageViewElement) {
 		//Don't go back up and trigger for the whole controls
 		e.stopPropagation();
 		const [edge] = this._edgeActionClicked(e);
-		const identifier : EdgeIdentifier = {
-			source: this._summaryNodeID || ROOT_ID,
-			parent: edge.parent || ROOT_ID,
-			type: edge.type
-		};
+		const identifier = edgeIdentifierFromEdge(edge, this._summaryNodeID);
 		store.dispatch(updateHoveredEdgeID(identifier));
 	}
 
