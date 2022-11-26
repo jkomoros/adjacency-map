@@ -22,6 +22,7 @@ import {
 	removeEditingScenario,
 	resetScenariosOverlays,
 	setShowEdges,
+	updateEditingScenarioDescription,
 	updateFilename,
 	updateHoveredEdgeID,
 	updateHoveredNodeID,
@@ -343,7 +344,7 @@ class MainView extends connect(store)(PageViewElement) {
 					</div>
 					${this._legalScenarioNames.length > 1 ? 
 		html`<div>
-							<label>Scenario</label> ${this._adjacencyMap?.scenario.description || (this._adjacencyMap?.scenarioName ? html`<em>No description</em>` : html`<em>Default</em>`)}
+							<label>Scenario</label> ${this._scenarioEditable ? html`<input type='text' @change=${this._handleUpdateScenarioDescription} .value=${this._adjacencyMap?.scenario.description || ''}></input>` : html`${this._adjacencyMap?.scenario.description || (this._adjacencyMap?.scenarioName ? html`<em>No description</em>` : html`<em>Default</em>`)}`}
 						</div>`
 		: html``}
 					<div>
@@ -494,6 +495,14 @@ class MainView extends connect(store)(PageViewElement) {
 		const [edge] = this._edgeActionClicked(e);
 		const identifier = edgeIdentifierFromEdge(edge, this._summaryNodeID);
 		store.dispatch(updateHoveredEdgeID(identifier));
+	}
+
+	_handleUpdateScenarioDescription(e : Event) {
+		if (!e.target) throw new Error('no target');
+		if (!(e.target instanceof HTMLInputElement)) throw new Error('not input');
+		const ele : HTMLInputElement = e.target;
+		const description = ele.value;
+		store.dispatch(updateEditingScenarioDescription(description));
 	}
 
 	_handleKeyDown(e : KeyboardEvent) {
