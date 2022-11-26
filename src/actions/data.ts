@@ -2,6 +2,8 @@ export const UPDATE_FILENAME = 'UPDATE_FILENAME';
 export const UPDATE_SCALE = 'UPDATE_SCALE';
 export const UPDATE_SCENARIO_NAME = 'UPDATE_SCENARIO_NAME';
 
+export const SET_EDITING = 'SET_EDITING';
+
 export const UPDATE_HOVERED_NODE_ID = 'UPDATE_HOVERED_NODE_ID';
 export const UPDATE_HOVERED_EDGE_ID = 'UPDATE_HOVERED_EDGE_ID';
 export const UPDATE_SELECTED_NODE_ID = 'UPDATE_SELECTED_NODE_ID';
@@ -121,6 +123,13 @@ export const updateScenarioName = (scenarioName : ScenarioName) : AnyAction => {
 	return {
 		type: UPDATE_SCENARIO_NAME,
 		scenarioName,
+	};
+};
+
+export const setEditing = (editing : boolean) : AnyAction => {
+	return {
+		type: SET_EDITING,
+		editing
 	};
 };
 

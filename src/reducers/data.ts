@@ -6,6 +6,7 @@ import {
 	UPDATE_FILENAME,
 	DEFAULT_FILE_NAME,
 	UPDATE_SCALE,
+	SET_EDITING,
 	UPDATE_SCENARIO_NAME,
 	UPDATE_HOVERED_NODE_ID,
 	UPDATE_HOVERED_EDGE_ID,
@@ -241,6 +242,11 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			scale: action.scale
+		};
+	case SET_EDITING:
+		return {
+			...state,
+			editing: action.editing
 		};
 	case UPDATE_SCENARIO_NAME:
 		return {
