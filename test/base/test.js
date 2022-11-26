@@ -5194,7 +5194,11 @@ describe('renderEdges', () => {
 		const node = map.node('a');
 		const actual = node.renderEdges;
 		const golden = [
-			//When the width is 0 it's removed
+			{
+				//Clipped render edges are included, just not bumped out
+				...BASE_RENDER_EDGE,
+				width: 0
+			}
 		];
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -5234,7 +5238,11 @@ describe('renderEdges', () => {
 		const node = map.node('a');
 		const actual = node.renderEdges;
 		const golden = [
-			//An edge with width 0 will be removed
+			{
+				//A width of 0 is included just doesn't bump
+				...BASE_RENDER_EDGE,
+				width: 0
+			}
 		];
 		assert.deepStrictEqual(actual, golden);
 	});

@@ -1171,18 +1171,21 @@ export class AdjacencyMapNode {
 	}
 
 	_spreadBumps(edges : RenderEdgeValue[]) : RenderEdgeValue[] {
-		if (edges.length < 2) return edges;
-		const totalTargetSpread = (edges.length -1) * TARGET_BUMP;
+		const numRenderedEges = edges.filter(edge => edge.width > 0).length;
+		if (numRenderedEges< 2) return edges;
+		const totalTargetSpread = (numRenderedEges -1) * TARGET_BUMP;
 		const result : RenderEdgeValue[] = [];
 		for (let i = 0; i < edges.length; i++) {
 			const edge = edges[i];
 			let bump = 0.5;
-			if (totalTargetSpread > 1.0) {
-				//Spread total amount evenly
-				bump = (1 / (edges.length - 1)) * i;
-			} else {
-				//Spread each one out with the ideal spacing
-				bump = i * TARGET_BUMP + (1 - totalTargetSpread) / 2;
+			if (edge.width > 0) {
+				if (totalTargetSpread > 1.0) {
+					//Spread total amount evenly
+					bump = (1 / (numRenderedEges - 1)) * i;
+				} else {
+					//Spread each one out with the ideal spacing
+					bump = i * TARGET_BUMP + (1 - totalTargetSpread) / 2;
+				}
 			}
 			result.push({
 				...edge,
@@ -1208,7 +1211,7 @@ export class AdjacencyMapNode {
 		}
 		for (const [parent, edgeMap] of Object.entries(edgesByRef)) {
 			const bundledEdges : RenderEdgeValue[] = [];
-			let resultsForRef :RenderEdgeValue[] = [];
+			const resultsForRef :RenderEdgeValue[] = [];
 			for (const [edgeType, edges] of Object.entries(edgeMap)){
 				const edgeDefinition = this._map.data.properties[edgeType];
 				const colorDefinitionOrString = edgeDefinition.display.color == undefined ? this._map.data.display.edge.color : edgeDefinition.display.color;
@@ -1292,9 +1295,6 @@ export class AdjacencyMapNode {
 					resultsForRef.push(renderEdge);
 				}
 			}
-
-			//Remove edges that have 0 width and pretend they don't exist
-			resultsForRef = resultsForRef.filter(edge => edge.width > 0);
 
 			result.push(...this._spreadBumps(resultsForRef));
 		}
