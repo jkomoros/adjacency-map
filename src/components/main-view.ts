@@ -23,6 +23,7 @@ import {
 	resetScenariosOverlays,
 	setShowEdges,
 	updateEditingScenarioDescription,
+	updateEditingScenarioName,
 	updateFilename,
 	updateHoveredEdgeID,
 	updateHoveredNodeID,
@@ -334,7 +335,7 @@ class MainView extends connect(store)(PageViewElement) {
 				<select id='scenarios' .value=${this._scenarioName} @change=${this._handleScenarioNameChanged}>
 					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName} .selected=${scenarioName == this._scenarioName}>${scenarioName || 'Default'}</option>`)}
 				</select>` : ''}
-				${ENABLE_EDITING_SCENARIOS ? html`<button class='small' title='Create a new scenario based on the current scenario' @click=${this._handleCreateScenarioClicked}>${PLUS_ICON}</button>${this._scenarioEditable ? html`<button class='small' title='Remove this scenario' @click=${this._handleRemoveScenarioClicked}>${CANCEL_ICON}</button>` : ''}` : ''}
+				${ENABLE_EDITING_SCENARIOS ? html`<button class='small' title='Create a new scenario based on the current scenario' @click=${this._handleCreateScenarioClicked}>${PLUS_ICON}</button>${this._scenarioEditable ? html`<button class='small' title='Remove this scenario' @click=${this._handleRemoveScenarioClicked}>${CANCEL_ICON}</button><button class='small' title='Change scenario name' @click=${this._handleEditScenarioNameClicked}>${EDIT_ICON}</button>` : ''}` : ''}
 				<div class='summary'>
 					<div>
 						<label>Node</label> <strong>${this._summaryNodeDisplayName === undefined ? html`<em>Union of all nodes</em>${this._scenarioEditable ? html`<br/>Select a node to edit it</strong>` : ''}` : (this._summaryNodeDisplayName || html`<em>Root</em>`)}</strong>
@@ -646,6 +647,15 @@ class MainView extends connect(store)(PageViewElement) {
 		const newEdge = {...edge};
 		delete newEdge[propertyName];
 		store.dispatch(modifyEditingNodeEdge(previousEdgeID, newEdge));
+	}
+
+	_handleEditScenarioNameClicked() {
+		const scenarioName = prompt('What should the new scenario name be?', this._scenarioName);
+		try {
+			store.dispatch(updateEditingScenarioName(scenarioName));
+		} catch(err) {
+			alert(err);
+		}
 	}
 
 	_handleEditNodePropertyClicked(e : MouseEvent) {
