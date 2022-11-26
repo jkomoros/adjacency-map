@@ -299,7 +299,8 @@ class MainView extends connect(store)(PageViewElement) {
 					cursor: pointer;
 					stroke: white !important;
 					--min-stroke-width: var(--default-min-stroke-width);
-					//TODO: also set opacity of stroke and fill to 1.0
+					opacity: 1.0 !important;
+					stroke-opacity: 1.0 !important;
 				}
 
 				circle.edited {
