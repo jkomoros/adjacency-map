@@ -793,6 +793,18 @@ class MainView extends connect(store)(PageViewElement) {
 		return svg`<path class='${hovered ? 'hovered' : ''}' style='${styleMap(styles)}' d="${this._pathForEdge(edge, map)}" stroke-opacity='${edge.opacity}' stroke='${edge.color.rgbaStr}'><title>${this._titleForEdge(edge)}</title></path>`;
 	}
 
+	_svgForNode(node : AdjacencyMapNode) : TemplateResult {
+		// color of label halo 
+		const halo = '#fff';
+		// padding around the labels
+		const haloWidth = 3;
+		return svg`<a transform="translate(${node.x},${node.y})">
+			<circle class='${this._selectedNodeID == node.id ? 'selected' : ''} ${this._editedNodes && this._editedNodes[node.id] ? 'edited' : ''}' @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} id="${'node:' + node.id}" fill="${node.color.rgbaStr}" r="${node.radius}" opacity="${node.opacity}" stroke="${node.strokeColor.rgbaStr}" stroke-width="${node.strokeWidth}" stroke-opacity="${node.strokeOpacity}"></circle>
+			<title>${node.fullDescription()}</title>
+			<text dy="0.32em" x="${(node.children.length == 0 ? 1 : -1) * node.radius * 2}" text-anchor="${node.children.length == 0 ? 'start' : 'end'}" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}">${node.displayName}</text>
+		</a>`;
+	}
+
 	_handleSVGMouseMove(e : MouseEvent) {
 		const ele = e.composedPath()[0];
 		if (!(ele instanceof Element)) throw new Error('unexpected node');
@@ -816,21 +828,13 @@ class MainView extends connect(store)(PageViewElement) {
 		const strokeLinejoin = '';
 		// stroke line cap for links
 		const strokeLinecap = '';
-		// color of label halo 
-		const halo = '#fff';
-		// padding around the labels
-		const haloWidth = 3;
 
 		return html`<svg @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} class='main' viewBox='${a.viewBox}' width='${a.width * this._scale}' height='${a.height * this._scale}' style='max-width: 100%; height: auto; height: intrinsic;' font-family='sans-serif' font-size='10'>
 			<g fill="none" stroke-linecap="${strokeLinecap}" stroke-linejoin="${strokeLinejoin}">
 				${repeat(a.renderEdges, edge => renderEdgeStableID(edge), edge => this._svgForEdge(edge, a))}
 			</g>
 			<g>
-				${Object.values(a.nodes).map(node => svg`<a transform="translate(${node.x},${node.y})">
-					<circle class='${this._selectedNodeID == node.id ? 'selected' : ''} ${this._editedNodes && this._editedNodes[node.id] ? 'edited' : ''}' @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} id="${'node:' + node.id}" fill="${node.color.rgbaStr}" r="${node.radius}" opacity="${node.opacity}" stroke="${node.strokeColor.rgbaStr}" stroke-width="${node.strokeWidth}" stroke-opacity="${node.strokeOpacity}"></circle>
-					<title>${node.fullDescription()}</title>
-					<text dy="0.32em" x="${(node.children.length == 0 ? 1 : -1) * node.radius * 2}" text-anchor="${node.children.length == 0 ? 'start' : 'end'}" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}">${node.displayName}</text>
-				</a>`)}
+				${Object.values(a.nodes).map(node => this._svgForNode(node))}
 			</g>
 	</svg>`;
 	}
