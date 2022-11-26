@@ -312,10 +312,19 @@ class MainView extends connect(store)(PageViewElement) {
 
 				svg path {
 					stroke-width: var(--stroke-width);
+					stroke-dashoffset: calc(var(--stroke-width) * 2);
+					stroke-dasharray: 0;
 				}
 
 				svg path.hovered {
 					stroke-dasharray: var(--stroke-width);
+					animation: 1s linear infinite normal march;
+				}
+
+				@keyframes march {
+					to {
+						stroke-dashoffset: 0;
+					}
 				}
 
 			`
