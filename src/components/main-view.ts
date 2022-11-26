@@ -284,14 +284,14 @@ class MainView extends connect(store)(PageViewElement) {
 					color: var(--lighter-gray-color);
 				}
 
+				circle {
+					stroke-dasharray: 0;
+					stroke-dashoffset: calc(var(--stroke-width) * 2);
+				}
+
 				circle:hover {
 					cursor: pointer;
 					stroke: white !important;
-					stroke-width: 0.2em !important;
-				}
-
-				circle.selected {
-					stroke: gold !important;
 					stroke-width: 0.2em !important;
 				}
 
@@ -299,6 +299,13 @@ class MainView extends connect(store)(PageViewElement) {
 					stroke-width: var(--stroke-width) !important;
 					--stroke-width: 0.2em;
 					stroke-dasharray: var(--stroke-width);
+				}
+
+				circle.selected {
+					stroke: gold !important;
+					stroke-width: 0.2em !important;
+					stroke-dasharray: var(--stroke-width);
+					animation: 1s linear infinite normal march;
 				}
 
 				svg text {
