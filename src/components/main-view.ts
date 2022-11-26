@@ -2,6 +2,7 @@ import { html, css, svg, TemplateResult} from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
+import { classMap, ClassInfo } from 'lit/directives/class-map.js';
 import { PageViewElement } from "./page-view-element.js";
 import { connect } from "pwa-helpers/connect-mixin.js";
 
@@ -805,8 +806,16 @@ class MainView extends connect(store)(PageViewElement) {
 		const halo = '#fff';
 		// padding around the labels
 		const haloWidth = 3;
+		//TODO: make the stroke width for all selected nodes be set.
+		//TODO: set the strokeWidth, if edited or selected, to a minimum of 0.2em
+		const selected = this._selectedNodeID == node.id;
+		const edited = this._editedNodes && this._editedNodes[node.id] != undefined;
+		const classes : ClassInfo = {
+			selected,
+			edited
+		};
 		return svg`<a transform="translate(${node.x},${node.y})">
-			<circle class='${this._selectedNodeID == node.id ? 'selected' : ''} ${this._editedNodes && this._editedNodes[node.id] ? 'edited' : ''}' @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} id="${'node:' + node.id}" fill="${node.color.rgbaStr}" r="${node.radius}" opacity="${node.opacity}" stroke="${node.strokeColor.rgbaStr}" stroke-width="${node.strokeWidth}" stroke-opacity="${node.strokeOpacity}"></circle>
+			<circle class='${classMap(classes)}' @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} id="${'node:' + node.id}" fill="${node.color.rgbaStr}" r="${node.radius}" opacity="${node.opacity}" stroke="${node.strokeColor.rgbaStr}" stroke-width="${node.strokeWidth}" stroke-opacity="${node.strokeOpacity}"></circle>
 			<title>${node.fullDescription()}</title>
 			<text dy="0.32em" x="${(node.children.length == 0 ? 1 : -1) * node.radius * 2}" text-anchor="${node.children.length == 0 ? 'start' : 'end'}" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}">${node.displayName}</text>
 		</a>`;
