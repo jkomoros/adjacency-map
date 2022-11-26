@@ -288,23 +288,23 @@ class MainView extends connect(store)(PageViewElement) {
 				circle {
 					stroke-dasharray: 0;
 					stroke-dashoffset: calc(var(--stroke-width) * 2);
+					stroke-width: var(--stroke-width);
+					cursor: pointer;
 				}
 
 				circle:hover {
 					cursor: pointer;
 					stroke: white !important;
-					stroke-width: 0.2em !important;
+					/* TODO set to 3px only if below 3px */
+					stroke-width: 3px !important;
+					//TODO: also set opacity of stroke and fill to 1.0
 				}
 
 				circle.edited {
-					stroke-width: var(--stroke-width) !important;
-					--stroke-width: 0.2em;
 					stroke-dasharray: var(--stroke-width);
 				}
 
 				circle.selected {
-					stroke: gold !important;
-					stroke-width: 0.2em !important;
 					stroke-dasharray: var(--stroke-width);
 					animation: 1s linear infinite normal march;
 				}
@@ -806,16 +806,21 @@ class MainView extends connect(store)(PageViewElement) {
 		const halo = '#fff';
 		// padding around the labels
 		const haloWidth = 3;
-		//TODO: make the stroke width for all selected nodes be set.
-		//TODO: set the strokeWidth, if edited or selected, to a minimum of 0.2em
+		//TODO: have a different style for edited+selected (differnt linecap?)
+		//TODO: make sure that everything works correctly for an explicit set
 		const selected = this._selectedNodeID == node.id;
 		const edited = this._editedNodes && this._editedNodes[node.id] != undefined;
 		const classes : ClassInfo = {
 			selected,
 			edited
 		};
+		let strokeWidth = node.strokeWidth;
+		if ((edited || selected) && strokeWidth < 3.0) strokeWidth = 3.0;
+		const styles : StyleInfo = {
+			'--stroke-width': String(strokeWidth) + 'px'
+		};
 		return svg`<a transform="translate(${node.x},${node.y})">
-			<circle class='${classMap(classes)}' @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} id="${'node:' + node.id}" fill="${node.color.rgbaStr}" r="${node.radius}" opacity="${node.opacity}" stroke="${node.strokeColor.rgbaStr}" stroke-width="${node.strokeWidth}" stroke-opacity="${node.strokeOpacity}"></circle>
+			<circle class='${classMap(classes)}' style='${styleMap(styles)}' @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} id="${'node:' + node.id}" fill="${node.color.rgbaStr}" r="${node.radius}" opacity="${node.opacity}" stroke="${node.strokeColor.rgbaStr}" stroke-opacity="${node.strokeOpacity}"></circle>
 			<title>${node.fullDescription()}</title>
 			<text dy="0.32em" x="${(node.children.length == 0 ? 1 : -1) * node.radius * 2}" text-anchor="${node.children.length == 0 ? 'start' : 'end'}" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}">${node.displayName}</text>
 		</a>`;
