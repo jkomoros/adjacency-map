@@ -34,7 +34,8 @@ import {
 	PropertyName,
 	ScenarioNode,
 	EdgeValue,
-	EdgeValueMatchID
+	EdgeValueMatchID,
+	ScenarioWithExtends
 } from "../types.js";
 
 import {
@@ -79,7 +80,7 @@ const removeScenarioFromScenariosOverlay = (filename : DataFilename, scenarioNam
 	return result;
 };
 
-const prepareToEditNodeInOverlay = (state : DataState) : [ScenariosOverlays, ScenarioNode, NodeID, {[id : NodeID]: ScenarioNode}] => {
+const prepareToEditNodeInOverlay = (state : DataState) : [ScenariosOverlays, ScenarioNode, NodeID, {[id : NodeID]: ScenarioNode}, ScenarioWithExtends] => {
 	const filename = state.filename;
 	const scenarioName = state.scenarioName;
 	const currentOverlay = state.scenariosOverlays;
@@ -94,7 +95,7 @@ const prepareToEditNodeInOverlay = (state : DataState) : [ScenariosOverlays, Sce
 	const nodes = scenarioOverlay.nodes;
 	if (!nodes[nodeID]) nodes[nodeID] = emptyScenarioNode();
 	const node = nodes[nodeID];
-	return [result, node, nodeID, nodes];
+	return [result, node, nodeID, nodes, scenarioOverlay];
 };
 
 const beginEditingNodeValueInOverlay = (state : DataState, propertyName : PropertyName, value : number) : ScenariosOverlays => {
