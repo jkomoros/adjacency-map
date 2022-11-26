@@ -57,7 +57,8 @@ import {
 	selectCurrentScenarioEditedNodes,
 	selectSummaryNodeID,
 	selectShowEdges,
-	selectHoveredEdgeID
+	selectHoveredEdgeID,
+	selectEditing
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -99,8 +100,7 @@ import {
 import {
 	ROOT_ID,
 	SVG_HEIGHT,
-	SVG_WIDTH,
-	ENABLE_EDITING_SCENARIOS
+	SVG_WIDTH
 } from '../constants.js';
 
 import {
@@ -153,6 +153,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_scenariosOverlays : ScenariosOverlays;
+
+	@state()
+	_editing : boolean;
 
 	@state()
 	_editedNodes: {[id : NodeID]: {values?: NodeValuesOverride}}
@@ -357,13 +360,13 @@ class MainView extends connect(store)(PageViewElement) {
 				<select id='filenames' .value=${this._filename} @change=${this._handleFilenameChanged}>
 					${this._legalFilenames.map(filename => html`<option .value=${filename}>${filename}${this._scenariosOverlays && this._scenariosOverlays[filename] ? html` (*)` : ''}</option>`)}
 				</select>` : ''}
-				${ENABLE_EDITING_SCENARIOS && Object.keys(this._scenariosOverlays).length > 0 ? html`<button class='small' title='Remove all edits across all files' @click=${this._handleResetOverlaysClicked}>${DELETE_FOREVER_ICON}</button>` : ''}
-				${this._legalScenarioNames.length > 1 || ENABLE_EDITING_SCENARIOS ? html`
+				${this._editing && Object.keys(this._scenariosOverlays).length > 0 ? html`<button class='small' title='Remove all edits across all files' @click=${this._handleResetOverlaysClicked}>${DELETE_FOREVER_ICON}</button>` : ''}
+				${this._legalScenarioNames.length > 1 || this._editing ? html`
 				<label for='scenarios'>Scenario</label>
 				<select id='scenarios' @change=${this._handleScenarioNameChanged}>
 					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName} .selected=${scenarioName == this._scenarioName}>${scenarioName || 'Default'}</option>`)}
 				</select>` : ''}
-				${ENABLE_EDITING_SCENARIOS ? html`<button class='small' title='Create a new scenario based on the current scenario' @click=${this._handleCreateScenarioClicked}>${PLUS_ICON}</button>${this._scenarioEditable ? html`<button class='small' title='Remove this scenario' @click=${this._handleRemoveScenarioClicked}>${CANCEL_ICON}</button><button class='small' title='Change scenario name' @click=${this._handleEditScenarioNameClicked}>${EDIT_ICON}</button>` : ''}` : ''}
+				${this._editing ? html`<button class='small' title='Create a new scenario based on the current scenario' @click=${this._handleCreateScenarioClicked}>${PLUS_ICON}</button>${this._scenarioEditable ? html`<button class='small' title='Remove this scenario' @click=${this._handleRemoveScenarioClicked}>${CANCEL_ICON}</button><button class='small' title='Change scenario name' @click=${this._handleEditScenarioNameClicked}>${EDIT_ICON}</button>` : ''}` : ''}
 				<div class='summary'>
 					<div>
 						<label>Node</label> <strong>${this._summaryNodeDisplayName === undefined ? html`<em>Union of all nodes</em>${this._scenarioEditable ? html`<br/>Select a node to edit it</strong>` : ''}` : (this._summaryNodeDisplayName || html`<em>Root</em>`)}</strong>
@@ -479,6 +482,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._showEdges = selectShowEdges(state);
 		this._showHiddenValues = selectShowHiddenValues(state);
 		this._dataError = selectAdjacencyMapError(state);
+		this._editing = selectEditing(state);
 		this._scenarioEditable = selectCurrentScenarioEditable(state);
 		this._summaryNodeEditableFields = selectSelectedNodeFieldsEdited(state);
 		this._scenariosOverlays = selectScenariosOverlays(state);

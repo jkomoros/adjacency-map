@@ -9,8 +9,7 @@ import {
 } from './adjacency-map.js';
 
 import {
-	DEFAULT_SCENARIO_NAME,
-	ENABLE_EDITING_SCENARIOS
+	DEFAULT_SCENARIO_NAME
 } from './constants.js';
 
 import {
@@ -30,6 +29,7 @@ export const selectPageExtra = (state : RootState) => state.app ? state.app.page
 export const selectHash = (state : RootState) => state.app ? state.app.hash : '';
 export const selectScale = (state : RootState) => state.data ? state.data.scale : 1.0;
 export const selectScenarioName = (state : RootState) => state.data ? state.data.scenarioName : '';
+export const selectEditing = (state : RootState) => state.data ? state.data.editing : false;
 export const selectHoveredNodeID = (state : RootState) => state.data ? state.data.hoveredNodeID : undefined;
 export const selectHoveredEdgeID = (state : RootState) => state.data ? state.data.hoveredEdgeID : undefined;
 export const selectSelectedNodeID = (state : RootState) => state.data ? state.data.selectedNodeID : undefined;
@@ -101,7 +101,8 @@ export const selectLegalScenarioNames = createSelector(
 export const selectCurrentScenarioEditable = createSelector(
 	selectScenarioName,
 	selectCurrentScenarioOverlay,
-	(scenarioName, overlay) => overlay[scenarioName] ? ENABLE_EDITING_SCENARIOS : false
+	selectEditing,
+	(scenarioName, overlay, editing) => overlay[scenarioName] ? editing : false
 );
 
 export const selectCurrentScenarioEditedNodes = createSelector(

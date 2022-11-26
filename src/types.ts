@@ -761,6 +761,7 @@ export type DataState = {
 	filename : DataFilename;
 	scale: number;
 	scenarioName : ScenarioName;
+	editing : boolean;
 	hoveredNodeID? : NodeID;
 	selectedNodeID? : NodeID;
 	hoveredEdgeID?: EdgeIdentifier;
