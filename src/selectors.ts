@@ -95,7 +95,7 @@ export const selectAdjacencyMapError = createSelector(
 
 export const selectLegalScenarioNames = createSelector(
 	selectAdjacencyMap,
-	(map) => map ? ['', ...Object.keys(map.data.scenarios || {})] : ['']
+	(map) => map ? [DEFAULT_SCENARIO_NAME, ...Object.keys(map.data.scenarios || {})] : [DEFAULT_SCENARIO_NAME]
 );
 
 export const selectCurrentScenarioEditable = createSelector(
