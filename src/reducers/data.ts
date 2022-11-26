@@ -147,13 +147,11 @@ const addEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : Scen
 const removeEditingNodeEdgeInOverlay = (state : DataState, previousID : EdgeValueMatchID) : ScenariosOverlays => {
 	const [result, node] = prepareToEditNodeInOverlay(state);
 	let changesMade = false;
-	for (let i = 0; i < node.edges.add.length; i++) {
-		const addition = node.edges.add[i];
-		if (getEdgeValueMatchID(addition) != previousID) continue;
+	node.edges.add = node.edges.add.filter(addition => {
+		if (getEdgeValueMatchID(addition) != previousID) return true;
 		changesMade = true;
-		node.edges.add.splice(i);
-		break;
-	}
+		return false;
+	});
 	for (const modifyID of Object.keys(node.edges.modify)) {
 		//The previousID might not match what we were handed; we want to remove
 		//the given edge anywhere it shows up.
@@ -177,6 +175,7 @@ const modifyEditingNodeEdgeInOverlay = (state : DataState, previousEdgeID: EdgeV
 	for (let i = 0; i < node.edges.add.length; i++) {
 		if (getEdgeValueMatchID(node.edges.add[i]) != previousEdgeID) continue;
 		if (!newEdge) {
+			//TODO: this splicing also won't work for a similar reason to the other thing in this commit.
 			node.edges.add.splice(i);
 		} else {
 			node.edges.add[i] = newEdge;
