@@ -1,7 +1,7 @@
 import { html, css, svg, TemplateResult} from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { styleMap } from 'lit/directives/style-map.js';
+import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { PageViewElement } from "./page-view-element.js";
 import { connect } from "pwa-helpers/connect-mixin.js";
 
@@ -209,6 +209,7 @@ class MainView extends connect(store)(PageViewElement) {
 					width: 100vw;
 					background-color: var(--override-app-background-color, var(--app-background-color, #356F9E));
 					overflow:scroll;
+					--stroke-width: 1.0em;
 				}
 
 				.controls {
@@ -295,8 +296,9 @@ class MainView extends connect(store)(PageViewElement) {
 				}
 
 				circle.edited {
-					stroke-width: 0.2em !important;
-					stroke-dasharray: 0.2em;
+					stroke-width: var(--stroke-width) !important;
+					--stroke-width: 0.2em;
+					stroke-dasharray: var(--stroke-width);
 				}
 
 				svg text {
@@ -308,8 +310,12 @@ class MainView extends connect(store)(PageViewElement) {
 					transition: all 0.1s ease-in-out;
 				}
 
+				svg path {
+					stroke-width: var(--stroke-width);
+				}
+
 				svg path.hovered {
-					stroke-dasharray: 1.0em;
+					stroke-dasharray: var(--stroke-width);
 				}
 
 			`
@@ -772,7 +778,10 @@ class MainView extends connect(store)(PageViewElement) {
 
 	_svgForEdge(edge : RenderEdgeValue, map : AdjacencyMap) : TemplateResult {
 		const hovered = edgeIdentifiersFromRenderEdge(edge).some(id => edgeIdentifierEquivalent(this._hoveredEdgeID, id));
-		return svg`<path class='${hovered ? 'hovered' : ''}' d="${this._pathForEdge(edge, map)}" stroke-width='${edge.width}' stroke-opacity='${edge.opacity}' stroke='${edge.color.rgbaStr}'><title>${this._titleForEdge(edge)}</title></path>`;
+		const styles : StyleInfo = {
+			'--stroke-width': String(edge.width)
+		};
+		return svg`<path class='${hovered ? 'hovered' : ''}' style='${styleMap(styles)}' d="${this._pathForEdge(edge, map)}" stroke-opacity='${edge.opacity}' stroke='${edge.color.rgbaStr}'><title>${this._titleForEdge(edge)}</title></path>`;
 	}
 
 	_handleSVGMouseMove(e : MouseEvent) {
