@@ -303,14 +303,14 @@ class MainView extends connect(store)(PageViewElement) {
 					stroke-opacity: 1.0 !important;
 				}
 
-				circle.edited {
-					stroke-dasharray: var(--effective-stroke-width);
-					--min-stroke-width: var(--default-min-stroke-width);
-				}
-
 				circle.selected {
 					stroke-dasharray: var(--effective-stroke-width);
 					animation: 1s linear infinite normal march;
+					--min-stroke-width: var(--default-min-stroke-width);
+				}
+
+				circle.edited {
+					stroke-dasharray: calc(var(--effective-stroke-width) / 2);
 					--min-stroke-width: var(--default-min-stroke-width);
 				}
 
@@ -811,8 +811,6 @@ class MainView extends connect(store)(PageViewElement) {
 		const halo = '#fff';
 		// padding around the labels
 		const haloWidth = 3;
-		//TODO: have a different style for edited+selected (differnt linecap?)
-		//TODO: make sure that everything works correctly for an explicit set
 		const selected = this._selectedNodeID == node.id;
 		const edited = this._editedNodes && this._editedNodes[node.id] != undefined;
 		const classes : ClassInfo = {
