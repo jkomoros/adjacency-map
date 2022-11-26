@@ -13,6 +13,7 @@ export const RESET_SCENARIOS_OVERLAYS = 'RESET_SCENARIOS_OVERLAYS';
 export const BEGIN_EDITING_SCENARIO = 'BEGIN_EDITING_SCENARIO';
 export const REMOVE_EDITING_SCENARIO = 'REMOVE_EDITING_SCENARIO';
 export const UPDATE_EDITING_SCENARIO_DESCRIPTION = 'UPDATE_EDITING_SCENARIO_DESCRIPTION';
+export const UPDATE_EDITING_SCENARIO_NAME = 'UPDATE_EDITING_SCENARIO_NAME';
 export const BEGIN_EDITING_NODE_VALUE = 'BEGIN_EDITING_NODE_VALUE';
 export const EDITING_UPDATE_NODE_VALUE = 'EDITING_UPDATE_NODE_VALUE';
 export const REMOVE_EDITING_NODE_VALUE = 'REMOVE_EDITING_NODE_VALUE';
@@ -63,6 +64,7 @@ import {
 } from 'redux';
 
 import {
+	DEFAULT_SCENARIO_NAME,
 	ROOT_ID
 } from '../constants.js';
 import { edgeIdentifierEquivalent, getEdgeValueMatchID } from '../util.js';
@@ -210,6 +212,23 @@ export const updateEditingScenarioDescription : AppActionCreator = (description 
 	dispatch({
 		type: UPDATE_EDITING_SCENARIO_DESCRIPTION,
 		description
+	});
+};
+
+export const updateEditingScenarioName : AppActionCreator = (scenarioName : ScenarioName) => (dispatch, getState) => {
+	const state = getState();
+	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
+	//No op
+	if (selectScenarioName(state) == scenarioName) return;
+	if (scenarioName == DEFAULT_SCENARIO_NAME) throw new Error('Scenario name must not be default');
+	const map = selectAdjacencyMap(state);
+	if (!map) throw new Error('no map');
+	for (const existingName of Object.keys(map.data.scenarios)){
+		if (scenarioName == existingName) throw new Error('Name conclicts with existing name');
+	}
+	dispatch({
+		type: UPDATE_EDITING_SCENARIO_NAME,
+		scenarioName
 	});
 };
 

@@ -17,6 +17,7 @@ import {
 	BEGIN_EDITING_SCENARIO,
 	REMOVE_EDITING_SCENARIO,
 	UPDATE_EDITING_SCENARIO_DESCRIPTION,
+	UPDATE_EDITING_SCENARIO_NAME,
 	BEGIN_EDITING_NODE_VALUE,
 	EDITING_UPDATE_NODE_VALUE,
 	REMOVE_EDITING_NODE_VALUE,
@@ -111,6 +112,19 @@ const updateEditingScenarioDescriptionInOverlay = (state : DataState, descriptio
 	const result = items[0];
 	const scenarioOverlay = items[4];
 	scenarioOverlay.description = description;
+	return result;
+};
+
+const updateEditingScenarioNameInOverlay = (state : DataState, newScenarioName : ScenarioName) : ScenariosOverlays => {
+	const items = prepareToEditNodeInOverlay(state);
+	const result = items[0];
+	const filenameOverlay = items[5];
+	const oldScenarioName = state.scenarioName;
+	filenameOverlay[newScenarioName] = filenameOverlay[oldScenarioName];
+	delete filenameOverlay[oldScenarioName];
+	for (const otherScenario of Object.values(filenameOverlay)) {
+		if (otherScenario.extends == oldScenarioName) otherScenario.extends = newScenarioName;
+	}
 	return result;
 };
 
@@ -285,6 +299,12 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			scenariosOverlays: updateEditingScenarioDescriptionInOverlay(state, action.description)
+		};
+	case UPDATE_EDITING_SCENARIO_NAME:
+		return {
+			...state,
+			scenarioName: action.scenarioName,
+			scenariosOverlays: updateEditingScenarioNameInOverlay(state, action.scenarioName)
 		};
 	case BEGIN_EDITING_NODE_VALUE:
 		return {
