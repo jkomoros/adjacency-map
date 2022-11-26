@@ -210,7 +210,7 @@ class MainView extends connect(store)(PageViewElement) {
 					width: 100vw;
 					background-color: var(--override-app-background-color, var(--app-background-color, #356F9E));
 					overflow:scroll;
-					--stroke-width: 1.0em;
+					--stroke-width: 0px;
 				}
 
 				.controls {
@@ -287,26 +287,30 @@ class MainView extends connect(store)(PageViewElement) {
 
 				circle {
 					stroke-dasharray: 0;
-					stroke-dashoffset: calc(var(--stroke-width) * 2);
-					stroke-width: var(--stroke-width);
+					stroke-dashoffset: calc(var(--effective-stroke-width) * 2);
+					stroke-width: var(--effective-stroke-width);
+					--effective-stroke-width: max(var(--stroke-width), var(--min-stroke-width));
+					--min-stroke-width: 0px;
+					--default-min-stroke-width: 3px;
 					cursor: pointer;
 				}
 
 				circle:hover {
 					cursor: pointer;
 					stroke: white !important;
-					/* TODO set to 3px only if below 3px */
-					stroke-width: 3px !important;
+					--min-stroke-width: var(--default-min-stroke-width);
 					//TODO: also set opacity of stroke and fill to 1.0
 				}
 
 				circle.edited {
-					stroke-dasharray: var(--stroke-width);
+					stroke-dasharray: var(--effective-stroke-width);
+					--min-stroke-width: var(--default-min-stroke-width);
 				}
 
 				circle.selected {
-					stroke-dasharray: var(--stroke-width);
+					stroke-dasharray: var(--effective-stroke-width);
 					animation: 1s linear infinite normal march;
+					--min-stroke-width: var(--default-min-stroke-width);
 				}
 
 				svg text {
@@ -814,10 +818,8 @@ class MainView extends connect(store)(PageViewElement) {
 			selected,
 			edited
 		};
-		let strokeWidth = node.strokeWidth;
-		if ((edited || selected) && strokeWidth < 3.0) strokeWidth = 3.0;
 		const styles : StyleInfo = {
-			'--stroke-width': String(strokeWidth) + 'px'
+			'--stroke-width': String(node.strokeWidth) + 'px'
 		};
 		return svg`<a transform="translate(${node.x},${node.y})">
 			<circle class='${classMap(classes)}' style='${styleMap(styles)}' @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} id="${'node:' + node.id}" fill="${node.color.rgbaStr}" r="${node.radius}" opacity="${node.opacity}" stroke="${node.strokeColor.rgbaStr}" stroke-opacity="${node.strokeOpacity}"></circle>
