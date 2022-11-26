@@ -328,13 +328,17 @@ class MainView extends connect(store)(PageViewElement) {
 				}
 
 				svg path {
-					stroke-width: var(--stroke-width);
-					stroke-dashoffset: calc(var(--stroke-width) * 2);
+					--min-stroke-width: 0px;
+					--default-min-stroke-width: 3px;
+					--effective-stroke-width: max(var(--min-stroke-width), var(--stroke-width));
+					stroke-width: var(--effective-stroke-width);
+					stroke-dashoffset: calc(var(--effective-stroke-width) * 2);
 					stroke-dasharray: 0;
 				}
 
 				svg path.hovered {
-					stroke-dasharray: var(--stroke-width);
+					--min-stroke-width: var(--default-min-stroke-width);
+					stroke-dasharray: var(--effective-stroke-width);
 					animation: 1s linear infinite normal march;
 				}
 
@@ -816,7 +820,7 @@ class MainView extends connect(store)(PageViewElement) {
 	_svgForEdge(edge : RenderEdgeValue, map : AdjacencyMap) : TemplateResult {
 		const hovered = edgeIdentifiersFromRenderEdge(edge).some(id => edgeIdentifierEquivalent(this._hoveredEdgeID, id));
 		const styles : StyleInfo = {
-			'--stroke-width': String(edge.width)
+			'--stroke-width': String(edge.width) + 'px'
 		};
 		return svg`<path class='${hovered ? 'hovered' : ''}' style='${styleMap(styles)}' d="${this._pathForEdge(edge, map)}" stroke-opacity='${edge.opacity}' stroke='${edge.color.rgbaStr}'><title>${this._titleForEdge(edge)}</title></path>`;
 	}
