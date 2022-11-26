@@ -332,7 +332,7 @@ class MainView extends connect(store)(PageViewElement) {
 				${ENABLE_EDITING_SCENARIOS && Object.keys(this._scenariosOverlays).length > 0 ? html`<button class='small' title='Remove all edits across all files' @click=${this._handleResetOverlaysClicked}>${DELETE_FOREVER_ICON}</button>` : ''}
 				${this._legalScenarioNames.length > 1 || ENABLE_EDITING_SCENARIOS ? html`
 				<label for='scenarios'>Scenario</label>
-				<select id='scenarios' .value=${this._scenarioName} @change=${this._handleScenarioNameChanged}>
+				<select id='scenarios' @change=${this._handleScenarioNameChanged}>
 					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName} .selected=${scenarioName == this._scenarioName}>${scenarioName || 'Default'}</option>`)}
 				</select>` : ''}
 				${ENABLE_EDITING_SCENARIOS ? html`<button class='small' title='Create a new scenario based on the current scenario' @click=${this._handleCreateScenarioClicked}>${PLUS_ICON}</button>${this._scenarioEditable ? html`<button class='small' title='Remove this scenario' @click=${this._handleRemoveScenarioClicked}>${CANCEL_ICON}</button><button class='small' title='Change scenario name' @click=${this._handleEditScenarioNameClicked}>${EDIT_ICON}</button>` : ''}` : ''}
