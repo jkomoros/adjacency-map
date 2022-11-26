@@ -167,6 +167,10 @@ const removeEditingNodeEdgeInOverlay = (state : DataState, previousID : EdgeValu
 	return result;
 };
 
+const SENTINEL_EDGE_VALUE : EdgeValue = {
+	type: '@SENTINEL@',
+};
+
 //We accept previousEdge and newEdge because we might have made a modification
 //to type/parent which would change which one we're touching.
 const modifyEditingNodeEdgeInOverlay = (state : DataState, previousEdgeID: EdgeValueMatchID, newEdge? : EdgeValue) : ScenariosOverlays => { 
@@ -175,13 +179,13 @@ const modifyEditingNodeEdgeInOverlay = (state : DataState, previousEdgeID: EdgeV
 	for (let i = 0; i < node.edges.add.length; i++) {
 		if (getEdgeValueMatchID(node.edges.add[i]) != previousEdgeID) continue;
 		if (!newEdge) {
-			//TODO: this splicing also won't work for a similar reason to the other thing in this commit.
-			node.edges.add.splice(i);
+			node.edges.add[i] = SENTINEL_EDGE_VALUE;
 		} else {
 			node.edges.add[i] = newEdge;
 		}
 		changesMade = true;
 	}
+	if (changesMade) node.edges.add = node.edges.add.filter(addition => addition != SENTINEL_EDGE_VALUE);
 	//We use id/previousID because the thing we're keying off of is not our ID
 	for (const previousID of Object.keys(node.edges.modify)) {
 		if (previousID != previousEdgeID) continue;
