@@ -12,6 +12,7 @@ export const LOAD_SCENARIOS_OVERLAYS = 'LOAD_SCENARIOS_OVERLAYS';
 export const RESET_SCENARIOS_OVERLAYS = 'RESET_SCENARIOS_OVERLAYS';
 export const BEGIN_EDITING_SCENARIO = 'BEGIN_EDITING_SCENARIO';
 export const REMOVE_EDITING_SCENARIO = 'REMOVE_EDITING_SCENARIO';
+export const UPDATE_EDITING_SCENARIO_DESCRIPTION = 'UPDATE_EDITING_SCENARIO_DESCRIPTION';
 export const BEGIN_EDITING_NODE_VALUE = 'BEGIN_EDITING_NODE_VALUE';
 export const EDITING_UPDATE_NODE_VALUE = 'EDITING_UPDATE_NODE_VALUE';
 export const REMOVE_EDITING_NODE_VALUE = 'REMOVE_EDITING_NODE_VALUE';
@@ -200,6 +201,15 @@ export const removeEditingScenario : AppActionCreator = (scenarioName? : Scenari
 		scenarioName,
 		//nextScenarioName will only be used if the currentScenarioName is scenarioName.
 		nextScenarioName
+	});
+};
+
+export const updateEditingScenarioDescription : AppActionCreator = (description : string) => (dispatch, getState) => {
+	const state = getState();
+	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
+	dispatch({
+		type: UPDATE_EDITING_SCENARIO_DESCRIPTION,
+		description
 	});
 };
 
