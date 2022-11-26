@@ -23,6 +23,7 @@ import {
 	REMOVE_EDITING_NODE_EDGE,
 	MODIFY_EDITING_NODE_EDGE
 } from "../actions/data.js";
+import { ROOT_ID } from "../constants.js";
 
 import {
 	DataState,
@@ -82,7 +83,9 @@ const prepareToEditNodeInOverlay = (state : DataState) : [ScenariosOverlays, Sce
 	const filename = state.filename;
 	const scenarioName = state.scenarioName;
 	const currentOverlay = state.scenariosOverlays;
-	const nodeID = state.selectedNodeID as NodeID;
+	//In most action creators, selectedNodeID is known to not be undefined. This
+	//just handles the other cases with a minimum of fuss.
+	const nodeID = state.selectedNodeID || ROOT_ID;
 	const result = deepCopy(currentOverlay);
 	const filenameOverlay = result[filename];
 	if (filenameOverlay == undefined) throw new Error('filename overlay unexpectededly not set');
