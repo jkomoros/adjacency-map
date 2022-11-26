@@ -22,6 +22,7 @@ import {
 	removeEditingNodeValue,
 	removeEditingScenario,
 	resetScenariosOverlays,
+	setEditing,
 	setShowEdges,
 	updateEditingScenarioDescription,
 	updateEditingScenarioName,
@@ -360,7 +361,10 @@ class MainView extends connect(store)(PageViewElement) {
 				<select id='filenames' .value=${this._filename} @change=${this._handleFilenameChanged}>
 					${this._legalFilenames.map(filename => html`<option .value=${filename}>${filename}${this._scenariosOverlays && this._scenariosOverlays[filename] ? html` (*)` : ''}</option>`)}
 				</select>` : ''}
-				${this._editing && Object.keys(this._scenariosOverlays).length > 0 ? html`<button class='small' title='Remove all edits across all files' @click=${this._handleResetOverlaysClicked}>${DELETE_FOREVER_ICON}</button>` : ''}
+				<div>
+					<label for='editing'>Editing</label><input id='editing' type='checkbox' .checked=${this._editing} @change=${this._handleEditingChanged}></input>
+					${this._editing && Object.keys(this._scenariosOverlays).length > 0 ? html`<button class='small' title='Remove all edits across all files' @click=${this._handleResetOverlaysClicked}>${DELETE_FOREVER_ICON}</button>` : ''}
+				</div>
 				${this._legalScenarioNames.length > 1 || this._editing ? html`
 				<label for='scenarios'>Scenario</label>
 				<select id='scenarios' @change=${this._handleScenarioNameChanged}>
@@ -528,6 +532,13 @@ class MainView extends connect(store)(PageViewElement) {
 		const [edge] = this._edgeActionClicked(e);
 		const identifier = edgeIdentifierFromEdge(edge, this._summaryNodeID);
 		store.dispatch(updateHoveredEdgeID(identifier));
+	}
+
+	_handleEditingChanged(e : MouseEvent) {
+		if (!e.target) throw new Error('no target');
+		if (!(e.target instanceof HTMLInputElement)) throw new Error('not editing');
+		const inputEle : HTMLInputElement = e.target;
+		store.dispatch(setEditing(inputEle.checked));
 	}
 
 	_handleUpdateScenarioDescription(e : Event) {
