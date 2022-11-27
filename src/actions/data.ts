@@ -168,7 +168,7 @@ export const updateShowHiddenValues = (showHiddenValues = false) : AnyAction => 
 	};
 };
 
-export const updateWithMainPageExtra : AppActionCreator = (pageExtra) => (dispatch) => {
+export const updateWithMainPageExtra : AppActionCreator = (pageExtra : string) => (dispatch) => {
 	const parts = pageExtra.split('/');
 	//The last piece is the trailing slash
 	//TODO: handle malformed URLs better
@@ -260,7 +260,8 @@ export const editingUpdateNodeValue : AppActionCreator = (propertyName : Propert
 	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
 	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
 	const editableFields = selectSelectedNodeFieldsEdited(state);
-	if (!editableFields[propertyName]) dispatch(beginEditingNodeValue(propertyName));
+	//TODO: set a better default value in that case
+	if (!editableFields[propertyName]) dispatch(beginEditingNodeValue(propertyName, 0));
 	if (typeof value == 'string') value = parseFloat(value);
 	dispatch({
 		type: EDITING_UPDATE_NODE_VALUE,
