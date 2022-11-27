@@ -27,7 +27,8 @@ import {
 	selectScenariosOverlays,
 	selectCurrentScenarioEditedNodes,
 	selectHoveredEdgeID,
-	selectDialogOpen
+	selectDialogOpen,
+	selectDialogKind
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -47,6 +48,7 @@ import {
 
 import {
 	DataFilename,
+	DialogKind,
 	EdgeIdentifier,
 	NodeEvent,
 	NodeID,
@@ -75,6 +77,7 @@ import {
 } from '../actions/dialog.js';
 
 import {
+	assertUnreachable,
 	fetchOverlaysFromStorage,
 	storeOverlaysToStorage
 } from '../util.js';
@@ -118,6 +121,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_dialogOpen : boolean;
+
+	@state()
+	_dialogKind : DialogKind;
 
 	static override get styles() {
 		return [
@@ -175,6 +181,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._scenariosOverlays = selectScenariosOverlays(state);
 		this._editedNodes = selectCurrentScenarioEditedNodes(state);
 		this._dialogOpen = selectDialogOpen(state);
+		this._dialogKind = selectDialogKind(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
@@ -260,11 +267,22 @@ class MainView extends connect(store)(PageViewElement) {
 	}
 
 	get _dialogContent() : TemplateResult {
-		return html`Hello, world`;
+
+		switch(this._dialogKind){
+		case '':
+			return html`Hello, world`;
+		}
+
+		assertUnreachable(this._dialogKind);
 	}
 
 	get _dialogTitle() : string {
-		return 'Title';
+		switch(this._dialogKind){
+		case '':
+			return 'Title';
+		}
+
+		assertUnreachable(this._dialogKind);
 	}
 
 }

@@ -782,8 +782,11 @@ export type DataState = {
 	scenariosOverlays: ScenariosOverlays;
 }
 
+export type DialogKind = '';
+
 export type DialogState = {
 	open : boolean
+	kind : DialogKind
 }
 
 export type RootState = {

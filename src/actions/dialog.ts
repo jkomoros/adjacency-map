@@ -5,9 +5,14 @@ import {
 	AnyAction
 } from 'redux';
 
-export const openDialog = () : AnyAction => {
+import {
+	DialogKind
+} from '../types';
+
+export const openDialog = (kind : DialogKind = '') : AnyAction => {
 	return {
 		type: OPEN_DIALOG,
+		kind
 	};
 };
 

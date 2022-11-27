@@ -12,7 +12,8 @@ import {
 } from '../types.js';
 
 const INITIAL_STATE : DialogState = {
-	open: false
+	open: true,
+	kind: ''
 };
 
 const app = (state : DialogState = INITIAL_STATE, action : AnyAction) : DialogState => {
@@ -20,12 +21,14 @@ const app = (state : DialogState = INITIAL_STATE, action : AnyAction) : DialogSt
 	case OPEN_DIALOG:
 		return {
 			...state,
-			open: true
+			open: true,
+			kind: action.kind
 		};
 	case CLOSE_DIALOG:
 		return {
 			...state,
-			open: false
+			open: false,
+			kind: '',
 		};
 	default:
 		return state;

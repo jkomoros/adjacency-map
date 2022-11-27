@@ -18,6 +18,7 @@ import {
 
 import {
 	DataFilename,
+	DialogKind,
 	RootState,
 	ScenarioNode,
 	URLHashArgs
@@ -37,6 +38,7 @@ export const selectShowEdges = (state : RootState) => state.data ? state.data.sh
 export const selectShowHiddenValues = (state : RootState) => state.data ? state.data.showHiddenValues : false;
 export const selectScenariosOverlays = (state : RootState) => state.data ? state.data.scenariosOverlays : {};
 export const selectDialogOpen = (state : RootState) => state.dialog ? state.dialog.open : false;
+export const selectDialogKind = (state : RootState) : DialogKind => state.dialog ? state.dialog.kind : '';
 
 //This doesn't actually need state, but in other ways its like a selector so kind of pretend like it is
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
