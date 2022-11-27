@@ -57,6 +57,7 @@ import {
 	EdgeValueMatchID,
 	NodeID,
 	PropertyName,
+	RootState,
 	ScenarioName,
 	ScenariosOverlays
 } from '../types.js';
@@ -71,6 +72,7 @@ import {
 } from '../constants.js';
 import { edgeIdentifierEquivalent, getEdgeValueMatchID } from '../util.js';
 import { RESERVED_EDGE_CONSTANT_NAMES } from '../value-definition.js';
+import { ThunkAction } from 'redux-thunk';
 
 export const updateFilename : AppActionCreator = (filename : DataFilename, skipCanonicalize = false) => (dispatch, getState) => {
 	const state = getState();
@@ -83,7 +85,7 @@ export const updateFilename : AppActionCreator = (filename : DataFilename, skipC
 	if (!skipCanonicalize) dispatch(canonicalizePath());
 };
 
-export const updateScale : AppActionCreator = (scale : number) => (dispatch, getState) => {
+export const updateScale = (scale : number) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	if (scale == selectScale(getState())) return;
 	dispatch({
 		type: UPDATE_SCALE,
@@ -91,7 +93,7 @@ export const updateScale : AppActionCreator = (scale : number) => (dispatch, get
 	});
 };
 
-export const nextScenarioName : AppActionCreator = () => (dispatch, getState) => {
+export const nextScenarioName = () : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	const state = getState();
 	const legalNames = selectLegalScenarioNames(state);
 	const currentName = selectScenarioName(state);
@@ -105,7 +107,7 @@ export const nextScenarioName : AppActionCreator = () => (dispatch, getState) =>
 	dispatch(updateScenarioName(legalNames[result]));
 };
 
-export const previousScenarioName : AppActionCreator = () => (dispatch, getState) => {
+export const previousScenarioName = () : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	const state = getState();
 	const legalNames = selectLegalScenarioNames(state);
 	const currentName = selectScenarioName(state);
@@ -133,7 +135,7 @@ export const setEditing = (editing : boolean) : AnyAction => {
 	};
 };
 
-export const updateHoveredNodeID : AppActionCreator =  (nodeID? : NodeID) => (dispatch, getState) => {
+export const updateHoveredNodeID =  (nodeID? : NodeID) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	//This will get hit a lot so don't update state if hte nodeID hasn't changed.
 	if (selectHoveredNodeID(getState()) == nodeID) return;
 	dispatch({
@@ -142,7 +144,7 @@ export const updateHoveredNodeID : AppActionCreator =  (nodeID? : NodeID) => (di
 	});
 };
 
-export const updateHoveredEdgeID : AppActionCreator =  (edgeID? : EdgeIdentifier) => (dispatch, getState) => {
+export const updateHoveredEdgeID =  (edgeID? : EdgeIdentifier) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	//This will get hit a lot so don't update state if hte nodeID hasn't changed.
 	const currentEdgeID = selectHoveredEdgeID(getState());
 	if (edgeIdentifierEquivalent(currentEdgeID, edgeID)) return;
@@ -153,7 +155,7 @@ export const updateHoveredEdgeID : AppActionCreator =  (edgeID? : EdgeIdentifier
 	});
 };
 
-export const updateSelectedNodeID : AppActionCreator =  (nodeID? : NodeID) => (dispatch, getState) => {
+export const updateSelectedNodeID =  (nodeID? : NodeID) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	if (selectSelectedNodeID(getState()) == nodeID) return;
 	dispatch({
 		type: UPDATE_SELECTED_NODE_ID,
@@ -168,7 +170,7 @@ export const updateShowHiddenValues = (showHiddenValues = false) : AnyAction => 
 	};
 };
 
-export const updateWithMainPageExtra : AppActionCreator = (pageExtra : string) => (dispatch) => {
+export const updateWithMainPageExtra = (pageExtra : string) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch) => {
 	const parts = pageExtra.split('/');
 	//The last piece is the trailing slash
 	//TODO: handle malformed URLs better
@@ -192,7 +194,7 @@ export const resetScenariosOverlays = () : AnyAction => {
 	};
 };
 
-export const beginEditingScenario : AppActionCreator = (scenarioName? : ScenarioName) => (dispatch, getState) =>{
+export const beginEditingScenario = (scenarioName? : ScenarioName) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) =>{
 	if (!scenarioName) scenarioName = selectScenarioName(getState()) + '-customized';
 	const scenarioOverlay = selectCurrentScenarioOverlay(getState());
 	if (scenarioOverlay[scenarioName]) throw new Error('Scenario name already exists');
@@ -202,7 +204,7 @@ export const beginEditingScenario : AppActionCreator = (scenarioName? : Scenario
 	});
 };
 
-export const removeEditingScenario : AppActionCreator = (scenarioName? : ScenarioName) => (dispatch, getState) =>{
+export const removeEditingScenario = (scenarioName? : ScenarioName) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) =>{
 	if (scenarioName === undefined) scenarioName = selectScenarioName(getState());
 	const scenarioOverlay = selectCurrentScenarioOverlay(getState());
 	if (!scenarioOverlay[scenarioName]) throw new Error('Scenario name doesn\'t exist');
@@ -215,7 +217,7 @@ export const removeEditingScenario : AppActionCreator = (scenarioName? : Scenari
 	});
 };
 
-export const updateEditingScenarioDescription : AppActionCreator = (description : string) => (dispatch, getState) => {
+export const updateEditingScenarioDescription = (description : string) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	const state = getState();
 	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
 	dispatch({
@@ -224,7 +226,7 @@ export const updateEditingScenarioDescription : AppActionCreator = (description 
 	});
 };
 
-export const updateEditingScenarioName : AppActionCreator = (scenarioName : ScenarioName) => (dispatch, getState) => {
+export const updateEditingScenarioName = (scenarioName : ScenarioName) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	const state = getState();
 	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
 	//No op
@@ -241,7 +243,7 @@ export const updateEditingScenarioName : AppActionCreator = (scenarioName : Scen
 	});
 };
 
-export const beginEditingNodeValue : AppActionCreator = (propertyName : PropertyName, value : number) => (dispatch, getState) => {
+export const beginEditingNodeValue = (propertyName : PropertyName, value : number) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	const state = getState();
 	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
 	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
@@ -255,7 +257,7 @@ export const beginEditingNodeValue : AppActionCreator = (propertyName : Property
 	});
 };
 
-export const editingUpdateNodeValue : AppActionCreator = (propertyName : PropertyName, value : number | string) => (dispatch, getState) => {
+export const editingUpdateNodeValue = (propertyName : PropertyName, value : number | string) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	const state = getState();
 	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
 	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
@@ -270,7 +272,7 @@ export const editingUpdateNodeValue : AppActionCreator = (propertyName : Propert
 	});
 };
 
-export const removeEditingNodeValue : AppActionCreator = (propertyName : PropertyName) => (dispatch, getState) => {
+export const removeEditingNodeValue = (propertyName : PropertyName) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	const state = getState();
 	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
 	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
@@ -282,7 +284,7 @@ export const removeEditingNodeValue : AppActionCreator = (propertyName : Propert
 	});
 };
 
-export const setShowEdges : AppActionCreator = (on : boolean) => (dispatch, getState) => {
+export const setShowEdges = (on : boolean) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	if (selectShowEdges(getState()) == on) return;
 	dispatch({
 		type: SET_SHOW_EDGES,
@@ -290,7 +292,7 @@ export const setShowEdges : AppActionCreator = (on : boolean) => (dispatch, getS
 	});
 };
 
-export const addEditingNodeEdge : AppActionCreator = (edge? : EdgeValue) => (dispatch, getState) => {
+export const addEditingNodeEdge = (edge? : EdgeValue) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	const state = getState();
 	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
 	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
@@ -311,7 +313,7 @@ export const addEditingNodeEdge : AppActionCreator = (edge? : EdgeValue) => (dis
 	});
 };
 
-export const removeEditingNodeEdge : AppActionCreator = (edge : EdgeValue | EdgeValueMatchID) => (dispatch, getState) => {
+export const removeEditingNodeEdge = (edge : EdgeValue | EdgeValueMatchID) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	const state = getState();
 	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
 	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
@@ -324,7 +326,7 @@ export const removeEditingNodeEdge : AppActionCreator = (edge : EdgeValue | Edge
 
 //We accept both a previousEdge and newEdge because it's possible the
 //modification is the type/parent which is how we detect which edge is which.
-export const modifyEditingNodeEdge : AppActionCreator = (previousEdgeID : EdgeValueMatchID, newEdge? : EdgeValue) => (dispatch, getState) => {
+export const modifyEditingNodeEdge = (previousEdgeID : EdgeValueMatchID, newEdge? : EdgeValue) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	const state = getState();
 	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
 	if (selectSelectedNodeID(state) == undefined) throw new Error('No node selected');
