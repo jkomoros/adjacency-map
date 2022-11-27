@@ -70,6 +70,9 @@ import {
 	updateHash
 } from '../actions/app.js';
 
+import {
+	closeDialog
+} from '../actions/dialog.js';
 
 import {
 	fetchOverlaysFromStorage,
@@ -79,7 +82,6 @@ import {
 import './adjacency-map-controls.js';
 import './adjacency-map-diagram.js';
 import './dialog-element.js';
-import { setDialogOpen } from '../actions/dialog.js';
 
 @customElement('main-view')
 class MainView extends connect(store)(PageViewElement) {
@@ -254,7 +256,7 @@ class MainView extends connect(store)(PageViewElement) {
 	}
 
 	_handleDialogShouldClose() {
-		store.dispatch(setDialogOpen(false));
+		store.dispatch(closeDialog());
 	}
 
 }

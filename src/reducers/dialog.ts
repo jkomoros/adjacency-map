@@ -3,7 +3,8 @@ import {
 } from 'redux';
 
 import {
-	SET_DIALOG_OPEN
+	OPEN_DIALOG,
+	CLOSE_DIALOG
 } from '../actions/dialog.js';
 
 import {
@@ -16,10 +17,15 @@ const INITIAL_STATE : DialogState = {
 
 const app = (state : DialogState = INITIAL_STATE, action : AnyAction) : DialogState => {
 	switch (action.type) {
-	case SET_DIALOG_OPEN:
+	case OPEN_DIALOG:
 		return {
 			...state,
-			open: action.open
+			open: true
+		};
+	case CLOSE_DIALOG:
+		return {
+			...state,
+			open: false
 		};
 	default:
 		return state;
