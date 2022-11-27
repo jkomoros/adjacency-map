@@ -47,10 +47,6 @@ import {
 } from '../selectors.js';
 
 import {
-	AppActionCreator,
-} from '../store.js';
-
-import {
 	DataFilename,
 	EdgeIdentifier,
 	EdgeValue,
@@ -84,7 +80,11 @@ import {
 	ThunkAction
 } from 'redux-thunk';
 
-export const updateFilename : AppActionCreator = (filename : DataFilename, skipCanonicalize = false) => (dispatch, getState) => {
+import {
+	DATA 
+} from '../data.GENERATED.js';
+
+export const updateFilename = (filename : DataFilename, skipCanonicalize = false) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	const state = getState();
 	const currentFilename = selectFilename(state);
 	if (currentFilename == filename) return;
@@ -187,8 +187,10 @@ export const updateWithMainPageExtra = (pageExtra : string) : ThunkAction<void, 
 	if (parts.length != 1) return;
 	const filename = parts[0];
 
+	if (!DATA[filename as DataFilename]) throw new Error('Invalid filename: ' + filename);
+
 	//Each of these will return if a no op
-	dispatch(updateFilename(filename, true));
+	dispatch(updateFilename(filename as DataFilename, true));
 };
 
 export const loadScenariosOverlays = (overlays : ScenariosOverlays) : AnyAction => {

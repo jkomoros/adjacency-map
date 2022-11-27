@@ -764,7 +764,7 @@ class MainView extends connect(store)(PageViewElement) {
 	_handleFilenameChanged(e : Event) {
 		const ele = e.composedPath()[0];
 		if (!(ele instanceof HTMLSelectElement)) throw new Error('not a select element');
-		store.dispatch(updateFilename(ele.value));
+		store.dispatch(updateFilename(ele.value as DataFilename));
 	}
 
 	_handleScenarioNameChanged(e : Event) {
