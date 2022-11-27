@@ -698,6 +698,7 @@ class MainView extends connect(store)(PageViewElement) {
 
 	_handleEditScenarioNameClicked() {
 		const scenarioName = prompt('What should the new scenario name be?', this._scenarioName);
+		if (scenarioName == null) return;
 		try {
 			store.dispatch(updateEditingScenarioName(scenarioName));
 		} catch(err) {
