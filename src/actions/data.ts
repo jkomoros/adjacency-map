@@ -83,7 +83,7 @@ export const updateFilename : AppActionCreator = (filename : DataFilename, skipC
 	if (!skipCanonicalize) dispatch(canonicalizePath());
 };
 
-export const updateScale : AppActionCreator = (scale) => (dispatch, getState) => {
+export const updateScale : AppActionCreator = (scale : number) => (dispatch, getState) => {
 	if (scale == selectScale(getState())) return;
 	dispatch({
 		type: UPDATE_SCALE,
