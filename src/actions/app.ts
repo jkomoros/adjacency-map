@@ -7,6 +7,10 @@ import {
 } from 'redux';
 
 import {
+	ThunkAction
+} from 'redux-thunk';
+
+import {
 	selectPage,
 	selectPageExtra,
 	selectFilename,
@@ -15,10 +19,7 @@ import {
 } from '../selectors.js';
 
 import {
-	AppActionCreator
-} from '../store.js';
-
-import {
+	RootState,
 	URLHashArgs
 } from '../types.js';
 
@@ -27,7 +28,7 @@ import {
 } from './data.js';
 
 //if silent is true, then just passively updates the URL to reflect what it should be.
-export const navigatePathTo : AppActionCreator = (path, silent) => (dispatch) => {
+export const navigatePathTo = (path : string, silent = false): ThunkAction<void, RootState, unknown, AnyAction> => (dispatch) => {
 	//If we're already pointed there, no need to navigate
 	if ('/' + path === window.location.pathname) return;
 	//Don't replace search or hash if they exist. If htey don't exist, these
@@ -41,7 +42,7 @@ export const navigatePathTo : AppActionCreator = (path, silent) => (dispatch) =>
 	dispatch(navigate(path));
 };
 
-export const canonicalizeHash : AppActionCreator = () => (dispatch, getState) => {
+export const canonicalizeHash = () : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	const state = getState();
 	const hash = selectHashForCurrentState(state);
 	dispatch(updateHash(hash));
@@ -65,7 +66,7 @@ const parseHash = (hash : string) : URLHashArgs => {
 	return args;
 };
 
-const ingestHash : AppActionCreator = (hash) => (dispatch) => {
+const ingestHash = (hash : string) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch) => {
 	const pieces = parseHash(hash);
 
 	for (const [key, value] of Object.entries(pieces)) {
@@ -80,7 +81,7 @@ const ingestHash : AppActionCreator = (hash) => (dispatch) => {
 	}
 };
 
-export const updateHash : AppActionCreator = (hash, comesFromURL = false) => (dispatch, getState) => {
+export const updateHash = (hash : string, comesFromURL = false) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	if (hash.startsWith('#')) hash = hash.substring(1);
 	const state = getState();
 	const currentHash = selectHash(state);
@@ -98,7 +99,7 @@ export const updateHash : AppActionCreator = (hash, comesFromURL = false) => (di
 	});
 };
 
-export const canonicalizePath : AppActionCreator = () => (dispatch ,getState) => {
+export const canonicalizePath = () : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch ,getState) => {
 
 	const state = getState();
 
@@ -117,7 +118,7 @@ export const canonicalizePath : AppActionCreator = () => (dispatch ,getState) =>
 	dispatch(navigatePathTo(path.join('/'), true));
 };
 
-export const navigate : AppActionCreator = (path) => (dispatch) => {
+export const navigate = (path : string) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch) => {
 	// Extract the page name from path.
 	const page = path === "/" ? "main" : path.slice(1);
 
@@ -126,7 +127,7 @@ export const navigate : AppActionCreator = (path) => (dispatch) => {
 	dispatch(loadPage(page));
 };
 
-const loadPage : AppActionCreator = (location) => (dispatch) => {
+const loadPage  = (location : string) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch) => {
 
 	const pieces = location.split('/');
 
@@ -153,7 +154,7 @@ const updatePage = (page : string, pageExtra : string) : AnyAction => {
 	};
 };
 
-export const updateOffline : AppActionCreator = (offline) => (dispatch) => {
+export const updateOffline = (offline : boolean) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch) => {
 	dispatch({
 		type: UPDATE_OFFLINE,
 		offline
