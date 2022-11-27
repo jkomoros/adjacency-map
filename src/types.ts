@@ -750,6 +750,12 @@ export type ScenariosOverlays = {
 	};
 };
 
+type NodeEventDetail = {
+	id: NodeID
+};
+
+export type NodeEvent = CustomEvent<NodeEventDetail>;
+
 export type AppState = {
 	page : string;
 	pageExtra : string;
