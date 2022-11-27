@@ -782,7 +782,12 @@ export type DataState = {
 	scenariosOverlays: ScenariosOverlays;
 }
 
+export type DialogState = {
+	open : boolean
+}
+
 export type RootState = {
 	app : AppState;
 	data? : DataState;
+	dialog? : DialogState;
 }

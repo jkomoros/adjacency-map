@@ -36,6 +36,7 @@ export const selectSelectedNodeID = (state : RootState) => state.data ? state.da
 export const selectShowEdges = (state : RootState) => state.data ? state.data.showEdges : false;
 export const selectShowHiddenValues = (state : RootState) => state.data ? state.data.showHiddenValues : false;
 export const selectScenariosOverlays = (state : RootState) => state.data ? state.data.scenariosOverlays : {};
+export const selectDialogOpen = (state : RootState) => state.dialog ? state.dialog.open : false;
 
 //This doesn't actually need state, but in other ways its like a selector so kind of pretend like it is
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
