@@ -5,8 +5,7 @@ import {
 	combineReducers,
 	StoreEnhancer,
 	Reducer,
-	AnyAction,
-	ActionCreator
+	AnyAction
 } from 'redux';
 
 import thunk, { ThunkAction, ThunkDispatch, ThunkMiddleware } from 'redux-thunk';
@@ -51,8 +50,6 @@ store.addReducers({
 });
 
 export type ThunkResult = ThunkAction<void, RootState, undefined, AnyAction>;
-
-export type AppActionCreator = ActionCreator<ThunkResult>;
 
 export type AppThunkDispatch = ThunkDispatch<RootState, undefined, AnyAction>;
 
