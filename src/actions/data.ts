@@ -70,9 +70,19 @@ import {
 	DEFAULT_SCENARIO_NAME,
 	ROOT_ID
 } from '../constants.js';
-import { edgeIdentifierEquivalent, getEdgeValueMatchID } from '../util.js';
-import { RESERVED_EDGE_CONSTANT_NAMES } from '../value-definition.js';
-import { ThunkAction } from 'redux-thunk';
+
+import {
+	edgeIdentifierEquivalent,
+	getEdgeValueMatchID
+} from '../util.js';
+
+import {
+	RESERVED_EDGE_CONSTANT_NAMES
+} from '../value-definition.js';
+
+import {
+	ThunkAction
+} from 'redux-thunk';
 
 export const updateFilename : AppActionCreator = (filename : DataFilename, skipCanonicalize = false) => (dispatch, getState) => {
 	const state = getState();
