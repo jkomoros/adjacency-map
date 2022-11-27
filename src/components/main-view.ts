@@ -302,15 +302,18 @@ class MainView extends connect(store)(PageViewElement) {
 				circle:hover {
 					cursor: pointer;
 					stroke: white !important;
-					--min-stroke-width: var(--default-min-stroke-width);
-					opacity: 1.0 !important;
-					stroke-opacity: 1.0 !important;
+
 				}
 
 				circle.selected {
 					stroke-dasharray: var(--effective-stroke-width);
 					animation: 1s linear infinite normal march;
+				}
+
+				circle:hover, circle.selected {
 					--min-stroke-width: var(--default-min-stroke-width);
+					opacity: 1.0 !important;
+					stroke-opacity: 1.0 !important;
 				}
 
 				circle.edited {
