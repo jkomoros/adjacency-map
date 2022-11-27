@@ -157,7 +157,7 @@ class MainView extends connect(store)(PageViewElement) {
 			<div class='container'>
 					<adjacency-map-controls></adjacency-map-controls>
 					<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .hoveredEdgeID=${this._hoveredEdgeID} .selectedNodeID=${this._selectedNodeID} .scale=${this._scale} .editedNodes=${this._editedNodes}></adjacency-map-diagram>
-					<dialog-element .open=${this._dialogOpen} @dialog-should-close=${this._handleDialogShouldClose}>Hello, world!</dialog-element>
+					<dialog-element .open=${this._dialogOpen} .title=${this._dialogTitle} @dialog-should-close=${this._handleDialogShouldClose}>${this._dialogContent}</dialog-element>
 			</div>
 		`;
 	}
@@ -257,6 +257,14 @@ class MainView extends connect(store)(PageViewElement) {
 
 	_handleDialogShouldClose() {
 		store.dispatch(closeDialog());
+	}
+
+	get _dialogContent() : TemplateResult {
+		return html`Hello, world`;
+	}
+
+	get _dialogTitle() : string {
+		return 'Title';
 	}
 
 }
