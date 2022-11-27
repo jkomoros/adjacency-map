@@ -756,6 +756,12 @@ type NodeEventDetail = {
 
 export type NodeEvent = CustomEvent<NodeEventDetail>;
 
+type DialogShouldCloseEventDetail = {
+	cancelled : boolean
+};
+
+export type DialogShouldCloseEvent = CustomEvent<DialogShouldCloseEventDetail>;
+
 export type AppState = {
 	page : string;
 	pageExtra : string;
