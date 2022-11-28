@@ -45,7 +45,8 @@ import {
 	selectSummaryNodeID,
 	selectShowEdges,
 	selectHoveredEdgeID,
-	selectEditing
+	selectEditing,
+	selectEditableScenarios
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -75,6 +76,7 @@ import {
 	RootState,
 	ScenarioName,
 	ScenariosOverlays,
+	ScenarioWithExtends,
 	TagID,
 	TagMap,
 } from '../types.js';
@@ -134,6 +136,9 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 
 	@state()
 	_legalScenarioNames : ScenarioName[];
+
+	@state()
+	_editableScenarios : {[name : ScenarioName] : ScenarioWithExtends}
 
 	@state()
 	_scenarioName : ScenarioName;
@@ -253,7 +258,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 				${this._legalScenarioNames.length > 1 || this._editing ? html`
 				<label for='scenarios'>Scenario</label>
 				<select id='scenarios' @change=${this._handleScenarioNameChanged}>
-					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName} .selected=${scenarioName == this._scenarioName}>${scenarioName || 'Default'}</option>`)}
+					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName} .selected=${scenarioName == this._scenarioName}>${scenarioName || 'Default'}${this._editableScenarios[scenarioName] ? ' (*)' : ''}</option>`)}
 				</select>` : ''}
 				${this._editing ? html`<button class='small' title='Create a new scenario based on the current scenario' @click=${this._handleCreateScenarioClicked}>${PLUS_ICON}</button>${this._scenarioEditable ? html`<button class='small' title='Remove this scenario' @click=${this._handleRemoveScenarioClicked}>${CANCEL_ICON}</button><button class='small' title='Change scenario name' @click=${this._handleEditScenarioNameClicked}>${EDIT_ICON}</button>` : ''}` : ''}
 				<div class='summary'>
@@ -355,6 +360,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		this._legalFilenames = selectLegalFilenames(state);
 		this._scenarioName = selectScenarioName(state);
 		this._legalScenarioNames = selectLegalScenarioNames(state);
+		this._editableScenarios = selectEditableScenarios(state);
 		this._summaryDescription = selectSummaryDescription(state);
 		this._selectedNodeID = selectSelectedNodeID(state);
 		this._summaryNodeID = selectSummaryNodeID(state);
