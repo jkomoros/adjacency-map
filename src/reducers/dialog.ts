@@ -12,7 +12,7 @@ import {
 } from '../types.js';
 
 const INITIAL_STATE : DialogState = {
-	open: true,
+	open: false,
 	kind: ''
 };
 
