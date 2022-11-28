@@ -13,7 +13,8 @@ import {
 
 const INITIAL_STATE : DialogState = {
 	open: false,
-	kind: ''
+	kind: '',
+	message: ''
 };
 
 const app = (state : DialogState = INITIAL_STATE, action : AnyAction) : DialogState => {
@@ -22,13 +23,15 @@ const app = (state : DialogState = INITIAL_STATE, action : AnyAction) : DialogSt
 		return {
 			...state,
 			open: true,
-			kind: action.kind
+			kind: action.kind,
+			message: action.message
 		};
 	case CLOSE_DIALOG:
 		return {
 			...state,
 			open: false,
 			kind: '',
+			message: ''
 		};
 	default:
 		return state;

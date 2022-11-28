@@ -786,7 +786,8 @@ export type DialogKind = '';
 
 export type DialogState = {
 	open : boolean
-	kind : DialogKind
+	kind : DialogKind,
+	message : string
 }
 
 export type RootState = {
