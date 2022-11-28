@@ -83,6 +83,10 @@ import {
 	storeOverlaysToStorage
 } from '../util.js';
 
+import {
+	CHECK_CIRCLE_OUTLINE_ICON
+} from './my-icons.js';
+
 import './adjacency-map-controls.js';
 import './adjacency-map-diagram.js';
 import './dialog-element.js';
@@ -157,6 +161,15 @@ class MainView extends connect(store)(PageViewElement) {
 					display: flex;
 					justify-content: center;
 					align-items: center;
+				}
+
+				dialog-element .buttons {
+					/* TODO: make this not go off the edge */
+					position: absolute;
+					bottom: 0;
+					width: 100%;
+					display: flex;
+					justify-content: flex-end;
 				}
 			`
 		];
@@ -273,9 +286,11 @@ class MainView extends connect(store)(PageViewElement) {
 
 	get _dialogContent() : TemplateResult {
 
+		const buttons = html`<div class='buttons'><button class='round' @click=${this._handleDialogShouldClose}>${CHECK_CIRCLE_OUTLINE_ICON}</button></div>`;
+
 		switch(this._dialogKind){
 		case 'error':
-			return html`${this._dialogMessage}`;
+			return html`${this._dialogMessage}${buttons}`;
 		case '':
 			return html`An unknown error has occurred.`;
 		}
