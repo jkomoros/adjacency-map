@@ -110,6 +110,12 @@ export const selectCurrentScenarioEditable = createSelector(
 	(scenarioName, overlay, editing) => overlay[scenarioName] ? editing : false
 );
 
+export const selectEditableScenarios = createSelector(
+	selectCurrentScenarioOverlay,
+	selectEditing,
+	(overlay, editing) => editing ? overlay : {}
+);
+
 export const selectCurrentScenarioEditedNodes = createSelector(
 	selectCurrentScenarioEditable,
 	selectCurrentScenarioOverlay,
