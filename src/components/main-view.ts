@@ -74,7 +74,7 @@ import {
 } from '../actions/app.js';
 
 import {
-	closeDialog
+	closeDialog, showError
 } from '../actions/dialog.js';
 
 import {
@@ -198,7 +198,7 @@ class MainView extends connect(store)(PageViewElement) {
 			store.dispatch(canonicalizeHash());
 		}
 		if (changedProps.has('_dataError') && this._dataError) {
-			alert(this._dataError);
+			store.dispatch(showError(this._dataError));
 			console.warn(this._dataError);
 		}
 		if (changedProps.has('_scenariosOverlays')) {
