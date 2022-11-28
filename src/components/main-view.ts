@@ -270,7 +270,7 @@ class MainView extends connect(store)(PageViewElement) {
 
 		switch(this._dialogKind){
 		case '':
-			return html`Hello, world`;
+			return html`An unknown error has occurred.`;
 		}
 
 		assertUnreachable(this._dialogKind);
@@ -279,7 +279,7 @@ class MainView extends connect(store)(PageViewElement) {
 	get _dialogTitle() : string {
 		switch(this._dialogKind){
 		case '':
-			return 'Title';
+			return 'Error';
 		}
 
 		assertUnreachable(this._dialogKind);
