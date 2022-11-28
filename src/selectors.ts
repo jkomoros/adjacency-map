@@ -91,7 +91,8 @@ export const selectAdjacencyMapError = createSelector(
 		try {
 			new AdjacencyMap(data, scenarioName);
 		} catch(err) {
-			return String(err);
+			const e = err as Error;
+			return e.message;
 		}
 		return '';
 	}
