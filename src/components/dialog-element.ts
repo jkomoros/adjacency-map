@@ -22,6 +22,9 @@ export class DialogElement extends LitElement {
 	@property({ type : Boolean })
 	mobile: boolean;
 
+	@property({ type : Boolean})
+	hideClose : boolean;
+
 	static override get styles() {
 		return [
 			css`
@@ -102,12 +105,17 @@ export class DialogElement extends LitElement {
 		];
 	}
 
+	constructor() {
+		super();
+		this.hideClose = false;
+	}
+
 	override render() : TemplateResult {
 		return html`
 			<div class='container ${this.open ? 'open' : 'closed'}'>
 				<div class='background ${this.mobile ? 'mobile': ''}' @click=${this._handleBackgroundClicked}>
 					<div class='content'>
-						<button class='small' id='close' @click=${this.cancel}>${CANCEL_ICON}</button>
+						${this.hideClose ? '' : html`<button class='small' id='close' @click=${this.cancel}>${CANCEL_ICON}</button>`}
 						<h2>${this.title || ''}</h2>
 						<div id='inner'>
 						${this.innerRender()}
