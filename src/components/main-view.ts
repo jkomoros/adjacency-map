@@ -274,6 +274,8 @@ class MainView extends connect(store)(PageViewElement) {
 	get _dialogContent() : TemplateResult {
 
 		switch(this._dialogKind){
+		case 'error':
+			return html`${this._dialogMessage}`;
 		case '':
 			return html`An unknown error has occurred.`;
 		}
@@ -283,6 +285,7 @@ class MainView extends connect(store)(PageViewElement) {
 
 	get _dialogTitle() : string {
 		switch(this._dialogKind){
+		case 'error':
 		case '':
 			return 'Error';
 		}

@@ -9,7 +9,11 @@ import {
 	DialogKind
 } from '../types';
 
-export const openDialog = (kind : DialogKind = '', message = '') : AnyAction => {
+export const showError = (message : string) : AnyAction => {
+	return openDialog('error', message);
+};
+
+const openDialog = (kind : DialogKind = '', message = '') : AnyAction => {
 	return {
 		type: OPEN_DIALOG,
 		kind,
