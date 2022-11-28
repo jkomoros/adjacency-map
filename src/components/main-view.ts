@@ -164,12 +164,19 @@ class MainView extends connect(store)(PageViewElement) {
 				}
 
 				dialog-element .buttons {
-					/* TODO: make this not go off the edge */
-					position: absolute;
-					bottom: 0;
-					width: 100%;
 					display: flex;
 					justify-content: flex-end;
+				}
+
+				dialog-element .content {
+					display: flex;
+					flex-direction: column;
+					height: 100%;
+					width: 100%;
+				}
+
+				dialog-element .content .spacer {
+					flex-grow: 1;
 				}
 			`
 		];
@@ -284,13 +291,21 @@ class MainView extends connect(store)(PageViewElement) {
 		store.dispatch(closeDialog());
 	}
 
+	_withButtons(inner : TemplateResult) : TemplateResult {
+		return html`
+		<div class='content'>
+			<div class='inner'>${inner}</div>
+			<div class='spacer'></div>
+			<div class='buttons'>
+					<button class='round' @click=${this._handleDialogShouldClose}>${CHECK_CIRCLE_OUTLINE_ICON}</button>
+			</div>
+		</div>`;
+	}
+
 	get _dialogContent() : TemplateResult {
-
-		const buttons = html`<div class='buttons'><button class='round' @click=${this._handleDialogShouldClose}>${CHECK_CIRCLE_OUTLINE_ICON}</button></div>`;
-
 		switch(this._dialogKind){
 		case 'error':
-			return html`${this._dialogMessage}${buttons}`;
+			return this._withButtons(html`${this._dialogMessage}`);
 		case '':
 			return html`An unknown error has occurred.`;
 		}
