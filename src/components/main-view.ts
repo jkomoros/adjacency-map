@@ -28,7 +28,8 @@ import {
 	selectCurrentScenarioEditedNodes,
 	selectHoveredEdgeID,
 	selectDialogOpen,
-	selectDialogKind
+	selectDialogKind,
+	selectDialogMessage
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -125,6 +126,9 @@ class MainView extends connect(store)(PageViewElement) {
 	@state()
 	_dialogKind : DialogKind;
 
+	@state()
+	_dialogMessage : string;
+
 	static override get styles() {
 		return [
 			SharedStyles,
@@ -182,6 +186,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._editedNodes = selectCurrentScenarioEditedNodes(state);
 		this._dialogOpen = selectDialogOpen(state);
 		this._dialogKind = selectDialogKind(state);
+		this._dialogMessage = selectDialogMessage(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
