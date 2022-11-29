@@ -154,7 +154,7 @@ const removeEditingNodeValueInOverlay = (state : DataState, propertyName : Prope
 };
 
 const addEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : ScenariosOverlays => {
-	const [result, node] = prepareToEditNodeInOverlay(state);
+	const [result, node, nodeID, nodes] = prepareToEditNodeInOverlay(state);
 	const id = getEdgeValueMatchID(edge);
 	let changesMade = false;
 	for (const removal of Object.keys(node.edges.remove)) {
@@ -170,11 +170,12 @@ const addEditingNodeEdgeInOverlay = (state : DataState, edge : EdgeValue) : Scen
 		break;
 	}
 	if (!changesMade) node.edges.add.push(edge);
+	if (scenarioNodeIsEmpty(node)) delete nodes[nodeID];
 	return result;
 };
 
 const removeEditingNodeEdgeInOverlay = (state : DataState, previousID : EdgeValueMatchID) : ScenariosOverlays => {
-	const [result, node] = prepareToEditNodeInOverlay(state);
+	const [result, node, nodeID, nodes] = prepareToEditNodeInOverlay(state);
 	let changesMade = false;
 	node.edges.add = node.edges.add.filter(addition => {
 		if (getEdgeValueMatchID(addition) != previousID) return true;
@@ -193,6 +194,7 @@ const removeEditingNodeEdgeInOverlay = (state : DataState, previousID : EdgeValu
 	if (!changesMade) {
 		node.edges.remove[previousID] = true;
 	}
+	if (scenarioNodeIsEmpty(node)) delete nodes[nodeID];
 	return result;
 };
 
@@ -203,7 +205,7 @@ const SENTINEL_EDGE_VALUE : EdgeValue = {
 //We accept previousEdge and newEdge because we might have made a modification
 //to type/parent which would change which one we're touching.
 const modifyEditingNodeEdgeInOverlay = (state : DataState, previousEdgeID: EdgeValueMatchID, newEdge? : EdgeValue) : ScenariosOverlays => { 
-	const [result, node] = prepareToEditNodeInOverlay(state);
+	const [result, node, nodeID, nodes] = prepareToEditNodeInOverlay(state);
 	let changesMade = false;
 	for (let i = 0; i < node.edges.add.length; i++) {
 		if (getEdgeValueMatchID(node.edges.add[i]) != previousEdgeID) continue;
@@ -227,6 +229,7 @@ const modifyEditingNodeEdgeInOverlay = (state : DataState, previousEdgeID: EdgeV
 	}
 	//It's possible it's a modify that comes from a scneario above us.
 	if (!changesMade && newEdge) node.edges.modify[previousEdgeID] = newEdge;
+	if (scenarioNodeIsEmpty(node)) delete nodes[nodeID];
 	return result;
 };
 
