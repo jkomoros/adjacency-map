@@ -325,7 +325,11 @@ class MainView extends connect(store)(PageViewElement) {
 	}
 
 	get _dialogContentReadout() : TemplateResult {
-		return html`This is where the readout will be`;
+		//TODO: have a select for switching to different files in this dialog, too.
+		//TODO: show a pre and post section that's not content editable
+		return html`
+<pre>${JSON.stringify(this._currentScenarioOverlay, null, '\t')}</pre>
+		`;
 	}
 
 	get _dialogTitle() : string {
