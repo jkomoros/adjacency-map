@@ -13,6 +13,10 @@ export const showError = (message : string) : AnyAction => {
 	return openDialog('error', message);
 };
 
+export const showReadout = () : AnyAction => {
+	return openDialog('readout');
+};
+
 const openDialog = (kind : DialogKind = '', message = '') : AnyAction => {
 	return {
 		type: OPEN_DIALOG,
