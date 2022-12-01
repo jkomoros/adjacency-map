@@ -262,17 +262,17 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 				</select>` : ''}
 				${this._editing ? html`<button class='small' title='Create a new scenario based on the current scenario' @click=${this._handleCreateScenarioClicked}>${PLUS_ICON}</button>${this._scenarioEditable ? html`<button class='small' title='Remove this scenario' @click=${this._handleRemoveScenarioClicked}>${CANCEL_ICON}</button><button class='small' title='Change scenario name' @click=${this._handleEditScenarioNameClicked}>${EDIT_ICON}</button>` : ''}` : ''}
 				<div class='summary'>
+				${this._legalScenarioNames.length > 1 ? 
+		html`<div>
+							<label>Scenario</label> ${this._scenarioEditable ? html`<input type='text' @change=${this._handleUpdateScenarioDescription} .value=${this._adjacencyMap?.scenario.description || ''}></input>` : html`${this._adjacencyMap?.scenario.description || (this._adjacencyMap?.scenarioName ? html`<em>No description</em>` : html`<em>Default</em>`)}`}
+						</div>`
+		: html``}
 					<div>
 						<label>Node</label> <strong>${this._summaryNodeDisplayName === undefined ? html`<em>Union of all nodes</em>${this._scenarioEditable ? html`<br/>Select a node to edit it</strong>` : ''}` : (this._summaryNodeDisplayName || html`<em>Root</em>`)}</strong>
 					</div>
 					<div>
 						<label>Description</label> ${this._summaryDescription}
 					</div>
-					${this._legalScenarioNames.length > 1 ? 
-		html`<div>
-							<label>Scenario</label> ${this._scenarioEditable ? html`<input type='text' @change=${this._handleUpdateScenarioDescription} .value=${this._adjacencyMap?.scenario.description || ''}></input>` : html`${this._adjacencyMap?.scenario.description || (this._adjacencyMap?.scenarioName ? html`<em>No description</em>` : html`<em>Default</em>`)}`}
-						</div>`
-		: html``}
 					<div>
 						<label>Values <button class='small' title='Show hidden values'>${this._showHiddenValues ? VISIBILITY_ICON : VISIBILITY_OFF_ICON}</button><input type='checkbox' .checked=${this._showHiddenValues} @change=${this._handleShowHiddenValuesClicked}></input></label>
 						${Object.entries(this._summaryValues).filter(entry => this._showHiddenValues || !this._adjacencyMap?.data.properties[entry[0]].hide).map(entry => this._htmlForValue(entry[0], entry[1]))}
