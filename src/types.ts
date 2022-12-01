@@ -782,7 +782,7 @@ export type DataState = {
 	scenariosOverlays: ScenariosOverlays;
 }
 
-export type DialogKind = '' | 'error';
+export type DialogKind = '' | 'error' | 'readout';
 
 export type DialogState = {
 	open : boolean

@@ -304,6 +304,8 @@ class MainView extends connect(store)(PageViewElement) {
 
 	get _dialogContent() : TemplateResult {
 		switch(this._dialogKind){
+		case 'readout':
+			return this._withButtons(this._dialogContentReadout);
 		case 'error':
 			return this._withButtons(html`${this._dialogMessage}`);
 		case '':
@@ -313,8 +315,14 @@ class MainView extends connect(store)(PageViewElement) {
 		assertUnreachable(this._dialogKind);
 	}
 
+	get _dialogContentReadout() : TemplateResult {
+		return html`This is where the readout will be`;
+	}
+
 	get _dialogTitle() : string {
 		switch(this._dialogKind){
+		case 'readout':
+			return 'Changes';
 		case 'error':
 		case '':
 			return 'Error';
