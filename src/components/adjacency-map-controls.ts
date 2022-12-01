@@ -96,7 +96,8 @@ import {
 	PLUS_ICON,
 	UNDO_ICON,
 	CANCEL_ICON,
-	DELETE_FOREVER_ICON
+	DELETE_FOREVER_ICON,
+	CODE_ICON
 } from './my-icons.js';
 
 import {
@@ -105,6 +106,7 @@ import {
 	edgeIdentifierEquivalent,
 	edgeIdentifierFromEdge
 } from '../util.js';
+import { showReadout } from '../actions/dialog.js';
 
 
 @customElement('adjacency-map-controls')
@@ -253,7 +255,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 				</select>` : ''}
 				<div>
 					<label for='editing'>Editing</label><input id='editing' type='checkbox' .checked=${this._editing} @change=${this._handleEditingChanged}></input>
-					${this._editing && Object.keys(this._scenariosOverlays).length > 0 ? html`<button class='small' title='Remove all edits across all files' @click=${this._handleResetOverlaysClicked}>${DELETE_FOREVER_ICON}</button>` : ''}
+					${this._editing && Object.keys(this._scenariosOverlays).length > 0 ? html`<button class='small' title='Remove all edits across all files' @click=${this._handleResetOverlaysClicked}>${DELETE_FOREVER_ICON}</button><button class='small' title='Readout changes' @click=${this._handleShowReadoutClicked}>${CODE_ICON}</button>` : ''}
 				</div>
 				${this._legalScenarioNames.length > 1 || this._editing ? html`
 				<label for='scenarios'>Scenario</label>
@@ -410,6 +412,10 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 
 	_handleShowEdgesToggleClicked() {
 		store.dispatch(setShowEdges(!this._showEdges));
+	}
+
+	_handleShowReadoutClicked() {
+		store.dispatch(showReadout());
 	}
 
 	_edgeActionClicked(e : Event) : [edge : EdgeValue, previousID : EdgeValueMatchID, hasModifications : boolean] {
