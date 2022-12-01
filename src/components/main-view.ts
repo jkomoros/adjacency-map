@@ -29,7 +29,8 @@ import {
 	selectHoveredEdgeID,
 	selectDialogOpen,
 	selectDialogKind,
-	selectDialogMessage
+	selectDialogMessage,
+	selectCurrentScenarioOverlay
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -55,7 +56,9 @@ import {
 	NodeID,
 	NodeValuesOverride,
 	RootState,
+	ScenarioName,
 	ScenariosOverlays,
+	ScenarioWithExtends,
 } from '../types.js';
 
 import {
@@ -133,6 +136,11 @@ class MainView extends connect(store)(PageViewElement) {
 	@state()
 	_dialogMessage : string;
 
+	@state()
+	_currentScenarioOverlay : {
+		[name : ScenarioName] : ScenarioWithExtends
+	};
+
 	static override get styles() {
 		return [
 			SharedStyles,
@@ -207,6 +215,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._dialogOpen = selectDialogOpen(state);
 		this._dialogKind = selectDialogKind(state);
 		this._dialogMessage = selectDialogMessage(state);
+		this._currentScenarioOverlay = selectCurrentScenarioOverlay(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
