@@ -330,6 +330,8 @@ export type LayoutInfo = {
 
 export type NodeID = string;
 
+export type GroupID = string;
+
 export type RawEdgeValue = {
 	//Any of the exlicitly enumerated properties should be added to
 	//RESERVED_EDGE_CONSTANT_NAMES
@@ -448,6 +450,16 @@ export type NodeDefinition = {
 	edges: EdgeValue[],
 	values: NodeValuesOverride
 };
+
+export type RawGroupDefinition = {
+	description: string,
+	displayName? : string
+}
+
+export type GroupDefinition = {
+	description: string,
+	displayName: string
+}
 
 export type NodeValuesOverride = {
 	[propertyName: PropertyName]: ValueDefinition
@@ -716,6 +728,9 @@ export type RawMapDefinition = {
 	nodes?: {
 		[id : NodeID] : RawNodeDefinition
 	},
+	groups? : {
+		[id : GroupID] : RawGroupDefinition
+	},
 	//Scenarios define different collections of base values to set on nodes. The
 	//default scenario is implicitly named '' and not enumerated, because it is
 	//just the base map definition.
@@ -735,6 +750,9 @@ export type MapDefinition = {
 	root: NodeValues,
 	nodes: {
 		[id : NodeID]: NodeDefinition
+	},
+	groups: {
+		[id : GroupID] : GroupDefinition
 	},
 	scenarios: ScenariosDefinition;
 };

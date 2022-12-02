@@ -39,7 +39,9 @@ import {
 	NodeValuesOverride,
 	ScenarioNodeEdges,
 	EdgeValueModificationMap,
-	ConstantType
+	ConstantType,
+	GroupID,
+	GroupDefinition
 } from './types.js';
 
 import {
@@ -330,6 +332,16 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 			}
 		};
 	}
+	const groups : {[id : GroupID]: GroupDefinition} = {};
+	for (const [id, groupNode] of Object.entries(data.groups || {})) {
+		let displayName = groupNode.displayName;
+		if (displayName == undefined) displayName = idToDisplayName(id);
+		if (displayName === '') displayName = id;
+		groups[id] = {
+			...groupNode,
+			displayName
+		};
+	}
 	const rawNodeDisplay = data.display?.node || {};
 	const rawEdgeDisplay = data.display?.edge || {};
 	const rawEdgeCombinerDisplay = data.display?.edgeCombiner || {};
@@ -442,6 +454,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		tags,
 		properties,
 		nodes,
+		groups,
 		scenarios: sortedScenarios
 	};
 };
@@ -498,6 +511,11 @@ const validateData = (data : MapDefinition) : void => {
 		for (const tagID of Object.keys(nodeData.tags)) {
 			if (!data.tags[tagID]) throw new Error(nodeName + ' defined an unknown tag: ' + tagID);
 		}
+	}
+
+	for (const [groupID, groupdData] of Object.entries(data.groups)) {
+		//We don't need to check for overlap with normal node IDs because the node and metaNode ID space never overlaps.
+		if (!groupdData.description) throw new Error('group '+ groupID + ' has no description');
 	}
 
 	const expectedTagConstants : {[name : TagConstantName]: true} = {};
