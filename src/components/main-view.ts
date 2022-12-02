@@ -186,6 +186,15 @@ class MainView extends connect(store)(PageViewElement) {
 				dialog-element .content .spacer {
 					flex-grow: 1;
 				}
+
+				pre {
+					margin-top: 0;
+					margin-bottom: 0;
+				}
+
+				pre.noselect {
+					user-select: none;
+				}
 			`
 		];
 	}
@@ -329,9 +338,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	get _dialogContentReadout() : TemplateResult {
 		//TODO: have a select for switching to different files in this dialog, too.
-		//TODO: show a pre and post section that's not content editable
-		return html`
-<pre>${JSON.stringify(this._currentScenarioOverlay, null, '\t')}</pre>
+		return html`<pre class='noselect'>//...</pre>
+<pre class='main'>${JSON.stringify(this._currentScenarioOverlay, null, '\t')}</pre>
+<pre class='noselect'>//...</pre>
 		`;
 	}
 
@@ -361,7 +370,7 @@ class MainView extends connect(store)(PageViewElement) {
 	_dialogOpenedReadout() : void {
 		const root = this.shadowRoot;
 		if (!root) throw new Error('no root');
-		const pre = root.querySelector('pre');
+		const pre = root.querySelector('pre.main');
 		if (!pre) throw new Error('no pre');
 		const range = document.createRange();
 		const selection = window.getSelection();
