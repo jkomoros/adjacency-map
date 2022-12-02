@@ -338,9 +338,16 @@ class MainView extends connect(store)(PageViewElement) {
 
 	get _dialogContentReadout() : TemplateResult {
 		//TODO: have a select for switching to different files in this dialog, too.
-		return html`<pre class='noselect'>//...</pre>
-<pre class='main'>${JSON.stringify(this._currentScenarioOverlay, null, '\t')}</pre>
-<pre class='noselect'>//...</pre>
+		const content = JSON.stringify(this._currentScenarioOverlay, null, '\t');
+		const trimmedContent = content.slice(2, -2);
+		const tabbedContent = '\t' + trimmedContent.split('\n').join('\n\t');
+		return html`<pre class='noselect'>const data : RawMapDefinition = {
+	//...
+	scenarios: {
+		//...</pre>
+<pre class='main'>${tabbedContent}</pre>
+<pre class='noselect'>	}
+};</pre>
 		`;
 	}
 
