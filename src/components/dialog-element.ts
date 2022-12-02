@@ -98,6 +98,10 @@ export class DialogElement extends LitElement {
 				overflow:scroll;
 			}
 
+			.buttons {
+					display: flex;
+					justify-content: flex-end;
+			}
 
 			`,
 			SharedStyles,
@@ -120,6 +124,9 @@ export class DialogElement extends LitElement {
 						<div id='inner'>
 						${this.innerRender()}
 						</div>
+						<div class='buttons'>
+						${this.buttonsRender()}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -129,6 +136,11 @@ export class DialogElement extends LitElement {
 	innerRender() : TemplateResult {
 		//You can subclass this and return somethingelse for innerRender or use it directly with content inside.
 		return html`<slot></slot>`;
+	}
+
+	buttonsRender() : TemplateResult {
+		//You can subclass this and return somethingelse for innerRender or use it directly with content inside.
+		return html`<slot name='buttons'></slot>`;
 	}
 
 	override firstUpdated() {
