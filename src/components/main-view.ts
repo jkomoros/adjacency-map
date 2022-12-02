@@ -176,17 +176,6 @@ class MainView extends connect(store)(PageViewElement) {
 					justify-content: flex-end;
 				}
 
-				dialog-element .content {
-					display: flex;
-					flex-direction: column;
-					height: 100%;
-					width: 100%;
-				}
-
-				dialog-element .content .spacer {
-					flex-grow: 1;
-				}
-
 				pre {
 					margin-top: 0;
 					margin-bottom: 0;
@@ -318,13 +307,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	_withButtons(inner : TemplateResult) : TemplateResult {
 		return html`
-		<div class='content'>
-			<div class='inner'>${inner}</div>
-			<div class='spacer'></div>
-			<div class='buttons'>
-					<button class='round' @click=${this._handleDialogShouldClose}>${CHECK_CIRCLE_OUTLINE_ICON}</button>
-			</div>
-		</div>`;
+			${inner}
+			<button slot='buttons' class='round' @click=${this._handleDialogShouldClose}>${CHECK_CIRCLE_OUTLINE_ICON}</button>
+		`;
 	}
 
 	get _dialogContent() : TemplateResult {
