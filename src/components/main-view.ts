@@ -195,6 +195,10 @@ class MainView extends connect(store)(PageViewElement) {
 				pre.noselect {
 					user-select: none;
 				}
+
+				.instructions {
+					user-select: none;
+				}
 			`
 		];
 	}
@@ -341,7 +345,8 @@ class MainView extends connect(store)(PageViewElement) {
 		const content = JSON.stringify(this._currentScenarioOverlay, null, '\t');
 		const trimmedContent = content.slice(2, -2);
 		const tabbedContent = '\t' + trimmedContent.split('\n').join('\n\t');
-		return html`<pre class='noselect'>const data : RawMapDefinition = {
+		return html`<div class='instructions'><em>Copy/paste the selected content into the end of the <code>scenarios</code> block of <code>data/${this._filename}.ts</code></em></div>
+<pre class='noselect'>const data : RawMapDefinition = {
 	//...
 	scenarios: {
 		//...</pre>
