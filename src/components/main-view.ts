@@ -233,6 +233,9 @@ class MainView extends connect(store)(PageViewElement) {
 		if (changedProps.has('_scenariosOverlays')) {
 			storeOverlaysToStorage(this._scenariosOverlays);
 		}
+		if (changedProps.has('_dialogOpen') && this._dialogOpen) {
+			this._dialogOpened();
+		}
 	}
 
 	override firstUpdated() {
@@ -342,6 +345,30 @@ class MainView extends connect(store)(PageViewElement) {
 		}
 
 		assertUnreachable(this._dialogKind);
+	}
+
+	_dialogOpened() : void {
+		switch (this._dialogKind) {
+		case 'readout':
+			return this._dialogOpenedReadout();
+		case 'error':
+		case '':
+			return;
+		}
+		assertUnreachable(this._dialogKind);
+	}
+
+	_dialogOpenedReadout() : void {
+		const root = this.shadowRoot;
+		if (!root) throw new Error('no root');
+		const pre = root.querySelector('pre');
+		if (!pre) throw new Error('no pre');
+		const range = document.createRange();
+		const selection = window.getSelection();
+		if (!selection) throw new Error('no selection');
+		selection.removeAllRanges();
+		range.selectNodeContents(pre);
+		selection.addRange(range);
 	}
 
 }
