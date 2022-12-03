@@ -619,6 +619,7 @@ export class AdjacencyMap {
 	
 	_data : MapDefinition;
 	_nodes : {[id : NodeID] : AdjacencyMapNode};
+	_groups : {[id : GroupID] : AdjacencyMapGroup};
 	_cachedChildren : {[id : NodeID] : NodeID[]};
 	_cachedEdges : ExpandedEdgeValue[];
 	_cachedRenderEdges : RenderEdgeValue[] | undefined;
@@ -780,6 +781,14 @@ export class AdjacencyMap {
 		return this._nodes[id];
 	}
 
+	group(id : GroupID) : AdjacencyMapGroup {
+		if (!this._groups[id]) {
+			if (!this._data.groups[id]) throw new Error('ID ' + id + ' does not exist in input');
+			this._groups[id] = new AdjacencyMapGroup(this, id, this._data.groups[id]);
+		}
+		return this._groups[id];
+	}
+
 	_children(id : NodeID) : NodeID[] {
 		return this._cachedChildren[id];
 	}
@@ -788,6 +797,11 @@ export class AdjacencyMap {
 		//TODO: cache. Not a huge deal because the heavy lifting is cached behind node().
 		const ids = ['',...Object.keys(this._data.nodes)];
 		return Object.fromEntries(ids.map(id => [id, this.node(id)]));
+	}
+
+	get groups() : {[id : GroupID] : AdjacencyMapGroup} {
+		//TODO: cache. Not a huge deal because the heavy lifting is cached behind group().
+		return Object.fromEntries(Object.keys(this._data.groups).map(id => [id, this.group(id)]));
 	}
 
 	get edges() : ExpandedEdgeValue[] {
