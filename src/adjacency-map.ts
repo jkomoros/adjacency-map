@@ -141,6 +141,12 @@ const ALLOWED_VARIABLES_FOR_CONTEXT = {
 //If an edge is bumped, this is the amount we aim to bump it by by default.
 const TARGET_BUMP = 0.4;
 
+const LAYOUT_ID_GROUP_PREFIX = 'group';
+const LAYOUT_ID_NODE_PREFIX = 'node';
+
+//LayoutID is either 'node:' + NodeID or 'group:' + GroupID. It's a way of merging the node and group ID space without overlap.
+type LayoutID = string;
+
 export const extractSimpleGraph = (data : MapDefinition, scenarioName : ScenarioName = DEFAULT_SCENARIO_NAME) : SimpleGraph => {
 	const result : SimpleGraph = {};
 	const scenario : Scenario = data.scenarios && data.scenarios[scenarioName] ? data.scenarios[scenarioName] : {description: '', nodes: {}};
@@ -1107,6 +1113,10 @@ export class AdjacencyMapNode {
 		return this._map.group(this.groupID);
 	}
 
+	get _layoutID() : LayoutID {
+		return LAYOUT_ID_NODE_PREFIX + ':' + this.id;
+	}
+
 	fullDescription(includeHidden = false) : string {
 		const filter = includeHidden ? () => true : (entry : [PropertyName, number] ) => !this._map.data.properties[entry[0]].hide;
 		let result = this.displayName + '\n';
@@ -1490,6 +1500,10 @@ export class AdjacencyMapGroup {
 		this._map = map;
 		this._data = data;
 		this._id = id;
+	}
+
+	get _layoutID() : LayoutID {
+		return LAYOUT_ID_GROUP_PREFIX + ':' + this.id;
 	}
 
 	get id() : GroupID {
