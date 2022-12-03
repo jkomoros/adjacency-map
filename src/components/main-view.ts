@@ -30,7 +30,8 @@ import {
 	selectDialogOpen,
 	selectDialogKind,
 	selectDialogMessage,
-	selectCurrentScenarioOverlay
+	selectCurrentScenarioOverlay,
+	selectHoveredNodeID
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -122,6 +123,9 @@ class MainView extends connect(store)(PageViewElement) {
 	_selectedNodeID : NodeID | undefined;
 
 	@state()
+	_hoveredNodeID : NodeID | undefined;
+
+	@state()
 	_hoveredEdgeID : EdgeIdentifier | undefined;
 
 	@state()
@@ -196,7 +200,7 @@ class MainView extends connect(store)(PageViewElement) {
 		return html`
 			<div class='container'>
 					<adjacency-map-controls></adjacency-map-controls>
-					<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .hoveredEdgeID=${this._hoveredEdgeID} .selectedNodeID=${this._selectedNodeID} .scale=${this._scale} .editedNodes=${this._editedNodes}></adjacency-map-diagram>
+					<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .hoveredEdgeID=${this._hoveredEdgeID} .hoveredNodeID=${this._hoveredNodeID} .selectedNodeID=${this._selectedNodeID} .scale=${this._scale} .editedNodes=${this._editedNodes}></adjacency-map-diagram>
 					<dialog-element .open=${this._dialogOpen} .title=${this._dialogTitle} @dialog-should-close=${this._handleDialogShouldClose} .hideClose=${true}>${this._dialogContent}</dialog-element>
 			</div>
 		`;
@@ -210,6 +214,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._scale = selectScale(state);
 		this._hashForCurrentState = selectHashForCurrentState(state);
 		this._selectedNodeID = selectSelectedNodeID(state);
+		this._hoveredNodeID = selectHoveredNodeID(state);
 		this._hoveredEdgeID = selectHoveredEdgeID(state);
 		this._dataError = selectAdjacencyMapError(state);
 		this._scenariosOverlays = selectScenariosOverlays(state);

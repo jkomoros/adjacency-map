@@ -38,6 +38,9 @@ class AdjacencyMapDiagram extends LitElement {
 	@property({type: String})
 	selectedNodeID : NodeID | undefined
 
+	@property({type: String})
+	hoveredNodeID : NodeID | undefined
+
 	@property({type: Object})
 	map: AdjacencyMap | null
 
