@@ -850,8 +850,7 @@ export class AdjacencyMap {
 
 	_ensureLayoutInfo() {
 		if (this._cachedLayoutInfo) return;
-		//TODO: swap to use this._extractGroupedSimpleGraph
-		const simpleGraph = extractSimpleGraph(this._data);
+		const simpleGraph = this._extractGroupedSimpleGraph();
 		const longestTree = tidyLongestTree(simpleGraph);
 		const treeGraph = treeGraphFromParentGraph(longestTree);
 		this._cachedLayoutInfo = TreeLayout(treeGraph, SVG_WIDTH, SVG_HEIGHT);
@@ -1435,14 +1434,14 @@ export class AdjacencyMapNode {
 	}
 
 	get x() : number {
-		const pos = this._map.nodePositions[this.id];
-		if (!pos) throw new Error(this.id + ' didn\'t exist in parent');
+		const pos = this._map.nodePositions[this._rootLayoutID];
+		if (!pos) throw new Error(this._rootLayoutID + ' didn\'t exist in parent');
 		return pos.x;
 	}
 
 	get y() : number {
-		const pos = this._map.nodePositions[this.id];
-		if (!pos) throw new Error(this.id + ' didn\'t exist in parent');
+		const pos = this._map.nodePositions[this._rootLayoutID];
+		if (!pos) throw new Error(this._rootLayoutID + ' didn\'t exist in parent');
 		return pos.y;
 	}
 
