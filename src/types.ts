@@ -434,6 +434,7 @@ export type RawNodeDefinition = {
 	description: string,
 	displayName? : string,
 	display?: Partial<NodeDisplay>,
+	group? : GroupID,
 	tags? : TagID | TagID[] | TagMap,
 	edges?: RawEdgeInput,
 	//If any values are provided here, they will be set on the node, overriding
@@ -445,6 +446,7 @@ export type RawNodeDefinition = {
 export type NodeDefinition = {
 	description: string,
 	displayName: string,
+	group? : GroupID,
 	tags: TagMap,
 	display: Partial<NodeDisplay>,
 	edges: EdgeValue[],

@@ -505,6 +505,7 @@ const validateData = (data : MapDefinition) : void => {
 	for (const [nodeName, nodeData] of Object.entries(data.nodes)) {
 		if (nodeName == ROOT_ID) throw new Error('Nodes may not have the same id as root: "' + ROOT_ID + '"');
 		if (!nodeData.description) throw new Error(nodeName + ' has no description');
+		if (nodeData.group && !data.groups[nodeData.group]) throw new Error(nodeName + ' specifies group ' + nodeData.group + ' but that group is not defined');
 		validateEdges(data, nodeName, nodeData.edges);
 		validateDisplay(nodeData.display, {exampleValues, data, allowedVariables:ALLOWED_VARIABLES_FOR_CONTEXT.nodeDisplay});
 		validateNodeValues(data, nodeData.values);
