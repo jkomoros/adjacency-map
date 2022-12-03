@@ -829,19 +829,9 @@ export class AdjacencyMap {
 		//similar to extractSimpleGraph but doens't have to do the scenario
 		//overrides of nodes itself because it can use live nodes, and also it groups things based on groups.
 
-		//First figure out what each group or node's layoutID will end up as in
-		//the final layout object, so we can rewrite edges as we go.
-		const rootIDMap : {[input : LayoutID] : LayoutID} = {};
-		for (const node of Object.values(this.nodes)) {
-			rootIDMap[node._layoutID] = node._rootLayoutID;
-		}
-		for (const group of Object.values(this.groups)) {
-			rootIDMap[group._layoutID] = group._rootLayoutID;
-		}
-
 		const result : SimpleGraph = {};
 		for (const node of Object.values(this.nodes)) {
-			const rootID = rootIDMap[node._layoutID];
+			const rootID = node._rootLayoutID;
 			
 			//It's possible for multiple nodes to be added to the same final
 			//group, so there might already be edges.
@@ -850,10 +840,11 @@ export class AdjacencyMap {
 			}
 			const resultEdges = result[rootID];
 			for (const edge of node.edges) {
-				resultEdges[rootIDMap[edge.parent]] = true;
+				const parentNode = this.node(edge.parent);
+				const parentRootID = parentNode._rootLayoutID;
+				resultEdges[parentRootID] = true;
 			}
 		}
-		result[ROOT_ID] = {};
 		return result;
 	}
 
