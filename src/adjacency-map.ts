@@ -1484,6 +1484,8 @@ export class AdjacencyMapGroup {
 	_map : AdjacencyMap;
 	_data : GroupDefinition;
 	_id : GroupID;
+	_cachedNodes : AdjacencyMapNode[];
+
 	constructor(map : AdjacencyMap, id : GroupID, data : GroupDefinition) {
 		this._map = map;
 		this._data = data;
@@ -1496,5 +1498,17 @@ export class AdjacencyMapGroup {
 
 	get data() : GroupDefinition {
 		return this._data;
+	}
+
+	get nodes() : AdjacencyMapNode[] {
+		if (!this._cachedNodes) {
+			const result : AdjacencyMapNode[] = [];
+			for (const node of Object.values(this._map.nodes)) {
+				if (node.groupID != this.id) continue;
+				result.push(node);
+			}
+			this._cachedNodes = result;
+		}
+		return this._cachedNodes;
 	}
 }
