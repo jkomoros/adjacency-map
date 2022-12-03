@@ -1117,6 +1117,11 @@ export class AdjacencyMapNode {
 		return LAYOUT_ID_NODE_PREFIX + ':' + this.id;
 	}
 
+	//The layout ID of the part of the layout that we are positioned within.
+	get _rootLayoutID() : LayoutID {
+		return this.group ? this.group._rootLayoutID : this._layoutID;
+	}
+
 	fullDescription(includeHidden = false) : string {
 		const filter = includeHidden ? () => true : (entry : [PropertyName, number] ) => !this._map.data.properties[entry[0]].hide;
 		let result = this.displayName + '\n';
@@ -1504,6 +1509,11 @@ export class AdjacencyMapGroup {
 
 	get _layoutID() : LayoutID {
 		return LAYOUT_ID_GROUP_PREFIX + ':' + this.id;
+	}
+
+	get _rootLayoutID() : LayoutID {
+		//TODO: in the future when it's possible for us to have a parent group, return its _rootLayoutID if we have a parent group.
+		return this.id;
 	}
 
 	get id() : GroupID {
