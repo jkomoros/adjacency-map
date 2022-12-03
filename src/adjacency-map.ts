@@ -1456,3 +1456,22 @@ export class AdjacencyMapNode {
 		return unpackColor(num);
 	}
 }
+
+export class AdjacencyMapGroup {
+	_map : AdjacencyMap;
+	_data : GroupDefinition;
+	_id : GroupID;
+	constructor(map : AdjacencyMap, id : GroupID, data : GroupDefinition) {
+		this._map = map;
+		this._data = data;
+		this._id = id;
+	}
+
+	get id() : GroupID {
+		return this._id;
+	}
+
+	get data() : GroupDefinition {
+		return this._data;
+	}
+}
