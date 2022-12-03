@@ -1098,6 +1098,15 @@ export class AdjacencyMapNode {
 		return this._data?.displayName || this.id;
 	}
 
+	get groupID() : GroupID | undefined {
+		return this._data?.group;
+	}
+
+	get group() : AdjacencyMapGroup | null {
+		if (this.groupID == undefined) return null;
+		return this._map.group(this.groupID);
+	}
+
 	fullDescription(includeHidden = false) : string {
 		const filter = includeHidden ? () => true : (entry : [PropertyName, number] ) => !this._map.data.properties[entry[0]].hide;
 		let result = this.displayName + '\n';
