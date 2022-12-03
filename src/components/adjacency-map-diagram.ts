@@ -191,7 +191,7 @@ class AdjacencyMapDiagram extends LitElement {
 		return svg`<a transform="translate(${node.x},${node.y})">
 			<circle class='${classMap(classes)}' style='${styleMap(styles)}' @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} id="${'node:' + node.id}" fill="${node.color.rgbaStr}" r="${node.radius}" opacity="${node.opacity}" stroke="${node.strokeColor.rgbaStr}" stroke-opacity="${node.strokeOpacity}"></circle>
 			<title>${node.fullDescription()}</title>
-			${renderText ? svg`<text dy="0.32em" x="${(node.children.length == 0 ? 1 : -1) * node.radius * 2}" text-anchor="${node.children.length == 0 ? 'start' : 'end'}" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}">${node.displayName}</text>` : ''}
+			<text dy="0.32em" x="${(node.children.length == 0 ? 1 : -1) * node.radius * 2}" text-anchor="${node.children.length == 0 ? 'start' : 'end'}" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}" opacity="${renderText ? '1.0' : '0.0'}">${node.displayName}</text>
 		</a>`;
 	}
 
