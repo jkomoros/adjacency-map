@@ -147,6 +147,7 @@ const LAYOUT_ID_NODE_PREFIX = 'node';
 //LayoutID is either 'node:' + NodeID or 'group:' + GroupID. It's a way of merging the node and group ID space without overlap.
 type LayoutID = string;
 
+//A similar implementation exists in AdjacencyMap._extractGroupedSimmpleGraph.
 export const extractSimpleGraph = (data : MapDefinition, scenarioName : ScenarioName = DEFAULT_SCENARIO_NAME) : SimpleGraph => {
 	const result : SimpleGraph = {};
 	const scenario : Scenario = data.scenarios && data.scenarios[scenarioName] ? data.scenarios[scenarioName] : {description: '', nodes: {}};
@@ -824,8 +825,41 @@ export class AdjacencyMap {
 		return this._cachedRenderEdges;
 	}
 
+	_extractGroupedSimpleGraph() : SimpleGraph {
+		//similar to extractSimpleGraph but doens't have to do the scenario
+		//overrides of nodes itself because it can use live nodes, and also it groups things based on groups.
+
+		//First figure out what each group or node's layoutID will end up as in
+		//the final layout object, so we can rewrite edges as we go.
+		const rootIDMap : {[input : LayoutID] : LayoutID} = {};
+		for (const node of Object.values(this.nodes)) {
+			rootIDMap[node._layoutID] = node._rootLayoutID;
+		}
+		for (const group of Object.values(this.groups)) {
+			rootIDMap[group._layoutID] = group._rootLayoutID;
+		}
+
+		const result : SimpleGraph = {};
+		for (const node of Object.values(this.nodes)) {
+			const rootID = rootIDMap[node._layoutID];
+			
+			//It's possible for multiple nodes to be added to the same final
+			//group, so there might already be edges.
+			if (!result[rootID]) {
+				result[rootID] = {};
+			}
+			const resultEdges = result[rootID];
+			for (const edge of node.edges) {
+				resultEdges[rootIDMap[edge.parent]] = true;
+			}
+		}
+		result[ROOT_ID] = {};
+		return result;
+	}
+
 	_ensureLayoutInfo() {
 		if (this._cachedLayoutInfo) return;
+		//TODO: swap to use this._extractGroupedSimpleGraph
 		const simpleGraph = extractSimpleGraph(this._data);
 		const longestTree = tidyLongestTree(simpleGraph);
 		const treeGraph = treeGraphFromParentGraph(longestTree);
