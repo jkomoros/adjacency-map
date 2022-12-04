@@ -1684,6 +1684,14 @@ export class AdjacencyMapGroup {
 		return this._data.description;
 	}
 
+	get tags() : TagMap {
+		let result : TagMap = {};
+		for (const node of this.directNodes) {
+			result = {...result, ...node.tags};
+		}
+		return result;
+	}
+
 	get radius() : number {
 		//TODO: more complex positioning
 		const radii = this.directNodes.map(node => node.radius);
