@@ -62,7 +62,8 @@ import {
 
 import {
 	COMBINERS,
-	DEFAULT_COMBINER
+	DEFAULT_COMBINER,
+	max
 } from './combine.js';
 
 import {
@@ -1656,5 +1657,12 @@ export class AdjacencyMapGroup {
 			this._cachedRenderEdges = renderEdges(this._map, this._rootLayoutID, this.nodes);
 		}
 		return this._cachedRenderEdges;
+	}
+
+	get radius() : number {
+		//TODO: more complex positioning
+		const radii = this.directNodes.map(node => node.radius);
+		const [result] = max(radii);
+		return result;
 	}
 }
