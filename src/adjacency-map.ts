@@ -1659,6 +1659,10 @@ export class AdjacencyMapGroup {
 		return this._cachedRenderEdges;
 	}
 
+	get displayName() : string {
+		return this._data.displayName;
+	}
+
 	get radius() : number {
 		//TODO: more complex positioning
 		const radii = this.directNodes.map(node => node.radius);
