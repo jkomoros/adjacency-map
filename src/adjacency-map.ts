@@ -9,6 +9,7 @@ import {
 	MapDefinition,
 	NodeDefinition,
 	NodeID,
+	LayoutID,
 	NodeValues,
 	RawMapDefinition,
 	SimpleGraph,
@@ -143,9 +144,6 @@ const TARGET_BUMP = 0.4;
 
 const LAYOUT_ID_GROUP_PREFIX = 'group';
 const LAYOUT_ID_NODE_PREFIX = 'node';
-
-//LayoutID is either 'node:' + NodeID or 'group:' + GroupID. It's a way of merging the node and group ID space without overlap.
-type LayoutID = string;
 
 //A similar implementation exists in AdjacencyMap._extractGroupedSimmpleGraph.
 export const extractSimpleGraph = (data : MapDefinition, scenarioName : ScenarioName = DEFAULT_SCENARIO_NAME) : SimpleGraph => {

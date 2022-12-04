@@ -332,6 +332,9 @@ export type NodeID = string;
 
 export type GroupID = string;
 
+//LayoutID is either 'node:' + NodeID or 'group:' + GroupID. It's a way of merging the node and group ID space without overlap.
+export type LayoutID = string;
+
 export type RawEdgeValue = {
 	//Any of the exlicitly enumerated properties should be added to
 	//RESERVED_EDGE_CONSTANT_NAMES
