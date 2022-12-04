@@ -155,6 +155,12 @@ export const isLayoutID = (input : string) : boolean => {
 	return false;
 };
 
+export const nodeIDFromLayoutID = (id : LayoutID) : NodeID | undefined => {
+	const prefix = LAYOUT_ID_NODE_PREFIX + ':';
+	if (!id.startsWith(prefix)) return undefined;
+	return id.slice(prefix.length);
+};
+
 //A similar implementation exists in AdjacencyMap._extractGroupedSimmpleGraph.
 export const extractSimpleGraph = (data : MapDefinition, scenarioName : ScenarioName = DEFAULT_SCENARIO_NAME) : SimpleGraph => {
 	const result : SimpleGraph = {};
