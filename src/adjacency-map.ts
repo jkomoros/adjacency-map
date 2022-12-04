@@ -1704,4 +1704,10 @@ export class AdjacencyMapGroup {
 		const [result] = colorMean(colorsAsNums);
 		return unpackColor(result);
 	}
+
+	get strokeColor() : Color {
+		const colorsAsNums = this.directNodes.map(node => packColor(node.strokeColor));
+		const [result] = colorMean(colorsAsNums);
+		return unpackColor(result);
+	}
 }
