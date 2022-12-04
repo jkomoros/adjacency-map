@@ -815,6 +815,13 @@ export class AdjacencyMap {
 		return type == LAYOUT_ID_GROUP_PREFIX ? this.group(otherID) : this.node(otherID);
 	}
 
+	//The top level layout nodes (things that are not themselves part of a group (excluding groups without items).
+	get layoutNodes() : {[id : LayoutID] : AdjacencyMapNode | AdjacencyMapGroup} {
+		const nonGroupedNodes = Object.fromEntries(Object.entries(this.nodes).filter(entry => entry[1].group == undefined));
+		const groupsWithNodes = Object.fromEntries(Object.entries(this.groups).filter(entry => entry[1].hasNodes));
+		return {...nonGroupedNodes, ...groupsWithNodes};
+	}
+
 	get edges() : ExpandedEdgeValue[] {
 		if (!this._cachedEdges) {
 			this._cachedEdges = Object.keys(this._data.nodes).map(id => this.node(id).edges).flat();
