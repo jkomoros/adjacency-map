@@ -48,7 +48,7 @@ import {
 	selectEditing,
 	selectEditableScenarios,
 	selectSelectedLayoutID,
-	selectRenderEdges
+	selectRenderGroups
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -389,7 +389,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		this._summaryValues = selectSummaryValues(state);
 		this._hoveredEdgeID = selectHoveredEdgeID(state);
 		this._showEdges = selectShowEdges(state);
-		this._renderGroups = selectRenderEdges(state);
+		this._renderGroups = selectRenderGroups(state);
 		this._showHiddenValues = selectShowHiddenValues(state);
 		this._editing = selectEditing(state);
 		this._scenarioEditable = selectCurrentScenarioEditable(state);
