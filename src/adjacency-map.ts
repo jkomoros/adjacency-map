@@ -1034,16 +1034,22 @@ const spreadBumps = (edges : RenderEdgeValue[]) : RenderEdgeValue[] => {
 	return result;
 };
 
-const edgeDefinitionHelper = (node : AdjacencyMapNode,  definition : ValueDefinition, edges : ExpandedEdgeValue[], input? : number[]) : number[] => {
+const edgeDefinitionHelper = (nodes : AdjacencyMapNode | AdjacencyMapNode[],  definition : ValueDefinition, edges : ExpandedEdgeValue[], input? : number[]) : number[] => {
+	if (!Array.isArray(nodes)) nodes = [nodes];
+	if (nodes.length == 0) throw new Error('Expect at least one node');
+	//TODO: cheat and use the first node as "primary". Ultimately we should make
+	//it so each thing it relies on uses a union of nodes.
+	const primaryNode = nodes[0];
+	const map = primaryNode._map;
 	const args : ValueDefinitionCalculationArgs = {
 		edges: edges,
 		//TODO: this.parents omits expliti root references
-		refs: node.parents.map(id => node._map.node(id).values),
-		partialResult: node.values,
-		rootValue: node._map.rootValues,
-		tags: node.tags,
-		selfTags: node._data ? node._data.tags : {},
-		definition: node._map.data
+		refs: primaryNode.parents.map(id => map.node(id).values),
+		partialResult: primaryNode.values,
+		rootValue: map.rootValues,
+		tags: primaryNode.tags,
+		selfTags: primaryNode._data ? primaryNode._data.tags : {},
+		definition: map.data
 	};
 	if (input) args.input = input;
 	const result = calculateValue(definition, args);
