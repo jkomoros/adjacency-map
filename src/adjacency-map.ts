@@ -643,6 +643,7 @@ export class AdjacencyMap {
 		//TODO: deep freeze a copy of data
 		this._data = data;
 		this._nodes = {};
+		this._groups = {};
 
 		if (scenarioName != DEFAULT_SCENARIO_NAME && !this.data.scenarios[scenarioName]) throw new Error('no such scenario');
 
