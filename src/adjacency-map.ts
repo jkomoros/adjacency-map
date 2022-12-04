@@ -622,7 +622,7 @@ const validateData = (data : MapDefinition) : void => {
 	}
 };
 
-type LayoutNode = AdjacencyMapNode | AdjacencyMapGroup;
+export type LayoutNode = AdjacencyMapNode | AdjacencyMapGroup;
 
 export class AdjacencyMap {
 	
