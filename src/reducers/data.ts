@@ -12,6 +12,7 @@ import {
 	UPDATE_HOVERED_EDGE_ID,
 	UPDATE_SELECTED_NODE_ID,
 	SET_SHOW_EDGES,
+	SET_RENDER_GROUPS,
 	UPDATE_SHOW_HIDDEN_VALUES,
 	LOAD_SCENARIOS_OVERLAYS,
 	RESET_SCENARIOS_OVERLAYS,
@@ -62,6 +63,7 @@ const INITIAL_STATE : DataState = {
 	hoveredEdgeID: undefined,
 	showHiddenValues: false,
 	showEdges: false,
+	renderGroups: true,
 	scenariosOverlays: {}
 };
 
@@ -280,6 +282,11 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			showEdges: action.on
+		};
+	case SET_RENDER_GROUPS:
+		return {
+			...state,
+			renderGroups: action.on
 		};
 	case UPDATE_SHOW_HIDDEN_VALUES:
 		return {

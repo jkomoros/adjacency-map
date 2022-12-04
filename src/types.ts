@@ -804,6 +804,7 @@ export type DataState = {
 	hoveredEdgeID?: EdgeIdentifier;
 	showHiddenValues: boolean;
 	showEdges: boolean;
+	renderGroups : boolean;
 	scenariosOverlays: ScenariosOverlays;
 }
 

@@ -9,6 +9,7 @@ export const UPDATE_HOVERED_EDGE_ID = 'UPDATE_HOVERED_EDGE_ID';
 export const UPDATE_SELECTED_NODE_ID = 'UPDATE_SELECTED_NODE_ID';
 export const UPDATE_SHOW_HIDDEN_VALUES = 'UPDATE_SHOW_HIDDEN_VALUES';
 export const SET_SHOW_EDGES = 'SET_SHOW_EDGES';
+export const SET_RENDER_GROUPS = 'SET_RENDER_GROUPS';
 
 export const LOAD_SCENARIOS_OVERLAYS = 'LOAD_SCENARIOS_OVERLAYS';
 export const RESET_SCENARIOS_OVERLAYS = 'RESET_SCENARIOS_OVERLAYS';
@@ -143,6 +144,13 @@ export const setEditing = (editing : boolean) : AnyAction => {
 	return {
 		type: SET_EDITING,
 		editing
+	};
+};
+
+export const setRenderGroups = (on : boolean) : AnyAction => {
+	return {
+		type: SET_RENDER_GROUPS,
+		on
 	};
 };
 

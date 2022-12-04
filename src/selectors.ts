@@ -36,6 +36,7 @@ export const selectHoveredLayoutID = (state : RootState) => state.data ? state.d
 export const selectHoveredEdgeID = (state : RootState) => state.data ? state.data.hoveredEdgeID : undefined;
 export const selectSelectedLayoutID = (state : RootState) => state.data ? state.data.selectedLayoutID : undefined;
 export const selectShowEdges = (state : RootState) => state.data ? state.data.showEdges : false;
+export const selectRenderEdges = (state : RootState) => state.data ? state.data.renderGroups : false;
 export const selectShowHiddenValues = (state : RootState) => state.data ? state.data.showHiddenValues : false;
 export const selectScenariosOverlays = (state : RootState) => state.data ? state.data.scenariosOverlays : {};
 export const selectDialogOpen = (state : RootState) => state.dialog ? state.dialog.open : false;
