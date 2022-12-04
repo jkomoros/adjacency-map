@@ -63,7 +63,8 @@ import {
 import {
 	COMBINERS,
 	DEFAULT_COMBINER,
-	max
+	max,
+	sum
 } from './combine.js';
 
 import {
@@ -1675,6 +1676,12 @@ export class AdjacencyMapGroup {
 		//TODO: more complex positioning
 		const radii = this.directNodes.map(node => node.radius);
 		const [result] = max(radii);
+		return result;
+	}
+
+	get strokeWidth() : number {
+		const widths = this.directNodes.map(node => node.strokeWidth);
+		const [result] = sum(widths);
 		return result;
 	}
 }
