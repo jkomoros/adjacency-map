@@ -1042,13 +1042,20 @@ const edgeDefinitionHelper = (nodes : AdjacencyMapNode | AdjacencyMapNode[],  de
 	const primaryNode = nodes[0];
 	const map = primaryNode._map;
 	const parentIDs = Object.keys(Object.fromEntries(edges.map(edge => [edge.parent, true])));
+	let allTags : TagMap = {};
+	let selfTags : TagMap = {};
+	for (const node of nodes) {
+		allTags = {...allTags, ...node.tags};
+		const nodeSelfTags = node._data ? node._data.tags : {};
+		selfTags = {...selfTags, ...nodeSelfTags};
+	}
 	const args : ValueDefinitionCalculationArgs = {
 		edges: edges,
 		refs: parentIDs.map(id => map.node(id).values),
 		partialResult: primaryNode.values,
 		rootValue: map.rootValues,
-		tags: primaryNode.tags,
-		selfTags: primaryNode._data ? primaryNode._data.tags : {},
+		tags: allTags,
+		selfTags,
 		definition: map.data
 	};
 	if (input) args.input = input;
