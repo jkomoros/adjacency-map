@@ -1063,20 +1063,23 @@ const edgeDefinitionHelper = (nodes : AdjacencyMapNode | AdjacencyMapNode[],  de
 	return result;
 };
 
-const renderEdges = (map : AdjacencyMap, source : NodeID, nodes : AdjacencyMapNode[]) : RenderEdgeValue[] => {
+const renderEdges = (map : AdjacencyMap, source : LayoutID, nodes : AdjacencyMapNode[]) : RenderEdgeValue[] => {
 	const defaultBump = 0.5;
 
 	const result : RenderEdgeValue[] = [];
 
 	if (nodes.length == 0) return [];
 	
-	const edgesByRef : {[source : NodeID]: {[edgeType : PropertyName]: {edges: ExpandedEdgeValue[], nodes: AdjacencyMapNode[]}}} = {};
+	const edgesByRef : {[source : LayoutID]: {[edgeType : PropertyName]: {edges: ExpandedEdgeValue[], nodes: AdjacencyMapNode[]}}} = {};
 	for (const node of nodes) {
 		for (const edge of node.edges) {
-			if (!edgesByRef[edge.parent]) edgesByRef[edge.parent] = {};
-			if (!edgesByRef[edge.parent][edge.type]) edgesByRef[edge.parent][edge.type] = {nodes: [], edges: []};
-			edgesByRef[edge.parent][edge.type].nodes.push(node);
-			edgesByRef[edge.parent][edge.type].edges.push(edge);
+			const parentID = map.node(edge.parent)._rootLayoutID;
+			//Skip 'internal' edges that are fully contained within this group
+			if (parentID == source) continue;
+			if (!edgesByRef[parentID]) edgesByRef[parentID] = {};
+			if (!edgesByRef[parentID][edge.type]) edgesByRef[parentID][edge.type] = {nodes: [], edges: []};
+			edgesByRef[parentID][edge.type].nodes.push(node);
+			edgesByRef[parentID][edge.type].edges.push(edge);
 		}
 	}
 	for (const [parent, edgeMap] of Object.entries(edgesByRef)) {
@@ -1416,7 +1419,7 @@ export class AdjacencyMapNode {
 	get renderEdges(): RenderEdgeValue[] {
 		if (this.group != undefined) throw new Error('Not a top level layoutNode');
 		if (!this._cachedRenderEdges) {
-			this._cachedRenderEdges = renderEdges(this._map, this.id, [this]);
+			this._cachedRenderEdges = renderEdges(this._map, this._rootLayoutID, [this]);
 		}
 		return this._cachedRenderEdges;
 	}

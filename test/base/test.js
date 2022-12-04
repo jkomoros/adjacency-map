@@ -4794,7 +4794,7 @@ describe('wrapArrays', () => {
 
 const BASE_RENDER_EDGE = {
 	opacity: 0.4,
-	parent: '',
+	parent: 'node:',
 	edges: [
 		{
 			type: 'engineering',
@@ -4806,7 +4806,7 @@ const BASE_RENDER_EDGE = {
 			implied: 0
 		}
 	],
-	source: 'a',
+	source: 'node:a',
 	width: 1.5,
 	color: color('#555'),
 	bump: 0.5

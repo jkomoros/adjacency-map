@@ -399,8 +399,8 @@ export type RenderEdgeSubEdge = {
 //The final edges to actually render, based on processing the EdgeValues for a
 //node.
 export type RenderEdgeValue = {
-	source: NodeID,
-	parent: NodeID,
+	source: LayoutID,
+	parent: LayoutID,
 	edges: RenderEdgeSubEdge[],
 	width: number,
 	opacity: number,

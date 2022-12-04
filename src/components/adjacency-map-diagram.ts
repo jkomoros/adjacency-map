@@ -142,8 +142,8 @@ class AdjacencyMapDiagram extends LitElement {
 
 	_pathForEdge(edge : RenderEdgeValue, map : AdjacencyMap) : string {
 
-		const sourceNode = map.node(edge.source);
-		const parentNode = map.node(edge.parent);
+		const sourceNode = map.layoutNode(edge.source);
+		const parentNode = map.layoutNode(edge.parent);
 		let midPoint = (sourceNode.x - parentNode.x) * edge.bump + parentNode.x;
 		let yBoost = 0.0;
 
