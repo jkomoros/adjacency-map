@@ -1580,8 +1580,7 @@ export class AdjacencyMapGroup {
 	}
 
 	get _rootLayoutID() : LayoutID {
-		//TODO: in the future when it's possible for us to have a parent group, return its _rootLayoutID if we have a parent group.
-		return this._layoutID;
+		return this.group ? this.group._rootLayoutID : this._layoutID;
 	}
 
 	get id() : GroupID {
@@ -1596,23 +1595,39 @@ export class AdjacencyMapGroup {
 		return this.nodes.length > 0;
 	}
 
+	get groupID() : GroupID | undefined {
+		return this._data.group;
+	}
+
+	get group() : AdjacencyMapGroup | null {
+		if (this.groupID == undefined) return null;
+		return this._map.group(this.groupID);
+	}
+
 	//All nodes who are descendants of this group.
 	get nodes() : AdjacencyMapNode[] {
-		//Currently this is precisely the same as directNodes, because groups cannot nest within another node... yet.
-		return this.directNodes as AdjacencyMapNode[];
+		const result : AdjacencyMapNode[] = [];
+		for (const layoutNode of this.directNodes) {
+			if (layoutNode instanceof AdjacencyMapNode) {
+				result.push(layoutNode);
+				continue;
+			}
+			result.push(...layoutNode.nodes);
+		}
+		return result;
 	}
 
 	get inGroup() : boolean {
-		return false;
+		return this.groupID != undefined;
 	}
 
 	//Only nodes whose direct parent is this group.
 	get directNodes() : LayoutNode[] {
 		if (!this._cachedDirectNodes) {
 			const result : LayoutNode[] = [];
-			for (const node of Object.values(this._map.nodes)) {
-				if (node.groupID != this.id) continue;
-				result.push(node);
+			for (const layoutNode of Object.values(this._map.layoutNodes)) {
+				if (layoutNode.groupID != this.id) continue;
+				result.push(layoutNode);
 			}
 			this._cachedDirectNodes = result;
 		}
