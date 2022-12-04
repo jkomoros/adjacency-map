@@ -2432,6 +2432,24 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('Barfs for a group with an empty name', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.groups = {
+			'': {
+				description: 'invalid'
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('Accepts a node specifying an existent group', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.nodes.a.group = 'foo';

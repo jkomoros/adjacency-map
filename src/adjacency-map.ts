@@ -520,6 +520,7 @@ const validateData = (data : MapDefinition) : void => {
 	}
 
 	for (const [groupID, groupdData] of Object.entries(data.groups)) {
+		if (groupID == '') throw new Error('Groups must have a non-empty ID');
 		//We don't need to check for overlap with normal node IDs because the node and metaNode ID space never overlaps.
 		if (!groupdData.description) throw new Error('group '+ groupID + ' has no description');
 	}
