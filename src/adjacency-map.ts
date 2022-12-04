@@ -620,6 +620,8 @@ const validateData = (data : MapDefinition) : void => {
 	}
 };
 
+type LayoutNode = AdjacencyMapNode | AdjacencyMapGroup;
+
 export class AdjacencyMap {
 	
 	_data : MapDefinition;
@@ -810,14 +812,14 @@ export class AdjacencyMap {
 		return Object.fromEntries(Object.keys(this._data.groups).map(id => [id, this.group(id)]));
 	}
 
-	layoutNode(id : LayoutID) : AdjacencyMapNode | AdjacencyMapGroup {
+	layoutNode(id : LayoutID) : LayoutNode {
 		const [type, otherID] = id.split(':');
 		if (type == undefined || otherID == undefined) throw new Error('Unxpected shape of layoutID: ' + id);
 		return type == LAYOUT_ID_GROUP_PREFIX ? this.group(otherID) : this.node(otherID);
 	}
 
 	//The top level layout nodes (things that are not themselves part of a group (excluding groups without items).
-	get layoutNodes() : {[id : LayoutID] : AdjacencyMapNode | AdjacencyMapGroup} {
+	get layoutNodes() : {[id : LayoutID] : LayoutNode} {
 		const nonGroupedNodes = Object.fromEntries(Object.entries(this.nodes).filter(entry => entry[1].group == undefined));
 		const groupsWithNodes = Object.fromEntries(Object.entries(this.groups).filter(entry => entry[1].hasNodes));
 		return {...nonGroupedNodes, ...groupsWithNodes};
