@@ -2450,12 +2450,54 @@ describe('AdjacencyMap validation', () => {
 		}
 	});
 
+	it('Barfs for a group that is a member of a non-existent group', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.groups = {
+			foo: {
+				description: 'invalid',
+				group: 'invalid'
+			}
+		};
+		const errorExpected = true;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
 	it('Accepts a node specifying an existent group', async () => {
 		const input = deepCopy(legalBaseInput);
 		input.nodes.a.group = 'foo';
 		input.groups = {
 			foo: {
 				description: 'A group'
+			}
+		};
+		const errorExpected = false;
+		const fn = () => {
+			new AdjacencyMap(input);
+		};
+		if (errorExpected) {
+			assert.throws(fn);
+		} else {
+			assert.doesNotThrow(fn);
+		}
+	});
+
+	it('Accepts a node specifying a nested group', async () => {
+		const input = deepCopy(legalBaseInput);
+		input.nodes.a.group = 'foo';
+		input.groups = {
+			foo: {
+				description: 'A group',
+				group: 'bar',
+			},
+			bar: {
+				description: 'Another group'
 			}
 		};
 		const errorExpected = false;

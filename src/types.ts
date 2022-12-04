@@ -458,12 +458,14 @@ export type NodeDefinition = {
 
 export type RawGroupDefinition = {
 	description: string,
-	displayName? : string
+	displayName? : string,
+	group? : GroupID,
 }
 
 export type GroupDefinition = {
 	description: string,
 	displayName: string
+	group? : GroupID
 }
 
 export type NodeValuesOverride = {
