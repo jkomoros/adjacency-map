@@ -1625,9 +1625,13 @@ export class AdjacencyMapGroup {
 	get directNodes() : LayoutNode[] {
 		if (!this._cachedDirectNodes) {
 			const result : LayoutNode[] = [];
-			for (const layoutNode of Object.values(this._map.layoutNodes)) {
-				if (layoutNode.groupID != this.id) continue;
-				result.push(layoutNode);
+			for (const node of Object.values(this._map.nodes)) {
+				if (node.groupID != this.id) continue;
+				result.push(node);
+			}
+			for (const group of Object.values(this._map.groups)) {
+				if (group.groupID != this.id) continue;
+				result.push(group);
 			}
 			this._cachedDirectNodes = result;
 		}
