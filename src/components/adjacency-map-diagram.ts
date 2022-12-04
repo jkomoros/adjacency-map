@@ -227,7 +227,7 @@ class AdjacencyMapDiagram extends LitElement {
 				${repeat(a.renderEdges, edge => renderEdgeStableID(edge), edge => this._svgForEdge(edge, a))}
 			</g>
 			<g>
-				${Object.values(a.layoutNodes).map(node => this._svgForNode(node))}
+				${repeat(Object.values(a.layoutNodes), node => node._layoutID, node => this._svgForNode(node))}
 			</g>
 	</svg>`;
 	}
