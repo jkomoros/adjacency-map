@@ -1069,8 +1069,6 @@ const renderEdges = (map : AdjacencyMap, source : NodeID, nodes : AdjacencyMapNo
 	const result : RenderEdgeValue[] = [];
 
 	if (nodes.length == 0) return [];
-
-	const primaryNode = nodes[0];
 	
 	const edgesByRef : {[source : NodeID]: {[edgeType : PropertyName]: ExpandedEdgeValue[]}} = {};
 	for (const node of nodes) {
@@ -1087,22 +1085,22 @@ const renderEdges = (map : AdjacencyMap, source : NodeID, nodes : AdjacencyMapNo
 			const edgeDefinition = map.data.properties[edgeType];
 			const colorDefinitionOrString = edgeDefinition.display.color == undefined ? map.data.display.edge.color : edgeDefinition.display.color;
 			const colorDefinition = wrapStringAsColor(colorDefinitionOrString);
-			const colors = edgeDefinitionHelper(primaryNode, colorDefinition, edges);
+			const colors = edgeDefinitionHelper(nodes, colorDefinition, edges);
 			const widthDefinition = edgeDefinition.display.width == undefined ? map.data.display.edge.width : edgeDefinition.display.width;
 			const clippedWidthDefinition = {
 				clip: widthDefinition,
 				low: 0.0
 			};
-			const widths = edgeDefinitionHelper(primaryNode, clippedWidthDefinition, edges);
+			const widths = edgeDefinitionHelper(nodes, clippedWidthDefinition, edges);
 			const opacityDefinition = edgeDefinition.display.opacity == undefined ? map.data.display.edge.opacity : edgeDefinition.display.opacity;
 			const clippedOpacityDefinition = {
 				clip: opacityDefinition,
 				low: 0.0,
 				high: 1.0
 			};
-			const opacities = edgeDefinitionHelper(primaryNode, clippedOpacityDefinition, edges);
+			const opacities = edgeDefinitionHelper(nodes, clippedOpacityDefinition, edges);
 			const distinctDefinition = edgeDefinition.display.distinct || map.data.display.edge.distinct;
-			const distincts = edgeDefinitionHelper(primaryNode, distinctDefinition, edges);
+			const distincts = edgeDefinitionHelper(nodes, distinctDefinition, edges);
 
 			const [wrappedColors, wrappedWidths, wrappedOpacities, wrappedDistincts] = wrapArrays(colors, widths, opacities, distincts);
 
@@ -1136,18 +1134,18 @@ const renderEdges = (map : AdjacencyMap, source : NodeID, nodes : AdjacencyMapNo
 			//We need to do edge combining.
 			const colorDefinitionOrString = map.data.display.edgeCombiner.color;
 			const colorDefinition = wrapStringAsColor(colorDefinitionOrString);
-			const colors = edgeDefinitionHelper(primaryNode, colorDefinition, [], bundledEdges.map(edge => packColor(edge.color)));
+			const colors = edgeDefinitionHelper(nodes, colorDefinition, [], bundledEdges.map(edge => packColor(edge.color)));
 			const widthDefinition = {
 				clip: map.data.display.edgeCombiner.width,
 				low: 0
 			};
-			const widths = edgeDefinitionHelper(primaryNode, widthDefinition, [], bundledEdges.map(edge => edge.width));
+			const widths = edgeDefinitionHelper(nodes, widthDefinition, [], bundledEdges.map(edge => edge.width));
 			const opacityDefinition = {
 				clip: map.data.display.edgeCombiner.opacity,
 				low: 0.0,
 				high: 1.0 
 			};
-			const opacities = edgeDefinitionHelper(primaryNode, opacityDefinition, [], bundledEdges.map(edge => edge.opacity));
+			const opacities = edgeDefinitionHelper(nodes, opacityDefinition, [], bundledEdges.map(edge => edge.opacity));
 
 			const [wrappedColors, wrappedWidths, wrappedOpacities] = wrapArrays(colors, widths, opacities);
 
@@ -1411,7 +1409,7 @@ export class AdjacencyMapNode {
 	}
 
 	get renderEdges(): RenderEdgeValue[] {
-		if (this.group != undefined) return [];
+		if (this.group != undefined) throw new Error('Not a top level layoutNode');
 		if (!this._cachedRenderEdges) {
 			this._cachedRenderEdges = renderEdges(this._map, this.id, [this]);
 		}
@@ -1606,7 +1604,7 @@ export class AdjacencyMapGroup {
 	}
 
 	get renderEdges() : RenderEdgeValue[] {
-		if (this.inGroup) return [];
+		if (this.inGroup) throw new Error('Not a top-level layoutNode');
 		if (!this._cachedRenderEdges) {
 			this._cachedRenderEdges = renderEdges(this._map, this._rootLayoutID, this.nodes);
 		}
