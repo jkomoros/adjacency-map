@@ -668,8 +668,6 @@ export class AdjacencyMap {
 		this._groups = {};
 		this._disableGroups = disableGroups;
 
-		if (this._disableGroups) console.warn('That feature is not yet implemented');
-
 		if (scenarioName != DEFAULT_SCENARIO_NAME && !this.data.scenarios[scenarioName]) throw new Error('no such scenario');
 
 		this._scenarioName = scenarioName;
@@ -817,6 +815,7 @@ export class AdjacencyMap {
 	}
 
 	group(id : GroupID) : AdjacencyMapGroup {
+		if (this.groupsDisabled) throw new Error('Groups are disabled');
 		if (!this._groups[id]) {
 			if (!this._data.groups[id]) throw new Error('ID ' + id + ' does not exist in input');
 			this._groups[id] = new AdjacencyMapGroup(this, id, this._data.groups[id]);
@@ -835,6 +834,7 @@ export class AdjacencyMap {
 	}
 
 	get groups() : {[id : GroupID] : AdjacencyMapGroup} {
+		if (this.groupsDisabled) return {};
 		//TODO: cache. Not a huge deal because the heavy lifting is cached behind group().
 		return Object.fromEntries(Object.keys(this._data.groups).map(id => [id, this.group(id)]));
 	}
@@ -847,6 +847,9 @@ export class AdjacencyMap {
 
 	//The top level layout nodes (things that are not themselves part of a group (excluding groups without items).
 	get layoutNodes() : {[id : LayoutID] : LayoutNode} {
+		if (this.groupsDisabled) {
+			return this.nodes;
+		}
 		const nonGroupedNodes = Object.fromEntries(Object.entries(this.nodes).filter(entry => !entry[1].group));
 		const groupsWithNodes = Object.fromEntries(Object.entries(this.groups).filter(entry => entry[1].hasNodes));
 		return {...nonGroupedNodes, ...groupsWithNodes};
@@ -1343,7 +1346,7 @@ export class AdjacencyMapNode {
 	}
 
 	get groupID() : GroupID | undefined {
-		return this._data?.group;
+		return this._map.groupsDisabled ? undefined : this._data?.group;
 	}
 
 	get group() : AdjacencyMapGroup | null {
