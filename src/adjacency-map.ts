@@ -149,6 +149,12 @@ const TARGET_BUMP = 0.4;
 const LAYOUT_ID_GROUP_PREFIX = 'group';
 const LAYOUT_ID_NODE_PREFIX = 'node';
 
+export const isLayoutID = (input : string) : boolean => {
+	if (input.startsWith(LAYOUT_ID_GROUP_PREFIX + ':')) return true;
+	if (input.startsWith(LAYOUT_ID_NODE_PREFIX + ':')) return true;
+	return false;
+};
+
 //A similar implementation exists in AdjacencyMap._extractGroupedSimmpleGraph.
 export const extractSimpleGraph = (data : MapDefinition, scenarioName : ScenarioName = DEFAULT_SCENARIO_NAME) : SimpleGraph => {
 	const result : SimpleGraph = {};
