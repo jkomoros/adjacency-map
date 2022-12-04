@@ -809,6 +809,12 @@ export class AdjacencyMap {
 		return Object.fromEntries(Object.keys(this._data.groups).map(id => [id, this.group(id)]));
 	}
 
+	layoutNode(id : LayoutID) : AdjacencyMapNode | AdjacencyMapGroup {
+		const [type, otherID] = id.split(':');
+		if (type == undefined || otherID == undefined) throw new Error('Unxpected shape of layoutID: ' + id);
+		return type == LAYOUT_ID_GROUP_PREFIX ? this.group(otherID) : this.node(otherID);
+	}
+
 	get edges() : ExpandedEdgeValue[] {
 		if (!this._cachedEdges) {
 			this._cachedEdges = Object.keys(this._data.nodes).map(id => this.node(id).edges).flat();
