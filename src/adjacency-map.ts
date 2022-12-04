@@ -822,7 +822,7 @@ export class AdjacencyMap {
 
 	//The top level layout nodes (things that are not themselves part of a group (excluding groups without items).
 	get layoutNodes() : {[id : LayoutID] : LayoutNode} {
-		const nonGroupedNodes = Object.fromEntries(Object.entries(this.nodes).filter(entry => entry[1].group == undefined));
+		const nonGroupedNodes = Object.fromEntries(Object.entries(this.nodes).filter(entry => !entry[1].group));
 		const groupsWithNodes = Object.fromEntries(Object.entries(this.groups).filter(entry => entry[1].hasNodes));
 		return {...nonGroupedNodes, ...groupsWithNodes};
 	}
