@@ -61,6 +61,7 @@ import {
 } from './constants.js';
 
 import {
+	colorMean,
 	COMBINERS,
 	DEFAULT_COMBINER,
 	max,
@@ -1696,5 +1697,11 @@ export class AdjacencyMapGroup {
 		const opacities = this.directNodes.map(node => node.strokeOpacity);
 		const [result] = mean(opacities);
 		return result;
+	}
+
+	get color() : Color {
+		const colorsAsNums = this.directNodes.map(node => packColor(node.color));
+		const [result] = colorMean(colorsAsNums);
+		return unpackColor(result);
 	}
 }
