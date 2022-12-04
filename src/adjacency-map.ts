@@ -155,7 +155,8 @@ export const isLayoutID = (input : string) : boolean => {
 	return false;
 };
 
-export const nodeIDFromLayoutID = (id : LayoutID) : NodeID | undefined => {
+export const nodeIDFromLayoutID = (id : LayoutID | undefined) : NodeID | undefined => {
+	if (id == undefined) return undefined;
 	const prefix = LAYOUT_ID_NODE_PREFIX + ':';
 	if (!id.startsWith(prefix)) return undefined;
 	return id.slice(prefix.length);
