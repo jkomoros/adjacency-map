@@ -1692,6 +1692,23 @@ export class AdjacencyMapGroup {
 		return result;
 	}
 
+	get values() : NodeValues {
+		const values : {[type : PropertyName]: number[]} = {};
+		for (const node of this.directNodes) {
+			for (const [key, value] of Object.entries(node.values)) {
+				if (!values[key]) values[key] = [];
+				values[key].push(value);
+			}
+		}
+		return Object.fromEntries(Object.entries(values).map(entry => {
+			const propertyDefinition = this._map.data.properties[entry[0]];
+			//TODO: allow a different combiner to be specified.
+			const finalCombiner = propertyDefinition.combine ? COMBINERS[propertyDefinition.combine] : DEFAULT_COMBINER;
+			const [result] = finalCombiner(entry[1]);
+			return [entry[0], result];
+		}));
+	}
+
 	get radius() : number {
 		//TODO: more complex positioning
 		const radii = this.directNodes.map(node => node.radius);
