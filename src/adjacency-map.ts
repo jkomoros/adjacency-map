@@ -1070,37 +1070,40 @@ const renderEdges = (map : AdjacencyMap, source : NodeID, nodes : AdjacencyMapNo
 
 	if (nodes.length == 0) return [];
 	
-	const edgesByRef : {[source : NodeID]: {[edgeType : PropertyName]: ExpandedEdgeValue[]}} = {};
+	const edgesByRef : {[source : NodeID]: {[edgeType : PropertyName]: {edges: ExpandedEdgeValue[], nodes: AdjacencyMapNode[]}}} = {};
 	for (const node of nodes) {
 		for (const edge of node.edges) {
 			if (!edgesByRef[edge.parent]) edgesByRef[edge.parent] = {};
-			if (!edgesByRef[edge.parent][edge.type]) edgesByRef[edge.parent][edge.type] = [];
-			edgesByRef[edge.parent][edge.type].push(edge);
+			if (!edgesByRef[edge.parent][edge.type]) edgesByRef[edge.parent][edge.type] = {nodes: [], edges: []};
+			edgesByRef[edge.parent][edge.type].nodes.push(node);
+			edgesByRef[edge.parent][edge.type].edges.push(edge);
 		}
 	}
 	for (const [parent, edgeMap] of Object.entries(edgesByRef)) {
 		const bundledEdges : RenderEdgeValue[] = [];
 		const resultsForRef :RenderEdgeValue[] = [];
-		for (const [edgeType, edges] of Object.entries(edgeMap)){
+		for (const [edgeType, edgeContainer] of Object.entries(edgeMap)){
+			const nodesForEdges = edgeContainer.nodes;
+			const edges = edgeContainer.edges;
 			const edgeDefinition = map.data.properties[edgeType];
 			const colorDefinitionOrString = edgeDefinition.display.color == undefined ? map.data.display.edge.color : edgeDefinition.display.color;
 			const colorDefinition = wrapStringAsColor(colorDefinitionOrString);
-			const colors = edgeDefinitionHelper(nodes, colorDefinition, edges);
+			const colors = edgeDefinitionHelper(nodesForEdges, colorDefinition, edges);
 			const widthDefinition = edgeDefinition.display.width == undefined ? map.data.display.edge.width : edgeDefinition.display.width;
 			const clippedWidthDefinition = {
 				clip: widthDefinition,
 				low: 0.0
 			};
-			const widths = edgeDefinitionHelper(nodes, clippedWidthDefinition, edges);
+			const widths = edgeDefinitionHelper(nodesForEdges, clippedWidthDefinition, edges);
 			const opacityDefinition = edgeDefinition.display.opacity == undefined ? map.data.display.edge.opacity : edgeDefinition.display.opacity;
 			const clippedOpacityDefinition = {
 				clip: opacityDefinition,
 				low: 0.0,
 				high: 1.0
 			};
-			const opacities = edgeDefinitionHelper(nodes, clippedOpacityDefinition, edges);
+			const opacities = edgeDefinitionHelper(nodesForEdges, clippedOpacityDefinition, edges);
 			const distinctDefinition = edgeDefinition.display.distinct || map.data.display.edge.distinct;
-			const distincts = edgeDefinitionHelper(nodes, distinctDefinition, edges);
+			const distincts = edgeDefinitionHelper(nodesForEdges, distinctDefinition, edges);
 
 			const [wrappedColors, wrappedWidths, wrappedOpacities, wrappedDistincts] = wrapArrays(colors, widths, opacities, distincts);
 
@@ -1130,22 +1133,24 @@ const renderEdges = (map : AdjacencyMap, source : NodeID, nodes : AdjacencyMapNo
 			}
 		}
 
+		const allNodes = Object.values(edgeMap).map(item => item.nodes).flat();
+
 		if (bundledEdges.length) {
 			//We need to do edge combining.
 			const colorDefinitionOrString = map.data.display.edgeCombiner.color;
 			const colorDefinition = wrapStringAsColor(colorDefinitionOrString);
-			const colors = edgeDefinitionHelper(nodes, colorDefinition, [], bundledEdges.map(edge => packColor(edge.color)));
+			const colors = edgeDefinitionHelper(allNodes, colorDefinition, [], bundledEdges.map(edge => packColor(edge.color)));
 			const widthDefinition = {
 				clip: map.data.display.edgeCombiner.width,
 				low: 0
 			};
-			const widths = edgeDefinitionHelper(nodes, widthDefinition, [], bundledEdges.map(edge => edge.width));
+			const widths = edgeDefinitionHelper(allNodes, widthDefinition, [], bundledEdges.map(edge => edge.width));
 			const opacityDefinition = {
 				clip: map.data.display.edgeCombiner.opacity,
 				low: 0.0,
 				high: 1.0 
 			};
-			const opacities = edgeDefinitionHelper(nodes, opacityDefinition, [], bundledEdges.map(edge => edge.opacity));
+			const opacities = edgeDefinitionHelper(allNodes, opacityDefinition, [], bundledEdges.map(edge => edge.opacity));
 
 			const [wrappedColors, wrappedWidths, wrappedOpacities] = wrapArrays(colors, widths, opacities);
 
