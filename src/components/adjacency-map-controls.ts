@@ -17,6 +17,7 @@ import {
 	removeEditingScenario,
 	resetScenariosOverlays,
 	setEditing,
+	setRenderGroups,
 	setShowEdges,
 	updateEditingScenarioDescription,
 	updateEditingScenarioName,
@@ -46,7 +47,8 @@ import {
 	selectHoveredEdgeID,
 	selectEditing,
 	selectEditableScenarios,
-	selectSelectedLayoutID
+	selectSelectedLayoutID,
+	selectRenderEdges
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -174,6 +176,9 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 	@state()
 	_showEdges : boolean;
 
+	@state()
+	_renderGroups : boolean;
+
 	static override get styles() {
 		return [
 			SharedStyles,
@@ -257,6 +262,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 				</select>` : ''}
 				<div>
 					<label for='editing'>Editing</label><input id='editing' type='checkbox' .checked=${this._editing} @change=${this._handleEditingChanged}></input>
+					<label for='groups'>Groups</label><input id='groups' type='checkbox' .checked=${this._renderGroups} @change=${this._handleRenderGroupsChanged}></input>
 					${this._editing && Object.keys(this._scenariosOverlays).length > 0 ? html`<button class='small' title='Remove all edits across all files' @click=${this._handleResetOverlaysClicked}>${DELETE_FOREVER_ICON}</button><button class='small' title='Readout changes' @click=${this._handleShowReadoutClicked}>${CODE_ICON}</button>` : ''}
 				</div>
 				${this._legalScenarioNames.length > 1 || this._editing ? html`
@@ -383,6 +389,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		this._summaryValues = selectSummaryValues(state);
 		this._hoveredEdgeID = selectHoveredEdgeID(state);
 		this._showEdges = selectShowEdges(state);
+		this._renderGroups = selectRenderEdges(state);
 		this._showHiddenValues = selectShowHiddenValues(state);
 		this._editing = selectEditing(state);
 		this._scenarioEditable = selectCurrentScenarioEditable(state);
@@ -408,6 +415,13 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		if (!(e.target instanceof HTMLInputElement)) throw new Error('not editing');
 		const inputEle : HTMLInputElement = e.target;
 		store.dispatch(setEditing(inputEle.checked));
+	}
+
+	_handleRenderGroupsChanged(e : MouseEvent) {
+		if (!e.target) throw new Error('no target');
+		if (!(e.target instanceof HTMLInputElement)) throw new Error('not editing');
+		const inputEle : HTMLInputElement = e.target;
+		store.dispatch(setRenderGroups(inputEle.checked));
 	}
 
 	_handleUpdateScenarioDescription(e : Event) {
