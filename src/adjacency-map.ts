@@ -1041,10 +1041,10 @@ const edgeDefinitionHelper = (nodes : AdjacencyMapNode | AdjacencyMapNode[],  de
 	//it so each thing it relies on uses a union of nodes.
 	const primaryNode = nodes[0];
 	const map = primaryNode._map;
+	const parentIDs = Object.keys(Object.fromEntries(edges.map(edge => [edge.parent, true])));
 	const args : ValueDefinitionCalculationArgs = {
 		edges: edges,
-		//TODO: this.parents omits expliti root references
-		refs: primaryNode.parents.map(id => map.node(id).values),
+		refs: parentIDs.map(id => map.node(id).values),
 		partialResult: primaryNode.values,
 		rootValue: map.rootValues,
 		tags: primaryNode.tags,
