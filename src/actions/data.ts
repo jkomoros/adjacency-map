@@ -33,7 +33,8 @@ import {
 
 import {
 	selectFilename,
-	selectHoveredNodeID,
+	selectHoveredLayoutID,
+	selectSelectedLayoutID,
 	selectSelectedNodeID,
 	selectLegalScenarioNames,
 	selectScale,
@@ -51,7 +52,7 @@ import {
 	EdgeIdentifier,
 	EdgeValue,
 	EdgeValueMatchID,
-	NodeID,
+	LayoutID,
 	PropertyName,
 	RootState,
 	ScenarioName,
@@ -145,9 +146,9 @@ export const setEditing = (editing : boolean) : AnyAction => {
 	};
 };
 
-export const updateHoveredNodeID =  (nodeID? : NodeID) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
+export const updateHoveredLayoutID =  (nodeID? : LayoutID) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	//This will get hit a lot so don't update state if hte nodeID hasn't changed.
-	if (selectHoveredNodeID(getState()) == nodeID) return;
+	if (selectHoveredLayoutID(getState()) == nodeID) return;
 	dispatch({
 		type: UPDATE_HOVERED_NODE_ID,
 		nodeID
@@ -165,8 +166,8 @@ export const updateHoveredEdgeID =  (edgeID? : EdgeIdentifier) : ThunkAction<voi
 	});
 };
 
-export const updateSelectedNodeID =  (nodeID? : NodeID) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
-	if (selectSelectedNodeID(getState()) == nodeID) return;
+export const updateSelectedLayoutID =  (nodeID? : LayoutID) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
+	if (selectSelectedLayoutID(getState()) == nodeID) return;
 	dispatch({
 		type: UPDATE_SELECTED_NODE_ID,
 		nodeID

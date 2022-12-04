@@ -10,9 +10,9 @@ import {
 	loadScenariosOverlays,
 	nextScenarioName,
 	previousScenarioName,
-	updateHoveredNodeID,
+	updateHoveredLayoutID,
 	updateScale,
-	updateSelectedNodeID,
+	updateSelectedLayoutID,
 	updateWithMainPageExtra
 } from "../actions/data.js";
 
@@ -22,7 +22,6 @@ import {
 	selectAdjacencyMap,
 	selectScale,
 	selectHashForCurrentState,
-	selectSelectedNodeID,
 	selectAdjacencyMapError,
 	selectScenariosOverlays,
 	selectCurrentScenarioEditedNodes,
@@ -31,7 +30,8 @@ import {
 	selectDialogKind,
 	selectDialogMessage,
 	selectCurrentScenarioOverlay,
-	selectHoveredNodeID
+	selectHoveredLayoutID,
+	selectSelectedLayoutID
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -53,6 +53,7 @@ import {
 	DataFilename,
 	DialogKind,
 	EdgeIdentifier,
+	LayoutID,
 	NodeEvent,
 	NodeID,
 	NodeValuesOverride,
@@ -120,10 +121,10 @@ class MainView extends connect(store)(PageViewElement) {
 	_hashForCurrentState : string;
 
 	@state()
-	_selectedNodeID : NodeID | undefined;
+	_selectedLayoutID : LayoutID | undefined;
 
 	@state()
-	_hoveredNodeID : NodeID | undefined;
+	_hoveredLayoutID : LayoutID | undefined;
 
 	@state()
 	_hoveredEdgeID : EdgeIdentifier | undefined;
@@ -200,7 +201,7 @@ class MainView extends connect(store)(PageViewElement) {
 		return html`
 			<div class='container'>
 					<adjacency-map-controls></adjacency-map-controls>
-					<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .hoveredEdgeID=${this._hoveredEdgeID} .hoveredNodeID=${this._hoveredNodeID} .selectedNodeID=${this._selectedNodeID} .scale=${this._scale} .editedNodes=${this._editedNodes}></adjacency-map-diagram>
+					<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .hoveredEdgeID=${this._hoveredEdgeID} .hoveredLayoutID=${this._hoveredLayoutID} .selectedLayoutID=${this._selectedLayoutID} .scale=${this._scale} .editedNodes=${this._editedNodes}></adjacency-map-diagram>
 					<dialog-element .open=${this._dialogOpen} .title=${this._dialogTitle} @dialog-should-close=${this._handleDialogShouldClose} .hideClose=${true}>${this._dialogContent}</dialog-element>
 			</div>
 		`;
@@ -213,8 +214,8 @@ class MainView extends connect(store)(PageViewElement) {
 		this._adjacencyMap = selectAdjacencyMap(state);
 		this._scale = selectScale(state);
 		this._hashForCurrentState = selectHashForCurrentState(state);
-		this._selectedNodeID = selectSelectedNodeID(state);
-		this._hoveredNodeID = selectHoveredNodeID(state);
+		this._selectedLayoutID = selectSelectedLayoutID(state);
+		this._hoveredLayoutID = selectHoveredLayoutID(state);
 		this._hoveredEdgeID = selectHoveredEdgeID(state);
 		this._dataError = selectAdjacencyMapError(state);
 		this._scenariosOverlays = selectScenariosOverlays(state);
@@ -299,11 +300,11 @@ class MainView extends connect(store)(PageViewElement) {
 	}
 
 	_handleNodeHovered(e : NodeEvent) {
-		store.dispatch(updateHoveredNodeID(e.detail.id));
+		store.dispatch(updateHoveredLayoutID(e.detail.id));
 	}
 
 	_handleNodeClicked(e : NodeEvent) {
-		store.dispatch(updateSelectedNodeID(e.detail.id));
+		store.dispatch(updateSelectedLayoutID(e.detail.id));
 	}
 
 	_handleDialogShouldClose() {

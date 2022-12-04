@@ -13,6 +13,7 @@ import {
 
 import {
 	EdgeIdentifier,
+	LayoutID,
 	NodeID,
 	RenderEdgeValue,
 	ScenarioNode,
@@ -26,7 +27,9 @@ import {
 
 import {
 	AdjacencyMap,
-	AdjacencyMapNode
+	AdjacencyMapNode,
+	isLayoutID,
+	LayoutNode
 } from '../adjacency-map.js';
 
 @customElement('adjacency-map-diagram')
@@ -36,10 +39,10 @@ class AdjacencyMapDiagram extends LitElement {
 	hoveredEdgeID : EdgeIdentifier | undefined
 
 	@property({type: String})
-	selectedNodeID : NodeID | undefined
+	selectedLayoutID : LayoutID | undefined
 
 	@property({type: String})
-	hoveredNodeID : NodeID | undefined
+	hoveredLayoutID : LayoutID | undefined
 
 	@property({type: Object})
 	map: AdjacencyMap | null
@@ -173,13 +176,13 @@ class AdjacencyMapDiagram extends LitElement {
 		return svg`<path class='${hovered ? 'hovered' : ''}' style='${styleMap(styles)}' d="${this._pathForEdge(edge, map)}" stroke-opacity='${edge.opacity}' stroke='${edge.color.rgbaStr}'><title>${this._titleForEdge(edge)}</title></path>`;
 	}
 
-	_svgForNode(node : AdjacencyMapNode) : TemplateResult {
+	_svgForNode(node : LayoutNode) : TemplateResult {
 		// color of label halo 
 		const halo = '#fff';
 		// padding around the labels
 		const haloWidth = 3;
-		const selected = this.selectedNodeID == node.id;
-		const edited = this.editedNodes && this.editedNodes[node.id] != undefined;
+		const selected = this.selectedLayoutID == node._layoutID;
+		const edited = this.editedNodes && (node instanceof AdjacencyMapNode) && this.editedNodes[node.id] != undefined;
 		const classes : ClassInfo = {
 			selected,
 			edited
@@ -187,9 +190,9 @@ class AdjacencyMapDiagram extends LitElement {
 		const styles : StyleInfo = {
 			'--stroke-width': String(node.strokeWidth) + 'px'
 		};
-		const renderText = this.hoveredNodeID == undefined ? true : this.hoveredNodeID == node.id;
+		const renderText = this.hoveredLayoutID == undefined ? true : this.hoveredLayoutID == node._layoutID;
 		return svg`<a transform="translate(${node.x},${node.y})">
-			<circle class='${classMap(classes)}' style='${styleMap(styles)}' @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} id="${'node:' + node.id}" fill="${node.color.rgbaStr}" r="${node.radius}" opacity="${node.opacity}" stroke="${node.strokeColor.rgbaStr}" stroke-opacity="${node.strokeOpacity}"></circle>
+			<circle class='${classMap(classes)}' style='${styleMap(styles)}' @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} id="${node._layoutID}" fill="${node.color.rgbaStr}" r="${node.radius}" opacity="${node.opacity}" stroke="${node.strokeColor.rgbaStr}" stroke-opacity="${node.strokeOpacity}"></circle>
 			<title>${node.fullDescription()}</title>
 			<text dy="0.32em" x="${(node.hasChildren ? -1 : 1) * node.radius * 2}" text-anchor="${node.hasChildren ? 'end' : 'start'}" paint-order="stroke" stroke="${halo}" stroke-width="${haloWidth}" opacity="${renderText ? '1.0' : '0.0'}">${node.displayName}</text>
 		</a>`;
@@ -198,14 +201,14 @@ class AdjacencyMapDiagram extends LitElement {
 	_handleSVGMouseMove(e : MouseEvent) {
 		const ele = e.composedPath()[0];
 		if (!(ele instanceof Element)) throw new Error('unexpected node');
-		const id = ele.id.includes('node:') ? ele.id.replace('node:', '') : undefined;
+		const id = isLayoutID(ele.id) ? ele.id : undefined;
 		this.dispatchEvent(new CustomEvent('node-hovered', {composed: true, detail: {id}}));
 	}
 
 	_handleSVGMouseClick(e : MouseEvent) {
 		const ele = e.composedPath()[0];
 		if (!(ele instanceof Element)) throw new Error('unexpected node');
-		const id = ele.id.includes('node:') ? ele.id.replace('node:', '') : undefined;
+		const id = isLayoutID(ele.id) ? ele.id : undefined;
 		this.dispatchEvent(new CustomEvent('node-clicked', {composed: true, detail: {id}}));
 	}
 
@@ -224,7 +227,7 @@ class AdjacencyMapDiagram extends LitElement {
 				${repeat(a.renderEdges, edge => renderEdgeStableID(edge), edge => this._svgForEdge(edge, a))}
 			</g>
 			<g>
-				${Object.values(a.nodes).map(node => this._svgForNode(node))}
+				${Object.values(a.layoutNodes).map(node => this._svgForNode(node))}
 			</g>
 	</svg>`;
 	}

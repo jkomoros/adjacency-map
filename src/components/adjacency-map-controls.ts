@@ -36,17 +36,17 @@ import {
 	selectSummaryTags,
 	selectSummaryValues,
 	selectSummaryNodeDisplayName,
-	selectSelectedNodeID,
 	selectShowHiddenValues,
 	selectCurrentScenarioEditable,
 	selectSelectedNodeFieldsEdited,
 	selectScenariosOverlays,
 	selectCurrentScenarioEditedNodes,
-	selectSummaryNodeID,
+	selectSummaryLayoutID,
 	selectShowEdges,
 	selectHoveredEdgeID,
 	selectEditing,
-	selectEditableScenarios
+	selectEditableScenarios,
+	selectSelectedLayoutID
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -68,6 +68,7 @@ import {
 	EdgeValue,
 	EdgeValueMatchID,
 	EdgeValueModificationMap,
+	LayoutID,
 	NodeID,
 	NodeValues,
 	NodeValuesOverride,
@@ -82,7 +83,8 @@ import {
 } from '../types.js';
 
 import {
-	AdjacencyMap, AdjacencyMapNode
+	AdjacencyMap,
+	AdjacencyMapNode
 } from '../adjacency-map.js';
 
 import {
@@ -146,10 +148,10 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 	_scenarioName : ScenarioName;
 
 	@state()
-	_summaryNodeID : NodeID | undefined;
+	_summaryLayoutID : LayoutID | undefined;
 
 	@state()
-	_selectedNodeID : NodeID | undefined;
+	_selectedLayoutID : LayoutID | undefined;
 
 	@state()
 	_summaryNodeDisplayName : string | undefined;
@@ -241,7 +243,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 	}
 
 	override render() : TemplateResult {
-		const node = (this._adjacencyMap && this._summaryNodeID) ? this._adjacencyMap.node(this._summaryNodeID) : null;
+		const node = this._node;
 		const [nodeEdges, nodeModMap] = node ? node.edgesForUI : [[] , {}];
 		const nodeLegalParentIDs = node ? node.legalParentIDs : {};
 		//TODO: only show ones that will ve legal to add
@@ -296,11 +298,21 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		`;
 	}
 
+	get _node() : AdjacencyMapNode | null {
+		const layoutNode = (this._adjacencyMap && this._summaryLayoutID) ? this._adjacencyMap.layoutNode(this._summaryLayoutID) : null;
+		return layoutNode instanceof AdjacencyMapNode ? layoutNode : null;
+	}
+
+	get _nodeID() : NodeID | undefined {
+		const node = this._node;
+		return node ? node.id : undefined;
+	}
+
 	_htmlForValue(propertyName : PropertyName, value : number) : TemplateResult {
 		if (!this._adjacencyMap) return html``;
 		const property = this._adjacencyMap.data.properties[propertyName];
 
-		let inner = html`${parseFloat(value.toFixed(2))}${this._scenarioEditable && this._selectedNodeID != undefined ? html`<button class='small' @click=${this._handleEditNodePropertyClicked} title='Edit this property' data-property-name=${propertyName} data-value=${String(value)}>${EDIT_ICON}</button>` : ''}`;
+		let inner = html`${parseFloat(value.toFixed(2))}${this._scenarioEditable && this._node ? html`<button class='small' @click=${this._handleEditNodePropertyClicked} title='Edit this property' data-property-name=${propertyName} data-value=${String(value)}>${EDIT_ICON}</button>` : ''}`;
 		if (this._summaryNodeEditableFields[propertyName]) {
 			inner = html`<input type='number' .value=${String(value)} @change=${this._handleUpdateNodeProperty} data-property-name=${propertyName}></input><button class='small' title='Unset this property' @click=${this._handleRemoveNodePropertyClicked} data-property-name=${propertyName}>${CANCEL_ICON}</button>`;
 		}
@@ -317,7 +329,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		const properties = node ? node._map.legalEdgePropertyNames.map(propertyName => [propertyName, node._map.data.properties[propertyName]] as [PropertyName, PropertyDefinition]) : [];
 		const nodeIDs = Object.keys(this._adjacencyMap?.data.nodes || {});
 		const allowedMissingConstants = node ? node.allowedMissingConstants(edge) : {};
-		const edgeIdentifier = edgeIdentifierFromEdge(edge, this._summaryNodeID);
+		const edgeIdentifier = edgeIdentifierFromEdge(edge, this._nodeID);
 		return html`<ul class='${isRemoved ? 'removed' : ''} ${edgeIdentifierEquivalent(this._hoveredEdgeID, edgeIdentifier) ? 'hovered' : ''}' data-index=${index} data-previous-id=${previousID} data-has-modifications=${hasModifications ? '1' : '0'} @mousemove=${this._handleEdgeMouseMove}>
 				${this._scenarioEditable ? html`<li class='buttons'>
 					${isRemoved || hasModifications ? html`<button class='small' @click=${this._handleUndoRemoveEdgeClicked} title='Undo changes'>${UNDO_ICON}</button>` : ''}
@@ -364,8 +376,8 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		this._legalScenarioNames = selectLegalScenarioNames(state);
 		this._editableScenarios = selectEditableScenarios(state);
 		this._summaryDescription = selectSummaryDescription(state);
-		this._selectedNodeID = selectSelectedNodeID(state);
-		this._summaryNodeID = selectSummaryNodeID(state);
+		this._selectedLayoutID = selectSelectedLayoutID(state);
+		this._summaryLayoutID = selectSummaryLayoutID(state);
 		this._summaryNodeDisplayName = selectSummaryNodeDisplayName(state);
 		this._summaryTags = selectSummaryTags(state);
 		this._summaryValues = selectSummaryValues(state);
@@ -387,7 +399,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		//Don't go back up and trigger for the whole controls
 		e.stopPropagation();
 		const [edge] = this._edgeActionClicked(e);
-		const identifier = edgeIdentifierFromEdge(edge, this._summaryNodeID);
+		const identifier = edgeIdentifierFromEdge(edge, this._nodeID);
 		store.dispatch(updateHoveredEdgeID(identifier));
 	}
 
@@ -428,7 +440,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		const rawIndex = ulEle.dataset.index;
 		if (!rawIndex) throw new Error('No edge index as expected');
 		const index = parseInt(rawIndex);
-		const node = (this._adjacencyMap && this._summaryNodeID) ? this._adjacencyMap.node(this._summaryNodeID) : null;
+		const node = this._node;
 		if (!node) throw new Error('No node');
 		const [edges] = node.edgesForUI;
 		const edge = edges[index];

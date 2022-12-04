@@ -5,7 +5,8 @@ import {
 } from './actions/data.js';
 
 import {
-	AdjacencyMap
+	AdjacencyMap,
+	nodeIDFromLayoutID
 } from './adjacency-map.js';
 
 import {
@@ -31,9 +32,9 @@ export const selectHash = (state : RootState) => state.app ? state.app.hash : ''
 export const selectScale = (state : RootState) => state.data ? state.data.scale : 1.0;
 export const selectScenarioName = (state : RootState) => state.data ? state.data.scenarioName : '';
 export const selectEditing = (state : RootState) => state.data ? state.data.editing : false;
-export const selectHoveredNodeID = (state : RootState) => state.data ? state.data.hoveredNodeID : undefined;
+export const selectHoveredLayoutID = (state : RootState) => state.data ? state.data.hoveredLayoutID : undefined;
 export const selectHoveredEdgeID = (state : RootState) => state.data ? state.data.hoveredEdgeID : undefined;
-export const selectSelectedNodeID = (state : RootState) => state.data ? state.data.selectedNodeID : undefined;
+export const selectSelectedLayoutID = (state : RootState) => state.data ? state.data.selectedLayoutID : undefined;
 export const selectShowEdges = (state : RootState) => state.data ? state.data.showEdges : false;
 export const selectShowHiddenValues = (state : RootState) => state.data ? state.data.showHiddenValues : false;
 export const selectScenariosOverlays = (state : RootState) => state.data ? state.data.scenariosOverlays : {};
@@ -63,9 +64,9 @@ export const selectData = createSelector(
 );
 
 //The node that should be used for the summary readout
-export const selectSummaryNodeID = createSelector(
-	selectHoveredNodeID,
-	selectSelectedNodeID,
+export const selectSummaryLayoutID = createSelector(
+	selectHoveredLayoutID,
+	selectSelectedLayoutID,
 	(hoveredNodeID, selectedNodeID) => hoveredNodeID || selectedNodeID
 );
 
@@ -129,6 +130,11 @@ export const selectCurrentScenarioEditedNodes = createSelector(
 	}
 );
 
+export const selectSelectedNodeID = createSelector(
+	selectSelectedLayoutID,
+	(layoutID) => nodeIDFromLayoutID(layoutID)
+);
+
 export const selectSelectedNodeFieldsEdited = createSelector(
 	selectCurrentScenarioEditedNodes,
 	selectSelectedNodeID,
@@ -149,45 +155,45 @@ export const selectHashForCurrentState = createSelector(
 );
 
 export const selectSummaryNodeDisplayName = createSelector(
-	selectSummaryNodeID,
+	selectSummaryLayoutID,
 	selectAdjacencyMap,
 	(nodeID, map) => {
 		if (!map) return '';
 		if (nodeID === undefined) return undefined;
-		const node = map.node(nodeID);
+		const node = map.layoutNode(nodeID);
 		return node.displayName;
 	}
 );
 
 export const selectSummaryDescription = createSelector(
-	selectSummaryNodeID,
+	selectSummaryLayoutID,
 	selectAdjacencyMap,
 	(nodeID, map) => {
 		if (!map) return '';
 		if (nodeID === undefined) return map.description;
-		const node = map.node(nodeID);
+		const node = map.layoutNode(nodeID);
 		return node.description;
 	}
 );
 
 export const selectSummaryValues = createSelector(
-	selectSummaryNodeID,
+	selectSummaryLayoutID,
 	selectAdjacencyMap,
 	(nodeID, map) => {
 		if (!map) return {};
 		if (nodeID === undefined) return map.result;
-		const node = map.node(nodeID);
+		const node = map.layoutNode(nodeID);
 		return node.values;
 	}
 );
 
 export const selectSummaryTags = createSelector(
-	selectSummaryNodeID,
+	selectSummaryLayoutID,
 	selectAdjacencyMap,
 	(nodeID, map) => {
 		if (!map) return {};
 		if (nodeID === undefined) return map.tagsUnion;
-		const node = map.node(nodeID);
+		const node = map.layoutNode(nodeID);
 		return node.tags;
 	}
 );

@@ -799,8 +799,8 @@ export type DataState = {
 	scale: number;
 	scenarioName : ScenarioName;
 	editing : boolean;
-	hoveredNodeID? : NodeID;
-	selectedNodeID? : NodeID;
+	hoveredLayoutID? : LayoutID;
+	selectedLayoutID? : LayoutID;
 	hoveredEdgeID?: EdgeIdentifier;
 	showHiddenValues: boolean;
 	showEdges: boolean;

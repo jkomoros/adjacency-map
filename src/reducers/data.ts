@@ -26,6 +26,11 @@ import {
 	REMOVE_EDITING_NODE_EDGE,
 	MODIFY_EDITING_NODE_EDGE
 } from "../actions/data.js";
+
+import {
+	nodeIDFromLayoutID
+} from "../adjacency-map.js";
+
 import { ROOT_ID } from "../constants.js";
 
 import {
@@ -52,8 +57,8 @@ const INITIAL_STATE : DataState = {
 	scale: 1.0,
 	scenarioName: '',
 	editing: true,
-	selectedNodeID: undefined,
-	hoveredNodeID: undefined,
+	selectedLayoutID: undefined,
+	hoveredLayoutID: undefined,
 	hoveredEdgeID: undefined,
 	showHiddenValues: false,
 	showEdges: false,
@@ -90,7 +95,7 @@ const prepareToEditNodeInOverlay = (state : DataState) : [ScenariosOverlays, Sce
 	const currentOverlay = state.scenariosOverlays;
 	//In most action creators, selectedNodeID is known to not be undefined. This
 	//just handles the other cases with a minimum of fuss.
-	const nodeID = state.selectedNodeID || ROOT_ID;
+	const nodeID = nodeIDFromLayoutID(state.selectedLayoutID) || ROOT_ID;
 	const result = deepCopy(currentOverlay);
 	const filenameOverlay = result[filename];
 	if (filenameOverlay == undefined) throw new Error('filename overlay unexpectededly not set');
@@ -259,7 +264,7 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 	case UPDATE_HOVERED_NODE_ID:
 		return {
 			...state,
-			hoveredNodeID: action.nodeID
+			hoveredLayoutID: action.nodeID
 		};
 	case UPDATE_HOVERED_EDGE_ID:
 		return {
@@ -269,7 +274,7 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 	case UPDATE_SELECTED_NODE_ID:
 		return {
 			...state,
-			selectedNodeID: action.nodeID
+			selectedLayoutID: action.nodeID
 		};
 	case SET_SHOW_EDGES:
 		return {
