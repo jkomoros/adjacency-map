@@ -74,10 +74,11 @@ export const selectSummaryLayoutID = createSelector(
 export const selectAdjacencyMap = createSelector(
 	selectData,
 	selectScenarioName,
-	(data, scenarioName) => {
+	selectRenderGroups,
+	(data, scenarioName, renderGroups) => {
 		if (!data) return null;
 		try {
-			return new AdjacencyMap(data, scenarioName);
+			return new AdjacencyMap(data, scenarioName, !renderGroups);
 		} catch(err) {
 			console.warn(err);
 		}
@@ -88,10 +89,11 @@ export const selectAdjacencyMap = createSelector(
 export const selectAdjacencyMapError = createSelector(
 	selectData,
 	selectScenarioName,
-	(data, scenarioName) => {
+	selectRenderGroups,
+	(data, scenarioName, renderGroups) => {
 		if (!data) return '';
 		try {
-			new AdjacencyMap(data, scenarioName);
+			new AdjacencyMap(data, scenarioName, !renderGroups);
 		} catch(err) {
 			const e = err as Error;
 			return e.message;
