@@ -64,6 +64,7 @@ import {
 	COMBINERS,
 	DEFAULT_COMBINER,
 	max,
+	mean,
 	sum
 } from './combine.js';
 
@@ -1682,6 +1683,12 @@ export class AdjacencyMapGroup {
 	get strokeWidth() : number {
 		const widths = this.directNodes.map(node => node.strokeWidth);
 		const [result] = sum(widths);
+		return result;
+	}
+
+	get opacity() : number {
+		const opacities = this.directNodes.map(node => node.opacity);
+		const [result] = mean(opacities);
 		return result;
 	}
 }
