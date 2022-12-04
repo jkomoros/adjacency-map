@@ -645,6 +645,7 @@ export class AdjacencyMap {
 	
 	_data : MapDefinition;
 	_nodes : {[id : NodeID] : AdjacencyMapNode};
+	_disableGroups : boolean;
 	_groups : {[id : GroupID] : AdjacencyMapGroup};
 	_cachedChildren : {[id : NodeID] : NodeID[]};
 	_cachedEdges : ExpandedEdgeValue[];
@@ -655,7 +656,7 @@ export class AdjacencyMap {
 	_cachedLayoutInfo : LayoutInfo;
 	_scenarioName : ScenarioName;
 
-	constructor(rawData : RawMapDefinition, scenarioName : ScenarioName = DEFAULT_SCENARIO_NAME) {
+	constructor(rawData : RawMapDefinition, scenarioName : ScenarioName = DEFAULT_SCENARIO_NAME, disableGroups = false) {
 		//will throw if invalid library is included
 		const data = processMapDefinition(rawData);
 		//Will throw if it doesn't validate
@@ -665,6 +666,9 @@ export class AdjacencyMap {
 		this._data = data;
 		this._nodes = {};
 		this._groups = {};
+		this._disableGroups = disableGroups;
+
+		if (this._disableGroups) console.warn('That feature is not yet implemented');
 
 		if (scenarioName != DEFAULT_SCENARIO_NAME && !this.data.scenarios[scenarioName]) throw new Error('no such scenario');
 
@@ -702,6 +706,10 @@ export class AdjacencyMap {
 			if (definition.hide) return false;
 			return true;
 		});
+	}
+
+	get groupsDisabled() : boolean {
+		return this._disableGroups;
 	}
 
 	get scenarioName() : ScenarioName {
