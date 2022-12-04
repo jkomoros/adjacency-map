@@ -1712,11 +1712,11 @@ export class AdjacencyMapGroup {
 	}
 
 	fullDescription(includeHidden = false) : string {
-		const subDescriptions = this.directNodes.map(node => '\t' + node.fullDescription(includeHidden));
+		const subDescriptions = this.directNodes.map(node => '\t' + node.fullDescription(includeHidden).split('\n').join('\n\t'));
 		let result = this.displayName + '\n';
 		result += this._data.description + '\n';
 		result += 'Children:\n';
-		result += subDescriptions.join('\n');
+		result += subDescriptions.join('\n\n\n');
 		return result;
 	}
 }
