@@ -1552,6 +1552,10 @@ export class AdjacencyMapGroup {
 		return this._data;
 	}
 
+	get hasNodes() : boolean {
+		return this.nodes.length > 0;
+	}
+
 	get nodes() : AdjacencyMapNode[] {
 		if (!this._cachedNodes) {
 			const result : AdjacencyMapNode[] = [];
