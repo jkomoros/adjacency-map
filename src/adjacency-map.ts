@@ -1608,6 +1608,18 @@ export class AdjacencyMapGroup {
 		return this._cachedDirectNodes;
 	}
 
+	get x() : number {
+		const pos = this._map.nodePositions[this._rootLayoutID];
+		if (!pos) throw new Error(this._rootLayoutID + ' didn\'t exist in parent');
+		return pos.x;
+	}
+
+	get y() : number {
+		const pos = this._map.nodePositions[this._rootLayoutID];
+		if (!pos) throw new Error(this._rootLayoutID + ' didn\'t exist in parent');
+		return pos.y;
+	}
+
 	get renderEdges() : RenderEdgeValue[] {
 		if (this.inGroup) throw new Error('Not a top-level layoutNode');
 		if (!this._cachedRenderEdges) {
