@@ -1552,6 +1552,7 @@ export class AdjacencyMapGroup {
 	_data : GroupDefinition;
 	_id : GroupID;
 	_cachedDirectNodes : AdjacencyMapNode[];
+	_cachedRenderEdges : RenderEdgeValue[];
 
 	constructor(map : AdjacencyMap, id : GroupID, data : GroupDefinition) {
 		this._map = map;
@@ -1586,6 +1587,10 @@ export class AdjacencyMapGroup {
 		return this.directNodes;
 	}
 
+	get inGroup() : boolean {
+		return false;
+	}
+
 	//Only nodes whose direct parent is this group.
 	get directNodes() : AdjacencyMapNode[] {
 		if (!this._cachedDirectNodes) {
@@ -1597,5 +1602,13 @@ export class AdjacencyMapGroup {
 			this._cachedDirectNodes = result;
 		}
 		return this._cachedDirectNodes;
+	}
+
+	get renderEdges() : RenderEdgeValue[] {
+		if (this.inGroup) return [];
+		if (!this._cachedRenderEdges) {
+			this._cachedRenderEdges = renderEdges(this._map, this._rootLayoutID, this.nodes);
+		}
+		return this._cachedRenderEdges;
 	}
 }
