@@ -1008,6 +1008,157 @@ const expandedEdgeToRenderEdgeSubEdge = (input : ExpandedEdgeValue) : RenderEdge
 	return result;
 };
 
+
+const spreadBumps = (edges : RenderEdgeValue[]) : RenderEdgeValue[] => {
+	const numRenderedEges = edges.filter(edge => edge.width > 0).length;
+	if (numRenderedEges< 2) return edges;
+	const totalTargetSpread = (numRenderedEges -1) * TARGET_BUMP;
+	const result : RenderEdgeValue[] = [];
+	for (let i = 0; i < edges.length; i++) {
+		const edge = edges[i];
+		let bump = 0.5;
+		if (edge.width > 0) {
+			if (totalTargetSpread > 1.0) {
+				//Spread total amount evenly
+				bump = (1 / (numRenderedEges - 1)) * i;
+			} else {
+				//Spread each one out with the ideal spacing
+				bump = i * TARGET_BUMP + (1 - totalTargetSpread) / 2;
+			}
+		}
+		result.push({
+			...edge,
+			bump
+		});
+	}
+	return result;
+};
+
+const edgeDefinitionHelper = (node : AdjacencyMapNode,  definition : ValueDefinition, edges : ExpandedEdgeValue[], input? : number[]) : number[] => {
+	const args : ValueDefinitionCalculationArgs = {
+		edges: edges,
+		//TODO: this.parents omits expliti root references
+		refs: node.parents.map(id => node._map.node(id).values),
+		partialResult: node.values,
+		rootValue: node._map.rootValues,
+		tags: node.tags,
+		selfTags: node._data ? node._data.tags : {},
+		definition: node._map.data
+	};
+	if (input) args.input = input;
+	const result = calculateValue(definition, args);
+	return result;
+};
+
+const renderEdges = (map : AdjacencyMap, source : NodeID, nodes : AdjacencyMapNode[]) : RenderEdgeValue[] => {
+	const defaultBump = 0.5;
+
+	const result : RenderEdgeValue[] = [];
+
+	if (nodes.length == 0) return [];
+
+	const primaryNode = nodes[0];
+	
+	const edgesByRef : {[source : NodeID]: {[edgeType : PropertyName]: ExpandedEdgeValue[]}} = {};
+	for (const node of nodes) {
+		for (const edge of node.edges) {
+			if (!edgesByRef[edge.parent]) edgesByRef[edge.parent] = {};
+			if (!edgesByRef[edge.parent][edge.type]) edgesByRef[edge.parent][edge.type] = [];
+			edgesByRef[edge.parent][edge.type].push(edge);
+		}
+	}
+	for (const [parent, edgeMap] of Object.entries(edgesByRef)) {
+		const bundledEdges : RenderEdgeValue[] = [];
+		const resultsForRef :RenderEdgeValue[] = [];
+		for (const [edgeType, edges] of Object.entries(edgeMap)){
+			const edgeDefinition = map.data.properties[edgeType];
+			const colorDefinitionOrString = edgeDefinition.display.color == undefined ? map.data.display.edge.color : edgeDefinition.display.color;
+			const colorDefinition = wrapStringAsColor(colorDefinitionOrString);
+			const colors = edgeDefinitionHelper(primaryNode, colorDefinition, edges);
+			const widthDefinition = edgeDefinition.display.width == undefined ? map.data.display.edge.width : edgeDefinition.display.width;
+			const clippedWidthDefinition = {
+				clip: widthDefinition,
+				low: 0.0
+			};
+			const widths = edgeDefinitionHelper(primaryNode, clippedWidthDefinition, edges);
+			const opacityDefinition = edgeDefinition.display.opacity == undefined ? map.data.display.edge.opacity : edgeDefinition.display.opacity;
+			const clippedOpacityDefinition = {
+				clip: opacityDefinition,
+				low: 0.0,
+				high: 1.0
+			};
+			const opacities = edgeDefinitionHelper(primaryNode, clippedOpacityDefinition, edges);
+			const distinctDefinition = edgeDefinition.display.distinct || map.data.display.edge.distinct;
+			const distincts = edgeDefinitionHelper(primaryNode, distinctDefinition, edges);
+
+			const [wrappedColors, wrappedWidths, wrappedOpacities, wrappedDistincts] = wrapArrays(colors, widths, opacities, distincts);
+
+			const collapsed = wrappedColors.length == 1;
+
+			for (let i = 0; i < wrappedColors.length; i++) {
+
+				const subEdges = collapsed ? edges.map(edge => expandedEdgeToRenderEdgeSubEdge(edge)): [expandedEdgeToRenderEdgeSubEdge(edges[i % edges.length])];
+
+				const renderEdge = {
+					source,
+					parent,
+					edges: subEdges,
+					width: wrappedWidths[i % wrappedWidths.length],
+					opacity: wrappedOpacities[i % wrappedOpacities.length],
+					color: unpackColor(wrappedColors[i % wrappedColors.length]),
+					bump: defaultBump,
+				};
+
+				const distinct = wrappedDistincts[i % wrappedDistincts.length];
+
+				if (distinct) {
+					resultsForRef.push(renderEdge);
+				} else {
+					bundledEdges.push(renderEdge);
+				}
+			}
+		}
+
+		if (bundledEdges.length) {
+			//We need to do edge combining.
+			const colorDefinitionOrString = map.data.display.edgeCombiner.color;
+			const colorDefinition = wrapStringAsColor(colorDefinitionOrString);
+			const colors = edgeDefinitionHelper(primaryNode, colorDefinition, [], bundledEdges.map(edge => packColor(edge.color)));
+			const widthDefinition = {
+				clip: map.data.display.edgeCombiner.width,
+				low: 0
+			};
+			const widths = edgeDefinitionHelper(primaryNode, widthDefinition, [], bundledEdges.map(edge => edge.width));
+			const opacityDefinition = {
+				clip: map.data.display.edgeCombiner.opacity,
+				low: 0.0,
+				high: 1.0 
+			};
+			const opacities = edgeDefinitionHelper(primaryNode, opacityDefinition, [], bundledEdges.map(edge => edge.opacity));
+
+			const [wrappedColors, wrappedWidths, wrappedOpacities] = wrapArrays(colors, widths, opacities);
+
+			const collapsed = wrappedColors.length == 1;
+
+			for (let i = 0; i < wrappedColors.length; i++) {
+				const renderEdge = {
+					source,
+					parent,
+					edges: collapsed ? bundledEdges.map(edge => edge.edges).flat() : bundledEdges[i % bundledEdges.length].edges,
+					width: wrappedWidths[i % wrappedWidths.length],
+					opacity: wrappedOpacities[i % wrappedOpacities.length],
+					color: unpackColor(wrappedColors[i % wrappedColors.length]),
+					bump: defaultBump,
+				};
+				resultsForRef.push(renderEdge);
+			}
+		}
+
+		result.push(...spreadBumps(resultsForRef));
+	}
+	return result;
+};
+
 export class AdjacencyMapNode {
 	_id : NodeID;
 	_map : AdjacencyMap;
@@ -1246,156 +1397,9 @@ export class AdjacencyMapNode {
 		return this._cachedEdges;
 	}
 
-	_edgeDefinitionHelper(definition : ValueDefinition, edges : ExpandedEdgeValue[], input? : number[]) : number[] {
-		const args : ValueDefinitionCalculationArgs = {
-			edges: edges,
-			//TODO: this.parents omits expliti root references
-			refs: this.parents.map(id => this._map.node(id).values),
-			partialResult: this.values,
-			rootValue: this._map.rootValues,
-			tags: this.tags,
-			selfTags: this._data ? this._data.tags : {},
-			definition: this._map.data
-		};
-		if (input) args.input = input;
-		const result = calculateValue(definition, args);
-		return result;
-	}
-
-	_spreadBumps(edges : RenderEdgeValue[]) : RenderEdgeValue[] {
-		const numRenderedEges = edges.filter(edge => edge.width > 0).length;
-		if (numRenderedEges< 2) return edges;
-		const totalTargetSpread = (numRenderedEges -1) * TARGET_BUMP;
-		const result : RenderEdgeValue[] = [];
-		for (let i = 0; i < edges.length; i++) {
-			const edge = edges[i];
-			let bump = 0.5;
-			if (edge.width > 0) {
-				if (totalTargetSpread > 1.0) {
-					//Spread total amount evenly
-					bump = (1 / (numRenderedEges - 1)) * i;
-				} else {
-					//Spread each one out with the ideal spacing
-					bump = i * TARGET_BUMP + (1 - totalTargetSpread) / 2;
-				}
-			}
-			result.push({
-				...edge,
-				bump
-			});
-		}
-		return result;
-	}
-
-	_calculateRenderEdges() : RenderEdgeValue[] {
-		
-		const defaultBump = 0.5;
-
-		const result : RenderEdgeValue[] = [];
-
-		const source = this.id;
-		
-		const edgesByRef : {[source : NodeID]: {[edgeType : PropertyName]: ExpandedEdgeValue[]}} = {};
-		for (const edge of this.edges) {
-			if (!edgesByRef[edge.parent]) edgesByRef[edge.parent] = {};
-			if (!edgesByRef[edge.parent][edge.type]) edgesByRef[edge.parent][edge.type] = [];
-			edgesByRef[edge.parent][edge.type].push(edge);
-		}
-		for (const [parent, edgeMap] of Object.entries(edgesByRef)) {
-			const bundledEdges : RenderEdgeValue[] = [];
-			const resultsForRef :RenderEdgeValue[] = [];
-			for (const [edgeType, edges] of Object.entries(edgeMap)){
-				const edgeDefinition = this._map.data.properties[edgeType];
-				const colorDefinitionOrString = edgeDefinition.display.color == undefined ? this._map.data.display.edge.color : edgeDefinition.display.color;
-				const colorDefinition = wrapStringAsColor(colorDefinitionOrString);
-				const colors = this._edgeDefinitionHelper(colorDefinition, edges);
-				const widthDefinition = edgeDefinition.display.width == undefined ? this._map.data.display.edge.width : edgeDefinition.display.width;
-				const clippedWidthDefinition = {
-					clip: widthDefinition,
-					low: 0.0
-				};
-				const widths = this._edgeDefinitionHelper(clippedWidthDefinition, edges);
-				const opacityDefinition = edgeDefinition.display.opacity == undefined ? this._map.data.display.edge.opacity : edgeDefinition.display.opacity;
-				const clippedOpacityDefinition = {
-					clip: opacityDefinition,
-					low: 0.0,
-					high: 1.0
-				};
-				const opacities = this._edgeDefinitionHelper(clippedOpacityDefinition, edges);
-				const distinctDefinition = edgeDefinition.display.distinct || this._map.data.display.edge.distinct;
-				const distincts = this._edgeDefinitionHelper(distinctDefinition, edges);
-
-				const [wrappedColors, wrappedWidths, wrappedOpacities, wrappedDistincts] = wrapArrays(colors, widths, opacities, distincts);
-
-				const collapsed = wrappedColors.length == 1;
-
-				for (let i = 0; i < wrappedColors.length; i++) {
-
-					const subEdges = collapsed ? edges.map(edge => expandedEdgeToRenderEdgeSubEdge(edge)): [expandedEdgeToRenderEdgeSubEdge(edges[i % edges.length])];
-
-					const renderEdge = {
-						source,
-						parent,
-						edges: subEdges,
-						width: wrappedWidths[i % wrappedWidths.length],
-						opacity: wrappedOpacities[i % wrappedOpacities.length],
-						color: unpackColor(wrappedColors[i % wrappedColors.length]),
-						bump: defaultBump,
-					};
-
-					const distinct = wrappedDistincts[i % wrappedDistincts.length];
-
-					if (distinct) {
-						resultsForRef.push(renderEdge);
-					} else {
-						bundledEdges.push(renderEdge);
-					}
-				}
-			}
-
-			if (bundledEdges.length) {
-				//We need to do edge combining.
-				const colorDefinitionOrString = this._map.data.display.edgeCombiner.color;
-				const colorDefinition = wrapStringAsColor(colorDefinitionOrString);
-				const colors = this._edgeDefinitionHelper(colorDefinition, [], bundledEdges.map(edge => packColor(edge.color)));
-				const widthDefinition = {
-					clip: this._map.data.display.edgeCombiner.width,
-					low: 0
-				};
-				const widths = this._edgeDefinitionHelper(widthDefinition, [], bundledEdges.map(edge => edge.width));
-				const opacityDefinition = {
-					clip: this._map.data.display.edgeCombiner.opacity,
-					low: 0.0,
-					high: 1.0 
-				};
-				const opacities = this._edgeDefinitionHelper(opacityDefinition, [], bundledEdges.map(edge => edge.opacity));
-
-				const [wrappedColors, wrappedWidths, wrappedOpacities] = wrapArrays(colors, widths, opacities);
-
-				const collapsed = wrappedColors.length == 1;
-
-				for (let i = 0; i < wrappedColors.length; i++) {
-					const renderEdge = {
-						source,
-						parent,
-						edges: collapsed ? bundledEdges.map(edge => edge.edges).flat() : bundledEdges[i % bundledEdges.length].edges,
-						width: wrappedWidths[i % wrappedWidths.length],
-						opacity: wrappedOpacities[i % wrappedOpacities.length],
-						color: unpackColor(wrappedColors[i % wrappedColors.length]),
-						bump: defaultBump,
-					};
-					resultsForRef.push(renderEdge);
-				}
-			}
-
-			result.push(...this._spreadBumps(resultsForRef));
-		}
-		return result;
-	}
-
 	get renderEdges(): RenderEdgeValue[] {
 		if (!this._cachedRenderEdges) {
-			this._cachedRenderEdges = this._calculateRenderEdges();
+			this._cachedRenderEdges = renderEdges(this._map, this.id, [this]);
 		}
 		return this._cachedRenderEdges;
 	}
