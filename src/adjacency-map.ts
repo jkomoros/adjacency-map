@@ -1534,7 +1534,7 @@ export class AdjacencyMapGroup {
 	_map : AdjacencyMap;
 	_data : GroupDefinition;
 	_id : GroupID;
-	_cachedNodes : AdjacencyMapNode[];
+	_cachedDirectNodes : AdjacencyMapNode[];
 
 	constructor(map : AdjacencyMap, id : GroupID, data : GroupDefinition) {
 		this._map = map;
@@ -1563,15 +1563,22 @@ export class AdjacencyMapGroup {
 		return this.nodes.length > 0;
 	}
 
+	//All nodes who are descendants of this group.
 	get nodes() : AdjacencyMapNode[] {
-		if (!this._cachedNodes) {
+		//Currently this is precisely the same as directNodes, because groups cannot nest within another node... yet.
+		return this.directNodes;
+	}
+
+	//Only nodes whose direct parent is this group.
+	get directNodes() : AdjacencyMapNode[] {
+		if (!this._cachedDirectNodes) {
 			const result : AdjacencyMapNode[] = [];
 			for (const node of Object.values(this._map.nodes)) {
 				if (node.groupID != this.id) continue;
 				result.push(node);
 			}
-			this._cachedNodes = result;
+			this._cachedDirectNodes = result;
 		}
-		return this._cachedNodes;
+		return this._cachedDirectNodes;
 	}
 }
