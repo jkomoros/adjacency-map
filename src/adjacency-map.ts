@@ -1691,4 +1691,10 @@ export class AdjacencyMapGroup {
 		const [result] = mean(opacities);
 		return result;
 	}
+	
+	get strokeOpacity() : number {
+		const opacities = this.directNodes.map(node => node.strokeOpacity);
+		const [result] = mean(opacities);
+		return result;
+	}
 }
