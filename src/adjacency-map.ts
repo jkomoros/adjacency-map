@@ -1574,7 +1574,7 @@ export class AdjacencyMapGroup {
 
 	get _rootLayoutID() : LayoutID {
 		//TODO: in the future when it's possible for us to have a parent group, return its _rootLayoutID if we have a parent group.
-		return this.id;
+		return this._layoutID;
 	}
 
 	get id() : GroupID {
