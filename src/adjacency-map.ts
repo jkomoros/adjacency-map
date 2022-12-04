@@ -1445,6 +1445,10 @@ export class AdjacencyMapNode {
 		return this._map._children(this.id) || [];
 	}
 
+	get hasChildren() : boolean {
+		return this.children.length > 0;
+	}
+
 	//Tags includes all of the tags included in root, included in any nodes we
 	//have an edge with .extendTags=true on, and any tags our node.data.tags
 	//includes.
@@ -1657,6 +1661,10 @@ export class AdjacencyMapGroup {
 			this._cachedRenderEdges = renderEdges(this._map, this._rootLayoutID, this.nodes);
 		}
 		return this._cachedRenderEdges;
+	}
+
+	get hasChildren() : boolean {
+		return this.nodes.some(node => node.hasChildren);
 	}
 
 	get displayName() : string {
