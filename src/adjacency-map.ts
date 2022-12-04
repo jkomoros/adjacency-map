@@ -832,7 +832,7 @@ export class AdjacencyMap {
 
 	get renderEdges() : RenderEdgeValue[] {
 		if (!this._cachedRenderEdges) {
-			this._cachedRenderEdges = Object.keys(this._data.nodes).map(id => this.node(id).renderEdges).flat();
+			this._cachedRenderEdges = Object.values(this.layoutNodes).map(layoutNode => layoutNode.renderEdges).flat();
 		}
 		return this._cachedRenderEdges;
 	}
