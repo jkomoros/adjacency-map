@@ -1411,6 +1411,7 @@ export class AdjacencyMapNode {
 	}
 
 	get renderEdges(): RenderEdgeValue[] {
+		if (this.group != undefined) return [];
 		if (!this._cachedRenderEdges) {
 			this._cachedRenderEdges = renderEdges(this._map, this.id, [this]);
 		}
