@@ -854,6 +854,9 @@ export class AdjacencyMap {
 			for (const edge of node.edges) {
 				const parentNode = this.node(edge.parent);
 				const parentRootID = parentNode._rootLayoutID;
+				//with grouping applied there might be 'internal' nodes that
+				//resolve to the same rootLayoutID. Skip them.
+				if (parentRootID == rootID) continue;
 				resultEdges[parentRootID] = true;
 			}
 		}
