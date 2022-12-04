@@ -1710,4 +1710,13 @@ export class AdjacencyMapGroup {
 		const [result] = colorMean(colorsAsNums);
 		return unpackColor(result);
 	}
+
+	fullDescription(includeHidden = false) : string {
+		const subDescriptions = this.directNodes.map(node => '\t' + node.fullDescription(includeHidden));
+		let result = this.displayName + '\n';
+		result += this._data.description + '\n';
+		result += 'Children:\n';
+		result += subDescriptions.join('\n');
+		return result;
+	}
 }
