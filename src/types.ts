@@ -328,6 +328,11 @@ export type LayoutInfo = {
 	}
 }
 
+export type CircleLayoutInfo = {
+	radius: number,
+	children: {[id : LayoutID]: {x : number, y : number}}
+};
+
 export type NodeID = string;
 
 export type GroupID = string;
