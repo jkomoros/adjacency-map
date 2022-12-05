@@ -177,8 +177,6 @@ class AdjacencyMapDiagram extends LitElement {
 	}
 
 	_svgForNode(node : LayoutNode) : TemplateResult {
-		//For now, only render top-level nodes.
-		if (node.group) return svg``;
 		// color of label halo 
 		const halo = '#fff';
 		// padding around the labels
