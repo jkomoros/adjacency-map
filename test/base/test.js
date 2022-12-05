@@ -4852,6 +4852,39 @@ describe('wrapArrays', () => {
 
 });
 
+const baseGroupInput = () => {
+	const input = deepCopy(legalBaseInput);
+	input.groups = {
+		group_1: {
+			description: 'group_1'
+		}
+	};
+	input.nodes.a.group = 'group_1';
+	input.nodes.b.group = 'group_1';
+	return input;
+};
+
+describe('groups', () => {
+	it('basic case', async () => {
+		const input = baseGroupInput();
+
+		const map = new AdjacencyMap(input);
+		const actual = Object.keys(map.layoutNodes);
+		const golden = [
+			"group_1",
+			"",
+			"a",
+			"b",
+			"c",
+			"d"
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	//TODO: test that with an empty subsidiary group it still works correctly
+
+});
+
 const BASE_RENDER_EDGE = {
 	opacity: 0.4,
 	parent: 'node:',
