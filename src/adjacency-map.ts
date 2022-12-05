@@ -42,7 +42,8 @@ import {
 	EdgeValueModificationMap,
 	ConstantType,
 	GroupID,
-	GroupDefinition
+	GroupDefinition,
+	CircleLayoutInfo
 } from './types.js';
 
 import {
@@ -64,7 +65,6 @@ import {
 	colorMean,
 	COMBINERS,
 	DEFAULT_COMBINER,
-	max,
 	mean,
 	sum
 } from './combine.js';
@@ -109,6 +109,7 @@ import {
 } from './util.js';
 
 import { TypedObject } from './typed-object.js';
+import { CirclePackLayout } from './circle-pack.js';
 
 const BASE_ALLOWED_VARIABLE_TYPES : AllowedValueDefinitionVariableTypes = {
 	edgeConstant: true,
@@ -1600,6 +1601,7 @@ export class AdjacencyMapGroup {
 	_id : GroupID;
 	_cachedDirectNodes : LayoutNode[];
 	_cachedRenderEdges : RenderEdgeValue[];
+	_cachedLayout : CircleLayoutInfo;
 
 	constructor(map : AdjacencyMap, id : GroupID, data : GroupDefinition) {
 		this._map = map;
@@ -1671,12 +1673,22 @@ export class AdjacencyMapGroup {
 	}
 
 	get x() : number {
+		if (this.group) {
+			const pos = this.group.nodePositions[this._layoutID];
+			if (!pos) throw new Error(this._layoutID + 'didn\'t exist in parent');
+			return pos.x;
+		}
 		const pos = this._map.nodePositions[this._rootLayoutID];
 		if (!pos) throw new Error(this._rootLayoutID + ' didn\'t exist in parent');
 		return pos.x;
 	}
 
 	get y() : number {
+		if (this.group) {
+			const pos = this.group.nodePositions[this._layoutID];
+			if (!pos) throw new Error(this._layoutID + 'didn\'t exist in parent');
+			return pos.y;
+		}
 		const pos = this._map.nodePositions[this._rootLayoutID];
 		if (!pos) throw new Error(this._rootLayoutID + ' didn\'t exist in parent');
 		return pos.y;
@@ -1727,11 +1739,22 @@ export class AdjacencyMapGroup {
 		}));
 	}
 
+	get nodePositions() : {[id : LayoutID]: {x : number, y : number}} {
+		if (!this._cachedLayout) this._calculateLayout();
+		return this._cachedLayout.children;
+	}
+
+	_calculateLayout() {
+		const items : {[id : LayoutID] : number} = {};
+		for (const node of this.directNodes) {
+			items[node._layoutID] = node.radius;
+		}
+		this._cachedLayout = CirclePackLayout(items);
+	}
+
 	get radius() : number {
-		//TODO: more complex positioning
-		const radii = this.directNodes.map(node => node.radius);
-		const [result] = max(radii);
-		return result;
+		if (!this._cachedLayout) this._calculateLayout();
+		return this._cachedLayout.radius;
 	}
 
 	get strokeWidth() : number {
