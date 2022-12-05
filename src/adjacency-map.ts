@@ -852,7 +852,7 @@ export class AdjacencyMap {
 			return this.nodes;
 		}
 		const groupsWithNodes = Object.fromEntries(Object.entries(this.groups).filter(entry => entry[1].hasNodes));
-		return {...this.nodes, ...groupsWithNodes};
+		return {...groupsWithNodes, ...this.nodes};
 	}
 
 	get edges() : ExpandedEdgeValue[] {
