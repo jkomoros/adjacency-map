@@ -4865,7 +4865,7 @@ const baseGroupInput = () => {
 };
 
 describe('groups', () => {
-	it('basic case', async () => {
+	it('basic case layoutNodes keys', async () => {
 		const input = baseGroupInput();
 
 		const map = new AdjacencyMap(input);
@@ -4878,6 +4878,22 @@ describe('groups', () => {
 			"c",
 			"d"
 		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('basic case radius', async () => {
+		const input = baseGroupInput();
+
+		const map = new AdjacencyMap(input);
+		const actual = Object.fromEntries(Object.entries(map.layoutNodes).map(entry => [entry[0], entry[1].radius]));
+		const golden = {
+			"group_1": 16,
+			"": 6,
+			"a": 6,
+			"b": 6,
+			"c": 6,
+			"d" : 6
+		};
 		assert.deepStrictEqual(actual, golden);
 	});
 
