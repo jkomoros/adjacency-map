@@ -1510,12 +1510,22 @@ export class AdjacencyMapNode {
 	}
 
 	get x() : number {
+		if (this.group) {
+			const pos = this.group.nodePositions[this._layoutID];
+			if (!pos) throw new Error(this._layoutID + 'didn\'t exist in parent');
+			return pos.x;
+		}
 		const pos = this._map.nodePositions[this._rootLayoutID];
 		if (!pos) throw new Error(this._rootLayoutID + ' didn\'t exist in parent');
 		return pos.x;
 	}
 
 	get y() : number {
+		if (this.group) {
+			const pos = this.group.nodePositions[this._layoutID];
+			if (!pos) throw new Error(this._layoutID + 'didn\'t exist in parent');
+			return pos.y;
+		}
 		const pos = this._map.nodePositions[this._rootLayoutID];
 		if (!pos) throw new Error(this._rootLayoutID + ' didn\'t exist in parent');
 		return pos.y;
