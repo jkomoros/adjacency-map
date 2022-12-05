@@ -1757,8 +1757,11 @@ export class AdjacencyMapGroup {
 
 	_calculateLayout() {
 		const items : {[id : LayoutID] : number} = {};
-		for (const node of this.directNodes) {
-			items[node._layoutID] = node.radius;
+		const directNodes = this.directNodes;
+		const GROUP_RADIUS_PADDING = directNodes.length <= 1 ? 10 : 2;
+		for (const node of directNodes) {
+			//TODO: allow groupPadding to be overridden by a displayValue called groupPadding.
+			items[node._layoutID] = node.radius + GROUP_RADIUS_PADDING;
 		}
 		this._cachedLayout = CirclePackLayout(items);
 	}
