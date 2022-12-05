@@ -1513,7 +1513,7 @@ export class AdjacencyMapNode {
 		if (this.group) {
 			const pos = this.group.nodePositions[this._layoutID];
 			if (!pos) throw new Error(this._layoutID + 'didn\'t exist in parent');
-			return pos.x;
+			return this.group.x + pos.x;
 		}
 		const pos = this._map.nodePositions[this._rootLayoutID];
 		if (!pos) throw new Error(this._rootLayoutID + ' didn\'t exist in parent');
@@ -1524,7 +1524,7 @@ export class AdjacencyMapNode {
 		if (this.group) {
 			const pos = this.group.nodePositions[this._layoutID];
 			if (!pos) throw new Error(this._layoutID + 'didn\'t exist in parent');
-			return pos.y;
+			return this.group.y + pos.y;
 		}
 		const pos = this._map.nodePositions[this._rootLayoutID];
 		if (!pos) throw new Error(this._rootLayoutID + ' didn\'t exist in parent');
@@ -1686,7 +1686,7 @@ export class AdjacencyMapGroup {
 		if (this.group) {
 			const pos = this.group.nodePositions[this._layoutID];
 			if (!pos) throw new Error(this._layoutID + 'didn\'t exist in parent');
-			return pos.x;
+			return this.group.x + pos.x;
 		}
 		const pos = this._map.nodePositions[this._rootLayoutID];
 		if (!pos) throw new Error(this._rootLayoutID + ' didn\'t exist in parent');
@@ -1697,7 +1697,7 @@ export class AdjacencyMapGroup {
 		if (this.group) {
 			const pos = this.group.nodePositions[this._layoutID];
 			if (!pos) throw new Error(this._layoutID + 'didn\'t exist in parent');
-			return pos.y;
+			return this.group.y + pos.y;
 		}
 		const pos = this._map.nodePositions[this._rootLayoutID];
 		if (!pos) throw new Error(this._rootLayoutID + ' didn\'t exist in parent');
