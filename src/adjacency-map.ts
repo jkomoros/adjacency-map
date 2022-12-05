@@ -651,6 +651,7 @@ export class AdjacencyMap {
 	_cachedChildren : {[id : NodeID] : NodeID[]};
 	_cachedEdges : ExpandedEdgeValue[];
 	_cachedRenderEdges : RenderEdgeValue[] | undefined;
+	_cachedLayoutNodes : {[id : LayoutID] : LayoutNode};
 	_cachedRoot : NodeValues | undefined;
 	_cachedTags : TagMap;
 	_cachedPropertyNames : PropertyName[];
@@ -848,11 +849,14 @@ export class AdjacencyMap {
 
 	//The top level layout nodes (things that are not themselves part of a group (excluding groups without items).
 	get layoutNodes() : {[id : LayoutID] : LayoutNode} {
-		if (this.groupsDisabled) {
-			return this.nodes;
+		if (!this._cachedLayoutNodes) {
+			if (this.groupsDisabled) {
+				return this.nodes;
+			}
+			const groupsWithNodes = Object.fromEntries(Object.entries(this.groups).filter(entry => entry[1].hasNodes));
+			this._cachedLayoutNodes = {...groupsWithNodes, ...this.nodes};
 		}
-		const groupsWithNodes = Object.fromEntries(Object.entries(this.groups).filter(entry => entry[1].hasNodes));
-		return {...groupsWithNodes, ...this.nodes};
+		return this._cachedLayoutNodes;
 	}
 
 	get edges() : ExpandedEdgeValue[] {
