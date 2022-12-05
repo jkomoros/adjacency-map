@@ -1764,6 +1764,8 @@ export class AdjacencyMapGroup {
 		const directNodes = this.directNodes;
 		const GROUP_RADIUS_PADDING = directNodes.length <= 1 ? 10 : 2;
 		for (const node of directNodes) {
+			//Pretend as though empty groups don't exist
+			if (node instanceof AdjacencyMapGroup && !node.hasNodes) continue;
 			//TODO: allow groupPadding to be overridden by a displayValue called groupPadding.
 			items[node._layoutID] = node.radius + GROUP_RADIUS_PADDING;
 		}
