@@ -763,6 +763,7 @@ export type MapDefinition = {
 	nodes: {
 		[id : NodeID]: NodeDefinition
 	},
+	//groups keys should be defined in order so groups that are the parents of other groups come first.
 	groups: {
 		[id : GroupID] : GroupDefinition
 	},

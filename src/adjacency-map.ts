@@ -193,6 +193,17 @@ const scenarioNameGraph = (scenarios :ScenariosDefinitionUnextended) : SimpleGra
 	return result;
 };
 
+const nestedGroupGraph = (groups : {[id : GroupID]: GroupDefinition}) : SimpleGraph => {
+	const result : SimpleGraph = {'': {}};
+	for (const [groupID, groupDefinition] of Object.entries(groups)) {
+		const children : {[otherID : GroupID] : true} = {};
+		const groupVal = groupDefinition.group || '';
+		children[groupVal] = true;
+		result[groupID] = children;
+	}
+	return result;
+};
+
 //There are a number of different ways to conveniently define edges, this
 //function converts all of them to the base type.
 const extractEdgesFromRawEdgeInput = (input? : RawEdgeInput) : EdgeValue[] => {
@@ -355,16 +366,24 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 			}
 		};
 	}
-	const groups : {[id : GroupID]: GroupDefinition} = {};
+	const unsortedGroups : {[id : GroupID]: GroupDefinition} = {};
 	for (const [id, groupNode] of Object.entries(data.groups || {})) {
 		let displayName = groupNode.displayName;
 		if (displayName == undefined) displayName = idToDisplayName(id);
 		if (displayName === '') displayName = id;
-		groups[id] = {
+		unsortedGroups[id] = {
 			...groupNode,
 			displayName
 		};
 	}
+	const groupIDsInOrder = topologicalSort(nestedGroupGraph(unsortedGroups));
+	groupIDsInOrder.reverse();
+	const groups : {[id : GroupID] : GroupDefinition} = {};
+	for (const id of groupIDsInOrder) {
+		if (!id) continue;
+		groups[id] = unsortedGroups[id];
+	}
+
 	const rawNodeDisplay = data.display?.node || {};
 	const rawEdgeDisplay = data.display?.edge || {};
 	const rawEdgeCombinerDisplay = data.display?.edgeCombiner || {};
