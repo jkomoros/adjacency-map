@@ -4864,6 +4864,31 @@ const baseGroupInput = () => {
 	return input;
 };
 
+const baseRenderEdge = {
+	bump: 0.5,
+	color: {
+		a: 1,
+		b: 85,
+		g: 85,
+		hex: "#555555FF",
+		r: 85,
+		rgb: [85, 85, 85],
+		rgbStr: "rgb(85,85,85)",
+		rgba: [85, 85, 85, 1],
+		rgbaStr: "rgba(85,85,85,1)"
+	},
+	edges: [],
+	opacity: 0.4,
+	parent: 'node:',
+	source: 'node:',
+	width: 3
+};
+
+const baseRenderEdgeSubEdge = {
+	implied: 0,
+	type: 'engineering'
+};
+
 describe('groups', () => {
 	it('basic case layoutNodes keys', async () => {
 		const input = baseGroupInput();
@@ -4894,6 +4919,49 @@ describe('groups', () => {
 			"c": 6,
 			"d" : 6
 		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('basic case renderEdges', async () => {
+		const input = baseGroupInput();
+
+		const map = new AdjacencyMap(input);
+		const actual = map.renderEdges;
+		const golden = [
+			{
+				...baseRenderEdge,
+				edges: [
+					{
+						...baseRenderEdgeSubEdge,
+						weight: 4
+					},
+					baseRenderEdgeSubEdge
+				],
+				source: 'group:group_1',
+				width: 1.5
+			},
+			{
+				...baseRenderEdge,
+				edges: [
+					baseRenderEdgeSubEdge,
+					{
+						...baseRenderEdgeSubEdge,
+						type: 'ux'
+					}
+				],
+				parent: 'group:group_1',
+				source: 'node:c'
+			},
+			{
+				...baseRenderEdge,
+				edges: [
+					baseRenderEdgeSubEdge
+				],
+				parent: 'group:group_1',
+				source: 'node:d',
+				width: 1.5
+			}
+		];
 		assert.deepStrictEqual(actual, golden);
 	});
 
