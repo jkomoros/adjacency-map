@@ -4966,6 +4966,7 @@ describe('groups', () => {
 	});
 
 	//TODO: test that with an empty subsidiary group it still works correctly
+	//TODO: test with a non-empty subsidary group it still works correctly (and graphs are topographically sorted)
 
 });
 
