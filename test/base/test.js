@@ -4965,9 +4965,9 @@ describe('groups', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	//TODO: test x/y layout of base case is correct
 	//TODO: test that with an empty subsidiary group it still works correctly
-	//TODO: test with a non-empty subsidary group it still works correctly (and graphs are topographically sorted)
-
+	//TODO: test with a non-empty subsidary group it still works correctly (and graphs are topographically sorted
 });
 
 const BASE_RENDER_EDGE = {
