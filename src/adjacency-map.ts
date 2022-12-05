@@ -70,8 +70,9 @@ import {
 } from './combine.js';
 
 import {
-	TreeLayout
-} from './tree-svg.js';
+	TreeLayout,
+	CirclePackLayout
+} from './layout.js';
 
 import {
 	calculateValue, 
@@ -109,7 +110,6 @@ import {
 } from './util.js';
 
 import { TypedObject } from './typed-object.js';
-import { CirclePackLayout } from './circle-pack.js';
 
 const BASE_ALLOWED_VARIABLE_TYPES : AllowedValueDefinitionVariableTypes = {
 	edgeConstant: true,
