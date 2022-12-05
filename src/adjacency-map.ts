@@ -851,9 +851,8 @@ export class AdjacencyMap {
 		if (this.groupsDisabled) {
 			return this.nodes;
 		}
-		const nonGroupedNodes = Object.fromEntries(Object.entries(this.nodes).filter(entry => !entry[1].group));
 		const groupsWithNodes = Object.fromEntries(Object.entries(this.groups).filter(entry => entry[1].hasNodes));
-		return {...nonGroupedNodes, ...groupsWithNodes};
+		return {...this.nodes, ...groupsWithNodes};
 	}
 
 	get edges() : ExpandedEdgeValue[] {
@@ -1454,7 +1453,8 @@ export class AdjacencyMapNode {
 	}
 
 	get renderEdges(): RenderEdgeValue[] {
-		if (this.group != undefined) throw new Error('Not a top level layoutNode');
+		//Only top-level items should return renderEdges.
+		if (this.group != undefined) return [];
 		if (!this._cachedRenderEdges) {
 			this._cachedRenderEdges = renderEdges(this._map, this._rootLayoutID, [this]);
 		}
@@ -1695,7 +1695,8 @@ export class AdjacencyMapGroup {
 	}
 
 	get renderEdges() : RenderEdgeValue[] {
-		if (this.inGroup) throw new Error('Not a top-level layoutNode');
+		//Only top-level items should return render edges
+		if (this.inGroup) return [];
 		if (!this._cachedRenderEdges) {
 			this._cachedRenderEdges = renderEdges(this._map, this._rootLayoutID, this.nodes);
 		}
