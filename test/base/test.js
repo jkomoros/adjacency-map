@@ -4922,6 +4922,38 @@ describe('groups', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('basic case x', async () => {
+		const input = baseGroupInput();
+
+		const map = new AdjacencyMap(input);
+		const actual = Object.fromEntries(Object.entries(map.layoutNodes).map(entry => [entry[0], entry[1].x]));
+		const golden = {
+			"group_1": 240,
+			"": 0,
+			"a": 232,
+			"b": 248,
+			"c": 480,
+			"d": 480
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('basic case y', async () => {
+		const input = baseGroupInput();
+
+		const map = new AdjacencyMap(input);
+		const actual = Object.fromEntries(Object.entries(map.layoutNodes).map(entry => [entry[0], entry[1].y]));
+		const golden = {
+			"group_1": 320,
+			"": 320,
+			"a": 320,
+			"b": 320,
+			"c": 160,
+			"d": 480
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
 	it('basic case renderEdges', async () => {
 		const input = baseGroupInput();
 
@@ -4965,7 +4997,6 @@ describe('groups', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
-	//TODO: test x/y layout of base case is correct
 	//TODO: test that with an empty subsidiary group it still works correctly
 	//TODO: test with a non-empty subsidary group it still works correctly (and graphs are topographically sorted
 });
