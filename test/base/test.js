@@ -4997,6 +4997,53 @@ describe('groups', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('empty leaf group renderEdges', async () => {
+		const input = baseGroupInput();
+		input.groups.group_2 = {
+			description: 'An empty group that shouldnt change anything'
+		};
+
+		const map = new AdjacencyMap(input);
+		const actual = map.renderEdges;
+		const golden = [
+			{
+				...baseRenderEdge,
+				edges: [
+					{
+						...baseRenderEdgeSubEdge,
+						weight: 4
+					},
+					baseRenderEdgeSubEdge
+				],
+				source: 'group:group_1',
+				width: 1.5
+			},
+			{
+				...baseRenderEdge,
+				edges: [
+					baseRenderEdgeSubEdge,
+					{
+						...baseRenderEdgeSubEdge,
+						type: 'ux'
+					}
+				],
+				parent: 'group:group_1',
+				source: 'node:c'
+			},
+			{
+				...baseRenderEdge,
+				edges: [
+					baseRenderEdgeSubEdge
+				],
+				parent: 'group:group_1',
+				source: 'node:d',
+				width: 1.5
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+
 	//TODO: test that with an empty subsidiary group it still works correctly
 	//TODO: test with a non-empty subsidary group it still works correctly (and graphs are topographically sorted
 });
