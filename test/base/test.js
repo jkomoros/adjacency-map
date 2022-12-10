@@ -5043,9 +5043,92 @@ describe('groups', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('non-empty stacked group renderEdges', async () => {
+		const input = baseGroupInput();
+		input.groups.group_2 = {
+			description: 'Group 2'
+		};
+		input.groups.group_1.group = 'group_2';
 
-	//TODO: test that with an empty subsidiary group it still works correctly
-	//TODO: test with a non-empty subsidary group it still works correctly (and graphs are topographically sorted
+		const map = new AdjacencyMap(input);
+		const actual = map.renderEdges;
+		const golden = [
+			{
+				...baseRenderEdge,
+				edges: [
+					{
+						...baseRenderEdgeSubEdge,
+						weight: 4
+					},
+					baseRenderEdgeSubEdge
+				],
+				source: 'group:group_2',
+				width: 1.5
+			},
+			{
+				...baseRenderEdge,
+				edges: [
+					baseRenderEdgeSubEdge,
+					{
+						...baseRenderEdgeSubEdge,
+						type: 'ux'
+					}
+				],
+				parent: 'group:group_2',
+				source: 'node:c'
+			},
+			{
+				...baseRenderEdge,
+				edges: [
+					baseRenderEdgeSubEdge
+				],
+				parent: 'group:group_2',
+				source: 'node:d',
+				width: 1.5
+			}
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('non-empty stacked group radius', async () => {
+		const input = baseGroupInput();
+		input.groups.group_2 = {
+			description: 'Group 2'
+		};
+		input.groups.group_1.group = 'group_2';
+
+		const map = new AdjacencyMap(input);
+		const actual = Object.fromEntries(Object.entries(map.layoutNodes).map(entry => [entry[0], entry[1].radius]));
+		const golden = {
+			"group_2": 26,
+			"group_1": 16,
+			"": 6,
+			"a": 6,
+			"b": 6,
+			"c": 6,
+			"d" : 6
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('non-empty stacked group topological', async () => {
+		const input = baseGroupInput();
+		//Because group_1 was already in, the default order of Object.keys(input.groups) will have group_2 second.
+		input.groups.group_2 = {
+			description: 'Group 2'
+		};
+		input.groups.group_1.group = 'group_2';
+
+		const map = new AdjacencyMap(input);
+		const actual = Object.keys(map.groups);
+		const golden = [
+			//testing that the topographical order puts the root groups first.
+			"group_2",
+			"group_1",
+		];
+		assert.deepStrictEqual(actual, golden);
+	});
+
 });
 
 const BASE_RENDER_EDGE = {
