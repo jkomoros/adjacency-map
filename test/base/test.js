@@ -3,6 +3,7 @@
 import {
 	AdjacencyMap,
 	extractSimpleGraph,
+	implyGroups,
 	processMapDefinition
 } from '../../src/adjacency-map.js';
 
@@ -5129,6 +5130,20 @@ describe('groups', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+});
+
+describe('implyGroups', () => {
+	it('complete no-op', async () => {
+		const inputGraph = {};
+		const inputLabels = {};
+		const inputGroups = {};
+
+		const [actualImpliedNodeGroups, actualFullGroups] = implyGroups(inputGraph, inputLabels, inputGroups);
+		const goldenImpliedNodeGroups = {};
+		const goldenFullGroups = {...inputGroups};
+		assert.deepStrictEqual(actualImpliedNodeGroups, goldenImpliedNodeGroups);
+		assert.deepStrictEqual(actualFullGroups, goldenFullGroups);
+	});
 });
 
 const BASE_RENDER_EDGE = {
