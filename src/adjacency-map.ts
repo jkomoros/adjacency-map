@@ -287,7 +287,8 @@ type GroupIDSet = {
 type NodeLabels = {
 	self: GroupID,
 	incoming: GroupIDSet,
-	outgoing: GroupIDSet
+	outgoing: GroupIDSet,
+	overlap: GroupIDSet
 }
 
 const accumulateGroupLabels = (nodes : NodeID[], graph : SimpleGraph, labels : {[id : NodeID] : GroupID}) : {[id : NodeID] : GroupIDSet} => {
@@ -308,15 +309,22 @@ const accumulateGroupLabels = (nodes : NodeID[], graph : SimpleGraph, labels : {
 };
 
 export const labelNodes = (graph : SimpleGraph, reverseGraph : SimpleGraph, labels: {[id : NodeID] : GroupID}) : {[id : NodeID]: NodeLabels} => {
-	const incoming = accumulateGroupLabels([ROOT_ID], graph, labels);
+	const incomingLabels = accumulateGroupLabels([ROOT_ID], graph, labels);
 	const leafIDs = Object.keys(graph).filter(id => Object.keys(graph[id]).length == 0);
-	const outgoing = accumulateGroupLabels(leafIDs, reverseGraph, labels);
+	const outgoingLabels = accumulateGroupLabels(leafIDs, reverseGraph, labels);
 	const result : {[id : NodeID] : NodeLabels} = {};
 	for (const id of Object.keys(graph)) {
+		const incoming = incomingLabels[id];
+		const outgoing = outgoingLabels[id];
+		const overlap : GroupIDSet = {};
+		for (const id of Object.keys(incoming)) {
+			if (outgoing[id]) overlap[id] = true;
+		}
 		result[id] = {
 			self: labels[id],
-			incoming: incoming[id],
-			outgoing: outgoing[id]
+			incoming,
+			outgoing,
+			overlap
 		};
 	}
 	return result;
