@@ -5298,6 +5298,62 @@ describe('implyGroups', () => {
 		assert.deepStrictEqual(actualImpliedNodeGroups, goldenImpliedNodeGroups);
 		assert.deepStrictEqual(actualFullGroups, goldenFullGroups);
 	});
+
+	it('single node double between new group implication', async () => {
+		const inputGraph = {
+			'': {
+				one : true,
+				one_b : true,
+			},
+			one_b: {
+				two: true,
+			},
+			one: {
+				two: true,
+			},
+			two: {
+				inner: true,
+			},
+			inner: {
+				three: true,
+				three_b: true
+			},
+			three: {},
+			three_b: {}
+		};
+		const inputLabels = {
+			one: 'a',
+			one_b: 'b',
+			three: 'a',
+			three_b: 'b'
+		};
+		const inputGroups = {
+			'a' : {
+				description: 'Group a',
+				displayName: 'A',
+			},
+			'b' : {
+				description: 'Group B',
+				displayName: 'B'
+			}
+		};
+
+		const [actualImpliedNodeGroups, actualFullGroups] = implyGroups(inputGraph, inputLabels, inputGroups);
+		const goldenImpliedNodeGroups = {
+			two: 'a_b',
+			inner: 'a_b',
+		};
+		const goldenFullGroups = {
+			'a': {...inputGroups.a, group: 'a_b'},
+			'b': {...inputGroups.b, group: 'a_b'},
+			'a_b': {
+				description: 'A combination of groups A, B',
+				displayName: 'A + B'
+			}
+		};
+		assert.deepStrictEqual(actualImpliedNodeGroups, goldenImpliedNodeGroups);
+		assert.deepStrictEqual(actualFullGroups, goldenFullGroups);
+	});
 });
 
 const BASE_RENDER_EDGE = {
