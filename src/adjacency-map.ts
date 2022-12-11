@@ -293,23 +293,20 @@ type NodeLabels = {
 
 const accumulateGroupLabels = (nodes : NodeID[], graph : SimpleGraph, labels : {[id : NodeID] : GroupID}) : {[id : NodeID] : GroupIDSet} => {
 	const result : {[id : NodeID] : GroupIDSet} = Object.fromEntries(Object.keys(graph).map(id => [id, {}]));
-	const nodesToVisit = nodes.map(nodeID =>({id: nodeID, set: {}}));
+	const nodesToVisit = [...nodes];
 	const visitedNodes : {[id : NodeID] : true} = {};
 	while(nodesToVisit.length) {
-		const nextNode = nodesToVisit.shift();
-		//Shouldn't happen, but just to make typescript happy it exists
-		if (!nextNode) continue;
-		const nextNodeID = nextNode.id;
+		const nextNodeID = nodesToVisit.shift() as NodeID;
 		if (visitedNodes[nextNodeID]) continue;
 		visitedNodes[nextNodeID] = true;
-		const nextNodeSet : GroupIDSet = {...nextNode.set};
+		const nextNodeSet : GroupIDSet = {...result[nextNodeID]};
 		const label = labels[nextNodeID];
 		if (label) nextNodeSet[label] = true;
 		for (const child of Object.keys(graph[nextNodeID] || {})) {
 			for (const label of Object.keys(nextNodeSet)) {
 				result[child][label] = true;
 			}
-			nodesToVisit.push({id: child, set: nextNodeSet});
+			nodesToVisit.push(child);
 		}
 	}
 	return result;
