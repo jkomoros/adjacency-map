@@ -405,8 +405,9 @@ export const implyGroups = (graph : SimpleGraph, labels : {[id : NodeID]: GroupI
 		const nodesThatNeedGroupSet = Object.fromEntries(Object.entries(labelInfo).filter(entry => !entry[1].self && entry[1].overlapAmount == 1));
 		//NOthing to set, we're done.
 		if (Object.keys(nodesThatNeedGroupSet).length == 0) break;
-		//TODO: set the group for each node
-		console.warn('Setting node groups not yet implemented');
+		for (const [nodeID, groupInfo] of Object.entries(nodesThatNeedGroupSet)) {
+			impliedNodesGroups[nodeID] = Object.keys(groupInfo.overlap).join('');
+		}
 		changesMade = true;
 	}
 	return [impliedNodesGroups, groupsResult];
