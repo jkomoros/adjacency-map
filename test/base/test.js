@@ -5175,6 +5175,38 @@ describe('implyGroups', () => {
 		assert.deepStrictEqual(actualImpliedNodeGroups, goldenImpliedNodeGroups);
 		assert.deepStrictEqual(actualFullGroups, goldenFullGroups);
 	});
+
+	it('single node direct between existing group implication', async () => {
+		const inputGraph = {
+			'': {
+				one : true,
+			},
+			one: {
+				two: true,
+			},
+			two: {
+				three: true,
+			},
+			three: {}
+		};
+		const inputLabels = {
+			one: 'a',
+			three: 'a'
+		};
+		const inputGroups = {
+			'a' : {
+				description: 'Group a'
+			}
+		};
+
+		const [actualImpliedNodeGroups, actualFullGroups] = implyGroups(inputGraph, inputLabels, inputGroups);
+		const goldenImpliedNodeGroups = {
+			two: 'a'
+		};
+		const goldenFullGroups = {...inputGroups};
+		assert.deepStrictEqual(actualImpliedNodeGroups, goldenImpliedNodeGroups);
+		assert.deepStrictEqual(actualFullGroups, goldenFullGroups);
+	});
 });
 
 const BASE_RENDER_EDGE = {
