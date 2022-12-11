@@ -5144,6 +5144,34 @@ describe('implyGroups', () => {
 		assert.deepStrictEqual(actualImpliedNodeGroups, goldenImpliedNodeGroups);
 		assert.deepStrictEqual(actualFullGroups, goldenFullGroups);
 	});
+
+	it('basic input no-op result', async () => {
+		const inputGraph = {
+			one: {
+				two: true,
+			},
+			two: {
+				three: true,
+			},
+			three: {}
+		};
+		const inputLabels = {
+			one: 'a',
+			two: 'a',
+			three: 'a'
+		};
+		const inputGroups = {
+			'a' : {
+				description: 'Group a'
+			}
+		};
+
+		const [actualImpliedNodeGroups, actualFullGroups] = implyGroups(inputGraph, inputLabels, inputGroups);
+		const goldenImpliedNodeGroups = {};
+		const goldenFullGroups = {...inputGroups};
+		assert.deepStrictEqual(actualImpliedNodeGroups, goldenImpliedNodeGroups);
+		assert.deepStrictEqual(actualFullGroups, goldenFullGroups);
+	});
 });
 
 const BASE_RENDER_EDGE = {
