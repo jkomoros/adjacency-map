@@ -343,6 +343,28 @@ const rootLabels = (groups : {[id : GroupID] : GroupDefinition}) : {[input : Gro
 	return result;
 };
 
+/*
+
+Groups are set explicitly on nodes. But imagine the case of a node not in a
+group who has one parent set to group A and one child set to Group A. It is
+fully "captured" by the group. Trying to render that graph will lead to a
+circular reference. So in caess like that, you want to capture the node into
+group A implicitly.
+
+But you can't just do that check, because imagine now that one internal node is
+two nodes in sequence. They are both still captured even though their direct
+parent or child is not captured. So now amend that algorithm to figure out the
+upstream and downstream groups of each node. You set this by flowing group
+labels forward from the root and backwards from all of hte leaves. Then, any
+node that has no group set but has the same group on the incoming and outgoing
+side is caoptured and should also have its laabel set.
+
+But that's still not sufficienct because there are multiple groups. Imagine
+nodes that are captured by both A and B. What we need to do is create a new
+group C that has children A and B. Now any nodes with A or B reduce to C, and
+the internal nodes are now fully and straightforwardly captured by C.
+
+*/
 export const implyGroups = (graph : SimpleGraph, labels : {[id : NodeID]: GroupID}, groups : {[id : GroupID] : GroupDefinition}) : [impliedNodeGroups : {[id : NodeID] : GroupID}, groups : {[id : GroupID] : GroupDefinition}] => {
 	const groupsResult = {...groups};
 	const impliedNodesGroups : {[id : NodeID]: GroupID} = {};
