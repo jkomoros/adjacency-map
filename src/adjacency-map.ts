@@ -338,8 +338,9 @@ const labelNodes = (graph : SimpleGraph, reverseGraph : SimpleGraph, labels: {[i
 
 const rootLabels = (groups : {[id : GroupID] : GroupDefinition}) : {[input : GroupID] : GroupID} => {
 	const result : {[id : GroupID] : GroupID} = {};
-	//TODO: this order might be backwards
-	for (const id of topologicalSort(nestedGroupGraph(groups))) {
+	const keysInOrder = topologicalSort(nestedGroupGraph(groups));
+	keysInOrder.reverse();
+	for (const id of keysInOrder) {
 		if (id == '') continue;
 		const group = groups[id];
 		const parentGroupID = group?.group || id;
