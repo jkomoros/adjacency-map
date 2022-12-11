@@ -5147,6 +5147,9 @@ describe('implyGroups', () => {
 
 	it('basic input no-op result', async () => {
 		const inputGraph = {
+			'': {
+				one : true,
+			},
 			one: {
 				two: true,
 			},
