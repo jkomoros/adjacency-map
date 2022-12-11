@@ -280,6 +280,27 @@ export const makeTagMap = (input : undefined | TagID | TagID[] | TagMap) : TagMa
 	return tags;
 };
 
+type GroupIDSet = {
+	[id : GroupID] : true
+}
+
+export const accumulateGroupLabels = (nodes : NodeID[], graph : SimpleGraph, labels : {[id : NodeID] : GroupID}) : {[id : NodeID] : GroupIDSet} => {
+	const result : {[id : NodeID] : GroupIDSet} = Object.fromEntries(Object.keys(graph).map(id => [id, {}]));
+	const nodesToVisit = [...nodes];
+	const visitedNodes : {[id : NodeID] : true} = {};
+	while(nodesToVisit.length) {
+		const nextNodeID = nodesToVisit.shift() as NodeID;
+		if (visitedNodes[nextNodeID]) continue;
+		visitedNodes[nextNodeID] = true;
+		const label = labels[nextNodeID] || '';
+		for (const child of Object.keys(graph[nextNodeID])) {
+			result[child][label] = true;
+			nodesToVisit.push(child);
+		}
+	}
+	return result;
+};
+
 //Does things like include libraries, convert Raw* to * (by calculateValueLeaf
 //on any constants, etc)
 //Exported for use in tests
