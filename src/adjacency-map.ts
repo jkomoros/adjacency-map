@@ -300,7 +300,7 @@ const accumulateGroupLabels = (nodes : NodeID[], graph : SimpleGraph, labels : {
 		if (visitedNodes[nextNodeID]) continue;
 		visitedNodes[nextNodeID] = true;
 		const label = labels[nextNodeID] || '';
-		for (const child of Object.keys(graph[nextNodeID])) {
+		for (const child of Object.keys(graph[nextNodeID] || {})) {
 			result[child][label] = true;
 			nodesToVisit.push(child);
 		}
