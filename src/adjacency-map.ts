@@ -395,6 +395,7 @@ export const implyGroups = (graph : SimpleGraph, labels : {[id : NodeID]: GroupI
 				//Found a node with overlap.
 				const subGroups = Object.fromEntries(Object.keys(info.overlap).map(groupID => [groupID, groupsResult[groupID]]));
 				const newGroup : GroupDefinition = {
+					implied: true,
 					description: 'A combination of groups ' + Object.values(subGroups).map(group => group.displayName).join(', '),
 					displayName: Object.values(subGroups).map(group => group.displayName).join(' + ')
 				};
@@ -516,6 +517,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		if (displayName === '') displayName = id;
 		unsortedGroups[id] = {
 			...groupNode,
+			implied: false,
 			displayName
 		};
 	}

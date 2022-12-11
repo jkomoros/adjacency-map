@@ -5292,7 +5292,8 @@ describe('implyGroups', () => {
 			'b': {...inputGroups.b, group: 'a_b'},
 			'a_b': {
 				description: 'A combination of groups A, B',
-				displayName: 'A + B'
+				displayName: 'A + B',
+				implied: true
 			}
 		};
 		assert.deepStrictEqual(actualImpliedNodeGroups, goldenImpliedNodeGroups);
@@ -5348,7 +5349,8 @@ describe('implyGroups', () => {
 			'b': {...inputGroups.b, group: 'a_b'},
 			'a_b': {
 				description: 'A combination of groups A, B',
-				displayName: 'A + B'
+				displayName: 'A + B',
+				implied: true
 			}
 		};
 		assert.deepStrictEqual(actualImpliedNodeGroups, goldenImpliedNodeGroups);

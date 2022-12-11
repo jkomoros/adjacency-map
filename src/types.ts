@@ -470,6 +470,7 @@ export type RawGroupDefinition = {
 export type GroupDefinition = {
 	description: string,
 	displayName: string
+	implied: boolean,
 	group? : GroupID
 }
 
