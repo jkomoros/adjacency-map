@@ -322,6 +322,17 @@ export const labelNodes = (graph : SimpleGraph, reverseGraph : SimpleGraph, labe
 	return result;
 };
 
+export const rootLabels = (groups : {[id : GroupID] : GroupDefinition}) : {[input : GroupID] : GroupID} => {
+	const result : {[id : GroupID] : GroupID} = {};
+	//TODO: this order might be backwards
+	for (const id of topologicalSort(nestedGroupGraph(groups))) {
+		const group = groups[id];
+		const parentGroupID = group.group || '';
+		result[id] = result[parentGroupID] || '';
+	}
+	return result;
+};
+
 //Does things like include libraries, convert Raw* to * (by calculateValueLeaf
 //on any constants, etc)
 //Exported for use in tests
