@@ -381,8 +381,23 @@ export const implyGroups = (graph : SimpleGraph, labels : {[id : NodeID]: GroupI
 			//Pick the one with the smallest amount of overlap. This will create more granular groups.
 			//If we picked the one with the largest overlap, we'd create the smallest amount of new groups.
 
-			//TODO: create the parent group.
-			console.warn('Creating new parent groups not yet implemented');
+			const minOverlap = Math.min(...Object.values(nodesThatNeedNewGroups).map(info => info.overlapAmount));
+			for (const info of Object.values(nodesThatNeedNewGroups)) {
+				//Iterate until we find a node that has the smallest overlap. Any one will do.
+				if (info.overlapAmount != minOverlap) continue;
+				//Found a node with overlap.
+				const subGroups = Object.fromEntries(Object.keys(info.overlap).map(groupID => [groupID, groupsResult[groupID]]));
+				const newGroup : GroupDefinition = {
+					description: 'A combination of groups ' + Object.values(subGroups).map(group => group.displayName).join(', '),
+					displayName: Object.values(subGroups).map(group => group.displayName).join(' + ')
+				};
+				const newGroupID = Object.keys(subGroups).join('_');
+				if (groupsResult[newGroupID]) throw new Error('Implied group ID already existed');
+				groupsResult[newGroupID] = newGroup;
+				for (const subGroupID of Object.keys(subGroups)) {
+					groupsResult[subGroupID] = {...groupsResult[subGroupID], group: newGroupID};
+				}
+			}
 			changesMade = true;
 			continue;
 		}
