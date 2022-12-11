@@ -1219,6 +1219,55 @@ const data : RawMapDefinition = {
 
 Tags are also included in a node's tags if from any node it has an edge to whose definition sets extendTags: true.
 
+## Groups
+
+Sometimes you want multiple notional nodes to display as though they are bundled together. The concept of `groups` allows this.
+
+Your MapDefinition must define any group that nodes might nest within. 
+
+Each node can optionally define a group that it should be grouped within.
+
+Groups can also define that they are a sub-group of a larger group.
+
+Any time nodes are grouped together, all of their edges are rendered going into the group, with edges being combined using the combiner logic. Edges that are between nodes within the group are elided and not rendered.
+
+```
+const data : RawMapDefinition = {
+    //...
+    groups: {
+        group_a: {
+            description: 'Group A',
+            //If displayName is provided it will be used in the UI instead of the group ID
+            displayName: 'A'
+        },
+        group_b: {
+            description: 'Group b nests within group A'
+            //Groups can nest inside of other groups.
+            group: 'group_a'
+        }
+    }
+    nodes: {
+        a: {
+            //...
+            group: 'group_b'
+            //...
+        },
+        b: {
+            //...
+            group: 'group_a'
+            //...
+        }
+    }
+    //...
+}
+```
+
+Any group that has no nodes in it will not be displayed.
+
+There is a toggle in the UI to toggle on and off rendering nodes all individually or in groups.
+
+Note that there are cases where nodes might be implied to be in a group even though they were not explicitly set. For example, imagine a graph of `A -> B -> C`. A and C are explitiy in `group_1`, but B isn't. B is implied to be in `group_1` because there is no way to render B withiout being in the group, too. Note that in some cases whole new super-set groups might be implicitly created to allow implying nodes into a supergroup.
+
 ## Libraries
 
 Properties and display values can be finicky to define and compose. Libraries allow a definition to load in pre-defined properties and display configurations to use as a base.
