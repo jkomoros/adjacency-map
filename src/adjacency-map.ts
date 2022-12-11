@@ -284,7 +284,13 @@ type GroupIDSet = {
 	[id : GroupID] : true
 }
 
-export const accumulateGroupLabels = (nodes : NodeID[], graph : SimpleGraph, labels : {[id : NodeID] : GroupID}) : {[id : NodeID] : GroupIDSet} => {
+type NodeLabels = {
+	self: GroupID,
+	incoming: GroupIDSet,
+	outgoing: GroupIDSet
+}
+
+const accumulateGroupLabels = (nodes : NodeID[], graph : SimpleGraph, labels : {[id : NodeID] : GroupID}) : {[id : NodeID] : GroupIDSet} => {
 	const result : {[id : NodeID] : GroupIDSet} = Object.fromEntries(Object.keys(graph).map(id => [id, {}]));
 	const nodesToVisit = [...nodes];
 	const visitedNodes : {[id : NodeID] : true} = {};
@@ -297,6 +303,21 @@ export const accumulateGroupLabels = (nodes : NodeID[], graph : SimpleGraph, lab
 			result[child][label] = true;
 			nodesToVisit.push(child);
 		}
+	}
+	return result;
+};
+
+export const labelNodes = (graph : SimpleGraph, reverseGraph : SimpleGraph, labels: {[id : NodeID] : GroupID}) : {[id : NodeID]: NodeLabels} => {
+	const incoming = accumulateGroupLabels([ROOT_ID], graph, labels);
+	const leafIDs = Object.keys(graph).filter(id => Object.keys(graph[id]).length == 0);
+	const outgoing = accumulateGroupLabels(leafIDs, reverseGraph, labels);
+	const result : {[id : NodeID] : NodeLabels} = {};
+	for (const id of Object.keys(graph)) {
+		result[id] = {
+			self: labels[id],
+			incoming: incoming[id],
+			outgoing: outgoing[id]
+		};
 	}
 	return result;
 };
