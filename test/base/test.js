@@ -5165,7 +5165,8 @@ describe('implyGroups', () => {
 		};
 		const inputGroups = {
 			'a' : {
-				description: 'Group a'
+				description: 'Group a',
+				displayName: 'A'
 			}
 		};
 
@@ -5195,7 +5196,8 @@ describe('implyGroups', () => {
 		};
 		const inputGroups = {
 			'a' : {
-				description: 'Group a'
+				description: 'Group a',
+				displayName: 'A'
 			}
 		};
 
@@ -5230,7 +5232,8 @@ describe('implyGroups', () => {
 		};
 		const inputGroups = {
 			'a' : {
-				description: 'Group a'
+				description: 'Group a',
+				displayName: 'A'
 			}
 		};
 
