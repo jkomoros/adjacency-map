@@ -371,7 +371,8 @@ export const implyGroups = (graph : SimpleGraph, labels : {[id : NodeID]: GroupI
 	while (changesMade) {
 		changesMade = false;
 		const rootLabelsMap = rootLabels(groupsResult);
-		const rootedLabels = Object.fromEntries(Object.entries(labels).map(entry => [entry[0], rootLabelsMap[entry[1]]]));
+		const effectiveLabels = {...labels, ...impliedNodesGroups};
+		const rootedLabels = Object.fromEntries(Object.entries(effectiveLabels).map(entry => [entry[0], rootLabelsMap[entry[1]]]));
 		const labelInfo = labelNodes(graph, reverseGraph, rootedLabels);
 		//Find the nodes that don't have a group set explicitly and have an
 		//overlap of 2 or greater. These are the ones that need a new group
