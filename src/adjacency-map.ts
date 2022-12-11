@@ -404,6 +404,9 @@ export const implyGroups = (graph : SimpleGraph, labels : {[id : NodeID]: GroupI
 				for (const subGroupID of Object.keys(subGroups)) {
 					groupsResult[subGroupID] = {...groupsResult[subGroupID], group: newGroupID};
 				}
+				//We only want to process one node, we've now made a change that
+				//should reduce the overall problem and can run it again.
+				break;
 			}
 			changesMade = true;
 			continue;
