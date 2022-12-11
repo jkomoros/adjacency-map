@@ -287,9 +287,7 @@ type GroupIDSet = {
 
 type NodeLabels = {
 	self: GroupID,
-	//TODO: no need to store incoming/outgoing
-	incoming: GroupIDSet,
-	outgoing: GroupIDSet,
+	overlapAmount : number,
 	overlap: GroupIDSet
 }
 
@@ -324,9 +322,8 @@ const labelNodes = (graph : SimpleGraph, reverseGraph : SimpleGraph, labels: {[i
 		}
 		result[id] = {
 			self: labels[id],
-			incoming,
-			outgoing,
-			overlap
+			overlap,
+			overlapAmount: Object.keys(overlap).length
 		};
 	}
 	return result;
@@ -378,7 +375,7 @@ export const implyGroups = (graph : SimpleGraph, labels : {[id : NodeID]: GroupI
 		//Find the nodes that don't have a group set explicitly and have an
 		//overlap of 2 or greater. These are the ones that need a new group
 		//created.
-		const nodesThatNeedNewGroups = Object.fromEntries(Object.entries(labelInfo).filter(entry => !entry[1].self && Object.keys(entry[1].overlap).length >= 2));
+		const nodesThatNeedNewGroups = Object.fromEntries(Object.entries(labelInfo).filter(entry => !entry[1].self && entry[1].overlapAmount >= 2));
 		if (Object.keys(nodesThatNeedNewGroups).length > 0) {
 			//We neeed to create a new group
 			//Pick the one with the smallest amount of overlap. This will create more granular groups.
@@ -390,7 +387,7 @@ export const implyGroups = (graph : SimpleGraph, labels : {[id : NodeID]: GroupI
 			continue;
 		}
 		//We just need to set everything without a label with an overlap to that group ID.
-		const nodesThatNeedGroupSet = Object.fromEntries(Object.entries(labelInfo).filter(entry => !entry[1].self && Object.keys(entry[1].overlap).length == 1));
+		const nodesThatNeedGroupSet = Object.fromEntries(Object.entries(labelInfo).filter(entry => !entry[1].self && entry[1].overlapAmount == 1));
 		//NOthing to set, we're done.
 		if (Object.keys(nodesThatNeedGroupSet).length == 0) break;
 		//TODO: set the group for each node
