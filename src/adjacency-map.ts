@@ -811,6 +811,8 @@ export class AdjacencyMap {
 	_data : MapDefinition;
 	_nodes : {[id : NodeID] : AdjacencyMapNode};
 	_disableGroups : boolean;
+	_fullGroupsData : {[id : GroupID] : GroupDefinition} | undefined;
+	_impliedNodeGroups : {[id : NodeID] : GroupID} | undefined;
 	_groups : {[id : GroupID] : AdjacencyMapGroup};
 	_cachedChildren : {[id : NodeID] : NodeID[]};
 	_cachedEdges : ExpandedEdgeValue[];
@@ -937,6 +939,8 @@ export class AdjacencyMap {
 		const toScenario = this.scenario;
 		if (fromScenario.nodes[ROOT_ID] || toScenario.nodes[ROOT_ID]) this._cachedRoot = undefined;
 		this._cachedRenderEdges = undefined;
+		this._fullGroupsData = undefined;
+		this._impliedNodeGroups = undefined;
 		for (const node of Object.values(this._nodes)) {
 			node._scenarioChanged();
 		}
@@ -980,11 +984,37 @@ export class AdjacencyMap {
 		return this._nodes[id];
 	}
 
+	_ensureGroupsImplication() {
+		if (this._fullGroupsData && this._impliedNodeGroups) return;
+		const graph = extractSimpleGraph(this._data, this._scenarioName);
+		const labels : {[id : NodeID] : GroupID} = {};
+		for (const [nodeID, nodeData] of Object.entries(this._data.nodes)) {
+			//TODO: include any scenario group overriding when that exists
+			if (nodeData.group) labels[nodeID] = nodeData.group;
+		}
+		const groups = this._data.groups;
+		const [impliedNodeGroups, fullGroups] = implyGroups(graph, labels, groups);
+		this._fullGroupsData = fullGroups;
+		this._impliedNodeGroups = impliedNodeGroups;
+	}
+
+	get impliedNodeGroups() : {[id : NodeID] : GroupID} {
+		this._ensureGroupsImplication();
+		if (!this._impliedNodeGroups) throw new Error('Unexpected missing implied node groups');
+		return this._impliedNodeGroups;
+	}
+
+	get _groupsData() : {[id : GroupID]: GroupDefinition} {
+		this._ensureGroupsImplication();
+		if (!this._fullGroupsData) throw new Error('Unexpectedly full groups was undefined');
+		return this._fullGroupsData;
+	}
+
 	group(id : GroupID) : AdjacencyMapGroup {
 		if (this.groupsDisabled) throw new Error('Groups are disabled');
 		if (!this._groups[id]) {
-			if (!this._data.groups[id]) throw new Error('ID ' + id + ' does not exist in input');
-			this._groups[id] = new AdjacencyMapGroup(this, id, this._data.groups[id]);
+			if (!this._groupsData[id]) throw new Error('ID ' + id + ' does not exist in input');
+			this._groups[id] = new AdjacencyMapGroup(this, id, this._groupsData[id]);
 		}
 		return this._groups[id];
 	}
@@ -1002,7 +1032,7 @@ export class AdjacencyMap {
 	get groups() : {[id : GroupID] : AdjacencyMapGroup} {
 		if (this.groupsDisabled) return {};
 		//TODO: cache. Not a huge deal because the heavy lifting is cached behind group().
-		return Object.fromEntries(Object.keys(this._data.groups).map(id => [id, this.group(id)]));
+		return Object.fromEntries(Object.keys(this._groupsData).map(id => [id, this.group(id)]));
 	}
 
 	layoutNode(id : LayoutID) : LayoutNode {
@@ -1514,7 +1544,9 @@ export class AdjacencyMapNode {
 	}
 
 	get groupID() : GroupID | undefined {
-		return this._map.groupsDisabled ? undefined : this._data?.group;
+		if (this._map.groupsDisabled) return undefined;
+		const impliedGroups = this._map.impliedNodeGroups;
+		return impliedGroups[this.id] || this._data?.group;
 	}
 
 	get group() : AdjacencyMapGroup | null {
