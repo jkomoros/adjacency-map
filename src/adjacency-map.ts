@@ -410,7 +410,7 @@ export const implyGroups = (graph : SimpleGraph, labels : {[id : NodeID]: GroupI
 		for (const [nodeID, groupInfo] of Object.entries(nodesThatNeedGroupSet)) {
 			impliedNodesGroups[nodeID] = Object.keys(groupInfo.overlap).join('');
 		}
-		changesMade = true;
+		//No need to go around again, this is the end.
 	}
 	return [impliedNodesGroups, groupsResult];
 };
