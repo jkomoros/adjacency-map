@@ -47,6 +47,7 @@ import {
 } from './types.js';
 
 import {
+	incomingGraph,
 	tidyLongestTree,
 	topologicalSort,
 	treeGraphFromParentGraph
@@ -286,6 +287,7 @@ type GroupIDSet = {
 
 type NodeLabels = {
 	self: GroupID,
+	//TODO: no need to store incoming/outgoing
 	incoming: GroupIDSet,
 	outgoing: GroupIDSet,
 	overlap: GroupIDSet
@@ -308,7 +310,7 @@ const accumulateGroupLabels = (nodes : NodeID[], graph : SimpleGraph, labels : {
 	return result;
 };
 
-export const labelNodes = (graph : SimpleGraph, reverseGraph : SimpleGraph, labels: {[id : NodeID] : GroupID}) : {[id : NodeID]: NodeLabels} => {
+const labelNodes = (graph : SimpleGraph, reverseGraph : SimpleGraph, labels: {[id : NodeID] : GroupID}) : {[id : NodeID]: NodeLabels} => {
 	const incomingLabels = accumulateGroupLabels([ROOT_ID], graph, labels);
 	const leafIDs = Object.keys(graph).filter(id => Object.keys(graph[id]).length == 0);
 	const outgoingLabels = accumulateGroupLabels(leafIDs, reverseGraph, labels);
@@ -330,7 +332,7 @@ export const labelNodes = (graph : SimpleGraph, reverseGraph : SimpleGraph, labe
 	return result;
 };
 
-export const rootLabels = (groups : {[id : GroupID] : GroupDefinition}) : {[input : GroupID] : GroupID} => {
+const rootLabels = (groups : {[id : GroupID] : GroupDefinition}) : {[input : GroupID] : GroupID} => {
 	const result : {[id : GroupID] : GroupID} = {};
 	//TODO: this order might be backwards
 	for (const id of topologicalSort(nestedGroupGraph(groups))) {
@@ -339,6 +341,41 @@ export const rootLabels = (groups : {[id : GroupID] : GroupDefinition}) : {[inpu
 		result[id] = result[parentGroupID] || '';
 	}
 	return result;
+};
+
+export const implyGroups = (graph : SimpleGraph, labels : {[id : NodeID]: GroupID}, groups : {[id : GroupID] : GroupDefinition}) : [impliedNodeGroups : {[id : NodeID] : GroupID}, groups : {[id : GroupID] : GroupDefinition}] => {
+	const groupsResult = {...groups};
+	const impliedNodesGroups : {[id : NodeID]: GroupID} = {};
+	const reverseGraph = incomingGraph(graph);
+	let changesMade = true;
+	while (changesMade) {
+		changesMade = false;
+		const rootLabelsMap = rootLabels(groupsResult);
+		const rootedLabels = Object.fromEntries(Object.entries(labels).map(entry => [entry[0], rootLabelsMap[entry[1]]]));
+		const labelInfo = labelNodes(graph, reverseGraph, rootedLabels);
+		//Find the nodes that don't have a group set explicitly and have an
+		//overlap of 2 or greater. These are the ones that need a new group
+		//created.
+		const nodesThatNeedNewGroups = Object.fromEntries(Object.entries(labelInfo).filter(entry => !entry[1].self && Object.keys(entry[1].overlap).length >= 2));
+		if (Object.keys(nodesThatNeedNewGroups).length > 0) {
+			//We neeed to create a new group
+			//Pick the one with the smallest amount of overlap. This will create more granular groups.
+			//If we picked the one with the largest overlap, we'd create the smallest amount of new groups.
+
+			//TODO: create the parent group.
+			console.warn('Creating new parent groups not yet implemented');
+			changesMade = true;
+			continue;
+		}
+		//We just need to set everything without a label with an overlap to that group ID.
+		const nodesThatNeedGroupSet = Object.fromEntries(Object.entries(labelInfo).filter(entry => !entry[1].self && Object.keys(entry[1].overlap).length == 1));
+		//NOthing to set, we're done.
+		if (Object.keys(nodesThatNeedGroupSet).length == 0) break;
+		//TODO: set the group for each node
+		console.warn('Setting node groups not yet implemented');
+		changesMade = true;
+	}
+	return [impliedNodesGroups, groupsResult];
 };
 
 //Does things like include libraries, convert Raw* to * (by calculateValueLeaf
