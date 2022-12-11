@@ -334,7 +334,7 @@ const rootLabels = (groups : {[id : GroupID] : GroupDefinition}) : {[input : Gro
 	//TODO: this order might be backwards
 	for (const id of topologicalSort(nestedGroupGraph(groups))) {
 		const group = groups[id];
-		const parentGroupID = group.group || '';
+		const parentGroupID = group?.group || '';
 		result[id] = result[parentGroupID] || '';
 	}
 	return result;
