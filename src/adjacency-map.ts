@@ -585,7 +585,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 					modify: {}
 				}
 			};
-			if (baseNode.group) nodes[id].group = baseNode.group;
+			if (baseNode.group != undefined) nodes[id].group = baseNode.group;
 		}
 		for (const [id, node] of Object.entries(rawScenario.nodes)) {
 			const existingNode : ScenarioNode = nodes[id] || emptyScenarioNode();
@@ -598,8 +598,8 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 				}
 			};
 			if (existingNode.edges.extended) newNode.edges.extended = existingNode.edges.extended;
-			if (existingNode.group) newNode.group = existingNode.group;
-			if (node.group) newNode.group = node.group;
+			if (existingNode.group != undefined) newNode.group = existingNode.group;
+			if (node.group != undefined) newNode.group = node.group;
 			nodes[id] = newNode;
 		}
 
