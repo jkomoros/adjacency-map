@@ -92,7 +92,8 @@ import {
 	LIBRARIES,
 	BASE_NODE_DISPLAY,
 	BASE_EDGE_DISPLAY,
-	BASE_EDGE_COMBINER_DISPLAY
+	BASE_EDGE_COMBINER_DISPLAY,
+	BASE_GROUP_DISPLAY
 } from './libraries.js';
 
 import {
@@ -126,6 +127,11 @@ const ALLOWED_VARIABLES_FOR_CONTEXT = {
 	nodeDisplay: {
 		...BASE_ALLOWED_VARIABLE_TYPES,
 		edgeConstant: false
+	},
+	groupDisplay: {
+		...BASE_ALLOWED_VARIABLE_TYPES,
+		edgeConstant: false,
+		input: true
 	},
 	property: BASE_ALLOWED_VARIABLE_TYPES,
 	propertyDisplay: BASE_ALLOWED_VARIABLE_TYPES,
@@ -395,6 +401,7 @@ export const implyGroups = (graph : SimpleGraph, labels : {[id : NodeID]: GroupI
 				//Found a node with overlap.
 				const subGroups = Object.fromEntries(Object.keys(info.overlap).map(groupID => [groupID, groupsResult[groupID]]));
 				const newGroup : GroupDefinition = {
+					display: {},
 					implied: true,
 					description: 'A combination of groups ' + Object.values(subGroups).map(group => group.displayName).join(', '),
 					displayName: Object.values(subGroups).map(group => group.displayName).join(' + ')
@@ -451,6 +458,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 	let baseTypes : {[name : PropertyName] : RawPropertyDefinition} = {};
 	let baseRoot : RawNodeValues = {};
 	let baseNodeDisplay = {...BASE_NODE_DISPLAY};
+	let baseGroupDisplay = {...BASE_GROUP_DISPLAY};
 	let baseEdgeDisplay = {...BASE_EDGE_DISPLAY};
 	let baseEdgeCombinerDisplay = {...BASE_EDGE_COMBINER_DISPLAY};
 	for (const library of Object.values(importsMap)) {
@@ -458,6 +466,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		baseRoot = {...baseRoot, ...library.root};
 		if (library.display) {
 			if (library.display.node) baseNodeDisplay = {...baseNodeDisplay, ...library.display.node};
+			if (library.display.group) baseGroupDisplay = {...baseGroupDisplay, ...library.display.group};
 			if (library.display.edge) baseEdgeDisplay = {...baseEdgeDisplay, ...library.display.edge};
 			if (library.display.edgeCombiner) baseEdgeCombinerDisplay = {...baseEdgeCombinerDisplay, ...library.display.edgeCombiner};
 		}
@@ -515,8 +524,10 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		let displayName = groupNode.displayName;
 		if (displayName == undefined) displayName = idToDisplayName(id);
 		if (displayName === '') displayName = id;
+		const display = groupNode.display || {};
 		unsortedGroups[id] = {
 			...groupNode,
+			display,
 			implied: false,
 			displayName
 		};
@@ -530,12 +541,17 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 	}
 
 	const rawNodeDisplay = data.display?.node || {};
+	const rawGroupDisplay = data.display?.group || {};
 	const rawEdgeDisplay = data.display?.edge || {};
 	const rawEdgeCombinerDisplay = data.display?.edgeCombiner || {};
 	const display : MapDisplay = {
 		node: {
 			...baseNodeDisplay,
 			...rawNodeDisplay
+		},
+		group: {
+			...baseGroupDisplay,
+			...rawGroupDisplay
 		},
 		edge: {
 			...baseEdgeDisplay,
@@ -709,6 +725,7 @@ const validateData = (data : MapDefinition) : void => {
 		//We don't need to check for overlap with normal node IDs because the node and metaNode ID space never overlaps.
 		if (!groupData.description) throw new Error('group '+ groupID + ' has no description');
 		if (groupData.group && !data.groups[groupData.group]) throw new Error('group ' + groupID + ' specifies a parent group (' + groupData.group + ') that doesnt exist');
+		validateDisplay(groupData.display, {exampleValues, data, allowedVariables: ALLOWED_VARIABLES_FOR_CONTEXT.groupDisplay});
 	}
 
 	const expectedTagConstants : {[name : TagConstantName]: true} = {};
@@ -791,6 +808,9 @@ const validateData = (data : MapDefinition) : void => {
 			break;
 		case 'edgeCombiner':
 			validateDisplay(data.display.edgeCombiner, {exampleValues, data, allowedVariables: ALLOWED_VARIABLES_FOR_CONTEXT.propertyCombinerDisplay});
+			break;
+		case 'group':
+			validateDisplay(data.display.group, {exampleValues, data, allowedVariables: ALLOWED_VARIABLES_FOR_CONTEXT.groupDisplay});
 			break;
 		case 'node':
 			validateDisplay(data.display.node, {exampleValues, data,  allowedVariables: ALLOWED_VARIABLES_FOR_CONTEXT.nodeDisplay});

@@ -465,6 +465,7 @@ export type RawGroupDefinition = {
 	description: string,
 	displayName? : string,
 	group? : GroupID,
+	display? : Partial<GroupDisplay>
 }
 
 export type GroupDefinition = {
@@ -472,6 +473,7 @@ export type GroupDefinition = {
 	displayName: string
 	implied: boolean,
 	group? : GroupID
+	display : Partial<GroupDisplay>
 }
 
 export type NodeValuesOverride = {
@@ -590,6 +592,8 @@ export type NodeDisplay = {
 	strokeColor: CSSColor | ValueDefinition
 }
 
+export type GroupDisplay = Omit<NodeDisplay, 'radius'>;
+
 //If any of these returns more than one number, then the one that returns the
 //most sets the number of edges to render for this edge type, and everything
 //else will be looped to fill. Those same edges might later be distilled via
@@ -623,12 +627,14 @@ export type EdgeCombinerDisplay = {
 
 export type RawMapDisplay = {
 	node?: Partial<NodeDisplay>,
+	group?: Partial<GroupDisplay>,
 	edge?: Partial<EdgeDisplay>,
 	edgeCombiner? : Partial<EdgeCombinerDisplay>
 };
 
 export type MapDisplay = {
 	node: NodeDisplay;
+	group: GroupDisplay;
 	edge: EdgeDisplay;
 	edgeCombiner : EdgeCombinerDisplay;
 }

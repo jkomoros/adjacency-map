@@ -1,6 +1,7 @@
 import {
 	EdgeCombinerDisplay,
 	EdgeDisplay,
+	GroupDisplay,
 	Library,
 	LibraryType,
 	NodeDisplay,
@@ -19,6 +20,20 @@ export const BASE_NODE_DISPLAY : NodeDisplay = {
 	strokeOpacity: 1.0,
 	strokeColor: {
 		color: 'white'
+	}
+};
+
+export const BASE_GROUP_DISPLAY : GroupDisplay = {
+	opacity: 0.5,
+	color: {
+		combine: 'color-mean',
+		value: 'input'
+	},
+	strokeWidth: 0.0,
+	strokeOpacity: 1.0,
+	strokeColor: {
+		combine: 'color-mean',
+		value: 'input'
 	}
 };
 

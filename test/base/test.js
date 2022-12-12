@@ -5310,6 +5310,7 @@ describe('implyGroups', () => {
 			'a_b': {
 				description: 'A combination of groups A, B',
 				displayName: 'A + B',
+				display: {},
 				implied: true
 			}
 		};
@@ -5367,6 +5368,7 @@ describe('implyGroups', () => {
 			'a_b': {
 				description: 'A combination of groups A, B',
 				displayName: 'A + B',
+				display: {},
 				implied: true
 			}
 		};
