@@ -671,6 +671,7 @@ export type RawScenario = {
 	nodes: {
 		[id : NodeID] : {
 			values?: NodeValuesOverride,
+			group? : GroupID,
 			edges?: {
 				add?: RawEdgeInput,
 				remove?: {
@@ -696,6 +697,7 @@ export type ScenarioNodeEdges = {
 }
 
 export type ScenarioNode = {
+	group? : GroupID,
 	values: {
 		[propertyName : PropertyName]: ValueDefinition
 	}

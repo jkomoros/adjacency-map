@@ -1262,6 +1262,8 @@ const data : RawMapDefinition = {
 }
 ```
 
+In a scenario, nodes may also modify which group they are in for that scenario (and any that extend it).
+
 Any group that has no nodes in it will not be displayed.
 
 There is a toggle in the UI to toggle on and off rendering nodes all individually or in groups.

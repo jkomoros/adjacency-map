@@ -585,6 +585,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 					modify: {}
 				}
 			};
+			if (baseNode.group) nodes[id].group = baseNode.group;
 		}
 		for (const [id, node] of Object.entries(rawScenario.nodes)) {
 			const existingNode : ScenarioNode = nodes[id] || emptyScenarioNode();
@@ -597,6 +598,8 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 				}
 			};
 			if (existingNode.edges.extended) newNode.edges.extended = existingNode.edges.extended;
+			if (existingNode.group) newNode.group = existingNode.group;
+			if (node.group) newNode.group = node.group;
 			nodes[id] = newNode;
 		}
 
@@ -776,6 +779,7 @@ const validateData = (data : MapDefinition) : void => {
 			validateEdges(data, nodeName, nodeDefinition.edges.add);
 			validateEdges(data, nodeName, Object.values(nodeDefinition.edges.modify));
 			//Skip validating remove which isn't actually edges
+			if (nodeDefinition.group && !data.groups[nodeDefinition.group]) throw new Error(nodeName + ' specifies group ' + nodeDefinition.group + ' but that group is not defined');
 		}
 	}
 
@@ -989,8 +993,9 @@ export class AdjacencyMap {
 		const graph = extractSimpleGraph(this._data, this._scenarioName);
 		const labels : {[id : NodeID] : GroupID} = {};
 		for (const [nodeID, nodeData] of Object.entries(this._data.nodes)) {
-			//TODO: include any scenario group overriding when that exists
 			if (nodeData.group) labels[nodeID] = nodeData.group;
+			const scenarioNode = this.scenario.nodes[nodeID];
+			if (scenarioNode && scenarioNode.group) labels[nodeID] = scenarioNode.group;
 		}
 		const groups = this._data.groups;
 		const [impliedNodeGroups, fullGroups] = implyGroups(graph, labels, groups);
@@ -1546,7 +1551,9 @@ export class AdjacencyMapNode {
 	get groupID() : GroupID | undefined {
 		if (this._map.groupsDisabled) return undefined;
 		const impliedGroups = this._map.impliedNodeGroups;
-		return impliedGroups[this.id] || this._data?.group;
+		if(impliedGroups[this.id]) return impliedGroups[this.id];
+		if (this._scenarioNode.group) return this._scenarioNode.group;
+		return this._data?.group;
 	}
 
 	get group() : AdjacencyMapGroup | null {
