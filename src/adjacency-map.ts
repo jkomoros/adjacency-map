@@ -990,7 +990,7 @@ export class AdjacencyMap {
 
 	_ensureGroupsImplication() {
 		if (this._fullGroupsData && this._impliedNodeGroups) return;
-		const graph = extractSimpleGraph(this._data, this._scenarioName);
+		const graph = incomingGraph(extractSimpleGraph(this._data, this._scenarioName));
 		const labels : {[id : NodeID] : GroupID} = {};
 		for (const [nodeID, nodeData] of Object.entries(this._data.nodes)) {
 			if (nodeData.group) labels[nodeID] = nodeData.group;
