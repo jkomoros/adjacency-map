@@ -967,7 +967,7 @@ Display properties allow defining how nodes and edges render.
 
 The display definitions have a collection of ValueDefinitions that are evaluated after all of the underlying values for nodes are calculated.
 
-Display blocks can be defined at the top level at map.display, for type `node`, `edge`, and `edgeCombiner`, and those serve as defaults for every node and edge. Individual `node` and `PropertyDefinition` also have a `display` paramter for overriding the display of just that edge or display.
+Display blocks can be defined at the top level at map.display, for type `node`, `group`, `edge`, and `edgeCombiner`, and those serve as defaults for every node and edge. Individual `node`, `group`, and `PropertyDefinition` also have a `display` paramter for overriding the display of just that edge or display.
 
 Because the properties are the same for every node, or for every edge of a given property, and since they can't reference one another, typically the value definitions are either constants or just reference a given property, and then the final result varies with those underlying values.
 
@@ -1015,6 +1015,12 @@ Nodes have 6 values: `color`, `radius`, `opacity`, `strokeColor`, `strokeWidth`,
 Each of those is a ValueDefinition. The first number returned is used.
 
 ValueDefinitions of type ValueDefinitionRefValue and ValueDefinitionEdgeValue will have no inputs in this context.
+
+### Group Display
+
+Groups have 5 values:  `color`, `opacity`, `strokeColor`, `strokeWidth`, and `strokeOpacity`.
+
+Values may use the values of their sub-items by using ValueDefinitionInput.
 
 ### Edge Display
 
