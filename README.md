@@ -153,6 +153,10 @@ The value calculation is the same for every calculation of that property type on
 
 The final value for a node has to reduce a potentially multi-entry array of numbers (e.g. if there are multiple edges of this type) down to a single number. This combiner will be run on the final result, reducing it to a single number. Any `CombinerType` is allowed; if not included, it defaults to `mean`.
 
+### groupCombine? : CombinerType
+
+When nodes are grouped into a group, the value for this property for the group will be calculated by calculating each node's value and them combining them with this combiner. If not provided it falls back on the combine property.
+
 ### calculateWhen? : 'edges' | 'always'
 
 Many values rely on there being edges to do their calculation (calculateWhen of 'edges'). Some values rely only on other properties in values, or are just constants. If calculateWhen is 'always', then this value will be calcluated on a node even if there are no edges (explicit or implied) to this node.
@@ -1265,6 +1269,9 @@ const data : RawMapDefinition = {
 In a scenario, nodes may also modify which group they are in for that scenario (and any that extend it).
 
 Any group that has no nodes in it will not be displayed.
+
+The value for each property in the group is the combined value of all of the
+nodes, using property.groupCombine to combine them.
 
 There is a toggle in the UI to toggle on and off rendering nodes all individually or in groups.
 

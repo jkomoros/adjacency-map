@@ -509,6 +509,10 @@ export type RawPropertyDefinition = {
 	//a single number. This reducer will be used for that final reduction, to
 	//produce the final number to use. If not provided, defaults to 'mean'
 	combine? : CombinerType,
+	//When nodes are grouped together, the final value for each property of the
+	//group is calculated for each node and then combined with this combiner. If
+	//it's not provided, will default to the value of combine.
+	groupCombine? : CombinerType,
 	//If present, then when edges of this type exist between a source and ref it
 	//will imply that at least one edge of each other type should also exist...
 	//using defaulted ones if necessary. Edges added by implication will not
@@ -541,6 +545,7 @@ export type PropertyDefinition = {
 	description?: string,
 	usage?: string,
 	combine?: CombinerType,
+	groupCombine? : CombinerType;
 	dependencies : PropertyName[],
 	implies? : ImpliesConfiguration,
 	excludeFromDefaultImplication : boolean,

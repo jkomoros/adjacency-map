@@ -4923,6 +4923,23 @@ describe('groups', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('basic case engineering with non default combine', async () => {
+		const input = baseGroupInput();
+		input.properties.engineering.groupCombine = 'sum';
+
+		const map = new AdjacencyMap(input);
+		const actual = Object.fromEntries(Object.entries(map.layoutNodes).map(entry => [entry[0], entry[1].values.engineering]));
+		const golden = {
+			"group_1": 7,
+			"": 4,
+			"a": 3,
+			"b": 4,
+			"c": 3,
+			"d" : 3
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
 	it('basic case x', async () => {
 		const input = baseGroupInput();
 

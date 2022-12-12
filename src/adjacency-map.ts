@@ -736,6 +736,7 @@ const validateData = (data : MapDefinition) : void => {
 		if (propertyDefinition.calculateWhen == 'always' && valueDefinitionReliesOnEdges(propertyDefinition.value)) throw new Error(type + ' has set noEdges but its value definition relies on edges');
 		if (propertyDefinition.calculateWhen == 'always' && propertyDefinition.implies) throw new Error(type + ' sets noEdges but also sets an implies value.');
 		if (propertyDefinition.combine && !COMBINERS[propertyDefinition.combine]) throw new Error('Unknown combiner: ' + propertyDefinition.combine);
+		if (propertyDefinition.groupCombine && !COMBINERS[propertyDefinition.groupCombine]) throw new Error('Unknown group combiner: ' + propertyDefinition.groupCombine);
 		if (propertyDefinition.description && typeof propertyDefinition.description != 'string') throw new Error(type + ' has a description not of type string');
 		if (Object.keys(explicitlyEnumeratedImpliedPropertyNames(propertyDefinition.implies)).some(propertyName => !data.properties[propertyName] || data.properties[propertyName].calculateWhen == 'always')) throw new Error(type + 'has an implication that explicitly implies a property that doesn\'t exist or is noEdges');
 		if (propertyDefinition.constants) {
@@ -1950,8 +1951,7 @@ export class AdjacencyMapGroup {
 		}
 		return Object.fromEntries(Object.entries(values).map(entry => {
 			const propertyDefinition = this._map.data.properties[entry[0]];
-			//TODO: allow a different combiner to be specified.
-			const finalCombiner = propertyDefinition.combine ? COMBINERS[propertyDefinition.combine] : DEFAULT_COMBINER;
+			const finalCombiner = propertyDefinition.groupCombine ? COMBINERS[propertyDefinition.groupCombine] : (propertyDefinition.combine ? COMBINERS[propertyDefinition.combine] : DEFAULT_COMBINER);
 			const [result] = finalCombiner(entry[1]);
 			return [entry[0], result];
 		}));
