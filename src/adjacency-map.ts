@@ -969,6 +969,9 @@ export class AdjacencyMap {
 		for (const node of Object.values(this._nodes)) {
 			node._scenarioChanged();
 		}
+		for (const group of Object.values(this._groups)) {
+			group._scenarioChanged();
+		}
 	}
 
 	get data() : MapDefinition {
@@ -1837,14 +1840,23 @@ export class AdjacencyMapGroup {
 	_map : AdjacencyMap;
 	_data : GroupDefinition;
 	_id : GroupID;
-	_cachedDirectNodes : LayoutNode[];
-	_cachedRenderEdges : RenderEdgeValue[];
-	_cachedLayout : CircleLayoutInfo;
+	_cachedDirectNodes : LayoutNode[] | undefined;
+	_cachedRenderEdges : RenderEdgeValue[] | undefined;
+	_cachedLayout : CircleLayoutInfo | undefined;
 
 	constructor(map : AdjacencyMap, id : GroupID, data : GroupDefinition) {
 		this._map = map;
 		this._data = data;
 		this._id = id;
+	}
+
+	_scenarioChanged() {
+		//The scenario changed, which means that we might need to invalidate
+		//caches that rely on values that might have changed.
+		
+		this._cachedDirectNodes = undefined;
+		this._cachedLayout = undefined;
+		this._cachedRenderEdges = undefined;
 	}
 
 	get _layoutID() : LayoutID {
@@ -1979,6 +1991,7 @@ export class AdjacencyMapGroup {
 
 	get nodePositions() : {[id : LayoutID]: {x : number, y : number}} {
 		if (!this._cachedLayout) this._calculateLayout();
+		if (!this._cachedLayout) throw new Error('Calculate layout didnt get set');
 		return this._cachedLayout.children;
 	}
 
@@ -1997,6 +2010,7 @@ export class AdjacencyMapGroup {
 
 	get radius() : number {
 		if (!this._cachedLayout) this._calculateLayout();
+		if (!this._cachedLayout) throw new Error('Calculate layout didnt get set');
 		return this._cachedLayout.radius;
 	}
 
