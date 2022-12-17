@@ -2028,7 +2028,6 @@ export class AdjacencyMapGroup {
 	}
 
 	get opacity() : number {
-		//TODO: test this works
 		const inputs = this.directNodes.map(node => node.opacity);
 		const definition = this._data.display.opacity || this._map.data.display.group.opacity;
 		const clippedDefinition : ValueDefinition = {
