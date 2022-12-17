@@ -63,11 +63,8 @@ import {
 } from './constants.js';
 
 import {
-	colorMean,
 	COMBINERS,
-	DEFAULT_COMBINER,
-	mean,
-	sum
+	DEFAULT_COMBINER
 } from './combine.js';
 
 import {
@@ -1944,6 +1941,11 @@ export class AdjacencyMapGroup {
 		return pos.y;
 	}
 
+	get edges() : ExpandedEdgeValue[] {
+		//TODO: cache
+		return this.directNodes.map(node => node.edges).flat();
+	}
+
 	get renderEdges() : RenderEdgeValue[] {
 		//Only top-level items should return render edges
 		if (this.inGroup) return [];
@@ -2015,33 +2017,57 @@ export class AdjacencyMapGroup {
 	}
 
 	get strokeWidth() : number {
-		const widths = this.directNodes.map(node => node.strokeWidth);
-		const [result] = sum(widths);
-		return result;
+		//TODO: test this works
+		const inputs = this.directNodes.map(node => node.strokeWidth);
+		const definition = this._data.display.strokeWidth || this._map.data.display.group.strokeWidth;
+		const clippedDefinition : ValueDefinition = {
+			clip: definition,
+			low: 0.0
+		};
+		const result = edgeDefinitionHelper(this.nodes, clippedDefinition, this.edges, inputs);
+		return result[0];
 	}
 
 	get opacity() : number {
-		const opacities = this.directNodes.map(node => node.opacity);
-		const [result] = mean(opacities);
-		return result;
+		//TODO: test this works
+		const inputs = this.directNodes.map(node => node.opacity);
+		const definition = this._data.display.opacity || this._map.data.display.group.opacity;
+		const clippedDefinition : ValueDefinition = {
+			clip: definition,
+			low: 0.0
+		};
+		const result = edgeDefinitionHelper(this.nodes, clippedDefinition, this.edges, inputs);
+		return result[0];
 	}
 	
 	get strokeOpacity() : number {
-		const opacities = this.directNodes.map(node => node.strokeOpacity);
-		const [result] = mean(opacities);
-		return result;
+		//TODO: test this works
+		const inputs = this.directNodes.map(node => node.strokeOpacity);
+		const definition = this._data.display.strokeOpacity || this._map.data.display.group.strokeOpacity;
+		const clippedDefinition : ValueDefinition = {
+			clip: definition,
+			low: 0.0
+		};
+		const result = edgeDefinitionHelper(this.nodes, clippedDefinition, this.edges, inputs);
+		return result[0];
 	}
 
 	get color() : Color {
-		const colorsAsNums = this.directNodes.map(node => packColor(node.color));
-		const [result] = colorMean(colorsAsNums);
-		return unpackColor(result);
+		//TODO: test this works
+		const inputs = this.directNodes.map(node => packColor(node.color));
+		const definitionOrString = this._data.display.color || this._map.data.display.group.color;
+		const definition = wrapStringAsColor(definitionOrString);
+		const result = edgeDefinitionHelper(this.nodes, definition, this.edges, inputs);
+		return unpackColor(result[0]);
 	}
 
 	get strokeColor() : Color {
-		const colorsAsNums = this.directNodes.map(node => packColor(node.strokeColor));
-		const [result] = colorMean(colorsAsNums);
-		return unpackColor(result);
+		//TODO: test this works
+		const inputs = this.directNodes.map(node => packColor(node.strokeColor));
+		const definitionOrString = this._data.display.strokeColor || this._map.data.display.group.strokeColor;
+		const definition = wrapStringAsColor(definitionOrString);
+		const result = edgeDefinitionHelper(this.nodes, definition, this.edges, inputs);
+		return unpackColor(result[0]);
 	}
 
 	fullDescription(includeHidden = false) : string {
