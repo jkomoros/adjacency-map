@@ -2017,7 +2017,6 @@ export class AdjacencyMapGroup {
 	}
 
 	get strokeWidth() : number {
-		//TODO: test this works
 		const inputs = this.directNodes.map(node => node.strokeWidth);
 		const definition = this._data.display.strokeWidth || this._map.data.display.group.strokeWidth;
 		const clippedDefinition : ValueDefinition = {
