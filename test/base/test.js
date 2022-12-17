@@ -5235,6 +5235,49 @@ describe('groups', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('basic case strokeOpacity display', async () => {
+		const input = baseGroupInput();
+		input.display = {
+			node: {
+				strokeOpacity: 0.3,
+			},
+			group: {
+				strokeOpacity: {
+					combine: 'sum',
+					value: 'input'
+				}
+			}
+		};
+
+
+		const map = new AdjacencyMap(input);
+		const group = map.group('group_1');
+		const actual = group.strokeOpacity;
+		const golden = 0.6;
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('basic case strokeOpacity group.display', async () => {
+		const input = baseGroupInput();
+		input.groups.group_1.display = {
+			strokeOpacity: {
+				combine: 'sum',
+				value: 'input'
+			}
+		};
+		input.display = {
+			node: {
+				strokeOpacity: 0.3,
+			}
+		};
+
+		const map = new AdjacencyMap(input);
+		const group = map.group('group_1');
+		const actual = group.strokeOpacity;
+		const golden = 0.6;
+		assert.deepStrictEqual(actual, golden);
+	});
+
 });
 
 describe('implyGroups', () => {

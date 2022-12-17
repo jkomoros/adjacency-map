@@ -2039,7 +2039,6 @@ export class AdjacencyMapGroup {
 	}
 	
 	get strokeOpacity() : number {
-		//TODO: test this works
 		const inputs = this.directNodes.map(node => node.strokeOpacity);
 		const definition = this._data.display.strokeOpacity || this._map.data.display.group.strokeOpacity;
 		const clippedDefinition : ValueDefinition = {
