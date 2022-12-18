@@ -86,7 +86,8 @@ import {
 
 import {
 	AdjacencyMap,
-	AdjacencyMapNode
+	AdjacencyMapNode,
+	LayoutNode
 } from '../adjacency-map.js';
 
 import {
@@ -249,6 +250,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 
 	override render() : TemplateResult {
 		const node = this._node;
+		const layoutNode = this._layoutNode;
 		const [nodeEdges, nodeModMap] = node ? node.edgesForUI : [[] , {}];
 		const nodeLegalParentIDs = node ? node.legalParentIDs : {};
 		//TODO: only show ones that will ve legal to add
@@ -284,6 +286,9 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 						<label>Description</label> ${this._summaryDescription}
 					</div>
 					<div>
+						<label>Group</label> ${layoutNode ? layoutNode.groupID || html`<em>No group</em>` : html`<em>No group</em>`}
+					</div>
+					<div>
 						<label>Values <button class='small' title='Show hidden values'>${this._showHiddenValues ? VISIBILITY_ICON : VISIBILITY_OFF_ICON}</button><input type='checkbox' .checked=${this._showHiddenValues} @change=${this._handleShowHiddenValuesClicked}></input></label>
 						${Object.entries(this._summaryValues).filter(entry => this._showHiddenValues || !this._adjacencyMap?.data.properties[entry[0]].hide).map(entry => this._htmlForValue(entry[0], entry[1]))}
 					</div>
@@ -302,6 +307,10 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 				</div>
 			</div>
 		`;
+	}
+
+	get _layoutNode() : LayoutNode | null {
+		return (this._adjacencyMap  && this._summaryLayoutID) ? this._adjacencyMap.layoutNode(this._summaryLayoutID) : null;
 	}
 
 	get _node() : AdjacencyMapNode | null {
