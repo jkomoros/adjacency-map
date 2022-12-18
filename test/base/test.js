@@ -5201,112 +5201,58 @@ describe('groups', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
-	it('basic case strokeWidth group.display', async () => {
+	it('basic case displayProperties group.display', async () => {
 		const input = baseGroupInput();
+		input.nodes.a.display = {
+			color: 'red',
+			strokeColor: 'red'
+		};
+		input.nodes.b.display = {
+			color: 'blue',
+			strokeColor: 'blue'
+		};
 		input.groups.group_1.display = {
 			strokeWidth: {
 				combine: 'sum',
+				value: 'input'
+			},
+			opacity: {
+				combine: 'sum',
+				value: 'input'
+			},
+			strokeOpacity: {
+				combine: 'sum',
+				value: 'input'
+			},
+			color: {
+				combine: 'color-mean',
+				value: 'input'
+			},
+			strokeColor: {
+				combine: 'color-mean',
 				value: 'input'
 			}
 		};
 		input.display = {
 			node: {
 				strokeWidth: 2,
-			}
-		};
-
-
-		const map = new AdjacencyMap(input);
-		const group = map.group('group_1');
-		const actual = group.strokeWidth;
-		const golden = 4;
-		assert.deepStrictEqual(actual, golden);
-	});
-
-	it('basic case opacity group.display', async () => {
-		const input = baseGroupInput();
-		input.groups.group_1.display = {
-			opacity: {
-				combine: 'sum',
-				value: 'input'
-			}
-		};
-		input.display = {
-			node: {
 				opacity: 0.3,
-			}
-		};
-
-
-		const map = new AdjacencyMap(input);
-		const group = map.group('group_1');
-		const actual = group.opacity;
-		const golden = 0.6;
-		assert.deepStrictEqual(actual, golden);
-	});
-
-	it('basic case strokeOpacity group.display', async () => {
-		const input = baseGroupInput();
-		input.groups.group_1.display = {
-			strokeOpacity: {
-				combine: 'sum',
-				value: 'input'
-			}
-		};
-		input.display = {
-			node: {
 				strokeOpacity: 0.3,
 			}
 		};
 
-		const map = new AdjacencyMap(input);
-		const group = map.group('group_1');
-		const actual = group.strokeOpacity;
-		const golden = 0.6;
-		assert.deepStrictEqual(actual, golden);
-	});
-
-	it('basic case color group.display', async () => {
-		const input = baseGroupInput();
-		input.nodes.a.display = {
-			color: 'red'
-		};
-		input.nodes.b.display = {
-			color: 'blue'
-		};
-		input.groups.group_1.display = {
-			color: {
-				combine: 'color-mean',
-				value: 'input'
-			}
-		};
 
 		const map = new AdjacencyMap(input);
 		const group = map.group('group_1');
-		const actual = group.color;
-		const golden = color([127, 0, 127]);
-		assert.deepStrictEqual(actual, golden);
-	});
-
-	it('basic case strokeColor group.display', async () => {
-		const input = baseGroupInput();
-		input.nodes.a.display = {
-			strokeColor: 'red'
+		const actual = group.displayProperties;
+		const golden = {
+			radius: 16,
+			strokeWidth: 4,
+			opacity: 0.6,
+			strokeOpacity: 0.6,
+			color: color([127, 0, 127]),
+			strokeColor: color([127, 0, 127])
 		};
-		input.nodes.b.display = {
-			strokeColor: 'blue'
-		};
-		input.groups.group_1.display = {
-			strokeColor: {
-				combine: 'color-mean',
-				value: 'input'
-			}
-		};
-
-		const map = new AdjacencyMap(input);
-		const group = map.group('group_1');
-		const actual = group.strokeColor;
-		const golden = color([127, 0, 127]);
 		assert.deepStrictEqual(actual, golden);
 	});
 
