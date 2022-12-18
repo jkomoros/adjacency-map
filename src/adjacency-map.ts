@@ -1902,7 +1902,7 @@ export class AdjacencyMapGroup {
 		return this.groupID != undefined;
 	}
 
-	//Only nodes whose direct parent is this group.
+	//Only nodes whose direct parent is this group (and the node is not itself an empty group)
 	get directNodes() : LayoutNode[] {
 		if (!this._cachedDirectNodes) {
 			const result : LayoutNode[] = [];
@@ -1912,6 +1912,7 @@ export class AdjacencyMapGroup {
 			}
 			for (const group of Object.values(this._map.groups)) {
 				if (group.groupID != this.id) continue;
+				if (!group.hasNodes) continue;
 				result.push(group);
 			}
 			this._cachedDirectNodes = result;
