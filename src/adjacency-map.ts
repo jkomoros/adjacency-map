@@ -43,7 +43,8 @@ import {
 	ConstantType,
 	GroupID,
 	GroupDefinition,
-	CircleLayoutInfo
+	CircleLayoutInfo,
+	LayoutNodeDisplayProperties
 } from './types.js';
 
 import {
@@ -1446,6 +1447,7 @@ export class AdjacencyMapNode {
 	_isRoot : boolean;
 	_cachedEdges : ExpandedEdgeValue[];
 	_cachedRenderEdges : RenderEdgeValue[] | undefined;
+	_cachedDisplayProperties : LayoutNodeDisplayProperties | undefined;
 
 	constructor(id : NodeID, parent : AdjacencyMap, data : NodeDefinition | undefined) {
 		this._id = id;
@@ -1551,6 +1553,8 @@ export class AdjacencyMapNode {
 		//values.
 
 		this._cachedRenderEdges = undefined;
+
+		this._cachedDisplayProperties = undefined;
 	}
 
 	get id() : NodeID {
@@ -1774,62 +1778,82 @@ export class AdjacencyMapNode {
 		return result[0];
 	}
 
+	get displayProperties() : LayoutNodeDisplayProperties {
+		if (!this._cachedDisplayProperties) {
+			const radiusDefinition = this._data?.display?.radius || this._map.data.display.node.radius;
+			const clippedRadiusDefinition : ValueDefinition = {
+				clip: radiusDefinition,
+				low: 0.0
+			};
+			const radius = this._valueDefinitionHelper(clippedRadiusDefinition);
+
+			const strokeWidthDefinition = this._data?.display?.strokeWidth || this._map.data.display.node.strokeWidth;
+			const clippedStrokeWidthDefinition : ValueDefinition = {
+				clip: strokeWidthDefinition,
+				low: 0.0
+			};
+			const strokeWidth = this._valueDefinitionHelper(clippedStrokeWidthDefinition);
+
+			const opacityDefinition = this._data?.display?.opacity || this._map.data.display.node.opacity;
+			const clippedOpacityDefinition : ValueDefinition = {
+				clip: opacityDefinition,
+				low: 0.0,
+				high: 1.0
+			};
+			const opacity = this._valueDefinitionHelper(clippedOpacityDefinition);
+
+			const strokeOpacityDefinition = this._data?.display?.strokeOpacity || this._map.data.display.node.strokeOpacity;
+			const clippedStrokeOpacityDefinition : ValueDefinition = {
+				clip: strokeOpacityDefinition,
+				low: 0.0,
+				high: 1.0
+			};
+			const strokeOpacity = this._valueDefinitionHelper(clippedStrokeOpacityDefinition);
+
+			const colorDefinitionOrString = this._data?.display?.color || this._map.data.display.node.color;
+			const colorDefinition = wrapStringAsColor(colorDefinitionOrString);
+			const colorNum = this._valueDefinitionHelper(colorDefinition);
+			const color = unpackColor(colorNum);
+
+			const strokeColorDefinitionOrString = this._data?.display?.strokeColor || this._map.data.display.node.strokeColor;
+			const strokeColorDefinition = wrapStringAsColor(strokeColorDefinitionOrString);
+			const strokeColorNum = this._valueDefinitionHelper(strokeColorDefinition);
+			const strokeColor = unpackColor(strokeColorNum);
+
+			this._cachedDisplayProperties = {
+				radius,
+				strokeWidth,
+				opacity,
+				strokeOpacity,
+				color,
+				strokeColor
+			};
+		}
+		return this._cachedDisplayProperties;
+	}
+
 	get radius() : number {
-		//TODO: cache
-		const definition = this._data?.display?.radius || this._map.data.display.node.radius;
-		const clippedDefinition : ValueDefinition = {
-			clip: definition,
-			low: 0.0
-		};
-		return this._valueDefinitionHelper(clippedDefinition);
+		return this.displayProperties.radius;
 	}
 
 	get strokeWidth() : number {
-		//TODO: cache
-		const definition = this._data?.display?.strokeWidth || this._map.data.display.node.strokeWidth;
-		const clippedDefinition : ValueDefinition = {
-			clip: definition,
-			low: 0.0
-		};
-		return this._valueDefinitionHelper(clippedDefinition);
+		return this.displayProperties.strokeWidth;
 	}
 
 	get opacity() : number {
-		//TODO: cache
-		const definition = this._data?.display?.opacity || this._map.data.display.node.opacity;
-		const clippedDefinition : ValueDefinition = {
-			clip: definition,
-			low: 0.0,
-			high: 1.0
-		};
-		return this._valueDefinitionHelper(clippedDefinition);
+		return this.displayProperties.opacity;
 	}
 
 	get strokeOpacity() : number {
-		//TODO: cache
-		const definition = this._data?.display?.strokeOpacity || this._map.data.display.node.strokeOpacity;
-		const clippedDefinition : ValueDefinition = {
-			clip: definition,
-			low: 0.0,
-			high: 1.0
-		};
-		return this._valueDefinitionHelper(clippedDefinition);
+		return this.displayProperties.strokeOpacity;
 	}
 
 	get color(): Color {
-		//TODO: cache
-		const definitionOrString = this._data?.display?.color || this._map.data.display.node.color;
-		const colorDefinition = wrapStringAsColor(definitionOrString);
-		const num = this._valueDefinitionHelper(colorDefinition);
-		return unpackColor(num);
+		return this.displayProperties.color;
 	}
 
 	get strokeColor() : Color {
-		//TODO: cache
-		const definitionOrString = this._data?.display?.strokeColor || this._map.data.display.node.strokeColor;
-		const colorDefinition = wrapStringAsColor(definitionOrString);
-		const num = this._valueDefinitionHelper(colorDefinition);
-		return unpackColor(num);
+		return this.displayProperties.strokeColor;
 	}
 }
 
@@ -1840,6 +1864,7 @@ export class AdjacencyMapGroup {
 	_cachedDirectNodes : LayoutNode[] | undefined;
 	_cachedRenderEdges : RenderEdgeValue[] | undefined;
 	_cachedLayout : CircleLayoutInfo | undefined;
+	_cachedDisplayProperties : LayoutNodeDisplayProperties | undefined;
 
 	constructor(map : AdjacencyMap, id : GroupID, data : GroupDefinition) {
 		this._map = map;
@@ -1854,6 +1879,7 @@ export class AdjacencyMapGroup {
 		this._cachedDirectNodes = undefined;
 		this._cachedLayout = undefined;
 		this._cachedRenderEdges = undefined;
+		this._cachedDisplayProperties = undefined;
 	}
 
 	get _layoutID() : LayoutID {
@@ -2011,6 +2037,59 @@ export class AdjacencyMapGroup {
 		this._cachedLayout = CirclePackLayout(items);
 	}
 
+	get displayProperties() : LayoutNodeDisplayProperties {
+		if (!this._cachedDisplayProperties) {
+			const nodes = this.nodes;
+			const edges = this.edges;
+
+			const radius = this.radius;
+
+			const strokeWidthDefinition = this._data.display.strokeWidth || this._map.data.display.group.strokeWidth;
+			const clippedStrokeWidthDefinition : ValueDefinition = {
+				clip: strokeWidthDefinition,
+				low: 0.0
+			};
+			const strokeWidthResult = edgeDefinitionHelper(nodes, clippedStrokeWidthDefinition, edges, this.directNodes.map(node => node.strokeWidth));
+			const strokeWidth = strokeWidthResult[0];
+
+			const opacityDefinition = this._data.display.opacity || this._map.data.display.group.opacity;
+			const clippedOpacityDefinition : ValueDefinition = {
+				clip: opacityDefinition,
+				low: 0.0
+			};
+			const opacityResult = edgeDefinitionHelper(nodes, clippedOpacityDefinition, edges, this.directNodes.map(node => node.opacity));
+			const opacity = opacityResult[0];
+
+			const strokeOpacityDefinition = this._data.display.strokeOpacity || this._map.data.display.group.strokeOpacity;
+			const clippedStrokeOpacityDefinition : ValueDefinition = {
+				clip: strokeOpacityDefinition,
+				low: 0.0
+			};
+			const strokeOpacityResult = edgeDefinitionHelper(nodes, clippedStrokeOpacityDefinition, edges, this.directNodes.map(node => node.strokeOpacity));
+			const strokeOpacity = strokeOpacityResult[0];
+
+			const colorDefinitionOrString = this._data.display.color || this._map.data.display.group.color;
+			const colorDefinition = wrapStringAsColor(colorDefinitionOrString);
+			const colorResult = edgeDefinitionHelper(nodes, colorDefinition, edges, this.directNodes.map(node => packColor(node.color)));
+			const color = unpackColor(colorResult[0]);
+
+			const strokeColorDefinitionOrString = this._data.display.strokeColor || this._map.data.display.group.strokeColor;
+			const strokeColorDefinition = wrapStringAsColor(strokeColorDefinitionOrString);
+			const strokeColorResult = edgeDefinitionHelper(nodes, strokeColorDefinition, edges, this.directNodes.map(node => packColor(node.strokeColor)));
+			const strokeColor = unpackColor(strokeColorResult[0]);
+
+			this._cachedDisplayProperties = {
+				radius,
+				opacity,
+				strokeOpacity,
+				strokeWidth,
+				color,
+				strokeColor
+			};
+		}
+		return this._cachedDisplayProperties;
+	}
+
 	get radius() : number {
 		if (!this._cachedLayout) this._calculateLayout();
 		if (!this._cachedLayout) throw new Error('Calculate layout didnt get set');
@@ -2018,52 +2097,23 @@ export class AdjacencyMapGroup {
 	}
 
 	get strokeWidth() : number {
-		const inputs = this.directNodes.map(node => node.strokeWidth);
-		const definition = this._data.display.strokeWidth || this._map.data.display.group.strokeWidth;
-		const clippedDefinition : ValueDefinition = {
-			clip: definition,
-			low: 0.0
-		};
-		const result = edgeDefinitionHelper(this.nodes, clippedDefinition, this.edges, inputs);
-		return result[0];
+		return this.displayProperties.strokeWidth;
 	}
 
 	get opacity() : number {
-		const inputs = this.directNodes.map(node => node.opacity);
-		const definition = this._data.display.opacity || this._map.data.display.group.opacity;
-		const clippedDefinition : ValueDefinition = {
-			clip: definition,
-			low: 0.0
-		};
-		const result = edgeDefinitionHelper(this.nodes, clippedDefinition, this.edges, inputs);
-		return result[0];
+		return this.displayProperties.opacity;
 	}
 	
 	get strokeOpacity() : number {
-		const inputs = this.directNodes.map(node => node.strokeOpacity);
-		const definition = this._data.display.strokeOpacity || this._map.data.display.group.strokeOpacity;
-		const clippedDefinition : ValueDefinition = {
-			clip: definition,
-			low: 0.0
-		};
-		const result = edgeDefinitionHelper(this.nodes, clippedDefinition, this.edges, inputs);
-		return result[0];
+		return this.displayProperties.strokeOpacity;
 	}
 
 	get color() : Color {
-		const inputs = this.directNodes.map(node => packColor(node.color));
-		const definitionOrString = this._data.display.color || this._map.data.display.group.color;
-		const definition = wrapStringAsColor(definitionOrString);
-		const result = edgeDefinitionHelper(this.nodes, definition, this.edges, inputs);
-		return unpackColor(result[0]);
+		return this.displayProperties.color;
 	}
 
 	get strokeColor() : Color {
-		const inputs = this.directNodes.map(node => packColor(node.strokeColor));
-		const definitionOrString = this._data.display.strokeColor || this._map.data.display.group.strokeColor;
-		const definition = wrapStringAsColor(definitionOrString);
-		const result = edgeDefinitionHelper(this.nodes, definition, this.edges, inputs);
-		return unpackColor(result[0]);
+		return this.displayProperties.strokeColor;
 	}
 
 	fullDescription(includeHidden = false) : string {

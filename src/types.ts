@@ -594,6 +594,15 @@ export type NodeDisplay = {
 
 export type GroupDisplay = Omit<NodeDisplay, 'radius'>;
 
+export type LayoutNodeDisplayProperties = {
+	radius: number,
+	opacity: number,
+	color: Color,
+	strokeWidth: number,
+	strokeOpacity: number,
+	strokeColor: Color
+}
+
 //If any of these returns more than one number, then the one that returns the
 //most sets the number of edges to render for this edge type, and everything
 //else will be looped to fill. Those same edges might later be distilled via
