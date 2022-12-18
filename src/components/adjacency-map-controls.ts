@@ -285,9 +285,10 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 					<div>
 						<label>Description</label> ${this._summaryDescription}
 					</div>
-					<div>
+					${this._adjacencyMap && Object.keys(this._adjacencyMap.groups).length > 0 ?
+		html`<div>
 						<label>Group</label> ${layoutNode ? layoutNode.groupID || html`<em>No group</em>` : html`<em>No group</em>`}
-					</div>
+					</div>` : ''}
 					<div>
 						<label>Values <button class='small' title='Show hidden values'>${this._showHiddenValues ? VISIBILITY_ICON : VISIBILITY_OFF_ICON}</button><input type='checkbox' .checked=${this._showHiddenValues} @change=${this._handleShowHiddenValuesClicked}></input></label>
 						${Object.entries(this._summaryValues).filter(entry => this._showHiddenValues || !this._adjacencyMap?.data.properties[entry[0]].hide).map(entry => this._htmlForValue(entry[0], entry[1]))}
