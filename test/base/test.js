@@ -5256,6 +5256,64 @@ describe('groups', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('basic case displayProperties display empty subGroup', async () => {
+		const input = baseGroupInput();
+		input.groups.group_2 = {
+			group: 'group_1',
+			description: 'A second group'
+		};
+		input.nodes.a.display = {
+			color: 'red',
+			strokeColor: 'red'
+		};
+		input.nodes.b.display = {
+			color: 'blue',
+			strokeColor: 'blue'
+		};
+		input.display = {
+			node: {
+				strokeWidth: 2,
+				opacity: 0.3,
+				strokeOpacity: 0.3
+			},
+			group: {
+				strokeWidth: {
+					combine: 'sum',
+					value: 'input'
+				},
+				opacity: {
+					combine: 'sum',
+					value: 'input'
+				},
+				strokeOpacity: {
+					combine: 'sum',
+					value: 'input'
+				},
+				color: {
+					combine: 'color-mean',
+					value: 'input'
+				},
+				strokeColor: {
+					combine: 'color-mean',
+					value: 'input'
+				}
+			}
+		};
+
+		const map = new AdjacencyMap(input);
+		const group = map.group('group_1');
+		const actual = group.displayProperties;
+		const golden = {
+			radius: 16,
+			strokeWidth: 4,
+			opacity: 0.6,
+			strokeOpacity: 0.6,
+			color: color([127,0,127]),
+			strokeColor: color([127,0,127])
+		};
+		assert.deepStrictEqual(actual, golden);
+	});
+
 });
 
 describe('implyGroups', () => {
