@@ -5278,6 +5278,53 @@ describe('groups', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('basic case color display', async () => {
+		const input = baseGroupInput();
+		input.nodes.a.display = {
+			color: 'red'
+		};
+		input.nodes.b.display = {
+			color: 'blue'
+		};
+		input.display = {
+			group: {
+				color: {
+					combine: 'color-mean',
+					value: 'input'
+				}
+			}
+		};
+
+
+		const map = new AdjacencyMap(input);
+		const group = map.group('group_1');
+		const actual = group.color;
+		const golden = color([127,0,127]);
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('basic case color group.display', async () => {
+		const input = baseGroupInput();
+		input.nodes.a.display = {
+			color: 'red'
+		};
+		input.nodes.b.display = {
+			color: 'blue'
+		};
+		input.groups.group_1.display = {
+			color: {
+				combine: 'color-mean',
+				value: 'input'
+			}
+		};
+
+		const map = new AdjacencyMap(input);
+		const group = map.group('group_1');
+		const actual = group.color;
+		const golden = color([127, 0, 127]);
+		assert.deepStrictEqual(actual, golden);
+	});
+
 });
 
 describe('implyGroups', () => {

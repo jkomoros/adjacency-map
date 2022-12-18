@@ -2050,7 +2050,6 @@ export class AdjacencyMapGroup {
 	}
 
 	get color() : Color {
-		//TODO: test this works
 		const inputs = this.directNodes.map(node => packColor(node.color));
 		const definitionOrString = this._data.display.color || this._map.data.display.group.color;
 		const definition = wrapStringAsColor(definitionOrString);
