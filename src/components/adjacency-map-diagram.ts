@@ -82,7 +82,7 @@ class AdjacencyMapDiagram extends LitElement {
 
 				circle.selected {
 					stroke-dasharray: var(--effective-stroke-width);
-					animation: 1s linear infinite normal march;
+					animation: 1s ease-in-out infinite normal march;
 				}
 
 				circle:hover, circle.selected {
