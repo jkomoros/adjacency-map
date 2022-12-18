@@ -5147,25 +5147,57 @@ describe('groups', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
-	it('basic case strokeWidth display', async () => {
+	it('basic case displayProperties display', async () => {
 		const input = baseGroupInput();
+		input.nodes.a.display = {
+			color: 'red',
+			strokeColor: 'red'
+		};
+		input.nodes.b.display = {
+			color: 'blue',
+			strokeColor: 'blue'
+		};
 		input.display = {
 			node: {
 				strokeWidth: 2,
+				opacity: 0.3,
+				strokeOpacity: 0.3
 			},
 			group: {
 				strokeWidth: {
 					combine: 'sum',
 					value: 'input'
+				},
+				opacity: {
+					combine: 'sum',
+					value: 'input'
+				},
+				strokeOpacity: {
+					combine: 'sum',
+					value: 'input'
+				},
+				color: {
+					combine: 'color-mean',
+					value: 'input'
+				},
+				strokeColor: {
+					combine: 'color-mean',
+					value: 'input'
 				}
 			}
 		};
 
-
 		const map = new AdjacencyMap(input);
 		const group = map.group('group_1');
-		const actual = group.strokeWidth;
-		const golden = 4;
+		const actual = group.displayProperties;
+		const golden = {
+			radius: 16,
+			strokeWidth: 4,
+			opacity: 0.6,
+			strokeOpacity: 0.6,
+			color: color([127,0,127]),
+			strokeColor: color([127,0,127])
+		};
 		assert.deepStrictEqual(actual, golden);
 	});
 
@@ -5191,28 +5223,6 @@ describe('groups', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
-	it('basic case opacity display', async () => {
-		const input = baseGroupInput();
-		input.display = {
-			node: {
-				opacity: 0.3,
-			},
-			group: {
-				opacity: {
-					combine: 'sum',
-					value: 'input'
-				}
-			}
-		};
-
-
-		const map = new AdjacencyMap(input);
-		const group = map.group('group_1');
-		const actual = group.opacity;
-		const golden = 0.6;
-		assert.deepStrictEqual(actual, golden);
-	});
-
 	it('basic case opacity group.display', async () => {
 		const input = baseGroupInput();
 		input.groups.group_1.display = {
@@ -5231,28 +5241,6 @@ describe('groups', () => {
 		const map = new AdjacencyMap(input);
 		const group = map.group('group_1');
 		const actual = group.opacity;
-		const golden = 0.6;
-		assert.deepStrictEqual(actual, golden);
-	});
-
-	it('basic case strokeOpacity display', async () => {
-		const input = baseGroupInput();
-		input.display = {
-			node: {
-				strokeOpacity: 0.3,
-			},
-			group: {
-				strokeOpacity: {
-					combine: 'sum',
-					value: 'input'
-				}
-			}
-		};
-
-
-		const map = new AdjacencyMap(input);
-		const group = map.group('group_1');
-		const actual = group.strokeOpacity;
 		const golden = 0.6;
 		assert.deepStrictEqual(actual, golden);
 	});
@@ -5278,31 +5266,6 @@ describe('groups', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
-	it('basic case color display', async () => {
-		const input = baseGroupInput();
-		input.nodes.a.display = {
-			color: 'red'
-		};
-		input.nodes.b.display = {
-			color: 'blue'
-		};
-		input.display = {
-			group: {
-				color: {
-					combine: 'color-mean',
-					value: 'input'
-				}
-			}
-		};
-
-
-		const map = new AdjacencyMap(input);
-		const group = map.group('group_1');
-		const actual = group.color;
-		const golden = color([127,0,127]);
-		assert.deepStrictEqual(actual, golden);
-	});
-
 	it('basic case color group.display', async () => {
 		const input = baseGroupInput();
 		input.nodes.a.display = {
@@ -5322,31 +5285,6 @@ describe('groups', () => {
 		const group = map.group('group_1');
 		const actual = group.color;
 		const golden = color([127, 0, 127]);
-		assert.deepStrictEqual(actual, golden);
-	});
-
-	it('basic case strokeColor display', async () => {
-		const input = baseGroupInput();
-		input.nodes.a.display = {
-			strokeColor: 'red'
-		};
-		input.nodes.b.display = {
-			strokeColor: 'blue'
-		};
-		input.display = {
-			group: {
-				strokeColor: {
-					combine: 'color-mean',
-					value: 'input'
-				}
-			}
-		};
-
-
-		const map = new AdjacencyMap(input);
-		const group = map.group('group_1');
-		const actual = group.strokeColor;
-		const golden = color([127,0,127]);
 		assert.deepStrictEqual(actual, golden);
 	});
 
