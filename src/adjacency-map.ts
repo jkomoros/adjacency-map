@@ -2058,7 +2058,6 @@ export class AdjacencyMapGroup {
 	}
 
 	get strokeColor() : Color {
-		//TODO: test this works
 		const inputs = this.directNodes.map(node => packColor(node.strokeColor));
 		const definitionOrString = this._data.display.strokeColor || this._map.data.display.group.strokeColor;
 		const definition = wrapStringAsColor(definitionOrString);

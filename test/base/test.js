@@ -5325,6 +5325,53 @@ describe('groups', () => {
 		assert.deepStrictEqual(actual, golden);
 	});
 
+	it('basic case strokeColor display', async () => {
+		const input = baseGroupInput();
+		input.nodes.a.display = {
+			strokeColor: 'red'
+		};
+		input.nodes.b.display = {
+			strokeColor: 'blue'
+		};
+		input.display = {
+			group: {
+				strokeColor: {
+					combine: 'color-mean',
+					value: 'input'
+				}
+			}
+		};
+
+
+		const map = new AdjacencyMap(input);
+		const group = map.group('group_1');
+		const actual = group.strokeColor;
+		const golden = color([127,0,127]);
+		assert.deepStrictEqual(actual, golden);
+	});
+
+	it('basic case strokeColor group.display', async () => {
+		const input = baseGroupInput();
+		input.nodes.a.display = {
+			strokeColor: 'red'
+		};
+		input.nodes.b.display = {
+			strokeColor: 'blue'
+		};
+		input.groups.group_1.display = {
+			strokeColor: {
+				combine: 'color-mean',
+				value: 'input'
+			}
+		};
+
+		const map = new AdjacencyMap(input);
+		const group = map.group('group_1');
+		const actual = group.strokeColor;
+		const golden = color([127, 0, 127]);
+		assert.deepStrictEqual(actual, golden);
+	});
+
 });
 
 describe('implyGroups', () => {
