@@ -48,7 +48,15 @@ To create a new one, copy `stub.SAMPLE.ts` to a new filename that omits `SAMPLE`
 
 ## Understanding the fundamental model
 
-The basic model of a diagram is composed of three things:
+The output of the model is an adjacency map. This is a diagram, similar to a tech tree you might find in the game Civilization, that charts out the various adjacent use cases and their dependencies on each other. The chart flows from left to right, with use cases that have fewer dependencies on the left and use cases that have more on the right.
+
+You define a graph by enumerating nodes and defining their edges (dependencies) on each other, which then implicitly lays out a graph.
+
+The basic behavior of the graph is simple, but it is also powerful customizable. It is possible to "flow" values and properties from nodes along edges to other nodes. This allows, for example, having an "uncertainty" property that grows ever-larger for nodes deeper in the graph. Although the logic for how to compute node values from edges is powerfully configurable, typically you just use a "library" of default logic that generates a reasonable output from your defined nodes and edges.
+
+The base graphs can be modified with overlays called "scenarios", which allow you to demonstrate how the graph would differ if you tweaked certain nodes or edges. This allows different people to express their different opinions about the value / cost / uncertainty of various use cases on the same concrete graph, which makes it easier to communicate.
+
+In more depth, the basic model of a diagram is composed of three things:
 1) A set of **properties** defining the numerical values to be calculated for each node, and how they are calculated.
 2) A set of **nodes** that define the primary output of the diagram, where each node will have one value for each property calculated. Each edge is affiliated with one property type. Nodes can explicitly set the values for each property, but more typically they define edges to implicitly describe their final values.
 3) A set of **edges** for each node, that are of a specific propery type and rely on other nodes, which, combined with the property's definition for how its value should be calculated, lead to the final output value for the node. Each node has 0 to n edges that point to nodes that are the parents of this node in the tree.
