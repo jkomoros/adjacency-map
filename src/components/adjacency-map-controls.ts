@@ -260,7 +260,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 				${this._legalFilenames && this._legalFilenames.length > 1 ? html`
 				<label for='filenames'>File</label>
 				<select id='filenames' .value=${this._filename} @change=${this._handleFilenameChanged}>
-					${this._legalFilenames.map(filename => html`<option .value=${filename}>${filename}${this._scenariosOverlays && this._scenariosOverlays[filename] ? html` (*)` : ''}</option>`)}
+					${this._legalFilenames.map(filename => html`<option .value=${filename} .selected=${filename == this._filename}>${filename}${this._scenariosOverlays && this._scenariosOverlays[filename] ? html` (*)` : ''}</option>`)}
 				</select>` : ''}
 				<div>
 					<label for='editing'>Editing</label><input id='editing' type='checkbox' .checked=${this._editing} @change=${this._handleEditingChanged}></input>
