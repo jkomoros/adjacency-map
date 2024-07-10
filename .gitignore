@@ -19,3 +19,4 @@ tools/**/*.js
 data/**/*.d.ts
 data/**/*.map
 data/**/*.js
+*.GENERATED.*
