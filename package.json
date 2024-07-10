@@ -20,7 +20,7 @@
     "build:clean:pristine": "npm run build:clean && npm run build:clean:generated",
     "build:rollup": "rollup -c",
     "build:typescript": "tsc",
-    "build:copy": "mkdir -p dist/ && cp index.html dist/",
+    "build:copy": "mkdir -p dist/images && cp index.html dist/ && cp manifest.json dist/ && cp -R images/* dist/images/",
     "generate": "npm run generate:config",
     "generate:config": "node --loader ts-node/esm tools/config.ts",
     "deploy": "npm run build && firebase deploy",
