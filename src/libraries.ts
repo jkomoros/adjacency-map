@@ -127,6 +127,14 @@ export const LIBRARIES : {[type in LibraryType] : Library} = {
 					color: 'gold'
 				}
 			},
+			partnerships: {
+				...baseProductPropertyDefinition,
+				description: 'The amount of effort required to negotiated and land the required parternships to build this use case',
+				display: {
+					...baseProductPropertyDefinition.display,
+					color: 'brown'
+				}
+			},
 			parentValue: {
 				description: 'The component of value that comes from the parent',
 				value: {
