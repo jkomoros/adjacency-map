@@ -8,7 +8,7 @@
   "repository": "Polymer/pwa-starter-kit",
   "type": "module",
   "scripts": {
-    "start": "npm run serve",
+    "start": "npm run generate && npm run serve",
     "start:bisect": "npm install && npm run build:clean && npm run start",
     "start:clean": "npm install && npm run build:clean && npm run generate && npm run start",
     "serve": "tsc --watch --preserveWatchOutput & wds --node-resolve --port=8081",
