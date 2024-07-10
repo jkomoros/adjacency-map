@@ -1,47 +1,53 @@
 {
-    "compilerOptions": {
-      "target": "es2019",
-      "module": "ESNext",
-      "lib": ["es2020", "DOM", "DOM.Iterable"],
-      "declaration": true,
-      "declarationMap": true,
-      "sourceMap": true,
-      "inlineSources": true,
-      "rootDir": ".",
-      "noUnusedLocals": true,
-      "useDefineForClassFields": false,
-      "noUnusedParameters": true,
-      "noImplicitReturns": true,
-      "noFallthroughCasesInSwitch": true,
-      "moduleResolution": "node",
-      "allowSyntheticDefaultImports": true,
-      "experimentalDecorators": true,
-      "resolveJsonModule": true,
-      "forceConsistentCasingInFileNames": true,
-      "noImplicitOverride": true,
-      "noImplicitThis": true,
-      "noEmitOnError": true,
-      "noImplicitAny": true,
-      "strictNullChecks": true,
-      "plugins": [
-        {
-          "name": "ts-lit-plugin",
-          "strict": true,
-          "rules" : {
-            "no-missing-element-type-definition": "error",
-            "no-unknown-event": "error"
-          },
-          "globalEvents": [
-            "toggle",
-            "dialog-should-close",
-            "undo-clicked",
-            "option-changed",
-            "run-clicked",
-            "path-toggled",
-            "open-dialog"
-          ]
-        }
-      ]
-    },
-    "include": ["src/**/*.ts", "tools/**/*.ts"]
-  }
+	"compilerOptions": {
+		"target": "es2020",
+		"module": "ESNext",
+		"lib": ["es2020", "DOM", "DOM.Iterable"],
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"inlineSources": true,
+		"rootDir": ".",
+		"outDir": "./dist",
+		"noUnusedLocals": true,
+		"useDefineForClassFields": false,
+		"noUnusedParameters": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"moduleResolution": "node",
+		"allowSyntheticDefaultImports": true,
+		"experimentalDecorators": true,
+		"resolveJsonModule": true,
+		"forceConsistentCasingInFileNames": true,
+		"noImplicitOverride": true,
+		"noImplicitThis": true,
+		"noEmitOnError": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"esModuleInterop": true,
+		"plugins": [
+			{
+				"name": "ts-lit-plugin",
+				"strict": true,
+				"rules" : {
+					"no-missing-element-type-definition": "error",
+					"no-unknown-event": "error"
+				},
+				"globalEvents": [
+					"toggle",
+					"dialog-should-close",
+					"undo-clicked",
+					"option-changed",
+					"run-clicked",
+					"path-toggled",
+					"open-dialog"
+				]
+			}
+		]
+	},
+	"include": ["src/**/*.ts", "tools/**/*.ts"],
+	"ts-node": {
+		"esm": true,
+		"experimentalSpecifierResolution": "node"
+	}
+}

@@ -21,7 +21,7 @@
     "build:rollup": "rollup -c",
     "build:typescript": "tsc",
     "generate": "npm run generate:config",
-    "generate:config": "npx ts-node-esm tools/config.ts",
+    "generate:config": "node --loader ts-node/esm tools/config.ts",
     "deploy": "npm run build && firebase deploy",
     "test": "npm run test:base",
     "test:base": "mocha -r esm test/base --timeout=10000"
