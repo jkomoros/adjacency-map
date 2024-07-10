@@ -32,7 +32,7 @@ import {
 	nodeIDFromLayoutID
 } from "../adjacency-map.js";
 
-import { ROOT_ID } from "../constants.js";
+import { DEFAULT_SCENARIO_NAME, ROOT_ID } from "../constants.js";
 
 import {
 	DataState,
@@ -245,7 +245,7 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 	case UPDATE_FILENAME:
 		return {
 			...state,
-			scenarioName: DEFAULT_FILE_NAME,
+			scenarioName: DEFAULT_SCENARIO_NAME,
 			filename: action.filename
 		};
 	case UPDATE_SCALE:
