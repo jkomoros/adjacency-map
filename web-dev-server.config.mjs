@@ -4,7 +4,7 @@
 
 export default {
 	//File to return for any path that would otherwise 404
-	appIndex: 'index.html',
+	appIndex: 'dist/index.html',
 	rootDir: 'dist',
 	//Flags for --node-resolve (options at https://www.npmjs.com/package/rollup-plugin-node-resolve-main-fields)
 	nodeResolve: {
