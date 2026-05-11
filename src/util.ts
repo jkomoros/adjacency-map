@@ -107,7 +107,12 @@ const SCENARIOS_OVERLAYS_LOCAL_STORAGE_KEY = 'scenarios';
 export const fetchOverlaysFromStorage = () : ScenariosOverlays => {
 	const rawObject = window.localStorage.getItem(SCENARIOS_OVERLAYS_LOCAL_STORAGE_KEY);
 	if (!rawObject) return {};
-	return JSON.parse(rawObject) as ScenariosOverlays;
+	try {
+		return JSON.parse(rawObject) as ScenariosOverlays;
+	} catch (err) {
+		console.warn('Corrupt scenario overlays in localStorage, ignoring:', err);
+		return {};
+	}
 };
 
 export const storeOverlaysToStorage = (overlays : ScenariosOverlays) => {
