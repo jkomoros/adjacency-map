@@ -79,7 +79,7 @@ import {
 } from '../actions/app.js';
 
 import {
-	closeDialog, showError
+	closeDialog
 } from '../actions/dialog.js';
 
 import {
@@ -193,6 +193,32 @@ class MainView extends connect(store)(PageViewElement) {
 				.instructions {
 					user-select: none;
 				}
+
+				.error-banner {
+					position: absolute;
+					top: 0;
+					left: 0;
+					right: 0;
+					z-index: 100;
+					background: #b00020;
+					color: white;
+					padding: 0.5em 1em;
+					font-family: monospace;
+					font-size: 0.85em;
+					white-space: pre-wrap;
+					box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+				}
+				.error-banner strong {
+					display: block;
+					margin-bottom: 0.25em;
+					font-family: var(--app-text-font-family, sans-serif);
+					font-size: 1em;
+				}
+				.error-banner a {
+					color: white;
+					text-decoration: underline;
+					cursor: pointer;
+				}
 			`
 		];
 	}
@@ -200,6 +226,12 @@ class MainView extends connect(store)(PageViewElement) {
 	override render() : TemplateResult {
 		return html`
 			<div class='container'>
+					${this._dataError ? html`
+						<div class='error-banner'>
+							<strong>Data error in <code>${this._filename}</code></strong>
+							${this._dataError}
+							<div><a @click=${() => window.location.reload()}>Reload</a></div>
+						</div>` : ''}
 					<adjacency-map-controls></adjacency-map-controls>
 					<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .hoveredEdgeID=${this._hoveredEdgeID} .hoveredLayoutID=${this._hoveredLayoutID} .selectedLayoutID=${this._selectedLayoutID} .scale=${this._scale} .editedNodes=${this._editedNodes}></adjacency-map-diagram>
 					<dialog-element .open=${this._dialogOpen} .title=${this._dialogTitle} @dialog-should-close=${this._handleDialogShouldClose} .hideClose=${true}>${this._dialogContent}</dialog-element>
@@ -235,7 +267,6 @@ class MainView extends connect(store)(PageViewElement) {
 			store.dispatch(canonicalizeHash());
 		}
 		if (changedProps.has('_dataError') && this._dataError) {
-			store.dispatch(showError(this._dataError));
 			console.warn(this._dataError);
 		}
 		if (changedProps.has('_scenariosOverlays')) {
