@@ -7270,3 +7270,60 @@ describe('deepEqual', () => {
 	});
 
 });
+
+describe('scenario node removal (#26)', () => {
+
+	const baseInput = {
+		properties: {
+			engineering: { value: 1 }
+		},
+		root: {
+			engineering: 1.0
+		},
+		nodes: {
+			a: { description: 'a' },
+			b: { description: 'b', edges: [{ type: 'engineering', parent: 'a' }] },
+			c: { description: 'c', edges: [{ type: 'engineering', parent: 'b' }] },
+			d: { description: 'd', edges: [{ type: 'engineering', parent: 'b' }] }
+		},
+		scenarios: {
+			'omit-b': {
+				description: 'b is removed',
+				nodes: {
+					b: { removed: true }
+				}
+			}
+		}
+	};
+
+	it('omits the removed node from the resulting graph', async () => {
+		const map = new AdjacencyMap(deepCopy(baseInput), 'omit-b');
+		const layoutKeys = Object.keys(map.layoutNodes);
+		assert.ok(!layoutKeys.includes('b'), 'b should be omitted (got: ' + layoutKeys.join(',') + ')');
+		assert.ok(layoutKeys.includes('a'), 'a should remain');
+		assert.ok(layoutKeys.includes('c'), 'c should remain (orphaned)');
+		assert.ok(layoutKeys.includes('d'), 'd should remain (orphaned)');
+	});
+
+	it('does not affect base scenario', async () => {
+		const map = new AdjacencyMap(deepCopy(baseInput));
+		const layoutKeys = Object.keys(map.layoutNodes);
+		assert.ok(layoutKeys.includes('b'), 'b should still exist in base scenario');
+	});
+
+	it('toggling removed off restores the node', async () => {
+		const input = deepCopy(baseInput);
+		input.scenarios['omit-b'].nodes.b.removed = false;
+		const map = new AdjacencyMap(input, 'omit-b');
+		const layoutKeys = Object.keys(map.layoutNodes);
+		assert.ok(layoutKeys.includes('b'), 'b should be present when removed=false');
+	});
+
+	it('referencing a non-existent node in a removed entry is a no-op', async () => {
+		const input = deepCopy(baseInput);
+		input.scenarios['omit-b'].nodes.nonexistent = { removed: true };
+		const fn = () => new AdjacencyMap(input, 'omit-b');
+		assert.doesNotThrow(fn);
+	});
+
+});
