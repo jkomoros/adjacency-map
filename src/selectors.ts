@@ -20,6 +20,7 @@ import {
 import {
 	DataFilename,
 	DialogKind,
+	LayoutID,
 	RootState,
 	ScenarioNode,
 	URLHashArgs
@@ -64,13 +65,6 @@ export const selectData = createSelector(
 	(rawData, overlay) => ({...rawData, scenarios: {...rawData.scenarios, ...overlay}})
 );
 
-//The node that should be used for the summary readout
-export const selectSummaryLayoutID = createSelector(
-	selectHoveredLayoutID,
-	selectSelectedLayoutID,
-	(hoveredNodeID, selectedNodeID) => hoveredNodeID || selectedNodeID
-);
-
 export const selectAdjacencyMap = createSelector(
 	selectData,
 	selectScenarioName,
@@ -83,6 +77,20 @@ export const selectAdjacencyMap = createSelector(
 			console.warn(err);
 		}
 		return null;
+	}
+);
+
+//The node that should be used for the summary readout
+export const selectSummaryLayoutID = createSelector(
+	selectHoveredLayoutID,
+	selectSelectedLayoutID,
+	selectAdjacencyMap,
+	(hoveredLayoutID, selectedLayoutID, map) => {
+		const valid = (id : LayoutID | undefined) : LayoutID | undefined => {
+			if (id === undefined || !map) return undefined;
+			try { map.layoutNode(id); return id; } catch { return undefined; }
+		};
+		return valid(hoveredLayoutID) || valid(selectedLayoutID);
 	}
 );
 
@@ -135,7 +143,17 @@ export const selectCurrentScenarioEditedNodes = createSelector(
 
 export const selectSelectedNodeID = createSelector(
 	selectSelectedLayoutID,
-	(layoutID) => nodeIDFromLayoutID(layoutID)
+	selectAdjacencyMap,
+	(layoutID, map) => {
+		if (layoutID === undefined) return undefined;
+		if (!map) return undefined;
+		try {
+			map.layoutNode(layoutID);
+		} catch {
+			return undefined;
+		}
+		return nodeIDFromLayoutID(layoutID);
+	}
 );
 
 export const selectSelectedNodeFieldsEdited = createSelector(
