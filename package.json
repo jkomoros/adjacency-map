@@ -11,7 +11,7 @@
     "start": "npm run build:copy && npm run generate && npm run serve",
     "start:bisect": "npm install && npm run build:clean && npm run start",
     "start:clean": "npm install && npm run build:clean && npm run generate && npm run start",
-    "serve": "tsc --watch --preserveWatchOutput & wds --node-resolve --port=8081",
+    "serve": "tsc --watch --preserveWatchOutput & node --loader ts-node/esm tools/watch-data.ts & wds --node-resolve --port=8081",
     "build": "npm run build:clean && npm run generate && npm run build:typescript && npm run build:rollup",
     "build:clean": "npm run build:clean:build && npm run build:clean:typescript",
     "build:clean:build": "rm -rf build/",
