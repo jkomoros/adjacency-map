@@ -14,7 +14,8 @@ import {
 } from './constants.js';
 
 import {
-	DATA
+	DATA,
+	SIDECAR_EDITS
 } from './data.GENERATED.js';
 
 import {
@@ -59,10 +60,16 @@ export const selectCurrentScenarioOverlay = createSelector(
 	(filename, overlays) => overlays[filename] || {}
 );
 
+const selectSidecarScenarios = createSelector(
+	selectFilename,
+	(filename) => SIDECAR_EDITS[filename] || {}
+);
+
 export const selectData = createSelector(
 	selectRawData,
+	selectSidecarScenarios,
 	selectCurrentScenarioOverlay,
-	(rawData, overlay) => ({...rawData, scenarios: {...rawData.scenarios, ...overlay}})
+	(rawData, sidecar, overlay) => ({...rawData, scenarios: {...rawData.scenarios, ...sidecar, ...overlay}})
 );
 
 export const selectAdjacencyMap = createSelector(
