@@ -28,7 +28,6 @@ A subsequent critic agent confirmed the design directions and corrected one majo
 ## Non-goals (deliberate cuts)
 
 - Side-by-side scenario diff (valuable but big)
-- Save-back-to-file (keep the existing readout→paste flow)
 - Pan/zoom (#29)
 - Screenshotting (#9)
 - In-UI scenario editing (#24) — agent-driven editing replaces this need
@@ -157,6 +156,49 @@ When `B` has `removed: true` in the current scenario:
 
 **Risk:** low. Mostly mechanical.
 
+### G. Save scenarios back to file (File System Access API)
+
+**Core insight:** don't round-trip TS at all. User inline edits in the UI are always scenario-scoped (see `ScenariosOverlays` type in `src/util.ts`). So we separate concerns:
+
+- `data/<name>.ts` = agent-editable structural source of truth (nodes, edge types, imports, scenario *names*).
+- `data/<name>.edits.json` = machine-managed JSON sidecar holding the *content* of scenarios that were inline-edited and saved.
+
+JSON round-trips cleanly. Agents have a clear "promote saved edits to canonical TS" workflow (copy the entry over, delete from JSON).
+
+**Save flow:**
+1. User makes inline edits in the webapp (existing behavior; localStorage overlays).
+2. User clicks "Save to file" (new button in `adjacency-map-controls.ts`).
+3. First save: app calls `window.showSaveFilePicker()` with suggested name `<name>.edits.json` and starting directory hint of `data/`. User confirms. Resulting `FileSystemFileHandle` is stored in IndexedDB keyed by `<name>`.
+4. Subsequent saves: retrieve handle from IndexedDB, call `handle.requestPermission({mode: 'readwrite'})` (Chromium auto-grants for the session after first user gesture), write file.
+5. After successful save: clear the now-graduated overlays from localStorage. The watcher detects the JSON change, regenerates, browser reloads, app boots with the saved scenarios as the new baseline.
+
+**Loader behavior:**
+- Extend `tools/config.ts` so the generation logic picks up any `data/<name>.edits.json` files and emits matching imports + a mapping into `src/data.GENERATED.ts`.
+- At runtime, when assembling the data for a file, merge: base scenarios from the TS module + scenarios from the JSON sidecar, with JSON winning on name conflict.
+- The graph renders identically whether the user just inline-edited or had previously saved.
+
+**Watcher pattern:** extend chokidar glob to `data/**/*.{ts,json}` so save-backs trigger reload.
+
+**Browser support:** File System Access API is Chromium-only (Chrome, Edge, Brave, Arc, Opera). Safari/Firefox fall back to the existing readout dialog. Detect at runtime via `if ('showSaveFilePicker' in window)`; only show the "Save to file" button when available. Document in AGENTS.md.
+
+**Re-linking edge cases:**
+- File handle invalid (file deleted, moved): on save, catch `NotFoundError`, prompt user to pick a new location, update IndexedDB.
+- Permission revoked (browser cleared site data): same flow — re-prompt on next save.
+
+**Implementation surface:**
+- New `src/file-save.ts`: FSA wrapper functions (`saveScenarios`, `getOrPickHandle`, `clearStoredHandle`). Uses `idb-keyval` or a tiny hand-rolled IndexedDB wrapper to persist handles.
+- `src/components/adjacency-map-controls.ts`: new "Save to file" button, conditionally shown when FSA is available and there are unsaved overlays.
+- `tools/config.ts`: extend to discover and emit imports for `data/*.edits.json` files.
+- `src/data.GENERATED.ts`: emits sidecar JSON alongside TS data.
+- `src/adjacency-map.ts` or `src/selectors.ts`: merge sidecar JSON scenarios into the file's data at construction/selection time.
+- `src/actions/`: action to clear localStorage overlays after a successful save.
+
+**Tests:**
+- Unit test for sidecar merge logic (base scenarios + sidecar; both same name; only one side has a scenario).
+- Manual smoke test: edit a scenario inline → save → confirm `data/<name>.edits.json` appears with expected content → reload → confirm scenario state matches what was saved.
+
+**Risk:** medium. FSA is well-supported but has nuances (permission re-prompt edge cases). The loader-merge change touches several files. Tests cover the merge.
+
 ## Architecture & dependencies between workstreams
 
 ```
@@ -174,9 +216,14 @@ E (omit) ──→ uses selection guard from A so omitting selected node doesn't
 
 F (agent kit) ──→ validate-data depends on E for `removed` to validate cleanly
             └──→ AGENTS.md should reference all of the above
+            └──→ AGENTS.md should reference G's sidecar JSON convention
+
+G (save-back) ──→ extends A's watcher to JSON glob
+           └──→ extends tools/config.ts (same code touched by F's validator)
+           └──→ AGENTS.md (F) must document the sidecar convention
 ```
 
-Build order: **C → B → A → D → E → F** (each later piece builds on earlier ones). C and B are quick wins; A unblocks D and E.
+Build order: **C → B → A → D → E → G → F** (F last so AGENTS.md and the validator can reference everything else). C and B are quick wins; A unblocks D, E, and G.
 
 ## Testing
 
@@ -194,8 +241,6 @@ Build order: **C → B → A → D → E → F** (each later piece builds on ear
 
 ## Effort estimate
 
-Per the critic's bottom-up breakdown:
-
 | Workstream | Estimate |
 |---|---|
 | A. Edit-refresh loop + URL selection | 2 hrs |
@@ -204,11 +249,13 @@ Per the critic's bottom-up breakdown:
 | D. Inspection + neighbor highlight + Esc | 2 hrs |
 | E. Omit nodes (incl. tests) | 3-4 hrs |
 | F. AGENTS.md + JSDoc + validate-data + rename | 2-3 hrs |
-| **Total** | **~10-12 hours (~1.5 days)** |
+| G. Save-back via File System Access API | 3-4 hrs |
+| **Total** | **~13-16 hours (~2 days)** |
 
 Biggest risks:
 1. **Omit (E) cascade effects** in the 2100-line `adjacency-map.ts`. Mitigation: thorough tests.
-2. **wds reload signal** may need configuration tweaks if auto-reload doesn't pick up `data.GENERATED.ts` regeneration. Mitigation: it already reloads on TS file changes in src/; this should just work.
+2. **Save-back loader merge (G)** touches several files and needs to round-trip cleanly. Mitigation: unit-test the merge in isolation before wiring the UI.
+3. **wds reload signal** may need configuration tweaks if auto-reload doesn't pick up `data.GENERATED.ts` regeneration. Mitigation: it already reloads on TS file changes in src/; this should just work.
 
 ## Out of scope / future
 
