@@ -11,11 +11,13 @@ import {
 	beginEditingNodeValue,
 	beginEditingScenario,
 	editingUpdateNodeValue,
+	fileSaveAvailable,
 	modifyEditingNodeEdge,
 	removeEditingNodeEdge,
 	removeEditingNodeValue,
 	removeEditingScenario,
 	resetScenariosOverlays,
+	saveScenariosToFile,
 	setEditing,
 	setRenderGroups,
 	setShowEdges,
@@ -180,6 +182,9 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 	@state()
 	_renderGroups : boolean;
 
+	@state()
+	_fileSaveAvailable = false;
+
 	static override get styles() {
 		return [
 			SharedStyles,
@@ -265,7 +270,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 				<div>
 					<label for='editing'>Editing</label><input id='editing' type='checkbox' .checked=${this._editing} @change=${this._handleEditingChanged}></input>
 					<label for='groups'>Groups</label><input id='groups' type='checkbox' .checked=${this._renderGroups} @change=${this._handleRenderGroupsChanged}></input>
-					${this._editing && Object.keys(this._scenariosOverlays).length > 0 ? html`<button class='small' title='Remove all edits across all files' @click=${this._handleResetOverlaysClicked}>${DELETE_FOREVER_ICON}</button><button class='small' title='Readout changes' @click=${this._handleShowReadoutClicked}>${CODE_ICON}</button>` : ''}
+					${this._editing && Object.keys(this._scenariosOverlays).length > 0 ? html`<button class='small' title='Remove all edits across all files' @click=${this._handleResetOverlaysClicked}>${DELETE_FOREVER_ICON}</button><button class='small' title='Readout changes' @click=${this._handleShowReadoutClicked}>${CODE_ICON}</button>${this._fileSaveAvailable ? html`<button class='small' title='Save edits to file' @click=${this._handleSaveToFileClicked}>Save</button>` : ''}` : ''}
 				</div>
 				${this._legalScenarioNames.length > 1 || this._editing ? html`
 				<label for='scenarios'>Scenario</label>
@@ -383,6 +388,10 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		return html`<div class='tag ${active ? 'active' : ''}' style=${styleMap(styles)} title='${tagDefinition.description}'>${tagDefinition.displayName}</div>`;
 	}
 
+	override firstUpdated() {
+		this._fileSaveAvailable = fileSaveAvailable();
+	}
+
 	// This is called every time something is updated in the store.
 	override stateChanged(state : RootState) {
 		this._filename = selectFilename(state);
@@ -452,6 +461,14 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 
 	_handleShowReadoutClicked() {
 		store.dispatch(showReadout());
+	}
+
+	async _handleSaveToFileClicked() {
+		try {
+			await store.dispatch(saveScenariosToFile());
+		} catch (err) {
+			console.warn('Save failed:', err);
+		}
 	}
 
 	_edgeActionClicked(e : Event) : [edge : EdgeValue, previousID : EdgeValueMatchID, hasModifications : boolean] {

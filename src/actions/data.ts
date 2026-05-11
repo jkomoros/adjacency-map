@@ -13,6 +13,7 @@ export const SET_RENDER_GROUPS = 'SET_RENDER_GROUPS';
 
 export const LOAD_SCENARIOS_OVERLAYS = 'LOAD_SCENARIOS_OVERLAYS';
 export const RESET_SCENARIOS_OVERLAYS = 'RESET_SCENARIOS_OVERLAYS';
+export const SAVE_SCENARIOS_SUCCESS = 'SAVE_SCENARIOS_SUCCESS';
 export const BEGIN_EDITING_SCENARIO = 'BEGIN_EDITING_SCENARIO';
 export const REMOVE_EDITING_SCENARIO = 'REMOVE_EDITING_SCENARIO';
 export const UPDATE_EDITING_SCENARIO_DESCRIPTION = 'UPDATE_EDITING_SCENARIO_DESCRIPTION';
@@ -83,8 +84,15 @@ import {
 } from 'redux-thunk';
 
 import {
-	DATA 
+	DATA
 } from '../data.GENERATED.js';
+
+import {
+	saveScenarios,
+	fileSaveAvailable
+} from '../file-save.js';
+
+export { fileSaveAvailable };
 
 export const updateFilename = (filename : DataFilename, skipCanonicalize = false) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	const state = getState();
@@ -370,4 +378,15 @@ export const modifyEditingNodeEdge = (previousEdgeID : EdgeValueMatchID, newEdge
 		previousEdgeID,
 		edge: newEdge
 	});
+};
+
+export const saveScenariosToFile = () : ThunkAction<Promise<void>, RootState, unknown, AnyAction> => async (dispatch, getState) => {
+	if (!fileSaveAvailable()) {
+		throw new Error('File save is not supported in this browser');
+	}
+	const state = getState();
+	const filename = selectFilename(state);
+	const overlay = selectCurrentScenarioOverlay(state);
+	await saveScenarios(filename, overlay);
+	dispatch({ type: SAVE_SCENARIOS_SUCCESS, filename });
 };

@@ -16,6 +16,7 @@ import {
 	UPDATE_SHOW_HIDDEN_VALUES,
 	LOAD_SCENARIOS_OVERLAYS,
 	RESET_SCENARIOS_OVERLAYS,
+	SAVE_SCENARIOS_SUCCESS,
 	BEGIN_EDITING_SCENARIO,
 	REMOVE_EDITING_SCENARIO,
 	UPDATE_EDITING_SCENARIO_DESCRIPTION,
@@ -297,6 +298,14 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			scenariosOverlays: action.overlays
+		};
+	case SAVE_SCENARIOS_SUCCESS:
+		return {
+			...state,
+			scenariosOverlays: {
+				...state.scenariosOverlays,
+				[action.filename]: {}
+			}
 		};
 	case RESET_SCENARIOS_OVERLAYS:
 		return {
