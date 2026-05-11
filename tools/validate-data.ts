@@ -24,7 +24,18 @@ const main = async () => {
 			scenarios: { ...(baseRaw.scenarios || {}), ...sidecar }
 		};
 
-		const scenarioNames = ['', ...Object.keys(merged.scenarios || {})];
+		// Build the validatable scenario name list. Array-valued scenarios are
+		// expanded by processMapDefinition into name_0, name_1, ... so we don't
+		// instantiate them by the raw key; we instantiate each expansion.
+		const scenarioNames : string[] = [''];
+		for (const [name, def] of Object.entries(merged.scenarios || {})) {
+			if (Array.isArray(def)) {
+				for (let i = 0; i < def.length; i++) scenarioNames.push(`${name}_${i}`);
+			} else {
+				scenarioNames.push(name);
+			}
+		}
+
 		for (const scenarioName of scenarioNames) {
 			try {
 				// eslint-disable-next-line @typescript-eslint/no-new
