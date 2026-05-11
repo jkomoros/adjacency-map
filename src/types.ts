@@ -680,8 +680,12 @@ export type TagMap = {
 
 export type ScenarioName = string;
 
-//A scenario is an overlay over the base configuration. Currnetly it may only
-//override the base values of already existing nodes.
+/**
+ * A scenario: a named overlay that modifies the base graph. Scenarios can
+ * `extends` another scenario to compose modifications. Per-node overrides
+ * adjust values, add/remove/modify edges, or mark a node `removed: true`
+ * to omit it from the rendered graph entirely.
+ */
 export type RawScenario = {
 	description? : string,
 	//A scenario may extend another by using its ID here, which means it will
@@ -690,6 +694,14 @@ export type RawScenario = {
 	//Scenarios may override root nodes by using id of ROOT_ID.
 	nodes: {
 		[id : NodeID] : {
+			/**
+			 * If true, this node is omitted from the rendered graph for this
+			 * scenario. Edges from other nodes that reference this node as
+			 * `parent` are silently dropped. Children whose only parent was
+			 * this node become orphans. Setting `removed: false` (or removing
+			 * the override) restores the node. The underlying data is never
+			 * destructively modified.
+			 */
 			removed? : boolean,
 			values?: NodeValuesOverride,
 			group? : GroupID,
@@ -717,7 +729,13 @@ export type ScenarioNodeEdges = {
 	}
 }
 
+/**
+ * Canonical (post-extension) form of a per-scenario node override. Built
+ * from raw scenarios via `processMapDefinition`. The `removed` flag here
+ * carries through scenario extension chains.
+ */
 export type ScenarioNode = {
+	/** See the `removed` field on the raw scenario node override. */
 	removed? : boolean,
 	group? : GroupID,
 	values: {
@@ -749,6 +767,14 @@ export type ScenariosDefinition = {
 	[name : ScenarioName] : Scenario;
 };
 
+/**
+ * Top-level shape of a data file under `data/`. Each `.ts` file in `data/`
+ * exports a default `RawMapDefinition`. Nodes form the base graph; scenarios
+ * overlay modifications onto that graph (changing values, adding/removing
+ * edges, omitting nodes, etc.).
+ *
+ * See AGENTS.md at the repo root for a worked introduction.
+ */
 export type RawMapDefinition = {
 	description?: string;
 	//Imports lists libraries to base types on. The library 'core' is implicitly
