@@ -173,12 +173,18 @@ export const extractSimpleGraph = (data : MapDefinition, scenarioName : Scenario
 	const result : SimpleGraph = {};
 	const scenario : Scenario = data.scenarios && data.scenarios[scenarioName] ? data.scenarios[scenarioName] : {description: '', nodes: {}};
 	const scenarioNodes = scenario.nodes;
+	const removed = new Set<NodeID>();
+	for (const [id, scNode] of Object.entries(scenarioNodes)) {
+		if (scNode.removed && data.nodes[id]) removed.add(id);
+	}
 	for (const [id, value] of Object.entries(data.nodes)) {
+		if (removed.has(id)) continue;
 		const scenarioNode = scenarioNodes[id] || emptyScenarioNode();
 		const edges : {[id : NodeID] : true} = {};
 		const [finalEdges] = edgesWithScenarioModifications(value.edges, scenarioNode.edges);
 		for (const edge of finalEdges) {
 			const ref = edge.parent || ROOT_ID;
+			if (removed.has(ref)) continue;
 			edges[ref] = true;
 		}
 		result[id] = edges;
@@ -600,6 +606,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 				}
 			};
 			if (baseNode.group != undefined) nodes[id].group = baseNode.group;
+			if (baseNode.removed !== undefined) nodes[id].removed = baseNode.removed;
 		}
 		for (const [id, node] of Object.entries(rawScenario.nodes)) {
 			const existingNode : ScenarioNode = nodes[id] || emptyScenarioNode();
@@ -614,6 +621,8 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 			if (existingNode.edges.extended) newNode.edges.extended = existingNode.edges.extended;
 			if (existingNode.group != undefined) newNode.group = existingNode.group;
 			if (node.group != undefined) newNode.group = node.group;
+			const effectiveRemoved = node.removed !== undefined ? node.removed : existingNode.removed;
+			if (effectiveRemoved !== undefined) newNode.removed = effectiveRemoved;
 			nodes[id] = newNode;
 		}
 
@@ -790,7 +799,11 @@ const validateData = (data : MapDefinition) : void => {
 		if (scenarioName == DEFAULT_SCENARIO_NAME) throw new Error('The default scenario name is implied and should not be enumerated');
 		if (!scenario.nodes || typeof scenario.nodes != 'object') throw new Error('Scenario must have nodes');
 		for (const [nodeName, nodeDefinition] of Object.entries(scenario.nodes)) {
-			if (nodeName != ROOT_ID && !data.nodes[nodeName]) throw new Error('All node ids in a scenario must be either ROOT_ID or included in nodes');
+			//A removed entry that references a non-existent node is a no-op (issue #26).
+			if (nodeName != ROOT_ID && !data.nodes[nodeName]) {
+				if (nodeDefinition.removed) continue;
+				throw new Error('All node ids in a scenario must be either ROOT_ID or included in nodes');
+			}
 			validateNodeValues(data, nodeDefinition.values);
 			validateEdges(data, nodeName, nodeDefinition.edges.add);
 			validateEdges(data, nodeName, Object.values(nodeDefinition.edges.modify));
@@ -838,6 +851,7 @@ export class AdjacencyMap {
 	_impliedNodeGroups : {[id : NodeID] : GroupID} | undefined;
 	_groups : {[id : GroupID] : AdjacencyMapGroup};
 	_cachedChildren : {[id : NodeID] : NodeID[]};
+	_cachedRemovedNodeIDs : Set<NodeID> | undefined;
 	_cachedEdges : ExpandedEdgeValue[];
 	_cachedRenderEdges : RenderEdgeValue[] | undefined;
 	_cachedLayoutNodes : {[id : LayoutID] : LayoutNode};
@@ -862,16 +876,39 @@ export class AdjacencyMap {
 		if (scenarioName != DEFAULT_SCENARIO_NAME && !this.data.scenarios[scenarioName]) throw new Error('no such scenario');
 
 		this._scenarioName = scenarioName;
+		this._cachedChildren = this._buildCachedChildren();
+	}
+
+	_buildCachedChildren() : {[id : NodeID] : NodeID[]} {
+		const removed = this._removedNodeIDs;
 		const children : SimpleGraph = {};
 		for (const [child, definition] of Object.entries(this._data.nodes)) {
+			if (removed.has(child)) continue;
 			const edges = definition.edges || [];
 			for (const edge of edges) {
 				const parent = edge.parent || ROOT_ID;
+				if (removed.has(parent)) continue;
 				if (!children[parent]) children[parent] = {};
 				children[parent][child] = true;
 			}
 		}
-		this._cachedChildren = Object.fromEntries(Object.entries(children).map(entry => [entry[0], Object.keys(entry[1])]));
+		return Object.fromEntries(Object.entries(children).map(entry => [entry[0], Object.keys(entry[1])]));
+	}
+
+	get _removedNodeIDs() : Set<NodeID> {
+		if (!this._cachedRemovedNodeIDs) {
+			const result = new Set<NodeID>();
+			const scenario = this._data.scenarios[this._scenarioName];
+			if (scenario) {
+				for (const [id, scenarioNode] of Object.entries(scenario.nodes)) {
+					if (scenarioNode.removed && this._data.nodes[id]) {
+						result.add(id);
+					}
+				}
+			}
+			this._cachedRemovedNodeIDs = result;
+		}
+		return this._cachedRemovedNodeIDs;
 	}
 
 	//edgeTypes returns the types of edges. It's in topological order of any
@@ -964,6 +1001,10 @@ export class AdjacencyMap {
 		this._cachedRenderEdges = undefined;
 		this._fullGroupsData = undefined;
 		this._impliedNodeGroups = undefined;
+		this._cachedRemovedNodeIDs = undefined;
+		//The set of removed nodes can change across scenarios, which affects
+		//the children graph. Rebuild it here.
+		this._cachedChildren = this._buildCachedChildren();
 		for (const node of Object.values(this._nodes)) {
 			node._scenarioChanged();
 		}
@@ -1052,7 +1093,8 @@ export class AdjacencyMap {
 
 	get nodes() : {[id : NodeID] : AdjacencyMapNode} {
 		//TODO: cache. Not a huge deal because the heavy lifting is cached behind node().
-		const ids = ['',...Object.keys(this._data.nodes)];
+		const removed = this._removedNodeIDs;
+		const ids = ['', ...Object.keys(this._data.nodes).filter(id => !removed.has(id))];
 		return Object.fromEntries(ids.map(id => [id, this.node(id)]));
 	}
 
@@ -1679,7 +1721,9 @@ export class AdjacencyMapNode {
 	//All edges
 	get edges() : ExpandedEdgeValue[] {
 		if (!this._cachedEdges) {
-			this._cachedEdges = completeEdgeSet(this.id, this._map.data, this.edgesWithFinalScenarioModifications);
+			const removed = this._map._removedNodeIDs;
+			const rawEdges = completeEdgeSet(this.id, this._map.data, this.edgesWithFinalScenarioModifications);
+			this._cachedEdges = removed.size ? rawEdges.filter(e => !removed.has(e.parent)) : rawEdges;
 		}
 		return this._cachedEdges;
 	}
