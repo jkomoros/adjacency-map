@@ -305,6 +305,8 @@ class MainView extends connect(store)(PageViewElement) {
 			store.dispatch(nextScenarioName());
 		} else if (e.key == 'ArrowLeft') {
 			store.dispatch(previousScenarioName());
+		} else if (e.key == 'Escape') {
+			store.dispatch(updateSelectedLayoutID(undefined));
 		}
 	}
 
