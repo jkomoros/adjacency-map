@@ -23,6 +23,7 @@
     "build:copy": "mkdir -p dist/images && cp index.html dist/ && cp manifest.json dist/ && cp -R images/* dist/images/",
     "generate": "npm run generate:config",
     "generate:config": "node --loader ts-node/esm tools/config.ts",
+    "validate": "node --loader ts-node/esm tools/validate-data.ts",
     "deploy": "npm run build && firebase deploy",
     "test": "npm run test:base",
     "test:base": "mocha -r esm test/base --timeout=10000"
