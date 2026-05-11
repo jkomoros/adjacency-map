@@ -690,6 +690,7 @@ export type RawScenario = {
 	//Scenarios may override root nodes by using id of ROOT_ID.
 	nodes: {
 		[id : NodeID] : {
+			removed? : boolean,
 			values?: NodeValuesOverride,
 			group? : GroupID,
 			edges?: {
@@ -717,6 +718,7 @@ export type ScenarioNodeEdges = {
 }
 
 export type ScenarioNode = {
+	removed? : boolean,
 	group? : GroupID,
 	values: {
 		[propertyName : PropertyName]: ValueDefinition
