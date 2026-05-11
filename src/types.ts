@@ -794,7 +794,8 @@ export type MapDefinition = {
 };
 
 export type URLHashArgs = {
-	s? : ScenarioName
+	s? : ScenarioName,
+	n? : LayoutID
 };
 
 export type ScenariosOverlays = {

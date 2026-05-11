@@ -24,7 +24,8 @@ import {
 } from '../types.js';
 
 import {
-	updateScenarioName
+	updateScenarioName,
+	updateSelectedLayoutID
 } from './data.js';
 
 //if silent is true, then just passively updates the URL to reflect what it should be.
@@ -58,6 +59,9 @@ const parseHash = (hash : string) : URLHashArgs => {
 		case 's':
 			args.s = val;
 			break;
+		case 'n':
+			args.n = val;
+			break;
 		default:
 			//TODO: use assertUnreachable pattern here
 			console.warn('Unknown URL arg: ' + key);
@@ -73,6 +77,9 @@ const ingestHash = (hash : string) : ThunkAction<void, RootState, unknown, AnyAc
 		switch (key) {
 		case 's':
 			dispatch(updateScenarioName(value));
+			break;
+		case 'n':
+			dispatch(updateSelectedLayoutID(value));
 			break;
 		default:
 			//TODO: use assertUnreachable pattern here

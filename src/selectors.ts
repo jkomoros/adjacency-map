@@ -150,9 +150,11 @@ export const selectSelectedNodeFieldsEdited = createSelector(
 
 export const selectHashForCurrentState = createSelector(
 	selectScenarioName,
-	(scenarioName) => {
+	selectSelectedLayoutID,
+	(scenarioName, selectedLayoutID) => {
 		const pieces : URLHashArgs = {};
 		if (scenarioName != DEFAULT_SCENARIO_NAME) pieces.s = scenarioName;
+		if (selectedLayoutID) pieces.n = selectedLayoutID;
 		return Object.entries(pieces).map(entry => entry[0] + '=' + entry[1]).join('&');
 	}
 );
