@@ -120,6 +120,15 @@ class AdjacencyMapDiagram extends LitElement {
 					animation: 1s linear infinite normal march;
 				}
 
+				circle.dim, path.dim {
+					opacity: 0.25;
+					transition: opacity 200ms ease;
+				}
+
+				path.accent {
+					stroke-width: calc(var(--effective-stroke-width) * 1.5);
+				}
+
 				@keyframes march {
 					to {
 						stroke-dashoffset: 0;
@@ -168,24 +177,56 @@ class AdjacencyMapDiagram extends LitElement {
 		return edge.edges.map(edge => edge.type).join(', ');
 	}
 
-	_svgForEdge(edge : RenderEdgeValue, map : AdjacencyMap) : TemplateResult {
+	_neighborLayoutIDs() : Set<LayoutID> {
+		const result = new Set<LayoutID>();
+		if (!this.selectedLayoutID || !this.map) return result;
+		result.add(this.selectedLayoutID);
+		try {
+			const node = this.map.layoutNode(this.selectedLayoutID);
+			if (node instanceof AdjacencyMapNode) {
+				for (const parentID of node.parents) {
+					result.add('node:' + parentID as LayoutID);
+				}
+				for (const childID of node.children) {
+					result.add('node:' + childID as LayoutID);
+				}
+			}
+		} catch {
+			// selected node gone; treat as no selection
+		}
+		return result;
+	}
+
+	_svgForEdge(edge : RenderEdgeValue, map : AdjacencyMap, neighbors : Set<LayoutID>) : TemplateResult {
 		const hovered = edgeIdentifiersFromRenderEdge(edge).some(id => edgeIdentifierEquivalent(this.hoveredEdgeID, id));
+		const hasSelection = this.selectedLayoutID !== undefined && neighbors.size > 0;
+		const connected = neighbors.has(edge.source) && neighbors.has(edge.parent);
+		const dim = hasSelection && !connected;
+		const accent = hasSelection && connected;
+		const classes : ClassInfo = {
+			hovered,
+			dim,
+			accent
+		};
 		const styles : StyleInfo = {
 			'--stroke-width': String(edge.width) + 'px'
 		};
-		return svg`<path class='${hovered ? 'hovered' : ''}' style='${styleMap(styles)}' d="${this._pathForEdge(edge, map)}" stroke-opacity='${edge.opacity}' stroke='${edge.color.rgbaStr}'><title>${this._titleForEdge(edge)}</title></path>`;
+		return svg`<path class='${classMap(classes)}' style='${styleMap(styles)}' d="${this._pathForEdge(edge, map)}" stroke-opacity='${edge.opacity}' stroke='${edge.color.rgbaStr}'><title>${this._titleForEdge(edge)}</title></path>`;
 	}
 
-	_svgForNode(node : LayoutNode) : TemplateResult {
-		// color of label halo 
+	_svgForNode(node : LayoutNode, neighbors : Set<LayoutID>) : TemplateResult {
+		// color of label halo
 		const halo = '#fff';
 		// padding around the labels
 		const haloWidth = 3;
 		const selected = this.selectedLayoutID == node._layoutID;
 		const edited = this.editedNodes && (node instanceof AdjacencyMapNode) && this.editedNodes[node.id] != undefined;
+		const hasSelection = this.selectedLayoutID !== undefined && neighbors.size > 0;
+		const dim = hasSelection && !neighbors.has(node._layoutID);
 		const classes : ClassInfo = {
 			selected,
-			edited
+			edited,
+			dim
 		};
 		const styles : StyleInfo = {
 			'--stroke-width': String(node.strokeWidth) + 'px'
@@ -216,7 +257,8 @@ class AdjacencyMapDiagram extends LitElement {
 		if (!this.map) return svg``;
 
 		const a = this.map;
-		
+		const neighbors = this._neighborLayoutIDs();
+
 		// stroke line join for links
 		const strokeLinejoin = '';
 		// stroke line cap for links
@@ -224,10 +266,10 @@ class AdjacencyMapDiagram extends LitElement {
 
 		return html`<svg @mousemove=${this._handleSVGMouseMove} @click=${this._handleSVGMouseClick} class='main' viewBox='${a.viewBox}' width='${a.width * this.scale}' height='${a.height * this.scale}' style='max-width: 100%; height: auto; height: intrinsic;' font-family='sans-serif' font-size='10'>
 			<g fill="none" stroke-linecap="${strokeLinecap}" stroke-linejoin="${strokeLinejoin}">
-				${repeat(a.renderEdges, edge => renderEdgeStableID(edge), edge => this._svgForEdge(edge, a))}
+				${repeat(a.renderEdges, edge => renderEdgeStableID(edge), edge => this._svgForEdge(edge, a, neighbors))}
 			</g>
 			<g>
-				${repeat(Object.values(a.layoutNodes), node => node._layoutID, node => this._svgForNode(node))}
+				${repeat(Object.values(a.layoutNodes), node => node._layoutID, node => this._svgForNode(node, neighbors))}
 			</g>
 	</svg>`;
 	}
