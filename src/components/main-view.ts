@@ -32,7 +32,10 @@ import {
 	selectCurrentScenarioOverlay,
 	selectHoveredLayoutID,
 	selectSelectedLayoutID,
-	selectHeadlineMetrics
+	selectHeadlineMetrics,
+	selectCompareScenarioName,
+	selectCompareAdjacencyMap,
+	selectComparisonDelta,
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -150,6 +153,15 @@ class MainView extends connect(store)(PageViewElement) {
 	@state()
 	_headlineMetrics : {property: string, value: number}[] = [];
 
+	@state()
+	_compareScenarioName : ScenarioName | undefined = undefined;
+
+	@state()
+	_compareAdjacencyMap : AdjacencyMap | null = null;
+
+	@state()
+	_comparisonDelta : { perNode: {[id: string]: 'changed' | 'added' | 'removed'}, perProperty: {property: string, a: number, b: number, delta: number}[] } | null = null;
+
 	static override get styles() {
 		return [
 			SharedStyles,
@@ -257,11 +269,51 @@ class MainView extends connect(store)(PageViewElement) {
 					font-weight: bold;
 					font-variant-numeric: tabular-nums;
 				}
+
+				.compare-strip {
+					position: absolute;
+					top: 0;
+					left: 50%;
+					transform: translateX(-50%);
+					z-index: 40;
+					display: flex;
+					gap: 0.75em;
+					padding: 0.5em 1em;
+					background: rgba(255, 255, 255, 0.9);
+					border-bottom-left-radius: 8px;
+					border-bottom-right-radius: 8px;
+					font-size: 0.85em;
+					box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+				}
+				.compare-metric {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+				}
+				.compare-metric .label {
+					font-size: 0.75em;
+					color: #555;
+				}
+				.compare-metric .values {
+					font-variant-numeric: tabular-nums;
+				}
+				.compare-delta-pos { color: #43a047; font-weight: bold; }
+				.compare-delta-neg { color: #e53935; font-weight: bold; }
+				.diagram-pair {
+					display: flex;
+					gap: 0.5em;
+					width: 100%;
+				}
+				.diagram-pair > * {
+					flex: 1 1 0;
+					min-width: 0;
+				}
 			`
 		];
 	}
 
 	override render() : TemplateResult {
+		const compareOn = !!this._compareAdjacencyMap;
 		return html`
 			<div class='container'>
 					${this._dataError ? html`
@@ -270,7 +322,7 @@ class MainView extends connect(store)(PageViewElement) {
 							${this._dataError}
 							<div><a @click=${() => window.location.reload()}>Reload</a></div>
 						</div>` : ''}
-					${!this._dataError && this._headlineMetrics.length > 0 ? html`
+					${!this._dataError && this._headlineMetrics.length > 0 && !compareOn ? html`
 						<div class='metrics-strip'>
 							${this._headlineMetrics.map(m => html`
 								<div class='metric-tile'>
@@ -279,8 +331,25 @@ class MainView extends connect(store)(PageViewElement) {
 								</div>
 							`)}
 						</div>` : ''}
+					${compareOn && this._comparisonDelta ? html`
+						<div class='compare-strip'>
+							${this._comparisonDelta.perProperty.slice(0, 6).map(p => html`
+								<div class='compare-metric'>
+									<span class='label'>${p.property}</span>
+									<span class='values'>${p.a.toFixed(2)} / ${p.b.toFixed(2)}</span>
+									<span class='${p.delta >= 0 ? 'compare-delta-pos' : 'compare-delta-neg'}'>${p.delta >= 0 ? '+' : ''}${p.delta.toFixed(2)}</span>
+								</div>
+							`)}
+						</div>` : ''}
 					<adjacency-map-controls></adjacency-map-controls>
-					<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .hoveredEdgeID=${this._hoveredEdgeID} .hoveredLayoutID=${this._hoveredLayoutID} .selectedLayoutID=${this._selectedLayoutID} .scale=${this._scale} .editedNodes=${this._editedNodes}></adjacency-map-diagram>
+					${compareOn ? html`
+						<div class='diagram-pair'>
+							<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .compareDelta=${this._comparisonDelta} .hoveredEdgeID=${this._hoveredEdgeID} .hoveredLayoutID=${this._hoveredLayoutID} .selectedLayoutID=${this._selectedLayoutID} .scale=${this._scale * 0.5} .editedNodes=${this._editedNodes}></adjacency-map-diagram>
+							<adjacency-map-diagram .map=${this._compareAdjacencyMap} .compareDelta=${this._comparisonDelta} .scale=${this._scale * 0.5}></adjacency-map-diagram>
+						</div>
+					` : html`
+						<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .hoveredEdgeID=${this._hoveredEdgeID} .hoveredLayoutID=${this._hoveredLayoutID} .selectedLayoutID=${this._selectedLayoutID} .scale=${this._scale} .editedNodes=${this._editedNodes}></adjacency-map-diagram>
+					`}
 					<dialog-element .open=${this._dialogOpen} .title=${this._dialogTitle} @dialog-should-close=${this._handleDialogShouldClose} .hideClose=${true}>${this._dialogContent}</dialog-element>
 			</div>
 		`;
@@ -304,6 +373,9 @@ class MainView extends connect(store)(PageViewElement) {
 		this._dialogMessage = selectDialogMessage(state);
 		this._currentScenarioOverlay = selectCurrentScenarioOverlay(state);
 		this._headlineMetrics = selectHeadlineMetrics(state);
+		this._compareScenarioName = selectCompareScenarioName(state);
+		this._compareAdjacencyMap = selectCompareAdjacencyMap(state);
+		this._comparisonDelta = selectComparisonDelta(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
