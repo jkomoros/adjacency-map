@@ -240,3 +240,24 @@ export const selectSummaryTags = createSelector(
 		return node.tags;
 	}
 );
+
+export const selectHeadlineMetrics = createSelector(
+	selectAdjacencyMap,
+	(map) : {property: string, value: number}[] => {
+		if (!map) return [];
+		const result = map.result || {};
+		// Access the optional headlineMetrics config from the data's display block.
+		const configured = (map.data && (map.data as any).display && (map.data as any).display.headlineMetrics) as string[] | undefined;
+		const entries : {property: string, value: number}[] = [];
+		const candidates = configured && configured.length > 0
+			? configured
+			: Object.keys(result).filter(k => typeof (result as any)[k] === 'number' && Math.abs((result as any)[k] as number) > 1e-9);
+		for (const k of candidates) {
+			const v = (result as any)[k];
+			if (typeof v !== 'number') continue;
+			entries.push({ property: k, value: v });
+		}
+		if (!configured) entries.splice(6);
+		return entries;
+	}
+);
