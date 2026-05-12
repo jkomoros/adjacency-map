@@ -118,6 +118,23 @@ scenarios: {
 }
 ```
 
+### Decision notes on scenarios
+
+A scenario can carry two optional free-form strings explaining *why* the user kept or rejected it:
+
+```ts
+scenarios: {
+	'aggressive-roadmap': {
+		description: 'Push everything by Q3',
+		decision: 'Rejected: timeline too tight for legal review.',
+		reasoning: 'Legal needs 4 weeks for compliance review on the partnerships changes.',
+		nodes: { ... }
+	}
+}
+```
+
+When you generate scenario proposals for the user, populate `decision` and `reasoning` with your own rationale — the user can edit them in the UI or accept them as-is.
+
 ## Workflow checklist
 
 Before claiming a change is done:
@@ -147,3 +164,6 @@ The webapp has a "Save to file" button (visible only on Chromium browsers — Ch
 - Validator: `tools/validate-data.ts` (run via `npm run validate`)
 - Generator: `tools/config.ts` (run via `npm run generate:config`)
 - Watcher: `tools/watch-data.ts` (started by `npm run serve`)
+- Inspect a scenario: `npm run inspect -- <file> [scenario]`
+- Diff two scenarios: `npm run diff -- <file> <a> <b>`
+- Rank scenarios by a property: `npm run rank -- <file> <property> [--ascending]`

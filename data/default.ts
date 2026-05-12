@@ -196,6 +196,8 @@ const data : RawMapDefinition = {
 	scenarios: {
 		'increased-certainty': {
 			description: 'Override to increase the certainty of certain values, which increases downstream certainty too',
+			decision: 'Considered for Q3 planning round.',
+			reasoning: 'Higher certainty estimates make the downstream expected value more credible to stakeholders.',
 			nodes: {
 				im_to_im_infer: {
 					values: {

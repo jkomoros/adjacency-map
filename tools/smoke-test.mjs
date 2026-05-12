@@ -281,7 +281,41 @@ try {
 			else fail(`inspect CLI failed (status=${r.status}, stdout-head=${r.stdout?.slice(0, 200)})`);
 		}
 
-		// ---------- Section 11: console-errors summary ----------
+		// ---------- Section 11: diff CLI ----------
+		{
+			const r = spawnSync('npm', ['run', 'diff', '--', 'default', '', 'increased-certainty'], { encoding: 'utf8' });
+			if (r.status === 0 && r.stdout.includes('Aggregate (A / B / delta)') && r.stdout.includes('Per-node')) {
+				pass('diff CLI produces aggregate + per-node sections');
+			} else {
+				fail(`diff CLI failed (status=${r.status}, stdout-head=${r.stdout?.slice(0, 200)})`);
+			}
+		}
+
+		// ---------- Section 12: rank CLI ----------
+		{
+			const r = spawnSync('npm', ['run', 'rank', '--', 'default', 'value'], { encoding: 'utf8' });
+			if (r.status === 0 && r.stdout.includes('Ranking by: value')) pass('rank CLI ranks scenarios');
+			else fail(`rank CLI failed (status=${r.status}, stdout-head=${r.stdout?.slice(0, 200)})`);
+		}
+
+		// ---------- Section 13: decision/reasoning rendering ----------
+		await page.goto(`${BASE_URL}/main/default/#s=increased-certainty`, { waitUntil: 'networkidle' });
+		await page.waitForTimeout(500);
+		// Shadow DOM: three levels deep (my-app -> main-view -> adjacency-map-controls).
+		const summaryText = await page.evaluate(() => {
+			const app = document.querySelector('my-app');
+			const main = app?.shadowRoot?.querySelector('main-view');
+			const controls = main?.shadowRoot?.querySelector('adjacency-map-controls');
+			return controls?.shadowRoot?.querySelector('.summary')?.textContent || '';
+		});
+		const hasDecision = summaryText.includes('Considered for Q3 planning round.');
+		const hasReasoning = summaryText.includes('Higher certainty estimates');
+		if (hasDecision) pass('decision field renders in scenario summary');
+		else fail(`decision field not rendered (summary head: ${summaryText.slice(0, 200)})`);
+		if (hasReasoning) pass('reasoning field renders in scenario summary');
+		else fail('reasoning field not rendered');
+
+		// ---------- Section 14: console-errors summary ----------
 		const newErrors = consoleErrors.filter(e => !e.includes('Unknown URL arg'));
 		if (newErrors.length === 0) pass('no unexpected console errors over full run');
 		else log(`console errors over run: ${newErrors.join(' | ')}`);
