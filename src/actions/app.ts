@@ -29,6 +29,10 @@ import {
 } from './data.js';
 
 import {
+	DEFAULT_SCENARIO_NAME
+} from '../constants.js';
+
+import {
 	parseURLHashArgs
 } from '../util.js';
 
@@ -60,19 +64,8 @@ export const parseHash = (hash : string) : URLHashArgs => {
 const ingestHash = (hash : string) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch) => {
 	const pieces = parseHash(hash);
 
-	for (const [key, value] of Object.entries(pieces)) {
-		switch (key) {
-		case 's':
-			dispatch(updateScenarioName(value));
-			break;
-		case 'n':
-			dispatch(updateSelectedLayoutID(value));
-			break;
-		default:
-			//TODO: use assertUnreachable pattern here
-			console.warn('Unknown URL arg: ' + key);
-		}
-	}
+	dispatch(updateScenarioName(pieces.s || DEFAULT_SCENARIO_NAME));
+	dispatch(updateSelectedLayoutID(pieces.n));
 };
 
 export const updateHash = (hash : string, comesFromURL = false) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {

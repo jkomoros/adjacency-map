@@ -25,6 +25,10 @@ import {
 import dataReducer from '../../src/reducers/data.js';
 
 import {
+	updateHash
+} from '../../src/actions/app.js';
+
+import {
 	NULL_SENTINEL
 } from '../../src/constants.js';
 
@@ -7354,6 +7358,28 @@ describe('URL hash state', () => {
 			s: 'a scenario & branch=1',
 			n: 'node:feature & part=2'
 		});
+	});
+
+	it('clears scenario and selection when URL hash params are absent', async () => {
+		const state = {
+			app: {hash: 's=custom&n=node%3Aa'},
+			data: {
+				scenarioName: 'custom',
+				selectedLayoutID: 'node:a'
+			}
+		};
+		const actions = [];
+		const dispatch = action => {
+			if (typeof action == 'function') return action(dispatch, () => state);
+			actions.push(action);
+			return action;
+		};
+
+		await updateHash('', true)(dispatch, () => state);
+
+		assert.ok(actions.some(action => action.type == 'UPDATE_SCENARIO_NAME' && action.scenarioName == ''));
+		assert.ok(actions.some(action => action.type == 'UPDATE_SELECTED_NODE_ID' && action.nodeID === undefined));
+		assert.ok(actions.some(action => action.type == 'UPDATE_HASH' && action.hash == ''));
 	});
 
 });
