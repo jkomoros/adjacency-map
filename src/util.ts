@@ -12,7 +12,8 @@ import {
 	EdgeValue,
 	EdgeValueMatchID,
 	EdgeIdentifier,
-	NodeID
+	NodeID,
+	URLHashArgs
 } from './types.js';
 
 import {
@@ -117,6 +118,35 @@ export const fetchOverlaysFromStorage = () : ScenariosOverlays => {
 
 export const storeOverlaysToStorage = (overlays : ScenariosOverlays) => {
 	window.localStorage.setItem(SCENARIOS_OVERLAYS_LOCAL_STORAGE_KEY, JSON.stringify(overlays, null, '\t'));
+};
+
+export const parseURLHashArgs = (hash : string) : URLHashArgs => {
+	if (hash.startsWith('#')) hash = hash.substring(1);
+	const args : URLHashArgs = {};
+	if (!hash) return args;
+	const params = new URLSearchParams(hash);
+	for (const [key, val] of params.entries()) {
+		switch(key) {
+		case 's':
+			args.s = val;
+			break;
+		case 'n':
+			args.n = val;
+			break;
+		default:
+			console.warn('Unknown URL arg: ' + key);
+		}
+	}
+	return args;
+};
+
+export const stringifyURLHashArgs = (args : URLHashArgs) : string => {
+	const params = new URLSearchParams();
+	for (const [key, value] of Object.entries(args)) {
+		if (value === undefined) continue;
+		params.set(key, value);
+	}
+	return params.toString();
 };
 
 export const edgeEquivalent = (one : EdgeValue | ExpandedEdgeValue, two : EdgeValue | ExpandedEdgeValue) : boolean => {

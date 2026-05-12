@@ -29,6 +29,8 @@ import {
 import {
 	deepCopy,
 	deepEqual,
+	parseURLHashArgs,
+	stringifyURLHashArgs,
 	wrapArrays
 } from '../../src/util.js';
 
@@ -7324,6 +7326,26 @@ describe('scenario node removal (#26)', () => {
 		input.scenarios['omit-b'].nodes.nonexistent = { removed: true };
 		const fn = () => new AdjacencyMap(input, 'omit-b');
 		assert.doesNotThrow(fn);
+	});
+
+});
+
+describe('URL hash state', () => {
+
+	it('encodes scenario and selected layout IDs with URL-reserved characters', async () => {
+		const hash = stringifyURLHashArgs({
+			s: 'a scenario & branch=1',
+			n: 'node:feature & part=2'
+		});
+		assert.strictEqual(hash, 's=a+scenario+%26+branch%3D1&n=node%3Afeature+%26+part%3D2');
+	});
+
+	it('decodes scenario and selected layout IDs with URL-reserved characters', async () => {
+		const hash = 's=a+scenario+%26+branch%3D1&n=node%3Afeature+%26+part%3D2';
+		assert.deepStrictEqual(parseURLHashArgs(hash), {
+			s: 'a scenario & branch=1',
+			n: 'node:feature & part=2'
+		});
 	});
 
 });

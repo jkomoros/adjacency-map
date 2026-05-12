@@ -23,9 +23,12 @@ import {
 	DialogKind,
 	LayoutID,
 	RootState,
-	ScenarioNode,
-	URLHashArgs
+	ScenarioNode
 } from './types.js';
+
+import {
+	stringifyURLHashArgs
+} from './util.js';
 
 export const selectFilename = (state : RootState) => state.data ? state.data.filename : DEFAULT_FILE_NAME;
 export const selectPage = (state : RootState) => state.app ? state.app.page : '';
@@ -177,10 +180,10 @@ export const selectHashForCurrentState = createSelector(
 	selectScenarioName,
 	selectSelectedLayoutID,
 	(scenarioName, selectedLayoutID) => {
-		const pieces : URLHashArgs = {};
-		if (scenarioName != DEFAULT_SCENARIO_NAME) pieces.s = scenarioName;
-		if (selectedLayoutID) pieces.n = selectedLayoutID;
-		return Object.entries(pieces).map(entry => entry[0] + '=' + entry[1]).join('&');
+		return stringifyURLHashArgs({
+			s: scenarioName != DEFAULT_SCENARIO_NAME ? scenarioName : undefined,
+			n: selectedLayoutID
+		});
 	}
 );
 

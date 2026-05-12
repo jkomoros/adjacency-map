@@ -28,6 +28,10 @@ import {
 	updateSelectedLayoutID
 } from './data.js';
 
+import {
+	parseURLHashArgs
+} from '../util.js';
+
 //if silent is true, then just passively updates the URL to reflect what it should be.
 export const navigatePathTo = (path : string, silent = false): ThunkAction<void, RootState, unknown, AnyAction> => (dispatch) => {
 	//If we're already pointed there, no need to navigate
@@ -49,25 +53,8 @@ export const canonicalizeHash = () : ThunkAction<void, RootState, unknown, AnyAc
 	dispatch(updateHash(hash));
 };
 
-const parseHash = (hash : string) : URLHashArgs => {
-	if (hash.startsWith('#')) hash = hash.substring(1);
-	const args : URLHashArgs = {};
-	if (!hash) return args;
-	for (const part of hash.split('&')) {
-		const [key, val] = part.split('=');
-		switch(key) {
-		case 's':
-			args.s = val;
-			break;
-		case 'n':
-			args.n = val;
-			break;
-		default:
-			//TODO: use assertUnreachable pattern here
-			console.warn('Unknown URL arg: ' + key);
-		}
-	}
-	return args;
+export const parseHash = (hash : string) : URLHashArgs => {
+	return parseURLHashArgs(hash);
 };
 
 const ingestHash = (hash : string) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch) => {

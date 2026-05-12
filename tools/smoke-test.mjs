@@ -144,7 +144,8 @@ try {
 		await page.waitForTimeout(300);
 
 		const hashAfterClick = await page.evaluate(() => window.location.hash);
-		if (hashAfterClick.includes(`n=${nodeID}`)) pass(`URL hash carries selection (${hashAfterClick})`);
+		const selectedFromHash = await page.evaluate(() => new URLSearchParams(window.location.hash.substring(1)).get('n'));
+		if (selectedFromHash === nodeID) pass(`URL hash carries selection (${hashAfterClick})`);
 		else fail(`URL hash missing n=${nodeID} (got: ${hashAfterClick})`);
 
 		if ((await page.locator('svg.main circle.selected').count()) > 0) pass('selected class applied to a node');
