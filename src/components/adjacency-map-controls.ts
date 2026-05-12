@@ -24,6 +24,8 @@ import {
 	setShowEdges,
 	updateCompareScenarioName,
 	updateEditingScenarioDescription,
+	updateEditingScenarioDecision,
+	updateEditingScenarioReasoning,
 	updateEditingScenarioName,
 	updateFilename,
 	updateHoveredEdgeID,
@@ -291,10 +293,16 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName === '' ? '__base__' : scenarioName} .selected=${(scenarioName === '' ? '__base__' : scenarioName) === (this._compareScenarioName === undefined ? '__off__' : (this._compareScenarioName === '' ? '__base__' : this._compareScenarioName))}>${scenarioName || 'Default'}</option>`)}
 				</select>` : ''}
 				<div class='summary'>
-				${this._legalScenarioNames.length > 1 ? 
+				${this._legalScenarioNames.length > 1 ?
 		html`<div>
 							<label>Scenario</label> ${this._scenarioEditable ? html`<input type='text' @change=${this._handleUpdateScenarioDescription} .value=${this._adjacencyMap?.scenario.description || ''}></input>` : html`${this._adjacencyMap?.scenario.description || (this._adjacencyMap?.scenarioName ? html`<em>No description</em>` : html`<em>Default</em>`)}`}
-						</div>`
+						</div>
+						${(this._scenarioEditable || this._adjacencyMap?.scenario.decision) ? html`<div>
+							<label>Decision</label> ${this._scenarioEditable ? html`<input type='text' @change=${this._handleUpdateScenarioDecision} .value=${this._adjacencyMap?.scenario.decision || ''}></input>` : html`${this._adjacencyMap?.scenario.decision}`}
+						</div>` : ''}
+						${(this._scenarioEditable || this._adjacencyMap?.scenario.reasoning) ? html`<div>
+							<label>Reasoning</label> ${this._scenarioEditable ? html`<input type='text' @change=${this._handleUpdateScenarioReasoning} .value=${this._adjacencyMap?.scenario.reasoning || ''}></input>` : html`${this._adjacencyMap?.scenario.reasoning}`}
+						</div>` : ''}`
 		: html``}
 					<div>
 						<label>Node</label> <strong>${this._summaryNodeDisplayName === undefined ? html`<em>Union of all nodes</em>${this._scenarioEditable ? html`<br/>Select a node to edit it</strong>` : ''}` : (this._summaryNodeDisplayName || html`<em>Root</em>`)}</strong>
@@ -462,6 +470,16 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		const ele : HTMLInputElement = e.target;
 		const description = ele.value;
 		store.dispatch(updateEditingScenarioDescription(description));
+	}
+
+	_handleUpdateScenarioDecision(e : Event) {
+		if (!(e.target instanceof HTMLInputElement)) throw new Error('not input');
+		store.dispatch(updateEditingScenarioDecision(e.target.value));
+	}
+
+	_handleUpdateScenarioReasoning(e : Event) {
+		if (!(e.target instanceof HTMLInputElement)) throw new Error('not input');
+		store.dispatch(updateEditingScenarioReasoning(e.target.value));
 	}
 
 	_handleResetOverlaysClicked() {
