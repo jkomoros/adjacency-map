@@ -132,6 +132,24 @@ const main = async () => {
 		if (!anyEventDiff) out.push('  (no event-level diffs)');
 	}
 
+	// Requires-clause warnings that differ between A and B. Hard violations
+	// would have thrown construction, so this is necessarily limited to the
+	// soft warning case (mutual-exclusion at the base scenario). The
+	// asymmetry (one side warns, the other doesn't) is rare but useful to
+	// surface when comparing a base view against a named scenario.
+	const warnsA = (mapA as any).requiresWarnings as string[] | undefined;
+	const warnsB = (mapB as any).requiresWarnings as string[] | undefined;
+	const setA = new Set(warnsA || []);
+	const setB = new Set(warnsB || []);
+	const onlyA = [...setA].filter(w => !setB.has(w));
+	const onlyB = [...setB].filter(w => !setA.has(w));
+	if (onlyA.length > 0 || onlyB.length > 0) {
+		out.push('');
+		out.push('Requires warning diff:');
+		for (const w of onlyA) out.push(`  - (A) ${w}`);
+		for (const w of onlyB) out.push(`  + (B) ${w}`);
+	}
+
 	console.log(out.join('\n'));
 };
 

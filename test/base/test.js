@@ -7357,6 +7357,115 @@ describe('scenario node removal (#26)', () => {
 
 });
 
+describe('requires clause', () => {
+
+	const baseInput = {
+		properties: {
+			engineering: { value: 1 }
+		},
+		root: { engineering: 1.0 },
+		nodes: {
+			a: { description: 'a' },
+			b: { description: 'b' },
+			c: { description: 'c' },
+			d: { description: 'd' }
+		}
+	};
+
+	it('throws on requires.all violation in a named scenario', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.c.requires = { all: ['a'] };
+		input.scenarios = {
+			'omit-a': { description: 'omit a', nodes: { a: { removed: true } } }
+		};
+		assert.throws(() => new AdjacencyMap(input, 'omit-a'), /requires\.all violation/);
+	});
+
+	it('throws on requires.any violation in a named scenario', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.c.requires = { any: [['a', 'b']] };
+		input.scenarios = {
+			'omit-ab': { description: 'omit a and b', nodes: { a: { removed: true }, b: { removed: true } } }
+		};
+		assert.throws(() => new AdjacencyMap(input, 'omit-ab'), /requires\.any violation/);
+	});
+
+	it('passes requires.any when at least one group member is present', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.c.requires = { any: [['a', 'b']] };
+		input.scenarios = {
+			'omit-a': { description: 'omit a (b survives)', nodes: { a: { removed: true } } }
+		};
+		assert.doesNotThrow(() => new AdjacencyMap(input, 'omit-a'));
+	});
+
+	it('throws on requires.none violation in a named scenario', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.a.requires = { none: ['b'] };
+		input.scenarios = {
+			'keep-both': { description: 'keep both', nodes: {} }
+		};
+		assert.throws(() => new AdjacencyMap(input, 'keep-both'), /Mutual-exclusion violation/);
+	});
+
+	it('treats requires.none symmetrically', async () => {
+		// Same as above, but declared on the OTHER side. Should still fire.
+		const input = deepCopy(baseInput);
+		input.nodes.b.requires = { none: ['a'] };
+		input.scenarios = {
+			'keep-both': { description: 'keep both', nodes: {} }
+		};
+		assert.throws(() => new AdjacencyMap(input, 'keep-both'), /Mutual-exclusion violation/);
+	});
+
+	it('treats requires.none as a warning at the base scenario', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.a.requires = { none: ['b'] };
+		const map = new AdjacencyMap(input);
+		assert.strictEqual(map.requiresWarnings.length, 1);
+		assert.ok(/Mutual-exclusion violation/.test(map.requiresWarnings[0]));
+	});
+
+	it('does not throw when one side of a mutual exclusion is removed', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.a.requires = { none: ['b'] };
+		input.scenarios = {
+			'omit-b': { description: 'omit b', nodes: { b: { removed: true } } }
+		};
+		const map = new AdjacencyMap(input, 'omit-b');
+		assert.strictEqual(map.requiresWarnings.length, 0);
+	});
+
+	it('throws when requires references a non-existent node', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.a.requires = { all: ['nonexistent'] };
+		assert.throws(() => new AdjacencyMap(input), /referencing undefined node nonexistent/);
+	});
+
+	it('throws when requires.any has an empty group', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.a.requires = { any: [[]] };
+		assert.throws(() => new AdjacencyMap(input), /empty requires\.any group/);
+	});
+
+	it('throws when requires references the node itself', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.a.requires = { all: ['a'] };
+		assert.throws(() => new AdjacencyMap(input), /referencing itself/);
+	});
+
+	it('re-evaluates requires when scenario changes', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.c.requires = { all: ['a'] };
+		input.scenarios = {
+			'omit-a': { description: 'omit a', nodes: { a: { removed: true } } }
+		};
+		const map = new AdjacencyMap(input);
+		assert.throws(() => { map.scenarioName = 'omit-a'; }, /requires\.all violation/);
+	});
+
+});
+
 describe('URL hash state', () => {
 
 	it('encodes scenario and selected layout IDs with URL-reserved characters', async () => {

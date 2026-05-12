@@ -177,6 +177,73 @@ When to reach for events vs. nodes:
 
 Encoding events as sentinel nodes (an earlier prototype) made them appear in the rendered diagram as fake-looking capabilities. The dedicated `events` field keeps them out of the node namespace.
 
+### Constraints (`requires`)
+
+Some prerequisites don't fit edges. The schema's per-node `requires` clause expresses three things declaratively:
+
+```ts
+voice_full_duplex: {
+	description: '...',
+	requires: {
+		all:  ['voice_out_tts'],                    // every listed node must be present
+		any:  [['voice_in_whisperx', 'voice_in_inhouse']],  // each inner array is a disjunctive group
+		none: []                                    // none of these may be present at the same time
+	},
+	edges: [...]
+}
+```
+
+**`all`** — every listed id must be in the scenario's effective node set (not `removed:true`). This is largely redundant with a cost-bearing edge of the same dependency; use it when you want a dependency without a cost.
+
+**`any`** — each inner array is a disjunctive group, and every group must have at least one member present. Use it to express "needs X or Y" without inventing a synthetic OR-gate node. Example: `any: [['whisperx', 'inhouse']]` means "either ASR satisfies this".
+
+**`none`** — none of the listed nodes may be present alongside this node. **Symmetric**: declaring it on one side is equivalent to declaring it on the other. Use it for mutual exclusion ("ship exactly one of these alternatives").
+
+```ts
+// Express mutual exclusion ONCE on either side; the constraint applies symmetrically.
+voice_in_whisperx: {
+	requires: { none: ['voice_in_inhouse'] },
+	// ...
+}
+```
+
+#### Base-scenario semantics for `none`
+
+The base graph is intentionally a *pre-decision* view: it includes all alternatives that a strategy scenario might choose between. So `requires.none` is **enforced as a hard error in named scenarios only** — including both mutually-excluded nodes in a named scenario throws at `AdjacencyMap` construction. In the base scenario, the same situation produces a **warning** instead (visible via `npm run inspect -- <file>` under `Requires warnings`). This lets you list both alternatives in the base, then have each named scenario pick exactly one.
+
+`all` and `any` are enforced strictly in every scenario including the base — those clauses describe what the node needs to function at all, not which alternative you've picked.
+
+#### Worked examples
+
+`requires.all` — declarative dependency without cost:
+
+```ts
+agent_browser: {
+	requires: { all: ['agent_framework_v1'] },
+	// no engineering edge to agent_framework_v1 (cost lives elsewhere)
+}
+```
+
+`requires.any` — replaces the old "synthetic OR-gate node" pattern:
+
+```ts
+voice_full_duplex: {
+	requires: { any: [['voice_in_whisperx', 'voice_in_inhouse']] },
+	edges: [{ type: 'engineering', parent: 'voice_out_tts', cost: 6 }]
+}
+```
+
+`requires.none` — mutual exclusion:
+
+```ts
+voice_in_whisperx: {
+	requires: { none: ['voice_in_inhouse'] }
+}
+// voice_in_inhouse doesn't need to declare the inverse; it's symmetric.
+```
+
+Scenarios that explicitly want one of two mutually-exclusive nodes can still `removed:true` the other one — keeping the intent explicit at the scenario level is the recommended pattern. The constraint just means scenarios *can't accidentally* include both.
+
 ### Decision notes on scenarios
 
 A scenario can carry two optional free-form strings explaining *why* the user kept or rejected it:

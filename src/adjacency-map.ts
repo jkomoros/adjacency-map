@@ -11,6 +11,7 @@ import {
 	MapDefinition,
 	NodeDefinition,
 	NodeID,
+	NodeRequires,
 	LayoutID,
 	NodeValues,
 	RawMapDefinition,
@@ -746,6 +747,122 @@ const validateNodeValues = (data : MapDefinition, values?: NodeValuesOverride) :
 	}
 };
 
+/**
+ * Static-shape check for a node's `requires` clause: verifies that every
+ * referenced node id exists in data.nodes, and that the shape is well-formed.
+ * Does NOT check whether the constraints are satisfied in any particular
+ * scenario — that happens at AdjacencyMap construction time.
+ */
+const validateRequiresShape = (data : MapDefinition, nodeName : NodeID, requires : NodeRequires | undefined) : void => {
+	if (!requires) return;
+	if (typeof requires != 'object') throw new Error(nodeName + ' has a non-object requires field');
+	const checkID = (id : NodeID, clause : string) => {
+		if (!data.nodes[id]) throw new Error(nodeName + ' has requires.' + clause + ' referencing undefined node ' + id);
+		if (id == nodeName) throw new Error(nodeName + ' has requires.' + clause + ' referencing itself');
+	};
+	if (requires.all !== undefined) {
+		if (!Array.isArray(requires.all)) throw new Error(nodeName + ' has a non-array requires.all');
+		for (const id of requires.all) checkID(id, 'all');
+	}
+	if (requires.any !== undefined) {
+		if (!Array.isArray(requires.any)) throw new Error(nodeName + ' has a non-array requires.any');
+		for (const group of requires.any) {
+			if (!Array.isArray(group)) throw new Error(nodeName + ' has a requires.any entry that is not an array (each entry must be a disjunctive group)');
+			if (group.length == 0) throw new Error(nodeName + ' has an empty requires.any group');
+			for (const id of group) checkID(id, 'any');
+		}
+	}
+	if (requires.none !== undefined) {
+		if (!Array.isArray(requires.none)) throw new Error(nodeName + ' has a non-array requires.none');
+		for (const id of requires.none) checkID(id, 'none');
+	}
+};
+
+/**
+ * The result of evaluating all node-level `requires` clauses against a
+ * specific scenario's effective node set. Violations of `all` and `any`
+ * always throw. Violations of `none` are scope-sensitive: a hard error
+ * inside a named scenario, but a soft warning at the base graph (because
+ * the base graph is a "pre-decision" view of all alternatives; declaring
+ * mutual exclusion there is a contract for derived scenarios, not a claim
+ * about the base itself).
+ */
+type RequiresEvaluation = {
+	warnings : string[]
+};
+
+const evaluateRequires = (data : MapDefinition, removedIDs : Set<NodeID>, scenarioName : ScenarioName) : RequiresEvaluation => {
+	const isPresent = (id : NodeID) : boolean => {
+		if (!data.nodes[id]) return false;
+		return !removedIDs.has(id);
+	};
+	const isNamedScenario = scenarioName !== DEFAULT_SCENARIO_NAME;
+	const warnings : string[] = [];
+	// Build the symmetric closure of `none` declarations. After this pass,
+	// noneMap[a] contains b iff either a or b declared the other in their
+	// `requires.none` clause. We iterate every node's noneMap entries below.
+	const noneMap : {[id : NodeID] : Set<NodeID>} = {};
+	const addNone = (a : NodeID, b : NodeID) => {
+		if (!noneMap[a]) noneMap[a] = new Set<NodeID>();
+		noneMap[a].add(b);
+	};
+	for (const [id, nodeDef] of Object.entries(data.nodes)) {
+		const requires = nodeDef.requires;
+		if (!requires || !requires.none) continue;
+		for (const other of requires.none) {
+			if (!data.nodes[other]) continue;
+			addNone(id, other);
+			addNone(other, id);
+		}
+	}
+	// Track which unordered pairs we've already reported for `none` so we
+	// don't double-emit when both sides reach each other in the iteration.
+	const reportedNonePairs = new Set<string>();
+	for (const [id, nodeDef] of Object.entries(data.nodes)) {
+		if (!isPresent(id)) continue;
+		const requires = nodeDef.requires;
+		if (requires) {
+			if (requires.all) {
+				for (const other of requires.all) {
+					if (!isPresent(other)) {
+						throw new Error('Node ' + id + ' requires.all violation in scenario [' + (scenarioName || '(base)') + ']: ' + other + ' is not present');
+					}
+				}
+			}
+			if (requires.any) {
+				for (const group of requires.any) {
+					const satisfied = group.some(other => isPresent(other));
+					if (!satisfied) {
+						throw new Error('Node ' + id + ' requires.any violation in scenario [' + (scenarioName || '(base)') + ']: none of [' + group.join(', ') + '] are present');
+					}
+				}
+			}
+		}
+		// `none` is symmetric; check both this node's declared exclusions
+		// and any exclusions declared on other nodes that name this one.
+		const symmetricNone = noneMap[id];
+		if (symmetricNone) {
+			for (const other of symmetricNone) {
+				if (!isPresent(other)) continue;
+				const pairKey = id < other ? id + '||' + other : other + '||' + id;
+				if (reportedNonePairs.has(pairKey)) continue;
+				reportedNonePairs.add(pairKey);
+				const msg = 'Mutual-exclusion violation: ' + id + ' and ' + other + ' cannot both be present (declared via requires.none) in scenario [' + (scenarioName || '(base)') + ']';
+				if (isNamedScenario) {
+					throw new Error(msg);
+				} else {
+					// Base scenario: surface as a warning instead of a hard
+					// error. The base graph is the union of all alternatives;
+					// requires.none declares a constraint that derived
+					// scenarios must respect, not a claim about the base.
+					warnings.push(msg + ' [warning only at base; named scenarios that include both will fail]');
+				}
+			}
+		}
+	}
+	return {warnings};
+};
+
 const validateData = (data : MapDefinition) : void => {
 	if (!data) throw new Error('No data provided');
 	if (!data.nodes) throw new Error('No nodes provided');
@@ -762,6 +879,7 @@ const validateData = (data : MapDefinition) : void => {
 		for (const tagID of Object.keys(nodeData.tags)) {
 			if (!data.tags[tagID]) throw new Error(nodeName + ' defined an unknown tag: ' + tagID);
 		}
+		validateRequiresShape(data, nodeName, nodeData.requires);
 	}
 
 	for (const [groupID, groupData] of Object.entries(data.groups)) {
@@ -913,6 +1031,11 @@ export class AdjacencyMap {
 	_cachedPropertyNames : PropertyName[];
 	_cachedLayoutInfo : LayoutInfo;
 	_scenarioName : ScenarioName;
+	//Warnings produced by the `requires` validator pass for the current
+	//scenario. Hard violations throw; soft ones (e.g. `requires.none` against
+	//the base scenario, see evaluateRequires) accumulate here so tools like
+	//`inspect` can surface them without halting construction.
+	_requiresWarnings : string[] = [];
 	//Cycle-detection bookkeeping for nodeRef value-definition resolution. A
 	//node ID is added to this set immediately before computing its values
 	//and removed immediately after. If a nodeRef tries to resolve into a
@@ -936,7 +1059,28 @@ export class AdjacencyMap {
 		if (scenarioName != DEFAULT_SCENARIO_NAME && !this.data.scenarios[scenarioName]) throw new Error('no such scenario');
 
 		this._scenarioName = scenarioName;
+		this._evaluateRequires();
 		this._cachedChildren = this._buildCachedChildren();
+	}
+
+	//Runs the `requires` validator pass for the current scenario. Throws on
+	//hard violations (`all`, `any`, and `none` in named scenarios) and
+	//accumulates soft warnings (`none` at the base scenario) into
+	//_requiresWarnings. Called from the constructor (before _buildCachedChildren)
+	//and from _scenarioChanged.
+	_evaluateRequires() : void {
+		const evaluation = evaluateRequires(this._data, this._removedNodeIDs, this._scenarioName);
+		this._requiresWarnings = evaluation.warnings;
+	}
+
+	/**
+	 * Warnings emitted by the `requires` validator pass for the current
+	 * scenario. Hard violations throw at construction time; this returns
+	 * only the soft warnings (mutual-exclusion declarations triggered at
+	 * the base scenario, which is intentionally a pre-decision view).
+	 */
+	get requiresWarnings() : string[] {
+		return this._requiresWarnings;
 	}
 
 	_buildCachedChildren() : {[id : NodeID] : NodeID[]} {
@@ -1114,6 +1258,10 @@ export class AdjacencyMap {
 		this._impliedNodeGroups = undefined;
 		this._cachedRemovedNodeIDs = undefined;
 		this._cachedEventPresence = undefined;
+		//Re-run the requires validator pass for the new scenario before
+		//rebuilding the children graph (the same ordering the constructor
+		//uses). Hard violations throw and abort the scenario change.
+		this._evaluateRequires();
 		//The set of removed nodes can change across scenarios, which affects
 		//the children graph. Rebuild it here.
 		this._cachedChildren = this._buildCachedChildren();

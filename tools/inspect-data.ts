@@ -64,7 +64,39 @@ const main = async () => {
 	const removed = (map as any)._removedNodeIDs as Set<string>;
 	if (removed && removed.size > 0) out.push(`Removed in scenario: ${[...removed].join(', ')}`);
 	out.push(`Edges: ${map.edges.length}`);
+
+	// Surface any soft warnings from the `requires` validator pass. Hard
+	// violations would have thrown above (this binary exits non-zero on
+	// construction failure); soft ones are mutual-exclusion declarations
+	// triggered at the base scenario.
+	const requiresWarnings = (map as any).requiresWarnings as string[] | undefined;
+	if (requiresWarnings && requiresWarnings.length > 0) {
+		out.push('');
+		out.push(`Requires warnings (${requiresWarnings.length}):`);
+		for (const w of requiresWarnings) out.push(`  ! ${w}`);
+	}
 	out.push('');
+
+	// Per-node `requires` declarations. Listed as a flat block (sorted by
+	// node id) so the constraint layer is visible alongside the node count.
+	const nodesWithRequires : {id: string, requires: any}[] = [];
+	for (const id of nodeIDs) {
+		const def = (map.data && map.data.nodes && map.data.nodes[id]) as any;
+		if (def && def.requires && (def.requires.all || def.requires.any || def.requires.none)) {
+			nodesWithRequires.push({id, requires: def.requires});
+		}
+	}
+	if (nodesWithRequires.length > 0) {
+		out.push(`Requires (${nodesWithRequires.length}):`);
+		for (const {id, requires} of nodesWithRequires) {
+			const parts : string[] = [];
+			if (requires.all && requires.all.length) parts.push(`all=[${requires.all.join(', ')}]`);
+			if (requires.any && requires.any.length) parts.push(`any=[${(requires.any as string[][]).map(g => '(' + g.join(' | ') + ')').join(', ')}]`);
+			if (requires.none && requires.none.length) parts.push(`none=[${requires.none.join(', ')}]`);
+			out.push(`  ${id.padEnd(24)} ${parts.join('  ')}`);
+		}
+		out.push('');
+	}
 
 	// Events section: per-event presence for this scenario. Surfaced because
 	// events are a separately-addressable map-level concept (not nodes) and

@@ -502,6 +502,33 @@ export type TreeGraph = {
 
 export type RawEdgeInput = RawEdgeValue[] | RawEdgeMap;
 
+/**
+ * Declarative constraints on a node's presence in a scenario. Subsumes
+ * disjunctive prerequisites ("OR-edges") and mutual exclusion. Evaluated
+ * during AdjacencyMap construction against the scenario's effective node
+ * set (i.e. nodes that exist and are not `removed:true`).
+ *
+ * - `all`: every listed id must be present. Largely redundant with edges-
+ *   as-dependencies, but useful when you want a dependency without a
+ *   cost-bearing edge.
+ * - `any`: each inner array is a disjunctive group. At least one member of
+ *   each group must be present. E.g. `[[a, b], [c, d]]` means "(a or b) and
+ *   (c or d)".
+ * - `none`: none of the listed ids may be present at the same time as this
+ *   node. Symmetric: if A declares `none: [B]`, including both A and B in
+ *   any scenario violates the rule, regardless of which side declared it.
+ *
+ * See AGENTS.md "Constraints (`requires`)".
+ */
+export type NodeRequires = {
+	/** All of these nodes must be present (not `removed:true`). */
+	all? : NodeID[],
+	/** Each inner array is a disjunctive group; at least one member of each group must be present. */
+	any? : NodeID[][],
+	/** None of these nodes may be present at the same time as this node. */
+	none? : NodeID[]
+};
+
 export type RawNodeDefinition = {
 	description: string,
 	displayName? : string,
@@ -512,7 +539,9 @@ export type RawNodeDefinition = {
 	//If any values are provided here, they will be set on the node, overriding
 	//any other edge values that or root values. They may use
 	//ValueDefinitionInput in their definition.
-	values? : NodeValuesOverride
+	values? : NodeValuesOverride,
+	//Declarative AND/OR/NONE prerequisites. See NodeRequires.
+	requires? : NodeRequires
 };
 
 export type NodeDefinition = {
@@ -522,7 +551,8 @@ export type NodeDefinition = {
 	tags: TagMap,
 	display: Partial<NodeDisplay>,
 	edges: EdgeValue[],
-	values: NodeValuesOverride
+	values: NodeValuesOverride,
+	requires? : NodeRequires
 };
 
 export type RawGroupDefinition = {
