@@ -22,6 +22,20 @@ import {
 	unpackColor
 } from '../../src/color.js';
 
+import dataReducer from '../../src/reducers/data.js';
+
+import {
+	selectHashForCurrentState
+} from '../../src/selectors.js';
+
+import {
+	updateWithMainPageExtra
+} from '../../src/actions/data.js';
+
+import {
+	updateHash
+} from '../../src/actions/app.js';
+
 import {
 	NULL_SENTINEL
 } from '../../src/constants.js';
@@ -29,6 +43,9 @@ import {
 import {
 	deepCopy,
 	deepEqual,
+	fetchOverlaysFromStorage,
+	parseURLHashArgs,
+	stringifyURLHashArgs,
 	wrapArrays
 } from '../../src/util.js';
 
@@ -7267,6 +7284,574 @@ describe('deepEqual', () => {
 		const golden = false;
 		const actual = deepEqual(one, two);
 		assert.deepStrictEqual(actual, golden);
+	});
+
+});
+
+describe('scenario node removal (#26)', () => {
+
+	const baseInput = {
+		properties: {
+			engineering: { value: 1 }
+		},
+		root: {
+			engineering: 1.0
+		},
+		nodes: {
+			a: { description: 'a' },
+			b: { description: 'b', edges: [{ type: 'engineering', parent: 'a' }] },
+			c: { description: 'c', edges: [{ type: 'engineering', parent: 'b' }] },
+			d: { description: 'd', edges: [{ type: 'engineering', parent: 'b' }] }
+		},
+		scenarios: {
+			'omit-b': {
+				description: 'b is removed',
+				nodes: {
+					b: { removed: true }
+				}
+			}
+		}
+	};
+
+	it('omits the removed node from the resulting graph', async () => {
+		const map = new AdjacencyMap(deepCopy(baseInput), 'omit-b');
+		const layoutKeys = Object.keys(map.layoutNodes);
+		assert.ok(!layoutKeys.includes('b'), 'b should be omitted (got: ' + layoutKeys.join(',') + ')');
+		assert.ok(layoutKeys.includes('a'), 'a should remain');
+		assert.ok(layoutKeys.includes('c'), 'c should remain (orphaned)');
+		assert.ok(layoutKeys.includes('d'), 'd should remain (orphaned)');
+	});
+
+	it('drops graph-level edges from or to the removed node', async () => {
+		const map = new AdjacencyMap(deepCopy(baseInput), 'omit-b');
+		assert.strictEqual(map.edges.filter(e => e.source === 'b').length, 0, 'edges from b should be dropped');
+		assert.strictEqual(map.edges.filter(e => e.parent === 'b').length, 0, 'edges to b should be dropped');
+	});
+
+	it('does not allow direct lookup of the removed node', async () => {
+		const map = new AdjacencyMap(deepCopy(baseInput), 'omit-b');
+		assert.throws(() => map.node('b'), /ID b is removed in this scenario/);
+		assert.throws(() => map.layoutNode('node:b'), /ID b is removed in this scenario/);
+	});
+
+	it('does not affect base scenario', async () => {
+		const map = new AdjacencyMap(deepCopy(baseInput));
+		const layoutKeys = Object.keys(map.layoutNodes);
+		assert.ok(layoutKeys.includes('b'), 'b should still exist in base scenario');
+	});
+
+	it('toggling removed off restores the node', async () => {
+		const input = deepCopy(baseInput);
+		input.scenarios['omit-b'].nodes.b.removed = false;
+		const map = new AdjacencyMap(input, 'omit-b');
+		const layoutKeys = Object.keys(map.layoutNodes);
+		assert.ok(layoutKeys.includes('b'), 'b should be present when removed=false');
+	});
+
+	it('referencing a non-existent node in a removed entry is a no-op', async () => {
+		const input = deepCopy(baseInput);
+		input.scenarios['omit-b'].nodes.nonexistent = { removed: true };
+		const fn = () => new AdjacencyMap(input, 'omit-b');
+		assert.doesNotThrow(fn);
+	});
+
+});
+
+describe('requires clause', () => {
+
+	const baseInput = {
+		properties: {
+			engineering: { value: 1 }
+		},
+		root: { engineering: 1.0 },
+		nodes: {
+			a: { description: 'a' },
+			b: { description: 'b' },
+			c: { description: 'c' },
+			d: { description: 'd' }
+		}
+	};
+
+	it('throws on requires.all violation in a named scenario', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.c.requires = { all: ['a'] };
+		input.scenarios = {
+			'omit-a': { description: 'omit a', nodes: { a: { removed: true } } }
+		};
+		assert.throws(() => new AdjacencyMap(input, 'omit-a'), /requires\.all violation/);
+	});
+
+	it('throws on requires.any violation in a named scenario', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.c.requires = { any: [['a', 'b']] };
+		input.scenarios = {
+			'omit-ab': { description: 'omit a and b', nodes: { a: { removed: true }, b: { removed: true } } }
+		};
+		assert.throws(() => new AdjacencyMap(input, 'omit-ab'), /requires\.any violation/);
+	});
+
+	it('passes requires.any when at least one group member is present', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.c.requires = { any: [['a', 'b']] };
+		input.scenarios = {
+			'omit-a': { description: 'omit a (b survives)', nodes: { a: { removed: true } } }
+		};
+		assert.doesNotThrow(() => new AdjacencyMap(input, 'omit-a'));
+	});
+
+	it('throws on requires.none violation in a named scenario', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.a.requires = { none: ['b'] };
+		input.scenarios = {
+			'keep-both': { description: 'keep both', nodes: {} }
+		};
+		assert.throws(() => new AdjacencyMap(input, 'keep-both'), /Mutual-exclusion violation/);
+	});
+
+	it('treats requires.none symmetrically', async () => {
+		// Same as above, but declared on the OTHER side. Should still fire.
+		const input = deepCopy(baseInput);
+		input.nodes.b.requires = { none: ['a'] };
+		input.scenarios = {
+			'keep-both': { description: 'keep both', nodes: {} }
+		};
+		assert.throws(() => new AdjacencyMap(input, 'keep-both'), /Mutual-exclusion violation/);
+	});
+
+	it('treats requires.none as a warning at the base scenario', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.a.requires = { none: ['b'] };
+		const map = new AdjacencyMap(input);
+		assert.strictEqual(map.requiresWarnings.length, 1);
+		assert.ok(/Mutual-exclusion violation/.test(map.requiresWarnings[0]));
+	});
+
+	it('does not throw when one side of a mutual exclusion is removed', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.a.requires = { none: ['b'] };
+		input.scenarios = {
+			'omit-b': { description: 'omit b', nodes: { b: { removed: true } } }
+		};
+		const map = new AdjacencyMap(input, 'omit-b');
+		assert.strictEqual(map.requiresWarnings.length, 0);
+	});
+
+	it('throws when requires references a non-existent node', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.a.requires = { all: ['nonexistent'] };
+		assert.throws(() => new AdjacencyMap(input), /referencing undefined node nonexistent/);
+	});
+
+	it('throws when requires.any has an empty group', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.a.requires = { any: [[]] };
+		assert.throws(() => new AdjacencyMap(input), /empty requires\.any group/);
+	});
+
+	it('throws when requires references the node itself', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.a.requires = { all: ['a'] };
+		assert.throws(() => new AdjacencyMap(input), /referencing itself/);
+	});
+
+	it('re-evaluates requires when scenario changes', async () => {
+		const input = deepCopy(baseInput);
+		input.nodes.c.requires = { all: ['a'] };
+		input.scenarios = {
+			'omit-a': { description: 'omit a', nodes: { a: { removed: true } } }
+		};
+		const map = new AdjacencyMap(input);
+		assert.throws(() => { map.scenarioName = 'omit-a'; }, /requires\.all violation/);
+	});
+
+});
+
+describe('scenario probability + branchOf', () => {
+
+	const baseInput = {
+		properties: {
+			engineering: { value: 1 }
+		},
+		root: { engineering: 1.0 },
+		nodes: {
+			a: { description: 'a', edges: [{ type: 'engineering', cost: 10 }] }
+		}
+	};
+
+	it('rejects probability outside [0,1]', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'too-high': { description: 'p>1', probability: 1.5, nodes: {} }
+		};
+		assert.throws(() => new AdjacencyMap(input), /probability out of range/);
+	});
+
+	it('rejects negative probability', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'neg': { description: 'p<0', probability: -0.1, nodes: {} }
+		};
+		assert.throws(() => new AdjacencyMap(input), /probability out of range/);
+	});
+
+	it('rejects branchOf pointing to a non-existent scenario', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'b': { description: 'b', branchOf: 'no-such', nodes: {} }
+		};
+		assert.throws(() => new AdjacencyMap(input), /branchOf=/);
+	});
+
+	it('rejects branchOf pointing to itself', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'self': { description: 'self', branchOf: 'self', nodes: {} }
+		};
+		assert.throws(() => new AdjacencyMap(input), /branchOf pointing to itself/);
+	});
+
+	it('rejects when sibling probabilities sum to more than 1', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'a': { description: 'a', probability: 0.7, branchOf: '', nodes: {} },
+			'b': { description: 'b', probability: 0.5, branchOf: '', nodes: {} }
+		};
+		assert.throws(() => new AdjacencyMap(input), /probabilities sum > 1/);
+	});
+
+	it('accepts a probability without branchOf (implicit branch off base)', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'b': { description: 'b', probability: 0.5, nodes: {} }
+		};
+		const map = new AdjacencyMap(input);
+		assert.strictEqual(map.data.scenarios['b'].branchOf, '');
+	});
+
+	it('lists branch siblings off a parent', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'b1': { description: 'b1', probability: 0.3, branchOf: '', nodes: {} },
+			'b2': { description: 'b2', probability: 0.4, branchOf: '', nodes: {} },
+			'unrelated': { description: 'unrelated', nodes: {} }
+		};
+		const map = new AdjacencyMap(input);
+		const siblings = map.branchSiblings('').sort();
+		assert.deepStrictEqual(siblings, ['b1', 'b2']);
+	});
+
+	it('computes branchProbabilitySum across siblings', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'b1': { description: 'b1', probability: 0.3, branchOf: '', nodes: {} },
+			'b2': { description: 'b2', probability: 0.4, branchOf: '', nodes: {} }
+		};
+		const map = new AdjacencyMap(input);
+		assert.ok(Math.abs(map.branchProbabilitySum('') - 0.7) < 1e-9);
+	});
+
+	it('computes expected-value across branches with remainder applied to parent', () => {
+		const input = deepCopy(baseInput);
+		// Branch removes the only node, so engineering drops to 0 there. The
+		// base scenario keeps engineering at its full value. E = p*0 + (1-p)*base.
+		input.scenarios = {
+			'b': {
+				description: 'b',
+				probability: 0.5,
+				branchOf: '',
+				nodes: { a: { removed: true } }
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const baseE = map.result.engineering;
+		const branchMap = new AdjacencyMap(input, 'b');
+		const branchE = branchMap.result.engineering;
+		const expected = map.expectedValueAcrossBranches('');
+		// E[engineering] = 0.5*branchE + 0.5*baseE
+		const want = 0.5 * branchE + 0.5 * baseE;
+		assert.ok(Math.abs(expected.engineering - want) < 1e-9, 'expected ' + want + ' got ' + expected.engineering);
+	});
+
+	it('expectedValueAcrossBranches with no branches equals parent result', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'other': { description: 'other', nodes: {} }
+		};
+		const map = new AdjacencyMap(input);
+		const expected = map.expectedValueAcrossBranches('');
+		assert.ok(Math.abs(expected.engineering - map.result.engineering) < 1e-9);
+	});
+
+	it('expectedValueAcrossBranches uses the full branch weight when p sums to 1', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'b': {
+				description: 'b',
+				probability: 1.0,
+				branchOf: '',
+				nodes: { a: { removed: true } }
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const branchMap = new AdjacencyMap(input, 'b');
+		const expected = map.expectedValueAcrossBranches('');
+		// p=1.0 means remainder is 0, so expected == branch result.
+		assert.ok(Math.abs(expected.engineering - branchMap.result.engineering) < 1e-9);
+	});
+
+	it('branchGroupParent returns the parent for a branch', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'b': { description: 'b', probability: 0.5, branchOf: '', nodes: {} }
+		};
+		const map = new AdjacencyMap(input);
+		assert.strictEqual(map.branchGroupParent('b'), '');
+	});
+
+	it('branchGroupParent returns self when a scenario has branches off it', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'parent': { description: 'p', nodes: {} },
+			'b': { description: 'b', probability: 0.5, branchOf: 'parent', nodes: {} }
+		};
+		const map = new AdjacencyMap(input);
+		assert.strictEqual(map.branchGroupParent('parent'), 'parent');
+	});
+
+	it('branchGroupParent returns undefined for non-branch scenarios', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'standalone': { description: 'standalone', nodes: {} }
+		};
+		const map = new AdjacencyMap(input);
+		assert.strictEqual(map.branchGroupParent('standalone'), undefined);
+	});
+
+	it('allows probability sum exactly equal to 1', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'a': { description: 'a', probability: 0.6, branchOf: '', nodes: {} },
+			'b': { description: 'b', probability: 0.4, branchOf: '', nodes: {} }
+		};
+		assert.doesNotThrow(() => new AdjacencyMap(input));
+	});
+
+});
+
+describe('URL hash state', () => {
+
+	it('encodes scenario and selected layout IDs with URL-reserved characters', async () => {
+		const hash = stringifyURLHashArgs({
+			s: 'a scenario & branch=1',
+			n: 'node:feature & part=2'
+		});
+		assert.strictEqual(hash, 's=a+scenario+%26+branch%3D1&n=node%3Afeature+%26+part%3D2');
+	});
+
+	it('decodes scenario and selected layout IDs with URL-reserved characters', async () => {
+		const hash = 's=a+scenario+%26+branch%3D1&n=node%3Afeature+%26+part%3D2';
+		assert.deepStrictEqual(parseURLHashArgs(hash), {
+			s: 'a scenario & branch=1',
+			n: 'node:feature & part=2'
+		});
+	});
+
+	it('clears scenario and selection when URL hash params are absent', async () => {
+		const state = {
+			app: {hash: 's=custom&n=node%3Aa'},
+			data: {
+				scenarioName: 'custom',
+				selectedLayoutID: 'node:a'
+			}
+		};
+		const actions = [];
+		const dispatch = action => {
+			if (typeof action == 'function') return action(dispatch, () => state);
+			actions.push(action);
+			return action;
+		};
+
+		await updateHash('', true)(dispatch, () => state);
+
+		assert.ok(actions.some(action => action.type == 'UPDATE_SCENARIO_NAME' && action.scenarioName == ''));
+		assert.ok(actions.some(action => action.type == 'UPDATE_SELECTED_NODE_ID' && action.nodeID === undefined));
+		assert.ok(actions.some(action => action.type == 'UPDATE_HASH' && action.hash == ''));
+	});
+
+	it('omits stale selected layout IDs from canonical hash', async () => {
+		const state = {
+			data: {
+				filename: 'default',
+				scenarioName: '',
+				selectedLayoutID: 'node:does-not-exist',
+				renderGroups: true,
+				scenariosOverlays: {}
+			}
+		};
+		assert.strictEqual(selectHashForCurrentState(state), '');
+	});
+
+});
+
+describe('data reducer robustness', () => {
+
+	it('removes a file overlay entirely after successful save', async () => {
+		const state = dataReducer(undefined, {type: '@@INIT'});
+		const withOverlay = {
+			...state,
+			scenariosOverlays: {
+				default: {
+					custom: {
+						description: 'Unsaved',
+						nodes: {}
+					}
+				}
+			}
+		};
+		const next = dataReducer(withOverlay, {
+			type: 'SAVE_SCENARIOS_SUCCESS',
+			filename: 'default'
+		});
+		assert.deepStrictEqual(next.scenariosOverlays, {});
+	});
+
+	it('preserves other file overlays after successful save', async () => {
+		const state = dataReducer(undefined, {type: '@@INIT'});
+		const otherOverlay = {
+			custom: {
+				description: 'Other file unsaved',
+				nodes: {}
+			}
+		};
+		const withOverlay = {
+			...state,
+			scenariosOverlays: {
+				default: {
+					custom: {
+						description: 'Saved',
+						nodes: {}
+					}
+				},
+				other: otherOverlay
+			}
+		};
+		const next = dataReducer(withOverlay, {
+			type: 'SAVE_SCENARIOS_SUCCESS',
+			filename: 'default'
+		});
+		assert.deepStrictEqual(next.scenariosOverlays, {other: otherOverlay});
+	});
+
+	it('preserves removed node overrides when the last edited value is removed', async () => {
+		const state = {
+			...dataReducer(undefined, {type: '@@INIT'}),
+			scenarioName: 'custom',
+			selectedLayoutID: 'node:b',
+			scenariosOverlays: {
+				default: {
+					custom: {
+						description: 'Custom',
+						nodes: {
+							b: {
+								removed: true,
+								values: {engineering: 2},
+								edges: {
+									add: [],
+									remove: {},
+									modify: {}
+								}
+							}
+						}
+					}
+				}
+			}
+		};
+		const next = dataReducer(state, {
+			type: 'REMOVE_EDITING_NODE_VALUE',
+			propertyName: 'engineering'
+		});
+		assert.deepStrictEqual(next.scenariosOverlays.default.custom.nodes.b, {
+			removed: true,
+			values: {},
+			edges: {
+				add: [],
+				remove: {},
+				modify: {}
+			}
+		});
+	});
+
+});
+
+describe('path state', () => {
+
+	it('accepts canonical main page extras with a trailing slash', async () => {
+		const state = {data: {filename: 'default'}};
+		const actions = [];
+		const dispatch = action => {
+			if (typeof action == 'function') return action(dispatch, () => state);
+			actions.push(action);
+			return action;
+		};
+		assert.doesNotThrow(() => updateWithMainPageExtra('default/')(dispatch, () => state));
+		assert.deepStrictEqual(actions, []);
+	});
+
+	it('rejects invalid filenames even with a trailing slash', async () => {
+		const dispatch = () => {};
+		assert.throws(() => updateWithMainPageExtra('missing/')(dispatch), /Invalid filename: missing/);
+	});
+
+});
+
+describe('localStorage overlay robustness', () => {
+
+	const withStoredScenarios = (rawValue, fn) => {
+		const oldWindow = global.window;
+		global.window = {
+			localStorage: {
+				getItem: key => key == 'scenarios' ? rawValue : null
+			}
+		};
+		try {
+			return fn();
+		} finally {
+			if (oldWindow === undefined) {
+				delete global.window;
+			} else {
+				global.window = oldWindow;
+			}
+		}
+	};
+
+	it('ignores parsed null scenario overlays', async () => {
+		const overlays = withStoredScenarios('null', () => fetchOverlaysFromStorage());
+		assert.deepStrictEqual(overlays, {});
+	});
+
+	it('ignores parsed array scenario overlays', async () => {
+		const overlays = withStoredScenarios('[]', () => fetchOverlaysFromStorage());
+		assert.deepStrictEqual(overlays, {});
+	});
+
+	it('accepts object-shaped scenario overlays', async () => {
+		const raw = JSON.stringify({
+			default: {
+				custom: {
+					description: 'Custom',
+					nodes: {}
+				}
+			}
+		});
+		const overlays = withStoredScenarios(raw, () => fetchOverlaysFromStorage());
+		assert.deepStrictEqual(overlays, {
+			default: {
+				custom: {
+					description: 'Custom',
+					nodes: {}
+				}
+			}
+		});
 	});
 
 });

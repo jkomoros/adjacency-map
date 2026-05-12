@@ -25,6 +25,7 @@
 		"noImplicitAny": true,
 		"strictNullChecks": true,
 		"esModuleInterop": true,
+		"skipLibCheck": true,
 		"plugins": [
 			{
 				"name": "ts-lit-plugin",
@@ -48,6 +49,7 @@
 	"include": ["src/**/*.ts", "tools/**/*.ts"],
 	"ts-node": {
 		"esm": true,
-		"experimentalSpecifierResolution": "node"
+		"experimentalSpecifierResolution": "node",
+		"preferTsExts": true
 	}
 }

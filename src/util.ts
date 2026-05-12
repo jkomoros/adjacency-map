@@ -12,7 +12,8 @@ import {
 	EdgeValue,
 	EdgeValueMatchID,
 	EdgeIdentifier,
-	NodeID
+	NodeID,
+	URLHashArgs
 } from './types.js';
 
 import {
@@ -104,14 +105,69 @@ export function shuffleInPlace<T>(array : T[], rnd : RandomGenerator = Math.rand
 
 const SCENARIOS_OVERLAYS_LOCAL_STORAGE_KEY = 'scenarios';
 
+const isPlainObject = (value : unknown) : value is Record<string, unknown> => {
+	return typeof value == 'object' && value !== null && !Array.isArray(value);
+};
+
+const isScenariosOverlaysShape = (value : unknown) : value is ScenariosOverlays => {
+	if (!isPlainObject(value)) return false;
+	for (const fileOverlay of Object.values(value)) {
+		if (fileOverlay === undefined) continue;
+		if (!isPlainObject(fileOverlay)) return false;
+		for (const scenario of Object.values(fileOverlay)) {
+			if (!isPlainObject(scenario)) return false;
+		}
+	}
+	return true;
+};
+
 export const fetchOverlaysFromStorage = () : ScenariosOverlays => {
 	const rawObject = window.localStorage.getItem(SCENARIOS_OVERLAYS_LOCAL_STORAGE_KEY);
 	if (!rawObject) return {};
-	return JSON.parse(rawObject) as ScenariosOverlays;
+	try {
+		const parsed = JSON.parse(rawObject) as unknown;
+		if (isScenariosOverlaysShape(parsed)) return parsed;
+		console.warn('Invalid scenario overlays in localStorage, ignoring.');
+	} catch (err) {
+		console.warn('Corrupt scenario overlays in localStorage, ignoring:', err);
+	}
+	return {};
 };
 
 export const storeOverlaysToStorage = (overlays : ScenariosOverlays) => {
 	window.localStorage.setItem(SCENARIOS_OVERLAYS_LOCAL_STORAGE_KEY, JSON.stringify(overlays, null, '\t'));
+};
+
+export const parseURLHashArgs = (hash : string) : URLHashArgs => {
+	if (hash.startsWith('#')) hash = hash.substring(1);
+	const args : URLHashArgs = {};
+	if (!hash) return args;
+	const params = new URLSearchParams(hash);
+	for (const [key, val] of params.entries()) {
+		switch(key) {
+		case 's':
+			args.s = val;
+			break;
+		case 'n':
+			args.n = val;
+			break;
+		case 'c':
+			args.c = val;
+			break;
+		default:
+			console.warn('Unknown URL arg: ' + key);
+		}
+	}
+	return args;
+};
+
+export const stringifyURLHashArgs = (args : URLHashArgs) : string => {
+	const params = new URLSearchParams();
+	for (const [key, value] of Object.entries(args)) {
+		if (value === undefined) continue;
+		params.set(key, value);
+	}
+	return params.toString();
 };
 
 export const edgeEquivalent = (one : EdgeValue | ExpandedEdgeValue, two : EdgeValue | ExpandedEdgeValue) : boolean => {

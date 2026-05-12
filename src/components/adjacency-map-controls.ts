@@ -11,19 +11,27 @@ import {
 	beginEditingNodeValue,
 	beginEditingScenario,
 	editingUpdateNodeValue,
+	fileSaveAvailable,
+	forkScenario,
 	modifyEditingNodeEdge,
 	removeEditingNodeEdge,
 	removeEditingNodeValue,
 	removeEditingScenario,
 	resetScenariosOverlays,
+	saveScenariosToFile,
 	setEditing,
 	setRenderGroups,
 	setShowEdges,
+	updateCompareScenarioName,
 	updateEditingScenarioDescription,
+	updateEditingScenarioDecision,
+	updateEditingScenarioReasoning,
 	updateEditingScenarioName,
 	updateFilename,
 	updateHoveredEdgeID,
 	updateScenarioName,
+	updateSearchQuery,
+	updateSelectedLayoutID,
 	updateShowHiddenValues,
 } from "../actions/data.js";
 
@@ -48,7 +56,9 @@ import {
 	selectEditing,
 	selectEditableScenarios,
 	selectSelectedLayoutID,
-	selectRenderGroups
+	selectRenderGroups,
+	selectCompareScenarioName,
+	selectSearchQuery
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -111,7 +121,7 @@ import {
 	edgeIdentifierEquivalent,
 	edgeIdentifierFromEdge
 } from '../util.js';
-import { showReadout } from '../actions/dialog.js';
+import { showReadout, showExport } from '../actions/dialog.js';
 
 
 @customElement('adjacency-map-controls')
@@ -179,6 +189,15 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 
 	@state()
 	_renderGroups : boolean;
+
+	@state()
+	_compareScenarioName : string | undefined = undefined;
+
+	@state()
+	_fileSaveAvailable = false;
+
+	@state()
+	_searchQuery : string = '';
 
 	static override get styles() {
 		return [
@@ -265,19 +284,37 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 				<div>
 					<label for='editing'>Editing</label><input id='editing' type='checkbox' .checked=${this._editing} @change=${this._handleEditingChanged}></input>
 					<label for='groups'>Groups</label><input id='groups' type='checkbox' .checked=${this._renderGroups} @change=${this._handleRenderGroupsChanged}></input>
-					${this._editing && Object.keys(this._scenariosOverlays).length > 0 ? html`<button class='small' title='Remove all edits across all files' @click=${this._handleResetOverlaysClicked}>${DELETE_FOREVER_ICON}</button><button class='small' title='Readout changes' @click=${this._handleShowReadoutClicked}>${CODE_ICON}</button>` : ''}
+					${this._editing && Object.keys(this._scenariosOverlays).length > 0 ? html`<button class='small' title='Remove all edits across all files' @click=${this._handleResetOverlaysClicked}>${DELETE_FOREVER_ICON}</button><button class='small' title='Readout changes' @click=${this._handleShowReadoutClicked}>${CODE_ICON}</button>${this._fileSaveAvailable ? html`<button class='small' title='Save edits to file' @click=${this._handleSaveToFileClicked}>Save</button>` : ''}` : ''}
+					${this._adjacencyMap ? html`<button class='small' title='Export the current scenario as Markdown + PNG' @click=${this._handleShowExportClicked}>Export</button>` : ''}
+				</div>
+				<div>
+					<label for='nodeSearch'>Search</label>
+					<input id='nodeSearch' type='search' placeholder='Search nodes…' .value=${this._searchQuery} @input=${this._handleSearchInput} @keydown=${this._handleSearchKeyDown}></input>
+					${this._searchQuery ? html`<button class='small' title='Clear search' @click=${this._handleClearSearch}>×</button>` : ''}
 				</div>
 				${this._legalScenarioNames.length > 1 || this._editing ? html`
 				<label for='scenarios'>Scenario</label>
 				<select id='scenarios' @change=${this._handleScenarioNameChanged}>
 					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName} .selected=${scenarioName == this._scenarioName}>${scenarioName || 'Default'}${this._editableScenarios[scenarioName] ? ' (*)' : ''}</option>`)}
-				</select>` : ''}
+				</select>${this._adjacencyMap ? html`<button class='small' title='Fork the current scenario into a new editable copy' @click=${this._handleForkScenarioClicked}>Fork</button>` : ''}` : ''}
 				${this._editing ? html`<button class='small' title='Create a new scenario based on the current scenario' @click=${this._handleCreateScenarioClicked}>${PLUS_ICON}</button>${this._scenarioEditable ? html`<button class='small' title='Remove this scenario' @click=${this._handleRemoveScenarioClicked}>${CANCEL_ICON}</button><button class='small' title='Change scenario name' @click=${this._handleEditScenarioNameClicked}>${EDIT_ICON}</button>` : ''}` : ''}
+				${this._legalScenarioNames.length > 1 ? html`
+				<label for='compareScenarios'>Compare with</label>
+				<select id='compareScenarios' @change=${this._handleCompareScenarioChanged}>
+					<option .value=${'__off__'} .selected=${this._compareScenarioName === undefined}>(off)</option>
+					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName === '' ? '__base__' : scenarioName} .selected=${(scenarioName === '' ? '__base__' : scenarioName) === (this._compareScenarioName === undefined ? '__off__' : (this._compareScenarioName === '' ? '__base__' : this._compareScenarioName))}>${scenarioName || 'Default'}</option>`)}
+				</select>` : ''}
 				<div class='summary'>
-				${this._legalScenarioNames.length > 1 ? 
+				${this._legalScenarioNames.length > 1 ?
 		html`<div>
 							<label>Scenario</label> ${this._scenarioEditable ? html`<input type='text' @change=${this._handleUpdateScenarioDescription} .value=${this._adjacencyMap?.scenario.description || ''}></input>` : html`${this._adjacencyMap?.scenario.description || (this._adjacencyMap?.scenarioName ? html`<em>No description</em>` : html`<em>Default</em>`)}`}
-						</div>`
+						</div>
+						${(this._scenarioEditable || this._adjacencyMap?.scenario.decision) ? html`<div>
+							<label>Decision</label> ${this._scenarioEditable ? html`<input type='text' @change=${this._handleUpdateScenarioDecision} .value=${this._adjacencyMap?.scenario.decision || ''}></input>` : html`${this._adjacencyMap?.scenario.decision}`}
+						</div>` : ''}
+						${(this._scenarioEditable || this._adjacencyMap?.scenario.reasoning) ? html`<div>
+							<label>Reasoning</label> ${this._scenarioEditable ? html`<input type='text' @change=${this._handleUpdateScenarioReasoning} .value=${this._adjacencyMap?.scenario.reasoning || ''}></input>` : html`${this._adjacencyMap?.scenario.reasoning}`}
+						</div>` : ''}`
 		: html``}
 					<div>
 						<label>Node</label> <strong>${this._summaryNodeDisplayName === undefined ? html`<em>Union of all nodes</em>${this._scenarioEditable ? html`<br/>Select a node to edit it</strong>` : ''}` : (this._summaryNodeDisplayName || html`<em>Root</em>`)}</strong>
@@ -383,6 +420,10 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		return html`<div class='tag ${active ? 'active' : ''}' style=${styleMap(styles)} title='${tagDefinition.description}'>${tagDefinition.displayName}</div>`;
 	}
 
+	override firstUpdated() {
+		this._fileSaveAvailable = fileSaveAvailable();
+	}
+
 	// This is called every time something is updated in the store.
 	override stateChanged(state : RootState) {
 		this._filename = selectFilename(state);
@@ -406,6 +447,8 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		this._summaryNodeEditableFields = selectSelectedNodeFieldsEdited(state);
 		this._scenariosOverlays = selectScenariosOverlays(state);
 		this._editedNodes = selectCurrentScenarioEditedNodes(state);
+		this._compareScenarioName = selectCompareScenarioName(state);
+		this._searchQuery = selectSearchQuery(state);
 	}
 
 	_handleControlsMouseMove() {
@@ -442,6 +485,16 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		store.dispatch(updateEditingScenarioDescription(description));
 	}
 
+	_handleUpdateScenarioDecision(e : Event) {
+		if (!(e.target instanceof HTMLInputElement)) throw new Error('not input');
+		store.dispatch(updateEditingScenarioDecision(e.target.value));
+	}
+
+	_handleUpdateScenarioReasoning(e : Event) {
+		if (!(e.target instanceof HTMLInputElement)) throw new Error('not input');
+		store.dispatch(updateEditingScenarioReasoning(e.target.value));
+	}
+
 	_handleResetOverlaysClicked() {
 		store.dispatch(resetScenariosOverlays());
 	}
@@ -452,6 +505,18 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 
 	_handleShowReadoutClicked() {
 		store.dispatch(showReadout());
+	}
+
+	_handleShowExportClicked() {
+		store.dispatch(showExport());
+	}
+
+	async _handleSaveToFileClicked() {
+		try {
+			await store.dispatch(saveScenariosToFile());
+		} catch (err) {
+			console.warn('Save failed:', err);
+		}
 	}
 
 	_edgeActionClicked(e : Event) : [edge : EdgeValue, previousID : EdgeValueMatchID, hasModifications : boolean] {
@@ -627,6 +692,19 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		store.dispatch(beginEditingScenario());
 	}
 
+	_handleForkScenarioClicked() {
+		const currentName = this._adjacencyMap?.scenarioName || '';
+		const suggested = currentName ? `${currentName}-fork` : 'fork';
+		const newName = window.prompt('New scenario name:', suggested);
+		if (newName === null) return;
+		try {
+			store.dispatch(forkScenario(currentName, newName));
+		} catch (err) {
+			const e = err as Error;
+			window.alert(`Fork failed: ${e.message}`);
+		}
+	}
+
 	_handleRemoveScenarioClicked() {
 		store.dispatch(removeEditingScenario());
 	}
@@ -641,6 +719,59 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		const ele = e.composedPath()[0];
 		if (!(ele instanceof HTMLSelectElement)) throw new Error('not a select element');
 		store.dispatch(updateScenarioName(ele.value));
+	}
+
+	_handleCompareScenarioChanged(e : Event) {
+		const target = e.target as HTMLSelectElement;
+		const value = target.value;
+		if (value === '__off__') store.dispatch(updateCompareScenarioName(undefined));
+		else if (value === '__base__') store.dispatch(updateCompareScenarioName(''));
+		else store.dispatch(updateCompareScenarioName(value));
+	}
+
+	_handleSearchInput(e : Event) {
+		if (!(e.target instanceof HTMLInputElement)) return;
+		store.dispatch(updateSearchQuery(e.target.value));
+	}
+
+	_handleSearchKeyDown(e : KeyboardEvent) {
+		if (e.key === 'Escape') {
+			store.dispatch(updateSearchQuery(''));
+			(e.target as HTMLInputElement).blur();
+			return;
+		}
+		if (e.key === 'Enter') {
+			// Jump to the first match.
+			const matches = this._selectSearchMatchesArr();
+			if (matches.length > 0) {
+				store.dispatch(updateSelectedLayoutID(matches[0]));
+			}
+		}
+	}
+
+	_handleClearSearch() {
+		store.dispatch(updateSearchQuery(''));
+	}
+
+	_selectSearchMatchesArr() : string[] {
+		if (!this._adjacencyMap || !this._searchQuery) return [];
+		const q = this._searchQuery.toLowerCase().trim();
+		if (!q) return [];
+		const result : string[] = [];
+		for (const [nodeID, node] of Object.entries(this._adjacencyMap.nodes)) {
+			if (nodeID === '') continue;
+			const idMatch = nodeID.toLowerCase().includes(q);
+			const nameMatch = (node.displayName || '').toLowerCase().includes(q);
+			let tagMatch = false;
+			const tags = (node.tags || {}) as Record<string, unknown>;
+			for (const t of Object.keys(tags)) {
+				if (t.toLowerCase().includes(q)) { tagMatch = true; break; }
+			}
+			if (idMatch || nameMatch || tagMatch) {
+				result.push('node:' + nodeID);
+			}
+		}
+		return result;
 	}
 
 }

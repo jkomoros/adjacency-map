@@ -31,7 +31,12 @@ import {
 	selectDialogMessage,
 	selectCurrentScenarioOverlay,
 	selectHoveredLayoutID,
-	selectSelectedLayoutID
+	selectSelectedLayoutID,
+	selectHeadlineMetrics,
+	selectCompareScenarioName,
+	selectCompareAdjacencyMap,
+	selectComparisonDelta,
+	selectSearchMatches,
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -68,6 +73,12 @@ import {
 } from '../adjacency-map.js';
 
 import {
+	generateMarkdownReport,
+	exportSVGToPNG,
+	downloadBlob
+} from '../export.js';
+
+import {
 	SVG_HEIGHT,
 	SVG_WIDTH
 } from '../constants.js';
@@ -79,7 +90,8 @@ import {
 } from '../actions/app.js';
 
 import {
-	closeDialog, showError
+	closeDialog,
+	showHelp
 } from '../actions/dialog.js';
 
 import {
@@ -146,6 +158,21 @@ class MainView extends connect(store)(PageViewElement) {
 		[name : ScenarioName] : ScenarioWithExtends
 	};
 
+	@state()
+	_headlineMetrics : {property: string, value: number}[] = [];
+
+	@state()
+	_compareScenarioName : ScenarioName | undefined = undefined;
+
+	@state()
+	_compareAdjacencyMap : AdjacencyMap | null = null;
+
+	@state()
+	_comparisonDelta : { perNode: {[id: string]: 'changed' | 'added' | 'removed'}, perProperty: {property: string, a: number, b: number, delta: number}[] } | null = null;
+
+	@state()
+	_searchMatches : Set<string> | null = null;
+
 	static override get styles() {
 		return [
 			SharedStyles,
@@ -193,15 +220,157 @@ class MainView extends connect(store)(PageViewElement) {
 				.instructions {
 					user-select: none;
 				}
+
+				.error-banner {
+					position: absolute;
+					top: 0;
+					left: 0;
+					right: 0;
+					z-index: 100;
+					background: #b00020;
+					color: white;
+					padding: 0.5em 1em;
+					font-family: monospace;
+					font-size: 0.85em;
+					white-space: pre-wrap;
+					box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+				}
+				.error-banner strong {
+					display: block;
+					margin-bottom: 0.25em;
+					font-family: var(--app-text-font-family, sans-serif);
+					font-size: 1em;
+				}
+				.error-banner a {
+					color: white;
+					text-decoration: underline;
+					cursor: pointer;
+				}
+
+				.metrics-strip {
+					position: absolute;
+					top: 0;
+					right: 0;
+					z-index: 50;
+					display: flex;
+					gap: 0.5em;
+					padding: 0.5em;
+					background: rgba(255, 255, 255, 0.85);
+					border-bottom-left-radius: 8px;
+					font-size: 0.85em;
+					box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+				}
+				.metric-tile {
+					display: flex;
+					flex-direction: column;
+					align-items: flex-start;
+					padding: 0.25em 0.5em;
+					border-right: 1px solid #ddd;
+				}
+				.metric-tile:last-child {
+					border-right: none;
+				}
+				.metric-label {
+					font-size: 0.75em;
+					color: #555;
+					text-transform: uppercase;
+					letter-spacing: 0.05em;
+				}
+				.metric-value {
+					font-weight: bold;
+					font-variant-numeric: tabular-nums;
+				}
+
+				.compare-strip {
+					position: absolute;
+					top: 0;
+					left: 50%;
+					transform: translateX(-50%);
+					z-index: 40;
+					display: flex;
+					gap: 0.75em;
+					padding: 0.5em 1em;
+					background: rgba(255, 255, 255, 0.9);
+					border-bottom-left-radius: 8px;
+					border-bottom-right-radius: 8px;
+					font-size: 0.85em;
+					box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+				}
+				.compare-metric {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+				}
+				.compare-metric .label {
+					font-size: 0.75em;
+					color: #555;
+				}
+				.compare-metric .values {
+					font-variant-numeric: tabular-nums;
+				}
+				.compare-delta-pos { color: #43a047; font-weight: bold; }
+				.compare-delta-neg { color: #e53935; font-weight: bold; }
+				.diagram-pair {
+					display: flex;
+					gap: 0.5em;
+					width: 100%;
+				}
+				.diagram-pair > * {
+					flex: 1 1 0;
+					min-width: 0;
+				}
+				.export-actions {
+					margin-top: 0.75em;
+					display: flex;
+					gap: 0.5em;
+					justify-content: flex-end;
+				}
+				.export-actions button {
+					padding: 0.4em 0.9em;
+					cursor: pointer;
+				}
 			`
 		];
 	}
 
 	override render() : TemplateResult {
+		const compareOn = !!this._compareAdjacencyMap;
 		return html`
 			<div class='container'>
+					${this._dataError ? html`
+						<div class='error-banner'>
+							<strong>Data error in <code>${this._filename}</code></strong>
+							${this._dataError}
+							<div><a @click=${() => window.location.reload()}>Reload</a></div>
+						</div>` : ''}
+					${!this._dataError && this._headlineMetrics.length > 0 && !compareOn ? html`
+						<div class='metrics-strip'>
+							${this._headlineMetrics.map(m => html`
+								<div class='metric-tile'>
+									<span class='metric-label'>${m.property}</span>
+									<span class='metric-value'>${m.value.toFixed(2)}</span>
+								</div>
+							`)}
+						</div>` : ''}
+					${compareOn && this._comparisonDelta ? html`
+						<div class='compare-strip'>
+							${this._comparisonDelta.perProperty.slice(0, 6).map(p => html`
+								<div class='compare-metric'>
+									<span class='label'>${p.property}</span>
+									<span class='values'>${p.a.toFixed(2)} / ${p.b.toFixed(2)}</span>
+									<span class='${p.delta >= 0 ? 'compare-delta-pos' : 'compare-delta-neg'}'>${p.delta >= 0 ? '+' : ''}${p.delta.toFixed(2)}</span>
+								</div>
+							`)}
+						</div>` : ''}
 					<adjacency-map-controls></adjacency-map-controls>
-					<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .hoveredEdgeID=${this._hoveredEdgeID} .hoveredLayoutID=${this._hoveredLayoutID} .selectedLayoutID=${this._selectedLayoutID} .scale=${this._scale} .editedNodes=${this._editedNodes}></adjacency-map-diagram>
+					${compareOn ? html`
+						<div class='diagram-pair'>
+							<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .compareDelta=${this._comparisonDelta} .hoveredEdgeID=${this._hoveredEdgeID} .hoveredLayoutID=${this._hoveredLayoutID} .selectedLayoutID=${this._selectedLayoutID} .scale=${this._scale * 0.5} .editedNodes=${this._editedNodes} .searchMatches=${this._searchMatches}></adjacency-map-diagram>
+							<adjacency-map-diagram .map=${this._compareAdjacencyMap} .compareDelta=${this._comparisonDelta} .scale=${this._scale * 0.5} .searchMatches=${this._searchMatches}></adjacency-map-diagram>
+						</div>
+					` : html`
+						<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .hoveredEdgeID=${this._hoveredEdgeID} .hoveredLayoutID=${this._hoveredLayoutID} .selectedLayoutID=${this._selectedLayoutID} .scale=${this._scale} .editedNodes=${this._editedNodes} .searchMatches=${this._searchMatches}></adjacency-map-diagram>
+					`}
 					<dialog-element .open=${this._dialogOpen} .title=${this._dialogTitle} @dialog-should-close=${this._handleDialogShouldClose} .hideClose=${true}>${this._dialogContent}</dialog-element>
 			</div>
 		`;
@@ -224,6 +393,11 @@ class MainView extends connect(store)(PageViewElement) {
 		this._dialogKind = selectDialogKind(state);
 		this._dialogMessage = selectDialogMessage(state);
 		this._currentScenarioOverlay = selectCurrentScenarioOverlay(state);
+		this._headlineMetrics = selectHeadlineMetrics(state);
+		this._compareScenarioName = selectCompareScenarioName(state);
+		this._compareAdjacencyMap = selectCompareAdjacencyMap(state);
+		this._comparisonDelta = selectComparisonDelta(state);
+		this._searchMatches = selectSearchMatches(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
@@ -235,7 +409,6 @@ class MainView extends connect(store)(PageViewElement) {
 			store.dispatch(canonicalizeHash());
 		}
 		if (changedProps.has('_dataError') && this._dataError) {
-			store.dispatch(showError(this._dataError));
 			console.warn(this._dataError);
 		}
 		if (changedProps.has('_scenariosOverlays')) {
@@ -274,6 +447,10 @@ class MainView extends connect(store)(PageViewElement) {
 			store.dispatch(nextScenarioName());
 		} else if (e.key == 'ArrowLeft') {
 			store.dispatch(previousScenarioName());
+		} else if (e.key == 'Escape') {
+			store.dispatch(updateSelectedLayoutID(undefined));
+		} else if (e.key == '?') {
+			store.dispatch(showHelp());
 		}
 	}
 
@@ -322,6 +499,10 @@ class MainView extends connect(store)(PageViewElement) {
 		switch(this._dialogKind){
 		case 'readout':
 			return this._withButtons(this._dialogContentReadout);
+		case 'export':
+			return this._withButtons(this._dialogContentExport);
+		case 'help':
+			return this._withButtons(this._dialogContentHelp);
 		case 'error':
 			return this._withButtons(html`${this._dialogMessage}`);
 		case '':
@@ -329,6 +510,85 @@ class MainView extends connect(store)(PageViewElement) {
 		}
 
 		assertUnreachable(this._dialogKind);
+	}
+
+	get _dialogContentHelp() : TemplateResult {
+		return html`
+<div class='help'>
+<h4>Keyboard shortcuts</h4>
+<ul>
+	<li><kbd>←</kbd> / <kbd>→</kbd> — Cycle scenarios</li>
+	<li><kbd>Esc</kbd> — Clear node selection (or close this dialog)</li>
+	<li><kbd>?</kbd> — Open this help</li>
+	<li><kbd>Enter</kbd> in the search box — Select the first matching node</li>
+</ul>
+<h4>CLI commands</h4>
+<ul>
+	<li><code>npm run serve</code> — Dev server (with data watcher and state sidecar)</li>
+	<li><code>npm run validate</code> — Verify every scenario in every data file constructs cleanly</li>
+	<li><code>npm run inspect -- &lt;file&gt; [scenario]</code> — Structured summary of aggregate values + top nodes</li>
+	<li><code>npm run diff -- &lt;file&gt; &lt;a&gt; &lt;b&gt;</code> — What's different between two scenarios</li>
+	<li><code>npm run rank -- &lt;file&gt; &lt;property&gt; [--ascending]</code> — Rank scenarios by an aggregate</li>
+	<li><code>npm run test:smoke</code> — End-to-end smoke test in a headless browser</li>
+</ul>
+<h4>Agent context</h4>
+<ul>
+	<li>While the dev server is running, <code>/tmp/adjacency-state.json</code> reflects the current view (file, scenario, selection, compare scenario, hover).</li>
+	<li>See <code>AGENTS.md</code> at the repo root for the full agent guide.</li>
+</ul>
+</div>`;
+	}
+
+	get _dialogContentExport() : TemplateResult {
+		if (!this._adjacencyMap) return html`<em>No map loaded.</em>`;
+		const baseMap = this._adjacencyMap.scenarioName
+			? this._buildBaseMapForExport()
+			: null;
+		const markdown = generateMarkdownReport({
+			filename: this._filename || '',
+			scenarioName: this._adjacencyMap.scenarioName || '',
+			map: this._adjacencyMap,
+			baseMap,
+			headlineMetrics: this._headlineMetrics
+		});
+		return html`<div class='instructions'><em>Markdown report below is auto-selected — copy or download below.</em></div>
+<pre class='main'>${markdown}</pre>
+<div class='export-actions'>
+	<button @click=${() => this._handleDownloadMarkdown(markdown)}>Download .md</button>
+	<button @click=${this._handleDownloadPNG}>Download .png</button>
+</div>`;
+	}
+
+	_buildBaseMapForExport() : AdjacencyMap | null {
+		try {
+			const data = this._adjacencyMap?.data;
+			if (!data) return null;
+			return new AdjacencyMap(data, '');
+		} catch {
+			return null;
+		}
+	}
+
+	_handleDownloadMarkdown(markdown : string) {
+		const blob = new Blob([markdown], { type: 'text/markdown' });
+		const name = `${this._filename || 'map'}__${this._adjacencyMap?.scenarioName || 'base'}.md`;
+		downloadBlob(blob, name);
+	}
+
+	async _handleDownloadPNG() {
+		const diagram = this.shadowRoot?.querySelector('adjacency-map-diagram');
+		const svg = diagram?.shadowRoot?.querySelector('svg.main') as SVGSVGElement | null;
+		if (!svg) {
+			console.warn('No SVG found to export');
+			return;
+		}
+		try {
+			const blob = await exportSVGToPNG(svg, 2);
+			const name = `${this._filename || 'map'}__${this._adjacencyMap?.scenarioName || 'base'}.png`;
+			downloadBlob(blob, name);
+		} catch (err) {
+			console.warn('PNG export failed:', err);
+		}
 	}
 
 	get _dialogContentReadout() : TemplateResult {
@@ -351,6 +611,10 @@ class MainView extends connect(store)(PageViewElement) {
 		switch(this._dialogKind){
 		case 'readout':
 			return 'Changes';
+		case 'export':
+			return 'Export';
+		case 'help':
+			return 'Keyboard shortcuts & CLI';
 		case 'error':
 		case '':
 			return 'Error';
@@ -363,11 +627,27 @@ class MainView extends connect(store)(PageViewElement) {
 		switch (this._dialogKind) {
 		case 'readout':
 			return this._dialogOpenedReadout();
+		case 'export':
+			return this._dialogOpenedExport();
+		case 'help':
 		case 'error':
 		case '':
 			return;
 		}
 		assertUnreachable(this._dialogKind);
+	}
+
+	_dialogOpenedExport() : void {
+		const root = this.shadowRoot;
+		if (!root) return;
+		const pre = root.querySelector('pre.main');
+		if (!pre) return;
+		const range = document.createRange();
+		const selection = window.getSelection();
+		if (!selection) return;
+		selection.removeAllRanges();
+		range.selectNodeContents(pre);
+		selection.addRange(range);
 	}
 
 	_dialogOpenedReadout() : void {

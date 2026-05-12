@@ -2,6 +2,8 @@ import {
 	PropertyDefinition,
 	PropertyName,
 	EdgeValue,
+	EventDefinition,
+	EventID,
 	ExpandedEdgeValue,
 	LayoutInfo,
 	Library,
@@ -9,6 +11,7 @@ import {
 	MapDefinition,
 	NodeDefinition,
 	NodeID,
+	NodeRequires,
 	LayoutID,
 	NodeValues,
 	RawMapDefinition,
@@ -27,6 +30,7 @@ import {
 	ScenariosDefinition,
 	Scenario,
 	ScenarioName,
+	ScenarioEventOverride,
 	TagDefinition,
 	TagID,
 	TagMap,
@@ -116,6 +120,7 @@ const BASE_ALLOWED_VARIABLE_TYPES : AllowedValueDefinitionVariableTypes = {
 	parentValue: true,
 	resultValue: true,
 	rootValue: true,
+	nodeRef: true,
 	input: false,
 	hasTag: true,
 	tagConstant: true
@@ -143,6 +148,7 @@ const ALLOWED_VARIABLES_FOR_CONTEXT = {
 		parentValue: false,
 		resultValue: false,
 		rootValue: false,
+		nodeRef: true,
 		input: true,
 		hasTag: true,
 		tagConstant: true
@@ -173,12 +179,18 @@ export const extractSimpleGraph = (data : MapDefinition, scenarioName : Scenario
 	const result : SimpleGraph = {};
 	const scenario : Scenario = data.scenarios && data.scenarios[scenarioName] ? data.scenarios[scenarioName] : {description: '', nodes: {}};
 	const scenarioNodes = scenario.nodes;
+	const removed = new Set<NodeID>();
+	for (const [id, scNode] of Object.entries(scenarioNodes)) {
+		if (scNode.removed && data.nodes[id]) removed.add(id);
+	}
 	for (const [id, value] of Object.entries(data.nodes)) {
+		if (removed.has(id)) continue;
 		const scenarioNode = scenarioNodes[id] || emptyScenarioNode();
 		const edges : {[id : NodeID] : true} = {};
 		const [finalEdges] = edgesWithScenarioModifications(value.edges, scenarioNode.edges);
 		for (const edge of finalEdges) {
 			const ref = edge.parent || ROOT_ID;
+			if (removed.has(ref)) continue;
 			edges[ref] = true;
 		}
 		result[id] = edges;
@@ -600,6 +612,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 				}
 			};
 			if (baseNode.group != undefined) nodes[id].group = baseNode.group;
+			if (baseNode.removed !== undefined) nodes[id].removed = baseNode.removed;
 		}
 		for (const [id, node] of Object.entries(rawScenario.nodes)) {
 			const existingNode : ScenarioNode = nodes[id] || emptyScenarioNode();
@@ -614,13 +627,47 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 			if (existingNode.edges.extended) newNode.edges.extended = existingNode.edges.extended;
 			if (existingNode.group != undefined) newNode.group = existingNode.group;
 			if (node.group != undefined) newNode.group = node.group;
+			const effectiveRemoved = node.removed !== undefined ? node.removed : existingNode.removed;
+			if (effectiveRemoved !== undefined) newNode.removed = effectiveRemoved;
 			nodes[id] = newNode;
+		}
+
+		//Compose events through the extends chain. Per-id, the raw scenario's
+		//`present` override (if set) wins over the extended scenario's. We
+		//merge per-id rather than per-scenario so a child scenario can override
+		//just one event and inherit the rest.
+		const composedEvents : {[id : EventID] : ScenarioEventOverride} = {};
+		if (scenarioToExtend.events) {
+			for (const [id, override] of Object.entries(scenarioToExtend.events)) {
+				composedEvents[id] = {...override};
+			}
+		}
+		if (rawScenario.events) {
+			for (const [id, override] of Object.entries(rawScenario.events)) {
+				const existing = composedEvents[id] || {};
+				composedEvents[id] = {...existing, ...override};
+			}
 		}
 
 		const scenario : Scenario = {
 			description: rawScenario.description || scenarioToExtend.description || '',
 			nodes
 		};
+		if (Object.keys(composedEvents).length > 0) scenario.events = composedEvents;
+		const effectiveDecision = rawScenario.decision !== undefined ? rawScenario.decision : scenarioToExtend.decision;
+		if (effectiveDecision !== undefined) scenario.decision = effectiveDecision;
+		const effectiveReasoning = rawScenario.reasoning !== undefined ? rawScenario.reasoning : scenarioToExtend.reasoning;
+		if (effectiveReasoning !== undefined) scenario.reasoning = effectiveReasoning;
+		const effectiveProbability = rawScenario.probability !== undefined ? rawScenario.probability : scenarioToExtend.probability;
+		if (effectiveProbability !== undefined) scenario.probability = effectiveProbability;
+		//If branchOf was explicitly set in the raw scenario, use it. Otherwise
+		//inherit from the extended scenario. Note: if `probability` is set but
+		//`branchOf` is not (anywhere in the chain), it implicitly means
+		//"branch off the base" — we record `''` so downstream consumers
+		//don't have to special-case the undefined-but-probability-set form.
+		const effectiveBranchOf = rawScenario.branchOf !== undefined ? rawScenario.branchOf : scenarioToExtend.branchOf;
+		if (effectiveBranchOf !== undefined) scenario.branchOf = effectiveBranchOf;
+		else if (scenario.probability !== undefined) scenario.branchOf = '';
 		scenarios[scenarioName] = scenario;
 	}
 	//Put the scenarios back into original sorted (non topological) order
@@ -649,6 +696,15 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 			};
 		}
 	}
+	const events : {[id : EventID] : EventDefinition} = {};
+	if (data.events) {
+		for (const [eventID, rawEvent] of Object.entries(data.events)) {
+			events[eventID] = {
+				description: rawEvent.description || '',
+				defaultPresent: rawEvent.defaultPresent === undefined ? true : !!rawEvent.defaultPresent
+			};
+		}
+	}
 	const description = data.description || '';
 	return {
 		...data,
@@ -656,6 +712,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		root,
 		display,
 		tags,
+		events,
 		properties,
 		nodes,
 		groups,
@@ -700,6 +757,122 @@ const validateNodeValues = (data : MapDefinition, values?: NodeValuesOverride) :
 	}
 };
 
+/**
+ * Static-shape check for a node's `requires` clause: verifies that every
+ * referenced node id exists in data.nodes, and that the shape is well-formed.
+ * Does NOT check whether the constraints are satisfied in any particular
+ * scenario — that happens at AdjacencyMap construction time.
+ */
+const validateRequiresShape = (data : MapDefinition, nodeName : NodeID, requires : NodeRequires | undefined) : void => {
+	if (!requires) return;
+	if (typeof requires != 'object') throw new Error(nodeName + ' has a non-object requires field');
+	const checkID = (id : NodeID, clause : string) => {
+		if (!data.nodes[id]) throw new Error(nodeName + ' has requires.' + clause + ' referencing undefined node ' + id);
+		if (id == nodeName) throw new Error(nodeName + ' has requires.' + clause + ' referencing itself');
+	};
+	if (requires.all !== undefined) {
+		if (!Array.isArray(requires.all)) throw new Error(nodeName + ' has a non-array requires.all');
+		for (const id of requires.all) checkID(id, 'all');
+	}
+	if (requires.any !== undefined) {
+		if (!Array.isArray(requires.any)) throw new Error(nodeName + ' has a non-array requires.any');
+		for (const group of requires.any) {
+			if (!Array.isArray(group)) throw new Error(nodeName + ' has a requires.any entry that is not an array (each entry must be a disjunctive group)');
+			if (group.length == 0) throw new Error(nodeName + ' has an empty requires.any group');
+			for (const id of group) checkID(id, 'any');
+		}
+	}
+	if (requires.none !== undefined) {
+		if (!Array.isArray(requires.none)) throw new Error(nodeName + ' has a non-array requires.none');
+		for (const id of requires.none) checkID(id, 'none');
+	}
+};
+
+/**
+ * The result of evaluating all node-level `requires` clauses against a
+ * specific scenario's effective node set. Violations of `all` and `any`
+ * always throw. Violations of `none` are scope-sensitive: a hard error
+ * inside a named scenario, but a soft warning at the base graph (because
+ * the base graph is a "pre-decision" view of all alternatives; declaring
+ * mutual exclusion there is a contract for derived scenarios, not a claim
+ * about the base itself).
+ */
+type RequiresEvaluation = {
+	warnings : string[]
+};
+
+const evaluateRequires = (data : MapDefinition, removedIDs : Set<NodeID>, scenarioName : ScenarioName) : RequiresEvaluation => {
+	const isPresent = (id : NodeID) : boolean => {
+		if (!data.nodes[id]) return false;
+		return !removedIDs.has(id);
+	};
+	const isNamedScenario = scenarioName !== DEFAULT_SCENARIO_NAME;
+	const warnings : string[] = [];
+	// Build the symmetric closure of `none` declarations. After this pass,
+	// noneMap[a] contains b iff either a or b declared the other in their
+	// `requires.none` clause. We iterate every node's noneMap entries below.
+	const noneMap : {[id : NodeID] : Set<NodeID>} = {};
+	const addNone = (a : NodeID, b : NodeID) => {
+		if (!noneMap[a]) noneMap[a] = new Set<NodeID>();
+		noneMap[a].add(b);
+	};
+	for (const [id, nodeDef] of Object.entries(data.nodes)) {
+		const requires = nodeDef.requires;
+		if (!requires || !requires.none) continue;
+		for (const other of requires.none) {
+			if (!data.nodes[other]) continue;
+			addNone(id, other);
+			addNone(other, id);
+		}
+	}
+	// Track which unordered pairs we've already reported for `none` so we
+	// don't double-emit when both sides reach each other in the iteration.
+	const reportedNonePairs = new Set<string>();
+	for (const [id, nodeDef] of Object.entries(data.nodes)) {
+		if (!isPresent(id)) continue;
+		const requires = nodeDef.requires;
+		if (requires) {
+			if (requires.all) {
+				for (const other of requires.all) {
+					if (!isPresent(other)) {
+						throw new Error('Node ' + id + ' requires.all violation in scenario [' + (scenarioName || '(base)') + ']: ' + other + ' is not present');
+					}
+				}
+			}
+			if (requires.any) {
+				for (const group of requires.any) {
+					const satisfied = group.some(other => isPresent(other));
+					if (!satisfied) {
+						throw new Error('Node ' + id + ' requires.any violation in scenario [' + (scenarioName || '(base)') + ']: none of [' + group.join(', ') + '] are present');
+					}
+				}
+			}
+		}
+		// `none` is symmetric; check both this node's declared exclusions
+		// and any exclusions declared on other nodes that name this one.
+		const symmetricNone = noneMap[id];
+		if (symmetricNone) {
+			for (const other of symmetricNone) {
+				if (!isPresent(other)) continue;
+				const pairKey = id < other ? id + '||' + other : other + '||' + id;
+				if (reportedNonePairs.has(pairKey)) continue;
+				reportedNonePairs.add(pairKey);
+				const msg = 'Mutual-exclusion violation: ' + id + ' and ' + other + ' cannot both be present (declared via requires.none) in scenario [' + (scenarioName || '(base)') + ']';
+				if (isNamedScenario) {
+					throw new Error(msg);
+				} else {
+					// Base scenario: surface as a warning instead of a hard
+					// error. The base graph is the union of all alternatives;
+					// requires.none declares a constraint that derived
+					// scenarios must respect, not a claim about the base.
+					warnings.push(msg + ' [warning only at base; named scenarios that include both will fail]');
+				}
+			}
+		}
+	}
+	return {warnings};
+};
+
 const validateData = (data : MapDefinition) : void => {
 	if (!data) throw new Error('No data provided');
 	if (!data.nodes) throw new Error('No nodes provided');
@@ -716,6 +889,7 @@ const validateData = (data : MapDefinition) : void => {
 		for (const tagID of Object.keys(nodeData.tags)) {
 			if (!data.tags[tagID]) throw new Error(nodeName + ' defined an unknown tag: ' + tagID);
 		}
+		validateRequiresShape(data, nodeName, nodeData.requires);
 	}
 
 	for (const [groupID, groupData] of Object.entries(data.groups)) {
@@ -790,13 +964,69 @@ const validateData = (data : MapDefinition) : void => {
 		if (scenarioName == DEFAULT_SCENARIO_NAME) throw new Error('The default scenario name is implied and should not be enumerated');
 		if (!scenario.nodes || typeof scenario.nodes != 'object') throw new Error('Scenario must have nodes');
 		for (const [nodeName, nodeDefinition] of Object.entries(scenario.nodes)) {
-			if (nodeName != ROOT_ID && !data.nodes[nodeName]) throw new Error('All node ids in a scenario must be either ROOT_ID or included in nodes');
+			//A removed entry that references a non-existent node is a no-op (issue #26).
+			if (nodeName != ROOT_ID && !data.nodes[nodeName]) {
+				if (nodeDefinition.removed) continue;
+				throw new Error('All node ids in a scenario must be either ROOT_ID or included in nodes');
+			}
 			validateNodeValues(data, nodeDefinition.values);
 			validateEdges(data, nodeName, nodeDefinition.edges.add);
 			validateEdges(data, nodeName, Object.values(nodeDefinition.edges.modify));
 			//Skip validating remove which isn't actually edges
 			if (nodeDefinition.group && !data.groups[nodeDefinition.group]) throw new Error(nodeName + ' specifies group ' + nodeDefinition.group + ' but that group is not defined');
 		}
+		if (scenario.events) {
+			for (const [eventID, override] of Object.entries(scenario.events)) {
+				if (!data.events[eventID]) throw new Error(scenarioName + ' overrides event ' + eventID + ' which is not defined in the map-level events block');
+				if (override.present !== undefined && typeof override.present !== 'boolean') {
+					throw new Error(scenarioName + ' override of event ' + eventID + ' has non-boolean present: ' + JSON.stringify(override.present));
+				}
+			}
+		}
+		if (scenario.probability !== undefined) {
+			if (typeof scenario.probability !== 'number' || Number.isNaN(scenario.probability)) {
+				throw new Error('Scenario ' + scenarioName + ' has a non-numeric probability: ' + JSON.stringify(scenario.probability));
+			}
+			if (scenario.probability < 0 || scenario.probability > 1) {
+				throw new Error('Scenario ' + scenarioName + ' has probability out of range [0,1]: ' + scenario.probability);
+			}
+		}
+		if (scenario.branchOf !== undefined) {
+			//Empty string is the base scenario, which is always implicitly
+			//present; anything else must reference a defined scenario.
+			if (scenario.branchOf !== DEFAULT_SCENARIO_NAME && !data.scenarios[scenario.branchOf]) {
+				throw new Error('Scenario ' + scenarioName + ' has branchOf=' + JSON.stringify(scenario.branchOf) + ' but no such scenario exists');
+			}
+			if (scenario.branchOf === scenarioName) {
+				throw new Error('Scenario ' + scenarioName + ' has branchOf pointing to itself');
+			}
+		}
+	}
+
+	//Validate that the probabilities within a branch group sum to <= 1.0
+	//(with a small float-drift epsilon). The remainder (1 - sum) is the
+	//implicit "parent realized" weight, so a sum > 1 is unsatisfiable.
+	const branchSums : {[parent : ScenarioName] : {sum : number, members : ScenarioName[]}} = {};
+	for (const [scenarioName, scenario] of Object.entries(data.scenarios)) {
+		if (scenario.branchOf === undefined) continue;
+		if (scenario.probability === undefined) continue;
+		const parent = scenario.branchOf;
+		if (!branchSums[parent]) branchSums[parent] = {sum: 0, members: []};
+		branchSums[parent].sum += scenario.probability;
+		branchSums[parent].members.push(scenarioName);
+	}
+	const PROBABILITY_SUM_EPSILON = 1e-9;
+	for (const [parent, info] of Object.entries(branchSums)) {
+		if (info.sum > 1 + PROBABILITY_SUM_EPSILON) {
+			throw new Error('Branch-group probabilities sum > 1 for parent ' + JSON.stringify(parent || '(base)') + ' (sum=' + info.sum.toFixed(4) + ', members=[' + info.members.join(', ') + '])');
+		}
+	}
+
+	//Validate map-level events block.
+	for (const [eventID, eventDefinition] of Object.entries(data.events)) {
+		if (!eventID) throw new Error('Events must have a non-empty ID');
+		if (eventDefinition.description !== undefined && typeof eventDefinition.description !== 'string') throw new Error('Event ' + eventID + ' has a non-string description');
+		if (typeof eventDefinition.defaultPresent !== 'boolean') throw new Error('Event ' + eventID + ' has a non-boolean defaultPresent');
 	}
 
 	for (const displayKey of TypedObject.keys(data.display)) {
@@ -830,7 +1060,7 @@ const validateData = (data : MapDefinition) : void => {
 export type LayoutNode = AdjacencyMapNode | AdjacencyMapGroup;
 
 export class AdjacencyMap {
-	
+
 	_data : MapDefinition;
 	_nodes : {[id : NodeID] : AdjacencyMapNode};
 	_disableGroups : boolean;
@@ -838,6 +1068,8 @@ export class AdjacencyMap {
 	_impliedNodeGroups : {[id : NodeID] : GroupID} | undefined;
 	_groups : {[id : GroupID] : AdjacencyMapGroup};
 	_cachedChildren : {[id : NodeID] : NodeID[]};
+	_cachedRemovedNodeIDs : Set<NodeID> | undefined;
+	_cachedEventPresence : {[id : EventID] : boolean} | undefined;
 	_cachedEdges : ExpandedEdgeValue[];
 	_cachedRenderEdges : RenderEdgeValue[] | undefined;
 	_cachedLayoutNodes : {[id : LayoutID] : LayoutNode};
@@ -846,6 +1078,18 @@ export class AdjacencyMap {
 	_cachedPropertyNames : PropertyName[];
 	_cachedLayoutInfo : LayoutInfo;
 	_scenarioName : ScenarioName;
+	//Warnings produced by the `requires` validator pass for the current
+	//scenario. Hard violations throw; soft ones (e.g. `requires.none` against
+	//the base scenario, see evaluateRequires) accumulate here so tools like
+	//`inspect` can surface them without halting construction.
+	_requiresWarnings : string[] = [];
+	//Cycle-detection bookkeeping for nodeRef value-definition resolution. A
+	//node ID is added to this set immediately before computing its values
+	//and removed immediately after. If a nodeRef tries to resolve into a
+	//node that is already in this set, that is a real cycle and we throw
+	//rather than recurse forever. This is the dynamic equivalent of the
+	//topological-sort check the engine does for property-level dependencies.
+	_nodeValuesInFlight : Set<NodeID> = new Set<NodeID>();
 
 	constructor(rawData : RawMapDefinition, scenarioName : ScenarioName = DEFAULT_SCENARIO_NAME, disableGroups = false) {
 		//will throw if invalid library is included
@@ -862,16 +1106,111 @@ export class AdjacencyMap {
 		if (scenarioName != DEFAULT_SCENARIO_NAME && !this.data.scenarios[scenarioName]) throw new Error('no such scenario');
 
 		this._scenarioName = scenarioName;
+		this._evaluateRequires();
+		this._cachedChildren = this._buildCachedChildren();
+	}
+
+	//Runs the `requires` validator pass for the current scenario. Throws on
+	//hard violations (`all`, `any`, and `none` in named scenarios) and
+	//accumulates soft warnings (`none` at the base scenario) into
+	//_requiresWarnings. Called from the constructor (before _buildCachedChildren)
+	//and from _scenarioChanged.
+	_evaluateRequires() : void {
+		const evaluation = evaluateRequires(this._data, this._removedNodeIDs, this._scenarioName);
+		this._requiresWarnings = evaluation.warnings;
+	}
+
+	/**
+	 * Warnings emitted by the `requires` validator pass for the current
+	 * scenario. Hard violations throw at construction time; this returns
+	 * only the soft warnings (mutual-exclusion declarations triggered at
+	 * the base scenario, which is intentionally a pre-decision view).
+	 */
+	get requiresWarnings() : string[] {
+		return this._requiresWarnings;
+	}
+
+	_buildCachedChildren() : {[id : NodeID] : NodeID[]} {
+		const removed = this._removedNodeIDs;
 		const children : SimpleGraph = {};
 		for (const [child, definition] of Object.entries(this._data.nodes)) {
+			if (removed.has(child)) continue;
 			const edges = definition.edges || [];
 			for (const edge of edges) {
 				const parent = edge.parent || ROOT_ID;
+				if (removed.has(parent)) continue;
 				if (!children[parent]) children[parent] = {};
 				children[parent][child] = true;
 			}
 		}
-		this._cachedChildren = Object.fromEntries(Object.entries(children).map(entry => [entry[0], Object.keys(entry[1])]));
+		return Object.fromEntries(Object.entries(children).map(entry => [entry[0], Object.keys(entry[1])]));
+	}
+
+	//NodeRefResolver: whether the given node is in the current scenario's
+	//effective node set (i.e. exists in data.nodes and is not removed:true
+	//in the current scenario).
+	isNodePresent(id : NodeID) : boolean {
+		if (id == ROOT_ID) return true;
+		if (!this._data.nodes[id]) return false;
+		return !this._removedNodeIDs.has(id);
+	}
+
+	//NodeRefResolver: returns the computed values of the named node, or
+	//undefined if the node is removed in the current scenario. Triggers
+	//computation of that node's values if not yet cached. Throws if a cycle
+	//is detected (the node is already mid-computation).
+	nodeValuesIfPresent(id : NodeID) : NodeValues | undefined {
+		if (!this.isNodePresent(id)) return undefined;
+		if (this._nodeValuesInFlight.has(id)) {
+			throw new Error('nodeRef cycle detected: node ' + id + ' is referenced (transitively) by its own value definition');
+		}
+		return this.node(id).values;
+	}
+
+	get _removedNodeIDs() : Set<NodeID> {
+		if (!this._cachedRemovedNodeIDs) {
+			const result = new Set<NodeID>();
+			const scenario = this._data.scenarios[this._scenarioName];
+			if (scenario) {
+				for (const [id, scenarioNode] of Object.entries(scenario.nodes)) {
+					if (scenarioNode.removed && this._data.nodes[id]) {
+						result.add(id);
+					}
+				}
+			}
+			this._cachedRemovedNodeIDs = result;
+		}
+		return this._cachedRemovedNodeIDs;
+	}
+
+	//The effective event-presence map for the current scenario. For each
+	//event defined on the map, the value is the scenario override's `present`
+	//(if set), else the event's `defaultPresent`. Memoized per scenario.
+	get _eventPresence() : {[id : EventID] : boolean} {
+		if (!this._cachedEventPresence) {
+			const result : {[id : EventID] : boolean} = {};
+			const scenarioEvents = this._data.scenarios[this._scenarioName]?.events || {};
+			for (const [id, eventDef] of Object.entries(this._data.events)) {
+				const override = scenarioEvents[id];
+				if (override && override.present !== undefined) {
+					result[id] = override.present;
+				} else {
+					result[id] = eventDef.defaultPresent;
+				}
+			}
+			this._cachedEventPresence = result;
+		}
+		return this._cachedEventPresence;
+	}
+
+	//NodeRefResolver: whether the named event is present in the current
+	//scenario. Throws if the event isn't defined on the map (validation
+	//catches this at construction time, but the runtime check is a defense
+	//against misuse).
+	isEventPresent(id : EventID) : boolean {
+		const presence = this._eventPresence;
+		if (!(id in presence)) throw new Error('Unknown event: ' + id);
+		return presence[id];
 	}
 
 	//edgeTypes returns the types of edges. It's in topological order of any
@@ -956,6 +1295,98 @@ export class AdjacencyMap {
 		return Object.entries(this.result).filter(filter).map(entry => entry[0] + ': ' + entry[1]).join('\n');
 	}
 
+	/**
+	 * The names of all scenarios that are siblings in the same branch group
+	 * as the given parent scenario (i.e. all scenarios whose `branchOf`
+	 * field equals `parentName`). Returns an empty array if no scenarios
+	 * branch off the given parent. The parent itself is NOT included.
+	 *
+	 * `parentName` may be the empty string to find branches off the base
+	 * scenario.
+	 */
+	branchSiblings(parentName : ScenarioName) : ScenarioName[] {
+		const result : ScenarioName[] = [];
+		for (const [name, scenario] of Object.entries(this._data.scenarios)) {
+			if (scenario.branchOf === parentName) result.push(name);
+		}
+		return result;
+	}
+
+	/**
+	 * Returns the parent scenario name for the branch group that the given
+	 * scenario participates in, or undefined if the scenario is neither a
+	 * branch nor a parent that has branches off of it.
+	 *
+	 * - If `name` has a `branchOf`, returns that parent.
+	 * - Else if other scenarios reference `name` via `branchOf`, returns
+	 *   `name` (so the parent is a member of its own group).
+	 * - Else returns undefined.
+	 */
+	branchGroupParent(name : ScenarioName) : ScenarioName | undefined {
+		const scenario = this._data.scenarios[name];
+		if (scenario && scenario.branchOf !== undefined) return scenario.branchOf;
+		//If this is a parent that has branches off of it, return self.
+		if (this.branchSiblings(name).length > 0) return name;
+		return undefined;
+	}
+
+	/**
+	 * For each property of `result`, returns the probability-weighted
+	 * expected value across the branch group whose parent is `parentName`.
+	 *
+	 *   E[property] = sum(p_i * AdjacencyMap(branch_i).result[property])
+	 *               + (1 - sum(p_i)) * AdjacencyMap(parentName).result[property]
+	 *
+	 * The remainder `(1 - sum(p_i))` is the implicit "no branch fired" weight,
+	 * and uses the parent scenario's values. If no scenarios branch off
+	 * `parentName`, the result is identical to `AdjacencyMap(parentName).result`.
+	 *
+	 * `parentName` may be the empty string to compute expected values
+	 * across branches that share the base scenario as parent.
+	 */
+	expectedValueAcrossBranches(parentName : ScenarioName) : NodeValues {
+		const siblings = this.branchSiblings(parentName);
+		//Always include the parent's contribution: it owns the remainder
+		//weight (1 - sum(p_i)) up to a full 1.0 if there are no siblings.
+		const parentMap = new AdjacencyMap(this._data, parentName, this._disableGroups);
+		const parentResult = parentMap.result;
+		let probabilitySum = 0;
+		const accum : NodeValues = Object.fromEntries(Object.keys(parentResult).map(k => [k, 0]));
+		for (const siblingName of siblings) {
+			const sibling = this._data.scenarios[siblingName];
+			const p = sibling.probability === undefined ? 0 : sibling.probability;
+			probabilitySum += p;
+			if (p === 0) continue;
+			const siblingMap = new AdjacencyMap(this._data, siblingName, this._disableGroups);
+			const siblingResult = siblingMap.result;
+			for (const key of Object.keys(accum)) {
+				const v = siblingResult[key];
+				if (typeof v === 'number') accum[key] += p * v;
+			}
+		}
+		const remainder = Math.max(0, 1 - probabilitySum);
+		for (const key of Object.keys(accum)) {
+			const v = parentResult[key];
+			if (typeof v === 'number') accum[key] += remainder * v;
+		}
+		return accum;
+	}
+
+	/**
+	 * The total weight assigned to branches off `parentName`, i.e.
+	 * `sum(p_i)` across siblings. The implicit "parent realized" weight
+	 * is `1 - branchProbabilitySum(parentName)`. Returns 0 when there
+	 * are no branches off `parentName`.
+	 */
+	branchProbabilitySum(parentName : ScenarioName) : number {
+		let total = 0;
+		for (const siblingName of this.branchSiblings(parentName)) {
+			const sibling = this._data.scenarios[siblingName];
+			if (sibling.probability !== undefined) total += sibling.probability;
+		}
+		return total;
+	}
+
 	//An opportunity to throw out any caches that are now invalidated
 	_scenarioChanged(from : ScenarioName) {
 		const fromScenario = this._scenarioData(from);
@@ -964,6 +1395,15 @@ export class AdjacencyMap {
 		this._cachedRenderEdges = undefined;
 		this._fullGroupsData = undefined;
 		this._impliedNodeGroups = undefined;
+		this._cachedRemovedNodeIDs = undefined;
+		this._cachedEventPresence = undefined;
+		//Re-run the requires validator pass for the new scenario before
+		//rebuilding the children graph (the same ordering the constructor
+		//uses). Hard violations throw and abort the scenario change.
+		this._evaluateRequires();
+		//The set of removed nodes can change across scenarios, which affects
+		//the children graph. Rebuild it here.
+		this._cachedChildren = this._buildCachedChildren();
 		for (const node of Object.values(this._nodes)) {
 			node._scenarioChanged();
 		}
@@ -1007,6 +1447,7 @@ export class AdjacencyMap {
 			if (id != ROOT_ID && !this._data.nodes[id]) throw new Error('ID ' + id + ' does not exist in input');
 			this._nodes[id] = new AdjacencyMapNode(id, this, this._data.nodes[id]);
 		}
+		if (id != ROOT_ID && this._removedNodeIDs.has(id)) throw new Error('ID ' + id + ' is removed in this scenario');
 		return this._nodes[id];
 	}
 
@@ -1052,7 +1493,8 @@ export class AdjacencyMap {
 
 	get nodes() : {[id : NodeID] : AdjacencyMapNode} {
 		//TODO: cache. Not a huge deal because the heavy lifting is cached behind node().
-		const ids = ['',...Object.keys(this._data.nodes)];
+		const removed = this._removedNodeIDs;
+		const ids = ['', ...Object.keys(this._data.nodes).filter(id => !removed.has(id))];
 		return Object.fromEntries(ids.map(id => [id, this.node(id)]));
 	}
 
@@ -1082,7 +1524,10 @@ export class AdjacencyMap {
 
 	get edges() : ExpandedEdgeValue[] {
 		if (!this._cachedEdges) {
-			this._cachedEdges = Object.keys(this._data.nodes).map(id => this.node(id).edges).flat();
+			this._cachedEdges = Object.values(this.nodes)
+				.filter(node => node.id != ROOT_ID)
+				.map(node => node.edges)
+				.flat();
 		}
 		return this._cachedEdges;
 	}
@@ -1461,6 +1906,26 @@ export class AdjacencyMapNode {
 	}
 
 	_computeValues() : NodeValues {
+		//Register this node as in-flight for nodeRef cycle detection. We do
+		//this on the AdjacencyMap (not on `this`) because the cycle question
+		//is "is this node already being computed elsewhere in the call
+		//stack". Root has no _data and is never referenced as a node by
+		//nodeRef, so we just guard with the actual id.
+		const inFlight = this._map._nodeValuesInFlight;
+		const myID = this.id;
+		const wasInFlight = inFlight.has(myID);
+		if (wasInFlight) {
+			throw new Error('nodeRef cycle detected while computing values for ' + myID);
+		}
+		inFlight.add(myID);
+		try {
+			return this._computeValuesInner();
+		} finally {
+			inFlight.delete(myID);
+		}
+	}
+
+	_computeValuesInner() : NodeValues {
 		const partialResult : NodeValues = {};
 		const edgeByType : {[type : PropertyName] : EdgeValue[]} = {};
 		for (const edge of this.edges) {
@@ -1483,16 +1948,17 @@ export class AdjacencyMapNode {
 				const edgeValueDefinition = typeDefinition.value;
 				const constants = typeDefinition.constants || {};
 				const defaultedEdges = rawEdges.map(edge => ({...constants, ...edge}));
-				//TODO: should we make it illegal to have an edge of same type and ref on a node? 
+				//TODO: should we make it illegal to have an edge of same type and ref on a node?
 				const refs = rawEdges.map(edge => this._map.node(edge.parent || '').values);
-				const args = {
+				const args : ValueDefinitionCalculationArgs = {
 					edges: defaultedEdges,
 					refs,
 					partialResult,
 					rootValue: this._map.rootValues,
 					tags: this.tags,
 					selfTags: this._data ? this._data.tags : {},
-					definition: this._map.data
+					definition: this._map.data,
+					resolver: this._map
 				};
 				const values = calculateValue(edgeValueDefinition, args);
 				if (values.length == 0) throw new Error('values was not at least of length 1');
@@ -1510,6 +1976,7 @@ export class AdjacencyMapNode {
 					tags: this.tags,
 					selfTags: this._data ? this._data.tags : {},
 					definition: this._map.data,
+					resolver: this._map,
 					input: [partialResult[type]]
 				};
 				partialResult[type] = calculateValue(this._data.values[type], overrideArgs)[0];
@@ -1525,6 +1992,7 @@ export class AdjacencyMapNode {
 					tags: this.tags,
 					selfTags: this._data ? this._data.tags : {},
 					definition: this._map.data,
+					resolver: this._map,
 					input: [partialResult[type]]
 				};
 				partialResult[type] = calculateValue(scenarioNodeValues[type], scenarioArgs)[0];
@@ -1679,7 +2147,9 @@ export class AdjacencyMapNode {
 	//All edges
 	get edges() : ExpandedEdgeValue[] {
 		if (!this._cachedEdges) {
-			this._cachedEdges = completeEdgeSet(this.id, this._map.data, this.edgesWithFinalScenarioModifications);
+			const removed = this._map._removedNodeIDs;
+			const rawEdges = completeEdgeSet(this.id, this._map.data, this.edgesWithFinalScenarioModifications);
+			this._cachedEdges = removed.size ? rawEdges.filter(e => !removed.has(e.parent)) : rawEdges;
 		}
 		return this._cachedEdges;
 	}

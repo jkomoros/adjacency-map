@@ -1,6 +1,7 @@
 export const UPDATE_FILENAME = 'UPDATE_FILENAME';
 export const UPDATE_SCALE = 'UPDATE_SCALE';
 export const UPDATE_SCENARIO_NAME = 'UPDATE_SCENARIO_NAME';
+export const UPDATE_SEARCH_QUERY = 'UPDATE_SEARCH_QUERY';
 
 export const SET_EDITING = 'SET_EDITING';
 
@@ -13,9 +14,14 @@ export const SET_RENDER_GROUPS = 'SET_RENDER_GROUPS';
 
 export const LOAD_SCENARIOS_OVERLAYS = 'LOAD_SCENARIOS_OVERLAYS';
 export const RESET_SCENARIOS_OVERLAYS = 'RESET_SCENARIOS_OVERLAYS';
+export const SAVE_SCENARIOS_SUCCESS = 'SAVE_SCENARIOS_SUCCESS';
+export const FORK_SCENARIO_SUCCESS = 'FORK_SCENARIO_SUCCESS';
+export const UPDATE_COMPARE_SCENARIO_NAME = 'UPDATE_COMPARE_SCENARIO_NAME';
 export const BEGIN_EDITING_SCENARIO = 'BEGIN_EDITING_SCENARIO';
 export const REMOVE_EDITING_SCENARIO = 'REMOVE_EDITING_SCENARIO';
 export const UPDATE_EDITING_SCENARIO_DESCRIPTION = 'UPDATE_EDITING_SCENARIO_DESCRIPTION';
+export const UPDATE_EDITING_SCENARIO_DECISION = 'UPDATE_EDITING_SCENARIO_DECISION';
+export const UPDATE_EDITING_SCENARIO_REASONING = 'UPDATE_EDITING_SCENARIO_REASONING';
 export const UPDATE_EDITING_SCENARIO_NAME = 'UPDATE_EDITING_SCENARIO_NAME';
 export const BEGIN_EDITING_NODE_VALUE = 'BEGIN_EDITING_NODE_VALUE';
 export const EDITING_UPDATE_NODE_VALUE = 'EDITING_UPDATE_NODE_VALUE';
@@ -53,6 +59,7 @@ import {
 	EdgeIdentifier,
 	EdgeValue,
 	EdgeValueMatchID,
+	ExpandedEdgeValue,
 	LayoutID,
 	PropertyName,
 	RootState,
@@ -83,8 +90,15 @@ import {
 } from 'redux-thunk';
 
 import {
-	DATA 
+	DATA
 } from '../data.GENERATED.js';
+
+import {
+	saveScenarios,
+	fileSaveAvailable
+} from '../file-save.js';
+
+export { fileSaveAvailable };
 
 export const updateFilename = (filename : DataFilename, skipCanonicalize = false) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
 	const state = getState();
@@ -103,6 +117,13 @@ export const updateScale = (scale : number) : ThunkAction<void, RootState, unkno
 		type: UPDATE_SCALE,
 		scale,
 	});
+};
+
+export const updateSearchQuery = (query : string) : AnyAction => {
+	return {
+		type: UPDATE_SEARCH_QUERY,
+		query
+	};
 };
 
 export const nextScenarioName = () : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
@@ -137,6 +158,13 @@ export const updateScenarioName = (scenarioName : ScenarioName) : AnyAction => {
 	return {
 		type: UPDATE_SCENARIO_NAME,
 		scenarioName,
+	};
+};
+
+export const updateCompareScenarioName = (scenarioName : ScenarioName | undefined) : AnyAction => {
+	return {
+		type: UPDATE_COMPARE_SCENARIO_NAME,
+		scenarioName
 	};
 };
 
@@ -191,10 +219,11 @@ export const updateShowHiddenValues = (showHiddenValues = false) : AnyAction => 
 
 export const updateWithMainPageExtra = (pageExtra : string) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch) => {
 	const parts = pageExtra.split('/');
-	//The last piece is the trailing slash
+	//The last piece can be the canonical trailing slash.
+	if (parts[parts.length - 1] == '') parts.pop();
 	//TODO: handle malformed URLs better
 	if (parts.length != 1) return;
-	const filename = parts[0];
+	const filename = decodeURIComponent(parts[0]);
 
 	if (!DATA[filename as DataFilename]) throw new Error('Invalid filename: ' + filename);
 
@@ -244,6 +273,24 @@ export const updateEditingScenarioDescription = (description : string) : ThunkAc
 	dispatch({
 		type: UPDATE_EDITING_SCENARIO_DESCRIPTION,
 		description
+	});
+};
+
+export const updateEditingScenarioDecision = (decision : string) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
+	const state = getState();
+	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
+	dispatch({
+		type: UPDATE_EDITING_SCENARIO_DECISION,
+		decision
+	});
+};
+
+export const updateEditingScenarioReasoning = (reasoning : string) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
+	const state = getState();
+	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
+	dispatch({
+		type: UPDATE_EDITING_SCENARIO_REASONING,
+		reasoning
 	});
 };
 
@@ -370,4 +417,62 @@ export const modifyEditingNodeEdge = (previousEdgeID : EdgeValueMatchID, newEdge
 		previousEdgeID,
 		edge: newEdge
 	});
+};
+
+export const saveScenariosToFile = () : ThunkAction<Promise<void>, RootState, unknown, AnyAction> => async (dispatch, getState) => {
+	if (!fileSaveAvailable()) {
+		throw new Error('File save is not supported in this browser');
+	}
+	const state = getState();
+	const filename = selectFilename(state);
+	const overlay = selectCurrentScenarioOverlay(state);
+	await saveScenarios(filename, overlay);
+	dispatch({ type: SAVE_SCENARIOS_SUCCESS, filename });
+};
+
+// Materializes the resolved view of `sourceName` as a new free-standing scenario.
+// "Free-standing" = not an extends; each node's full value/edge state is captured
+// so subsequent edits to the source don't affect the fork.
+export const forkScenario = (sourceName : ScenarioName, newName : ScenarioName) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
+	const state = getState();
+	const filename = selectFilename(state);
+	const map = selectAdjacencyMap(state);
+	if (!map) throw new Error('No map loaded');
+
+	const trimmed = newName.trim();
+	if (!trimmed) throw new Error('Scenario name must not be empty');
+	const overlay = selectCurrentScenarioOverlay(state);
+	if (overlay[trimmed]) throw new Error(`Scenario '${trimmed}' already exists in overlay`);
+	if (map.data.scenarios && map.data.scenarios[trimmed]) throw new Error(`Scenario '${trimmed}' already exists in base data`);
+
+	// Build materialized nodes from the current map's view.
+	// Note: map.node(id).values returns the resolved value object;
+	// map.node(id).edges returns ExpandedEdgeValue[]. We serialize edges as plain
+	// EdgeValue records; the fork's effect on the graph reproduces the source.
+	const nodes : {[id : string]: { values: any, edges: { add: any[] } }} = {};
+	for (const [id, node] of Object.entries(map.nodes)) {
+		if (id === '') continue;
+		const resolvedValues : {[k : string] : number | string | boolean} = {};
+		for (const [k, v] of Object.entries(node.values || {})) {
+			if (typeof v === 'number' || typeof v === 'string' || typeof v === 'boolean') resolvedValues[k] = v;
+		}
+		const edges : EdgeValue[] = ((node.edges || []) as ExpandedEdgeValue[]).map(e => {
+			const cleaned : EdgeValue = { type: e.type, parent: e.parent };
+			for (const [ck, cv] of Object.entries(e)) {
+				if (ck === 'type' || ck === 'parent' || ck === 'source') continue;
+				if (typeof cv === 'number') (cleaned as any)[ck] = cv;
+			}
+			return cleaned;
+		});
+		nodes[id] = { values: resolvedValues, edges: { add: edges } };
+	}
+
+	dispatch({
+		type: FORK_SCENARIO_SUCCESS,
+		filename,
+		sourceName,
+		newName: trimmed,
+		nodes
+	});
+	dispatch(updateScenarioName(trimmed));
 };

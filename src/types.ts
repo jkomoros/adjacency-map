@@ -55,6 +55,41 @@ export type ValueDefinitionResultValue = {
 	result: PropertyName
 }
 
+/**
+ * Reads either a property off a named node, or the presence of a named
+ * event.
+ *
+ * Node variant (`{node, property}`):
+ *   The special property 'present' is synthetic: it returns 1 if the named
+ *   node is in the current scenario's effective node set (i.e. not
+ *   removed:true) and 0 otherwise. Other property names look up the node's
+ *   final computed value for that property, exactly as if you'd asked the
+ *   engine for `node.values[property]`. If the named node is removed in
+ *   the current scenario, the property lookup returns 0 (i.e. the absent
+ *   node contributes nothing).
+ *
+ * Event variant (`{event}`):
+ *   Returns 1 if the named event is "present" in the current scenario,
+ *   0 otherwise. Events are a map-level concept (see RawMapDefinition.events)
+ *   for modeling event-shaped semantics like "the deadline passed", "the
+ *   demo happened", or "the regulation cleared" — semantics that have no
+ *   natural anchor in the node graph. Events have no other properties:
+ *   the only thing you can ask is whether the event is present.
+ *
+ * This is the prototype `nodeRef` primitive (see
+ * docs/superpowers/notes/2026-05-12-primitives-elegance-critique.md, section
+ * "The tightened proposal" item A). It subsumes combinatorial uplift,
+ * sequencing bonus, time-decay (via events), soft enablement, conditional
+ * value, and probabilistic-AND from the stress-test.
+ *
+ * Cycle warning: if node A's value reads from node B and B reads from A,
+ * the engine will detect the cycle at calculation time and throw. There is
+ * no static cycle detection in this prototype.
+ */
+export type ValueDefinitionNodeRef =
+	| { node: NodeID, property: PropertyName | 'present' }
+	| { event: EventID };
+
 //Takes the singular child definition and runs the reducer on it, returning an
 //array of a single value.
 export type ValueDefinitionCombine = {
@@ -254,6 +289,7 @@ export type ValueDefinition = ValueDefinitionLeaf |
 	ValueDefinitionParentValue |
 	ValueDefinitionRootValue |
 	ValueDefinitionResultValue |
+	ValueDefinitionNodeRef |
 	ValueDefinitionCombine |
 	ValueDefinitionColor |
 	ValueDefinitionGradient |
@@ -280,20 +316,42 @@ export type AllowedValueDefinitionVariableTypes = {
 	parentValue: boolean,
 	rootValue: boolean,
 	resultValue: boolean,
+	nodeRef: boolean,
 	input: boolean,
 	hasTag: boolean,
 	tagConstant: boolean
 };
 
+/**
+ * The minimal interface a value-definition calculator needs to resolve a
+ * `nodeRef` against the live adjacency map. The full AdjacencyMap satisfies
+ * this. Declared as a structural type to avoid importing the class into
+ * types.ts (which has no other src imports).
+ */
+export type NodeRefResolver = {
+	//Whether the named node is present in the current scenario's effective
+	//node set (i.e. exists in data.nodes and is not removed:true in the
+	//current scenario).
+	isNodePresent(id : NodeID) : boolean;
+	//The computed values of the named node, or undefined if the node is
+	//removed in the current scenario. Triggering this may recursively
+	//compute that node's values.
+	nodeValuesIfPresent(id : NodeID) : NodeValues | undefined;
+	//Whether the named event is present in the current scenario. Resolves
+	//to the scenario override's `present` if set, else the event's
+	//`defaultPresent`, else true.
+	isEventPresent(id : EventID) : boolean;
+}
+
 export type ValueDefinitionCalculationArgs = {
 	//All of the edges that are being calculated together, all of the same type
-	edges : EdgeValue[], 
+	edges : EdgeValue[],
 	//An array of nodeValues, one per parent ref
-	refs : NodeValues[], 
+	refs : NodeValues[],
 	//The results that are being calculated for this node. The only properties
 	//that are guaranteed to be there and in their final state are ones that the
 	//property enumerated in dependencies.
-	partialResult : NodeValues, 
+	partialResult : NodeValues,
 	//The values of root.
 	rootValue : NodeValues,
 	//The tags for the result node.
@@ -304,7 +362,13 @@ export type ValueDefinitionCalculationArgs = {
 	variables?: {[name : VariableName]: number[]},
 	//The input numbers, which will be returned by ValueDefinitionInput, if this
 	//is a context that does that.
-	input? : number[]
+	input? : number[],
+	//The live adjacency-map resolver used to satisfy ValueDefinitionNodeRef
+	//lookups. Optional because not every calculation context has a live map
+	//attached (e.g. root-value precomputation, override-only evaluations).
+	//If a value definition uses nodeRef and resolver is absent, evaluation
+	//will throw.
+	resolver? : NodeRefResolver
 };
 
 export type ValudeDefinitionValidationArgs = {
@@ -438,6 +502,33 @@ export type TreeGraph = {
 
 export type RawEdgeInput = RawEdgeValue[] | RawEdgeMap;
 
+/**
+ * Declarative constraints on a node's presence in a scenario. Subsumes
+ * disjunctive prerequisites ("OR-edges") and mutual exclusion. Evaluated
+ * during AdjacencyMap construction against the scenario's effective node
+ * set (i.e. nodes that exist and are not `removed:true`).
+ *
+ * - `all`: every listed id must be present. Largely redundant with edges-
+ *   as-dependencies, but useful when you want a dependency without a
+ *   cost-bearing edge.
+ * - `any`: each inner array is a disjunctive group. At least one member of
+ *   each group must be present. E.g. `[[a, b], [c, d]]` means "(a or b) and
+ *   (c or d)".
+ * - `none`: none of the listed ids may be present at the same time as this
+ *   node. Symmetric: if A declares `none: [B]`, including both A and B in
+ *   any scenario violates the rule, regardless of which side declared it.
+ *
+ * See AGENTS.md "Constraints (`requires`)".
+ */
+export type NodeRequires = {
+	/** All of these nodes must be present (not `removed:true`). */
+	all? : NodeID[],
+	/** Each inner array is a disjunctive group; at least one member of each group must be present. */
+	any? : NodeID[][],
+	/** None of these nodes may be present at the same time as this node. */
+	none? : NodeID[]
+};
+
 export type RawNodeDefinition = {
 	description: string,
 	displayName? : string,
@@ -448,7 +539,9 @@ export type RawNodeDefinition = {
 	//If any values are provided here, they will be set on the node, overriding
 	//any other edge values that or root values. They may use
 	//ValueDefinitionInput in their definition.
-	values? : NodeValuesOverride
+	values? : NodeValuesOverride,
+	//Declarative AND/OR/NONE prerequisites. See NodeRequires.
+	requires? : NodeRequires
 };
 
 export type NodeDefinition = {
@@ -458,7 +551,8 @@ export type NodeDefinition = {
 	tags: TagMap,
 	display: Partial<NodeDisplay>,
 	edges: EdgeValue[],
-	values: NodeValuesOverride
+	values: NodeValuesOverride,
+	requires? : NodeRequires
 };
 
 export type RawGroupDefinition = {
@@ -638,7 +732,13 @@ export type RawMapDisplay = {
 	node?: Partial<NodeDisplay>,
 	group?: Partial<GroupDisplay>,
 	edge?: Partial<EdgeDisplay>,
-	edgeCombiner? : Partial<EdgeCombinerDisplay>
+	edgeCombiner? : Partial<EdgeCombinerDisplay>,
+	/**
+	 * Properties to surface in the always-visible metrics strip above the
+	 * diagram. If omitted, all properties with a non-zero aggregate value at
+	 * the root are shown (capped at 6).
+	 */
+	headlineMetrics? : PropertyName[]
 };
 
 export type MapDisplay = {
@@ -678,18 +778,85 @@ export type TagMap = {
 	[id : TagID] : boolean
 };
 
+export type EventID = string;
+
+/**
+ * Definition of a map-level event: an event-shaped semantic that has no
+ * natural anchor in the node graph (e.g. "the deadline passed", "the demo
+ * happened", "the regulation cleared"). Events are referenced from value
+ * definitions via `{event: <id>}` (see ValueDefinitionNodeRef) and can be
+ * toggled per-scenario via scenarios.<name>.events.<id>.present.
+ */
+export type RawEventDefinition = {
+	/** Free-form description shown in inspect/diff output and (eventually) the UI. */
+	description? : string,
+	/**
+	 * Whether this event is considered to have fired by default (in the base
+	 * scenario). When true (the default), the event is "present" —
+	 * `{event: ...}` returns 1 for it. Scenarios can flip the default
+	 * per-event via scenarios.<name>.events.<id>.present.
+	 */
+	defaultPresent? : boolean
+};
+
+export type EventDefinition = {
+	description : string,
+	defaultPresent : boolean
+};
+
+/** Per-scenario override of an event's presence. */
+export type ScenarioEventOverride = {
+	present? : boolean
+};
+
 export type ScenarioName = string;
 
-//A scenario is an overlay over the base configuration. Currnetly it may only
-//override the base values of already existing nodes.
+/**
+ * A scenario: a named overlay that modifies the base graph. Scenarios can
+ * `extends` another scenario to compose modifications. Per-node overrides
+ * adjust values, add/remove/modify edges, or mark a node `removed: true`
+ * to omit it from the rendered graph entirely. Per-event overrides flip the
+ * event's `present` flag.
+ */
 export type RawScenario = {
 	description? : string,
+	decision? : string,
+	reasoning? : string,
+	/**
+	 * Probability (0..1) that this branch realizes. Used together with
+	 * `branchOf` to model uncertain outcomes (e.g. "the agent framework
+	 * ships at 60% value and 1.5x cost with 60% probability"). Optional;
+	 * absent => 1.0 (deterministic scenario).
+	 *
+	 * See AGENTS.md "Probabilistic scenario branches".
+	 */
+	probability? : number,
+	/**
+	 * Name of another scenario this is a probabilistic alternative to.
+	 * Sibling branches share the same `branchOf` value. The remaining
+	 * `1 - sum(probabilities)` is the implicit "no branch fired" case
+	 * which uses the parent scenario's values. The empty string `''`
+	 * refers to the base scenario as parent (the common case).
+	 *
+	 * If `probability` is set but `branchOf` is omitted, `branchOf` is
+	 * implicitly `''` (a branch off the base scenario).
+	 */
+	branchOf? : ScenarioName,
 	//A scenario may extend another by using its ID here, which means it will
 	//overlay its definition. Cycles are not allowed.
 	extends? : ScenarioName,
 	//Scenarios may override root nodes by using id of ROOT_ID.
 	nodes: {
 		[id : NodeID] : {
+			/**
+			 * If true, this node is omitted from the rendered graph for this
+			 * scenario. Edges from other nodes that reference this node as
+			 * `parent` are silently dropped. Children whose only parent was
+			 * this node become orphans. Setting `removed: false` (or removing
+			 * the override) restores the node. The underlying data is never
+			 * destructively modified.
+			 */
+			removed? : boolean,
 			values?: NodeValuesOverride,
 			group? : GroupID,
 			edges?: {
@@ -702,6 +869,14 @@ export type RawScenario = {
 				}
 			}
 		}
+	},
+	/**
+	 * Per-event overrides. Each key must be an event id defined in the
+	 * map-level `events` block. Setting `present: false` (or true) flips
+	 * the event's default for this scenario.
+	 */
+	events? : {
+		[id : EventID] : ScenarioEventOverride
 	}
 }
 
@@ -716,7 +891,14 @@ export type ScenarioNodeEdges = {
 	}
 }
 
+/**
+ * Canonical (post-extension) form of a per-scenario node override. Built
+ * from raw scenarios via `processMapDefinition`. The `removed` flag here
+ * carries through scenario extension chains.
+ */
 export type ScenarioNode = {
+	/** See the `removed` field on the raw scenario node override. */
+	removed? : boolean,
 	group? : GroupID,
 	values: {
 		[propertyName : PropertyName]: ValueDefinition
@@ -726,8 +908,28 @@ export type ScenarioNode = {
 
 export type Scenario = {
 	description : string,
+	decision? : string,
+	reasoning? : string,
+	/**
+	 * Resolved probability (0..1) that this branch realizes. Absent means
+	 * deterministic (effective probability 1.0). See RawScenario.probability.
+	 */
+	probability? : number,
+	/**
+	 * Resolved parent scenario for this branch. The empty string means
+	 * "branch off the base scenario". See RawScenario.branchOf.
+	 */
+	branchOf? : ScenarioName,
 	nodes: {
 		[id : NodeID] : ScenarioNode
+	},
+	/**
+	 * Resolved per-event overrides. Each id must be defined in the
+	 * map-level `events` block. `present` (if set) overrides the event's
+	 * `defaultPresent` for this scenario.
+	 */
+	events? : {
+		[id : EventID] : ScenarioEventOverride
 	}
 }
 
@@ -747,6 +949,14 @@ export type ScenariosDefinition = {
 	[name : ScenarioName] : Scenario;
 };
 
+/**
+ * Top-level shape of a data file under `data/`. Each `.ts` file in `data/`
+ * exports a default `RawMapDefinition`. Nodes form the base graph; scenarios
+ * overlay modifications onto that graph (changing values, adding/removing
+ * edges, omitting nodes, etc.).
+ *
+ * See AGENTS.md at the repo root for a worked introduction.
+ */
 export type RawMapDefinition = {
 	description?: string;
 	//Imports lists libraries to base types on. The library 'core' is implicitly
@@ -755,6 +965,15 @@ export type RawMapDefinition = {
 	display?: RawMapDisplay,
 	tags?: {
 		[id : TagID]: RawTagDefinition,
+	},
+	/**
+	 * Map-level events. An event is a first-class "did this happen yet?"
+	 * concept that has no anchor in the node graph. Reference an event from
+	 * a value definition via `{event: <id>}`. Toggle an event per-scenario
+	 * via scenarios.<name>.events.<id>.present.
+	 */
+	events?: {
+		[id : EventID] : RawEventDefinition
 	},
 	properties?: {
 		[type : PropertyName]: RawPropertyDefinition
@@ -781,6 +1000,9 @@ export type MapDefinition = {
 	tags: {
 		[id : TagID]: TagDefinition
 	}
+	events: {
+		[id : EventID]: EventDefinition
+	},
 	display: MapDisplay,
 	root: NodeValues,
 	nodes: {
@@ -794,7 +1016,9 @@ export type MapDefinition = {
 };
 
 export type URLHashArgs = {
-	s? : ScenarioName
+	s? : ScenarioName,
+	n? : LayoutID,
+	c? : ScenarioName
 };
 
 export type ScenariosOverlays = {
@@ -827,6 +1051,7 @@ export type DataState = {
 	filename : DataFilename;
 	scale: number;
 	scenarioName : ScenarioName;
+	compareScenarioName?: ScenarioName;
 	editing : boolean;
 	hoveredLayoutID? : LayoutID;
 	selectedLayoutID? : LayoutID;
@@ -835,9 +1060,10 @@ export type DataState = {
 	showEdges: boolean;
 	renderGroups : boolean;
 	scenariosOverlays: ScenariosOverlays;
+	searchQuery: string;
 }
 
-export type DialogKind = '' | 'error' | 'readout';
+export type DialogKind = '' | 'error' | 'readout' | 'export' | 'help';
 
 export type DialogState = {
 	open : boolean

@@ -8,6 +8,7 @@ import {
 	UPDATE_SCALE,
 	SET_EDITING,
 	UPDATE_SCENARIO_NAME,
+	UPDATE_SEARCH_QUERY,
 	UPDATE_HOVERED_NODE_ID,
 	UPDATE_HOVERED_EDGE_ID,
 	UPDATE_SELECTED_NODE_ID,
@@ -16,9 +17,14 @@ import {
 	UPDATE_SHOW_HIDDEN_VALUES,
 	LOAD_SCENARIOS_OVERLAYS,
 	RESET_SCENARIOS_OVERLAYS,
+	SAVE_SCENARIOS_SUCCESS,
+	FORK_SCENARIO_SUCCESS,
+	UPDATE_COMPARE_SCENARIO_NAME,
 	BEGIN_EDITING_SCENARIO,
 	REMOVE_EDITING_SCENARIO,
 	UPDATE_EDITING_SCENARIO_DESCRIPTION,
+	UPDATE_EDITING_SCENARIO_DECISION,
+	UPDATE_EDITING_SCENARIO_REASONING,
 	UPDATE_EDITING_SCENARIO_NAME,
 	BEGIN_EDITING_NODE_VALUE,
 	EDITING_UPDATE_NODE_VALUE,
@@ -57,6 +63,7 @@ const INITIAL_STATE : DataState = {
 	filename: DEFAULT_FILE_NAME,
 	scale: 1.0,
 	scenarioName: '',
+	compareScenarioName: undefined,
 	editing: true,
 	selectedLayoutID: undefined,
 	hoveredLayoutID: undefined,
@@ -64,7 +71,8 @@ const INITIAL_STATE : DataState = {
 	showHiddenValues: false,
 	showEdges: false,
 	renderGroups: true,
-	scenariosOverlays: {}
+	scenariosOverlays: {},
+	searchQuery: ''
 };
 
 const addScenarioToScenariosOverlay = (filename: DataFilename, currentScenarioName : ScenarioName, newScenarioName: ScenarioName, currentOverlay : ScenariosOverlays) : ScenariosOverlays => {
@@ -124,6 +132,22 @@ const updateEditingScenarioDescriptionInOverlay = (state : DataState, descriptio
 	return result;
 };
 
+const updateEditingScenarioDecisionInOverlay = (state : DataState, decision : string) : ScenariosOverlays => {
+	const items = prepareToEditNodeInOverlay(state);
+	const result = items[0];
+	const scenarioOverlay = items[4];
+	scenarioOverlay.decision = decision;
+	return result;
+};
+
+const updateEditingScenarioReasoningInOverlay = (state : DataState, reasoning : string) : ScenariosOverlays => {
+	const items = prepareToEditNodeInOverlay(state);
+	const result = items[0];
+	const scenarioOverlay = items[4];
+	scenarioOverlay.reasoning = reasoning;
+	return result;
+};
+
 const updateEditingScenarioNameInOverlay = (state : DataState, newScenarioName : ScenarioName) : ScenariosOverlays => {
 	const items = prepareToEditNodeInOverlay(state);
 	const result = items[0];
@@ -145,6 +169,8 @@ const editingUpdateNodeValueInOverlay = (state : DataState, propertyName : Prope
 };
 
 const scenarioNodeIsEmpty = (node: ScenarioNode) : boolean => {
+	if (node.removed !== undefined) return false;
+	if (node.group !== undefined) return false;
 	if (Object.keys(node.values).length > 0) return false;
 	if (node.edges.add.length > 0) return false;
 	if (Object.keys(node.edges.remove).length > 0) return false;
@@ -263,6 +289,16 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 			...state,
 			scenarioName: action.scenarioName
 		};
+	case UPDATE_SEARCH_QUERY:
+		return {
+			...state,
+			searchQuery: action.query
+		};
+	case UPDATE_COMPARE_SCENARIO_NAME:
+		return {
+			...state,
+			compareScenarioName: action.scenarioName
+		};
 	case UPDATE_HOVERED_NODE_ID:
 		return {
 			...state,
@@ -298,6 +334,15 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 			...state,
 			scenariosOverlays: action.overlays
 		};
+	case SAVE_SCENARIOS_SUCCESS:
+	{
+		const scenariosOverlays = {...state.scenariosOverlays};
+		delete scenariosOverlays[action.filename as DataFilename];
+		return {
+			...state,
+			scenariosOverlays
+		};
+	}
 	case RESET_SCENARIOS_OVERLAYS:
 		return {
 			...state,
@@ -311,7 +356,26 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 			scenarioName: action.scenarioName,
 			scenariosOverlays: addScenarioToScenariosOverlay(state.filename, state.scenarioName, action.scenarioName, state.scenariosOverlays)
 		};
-	case REMOVE_EDITING_SCENARIO: 
+	case FORK_SCENARIO_SUCCESS:
+	{
+		const filename = action.filename as DataFilename;
+		const existing = state.scenariosOverlays[filename] || {};
+		const newScenario : ScenarioWithExtends = {
+			description: `Forked from ${action.sourceName || '(base)'}`,
+			nodes: action.nodes
+		};
+		return {
+			...state,
+			scenariosOverlays: {
+				...state.scenariosOverlays,
+				[filename]: {
+					...existing,
+					[action.newName]: newScenario
+				}
+			}
+		};
+	}
+	case REMOVE_EDITING_SCENARIO:
 		return {
 			...state,
 			scenarioName: state.scenarioName == action.scenarioName ? action.nextScenarioName : state.scenarioName,
@@ -321,6 +385,16 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			scenariosOverlays: updateEditingScenarioDescriptionInOverlay(state, action.description)
+		};
+	case UPDATE_EDITING_SCENARIO_DECISION:
+		return {
+			...state,
+			scenariosOverlays: updateEditingScenarioDecisionInOverlay(state, action.decision)
+		};
+	case UPDATE_EDITING_SCENARIO_REASONING:
+		return {
+			...state,
+			scenariosOverlays: updateEditingScenarioReasoningInOverlay(state, action.reasoning)
 		};
 	case UPDATE_EDITING_SCENARIO_NAME:
 		return {

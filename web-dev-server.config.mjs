@@ -1,6 +1,30 @@
-//If some future modules need commonjs, see
-//https://modern-web.dev/guides/dev-server/using-plugins/#commonjs for how to
-//accomplish that.
+import { writeFile } from 'fs/promises';
+
+// We use /tmp directly (not os.tmpdir(), which on macOS resolves to
+// /var/folders/...) so agents have a single, predictable, documented path.
+const STATE_SIDECAR_PATH = '/tmp/adjacency-state.json';
+
+// Koa-style middleware that handles POST /__state__ by writing the request
+// body to /tmp/adjacency-state.json. Lets the webapp publish its current view
+// (file, scenario, selection, etc.) to a file agents can read.
+const stateSidecarMiddleware = async (ctx, next) => {
+	if (ctx.method === 'POST' && ctx.path === '/__state__') {
+		try {
+			const chunks = [];
+			for await (const chunk of ctx.req) chunks.push(chunk);
+			const body = Buffer.concat(chunks).toString('utf8');
+			// Validate it's JSON before writing.
+			JSON.parse(body);
+			await writeFile(STATE_SIDECAR_PATH, body);
+			ctx.status = 204;
+		} catch (err) {
+			ctx.status = 400;
+			ctx.body = String(err && err.message || err);
+		}
+		return;
+	}
+	await next();
+};
 
 export default {
 	//File to return for any path that would otherwise 404
@@ -11,4 +35,5 @@ export default {
 		/* reselect-map has an ESG export at jsnext */
 		mainFields: ['jsnext:main', 'module', 'main']
 	},
+	middleware: [stateSidecarMiddleware]
 };

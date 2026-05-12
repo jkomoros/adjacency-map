@@ -14,16 +14,21 @@ import {
 } from './constants.js';
 
 import {
-	DATA
+	DATA,
+	SIDECAR_EDITS
 } from './data.GENERATED.js';
 
 import {
 	DataFilename,
 	DialogKind,
+	LayoutID,
 	RootState,
-	ScenarioNode,
-	URLHashArgs
+	ScenarioNode
 } from './types.js';
+
+import {
+	stringifyURLHashArgs
+} from './util.js';
 
 export const selectFilename = (state : RootState) => state.data ? state.data.filename : DEFAULT_FILE_NAME;
 export const selectPage = (state : RootState) => state.app ? state.app.page : '';
@@ -31,6 +36,8 @@ export const selectPageExtra = (state : RootState) => state.app ? state.app.page
 export const selectHash = (state : RootState) => state.app ? state.app.hash : '';
 export const selectScale = (state : RootState) => state.data ? state.data.scale : 1.0;
 export const selectScenarioName = (state : RootState) => state.data ? state.data.scenarioName : '';
+export const selectSearchQuery = (state : RootState) => state.data ? (state.data.searchQuery || '') : '';
+export const selectCompareScenarioName = (state : RootState) => state.data ? state.data.compareScenarioName : undefined;
 export const selectEditing = (state : RootState) => state.data ? state.data.editing : false;
 export const selectHoveredLayoutID = (state : RootState) => state.data ? state.data.hoveredLayoutID : undefined;
 export const selectHoveredEdgeID = (state : RootState) => state.data ? state.data.hoveredEdgeID : undefined;
@@ -58,17 +65,16 @@ export const selectCurrentScenarioOverlay = createSelector(
 	(filename, overlays) => overlays[filename] || {}
 );
 
-export const selectData = createSelector(
-	selectRawData,
-	selectCurrentScenarioOverlay,
-	(rawData, overlay) => ({...rawData, scenarios: {...rawData.scenarios, ...overlay}})
+const selectSidecarScenarios = createSelector(
+	selectFilename,
+	(filename) => SIDECAR_EDITS[filename] || {}
 );
 
-//The node that should be used for the summary readout
-export const selectSummaryLayoutID = createSelector(
-	selectHoveredLayoutID,
-	selectSelectedLayoutID,
-	(hoveredNodeID, selectedNodeID) => hoveredNodeID || selectedNodeID
+export const selectData = createSelector(
+	selectRawData,
+	selectSidecarScenarios,
+	selectCurrentScenarioOverlay,
+	(rawData, sidecar, overlay) => ({...rawData, scenarios: {...rawData.scenarios, ...sidecar, ...overlay}})
 );
 
 export const selectAdjacencyMap = createSelector(
@@ -83,6 +89,106 @@ export const selectAdjacencyMap = createSelector(
 			console.warn(err);
 		}
 		return null;
+	}
+);
+
+export const selectSearchMatches = createSelector(
+	selectAdjacencyMap,
+	selectSearchQuery,
+	(map, query) : Set<string> | null => {
+		if (!map || !query) return null;
+		const q = query.toLowerCase().trim();
+		if (!q) return null;
+		const matches = new Set<string>();
+		for (const [nodeID, node] of Object.entries(map.nodes)) {
+			if (nodeID === '') continue;
+			const idMatch = nodeID.toLowerCase().includes(q);
+			const nameMatch = (node.displayName || '').toLowerCase().includes(q);
+			let tagMatch = false;
+			const tags = (node.tags || {}) as Record<string, unknown>;
+			for (const t of Object.keys(tags)) {
+				if (t.toLowerCase().includes(q)) { tagMatch = true; break; }
+			}
+			if (idMatch || nameMatch || tagMatch) {
+				matches.add('node:' + nodeID);
+			}
+		}
+		return matches;
+	}
+);
+
+export const selectCompareAdjacencyMap = createSelector(
+	selectData,
+	selectCompareScenarioName,
+	selectRenderGroups,
+	(data, scenarioName, renderGroups) => {
+		if (!data || scenarioName === undefined) return null;
+		try {
+			return new AdjacencyMap(data, scenarioName, !renderGroups);
+		} catch {
+			return null;
+		}
+	}
+);
+
+type CompareDelta = {
+	perNode: {[id : string]: 'changed' | 'added' | 'removed'},
+	perProperty: {property: string, a: number, b: number, delta: number}[]
+};
+
+export const selectComparisonDelta = createSelector(
+	selectAdjacencyMap,
+	selectCompareAdjacencyMap,
+	(mapA, mapB) : CompareDelta | null => {
+		if (!mapA || !mapB) return null;
+		const perNode : {[id : string]: 'changed' | 'added' | 'removed'} = {};
+		const allIDs = new Set([...Object.keys(mapA.nodes), ...Object.keys(mapB.nodes)]);
+		for (const id of allIDs) {
+			if (id === '') continue;
+			const inA = id in mapA.nodes;
+			const inB = id in mapB.nodes;
+			if (inA && !inB) perNode[id] = 'removed';
+			else if (!inA && inB) perNode[id] = 'added';
+			else {
+				const av = mapA.node(id).values || {};
+				const bv = mapB.node(id).values || {};
+				let changed = false;
+				for (const k of new Set([...Object.keys(av), ...Object.keys(bv)])) {
+					const a = (av as any)[k];
+					const b = (bv as any)[k];
+					if (typeof a === 'number' && typeof b === 'number') {
+						if (Math.abs(a - b) > 1e-9) { changed = true; break; }
+					} else if (a !== b) {
+						changed = true; break;
+					}
+				}
+				if (changed) perNode[id] = 'changed';
+			}
+		}
+		const resA = (mapA.result || {}) as Record<string, any>;
+		const resB = (mapB.result || {}) as Record<string, any>;
+		const perProperty : CompareDelta['perProperty'] = [];
+		for (const k of new Set([...Object.keys(resA), ...Object.keys(resB)])) {
+			const a = typeof resA[k] === 'number' ? resA[k] as number : 0;
+			const b = typeof resB[k] === 'number' ? resB[k] as number : 0;
+			if (Math.abs(a) < 1e-9 && Math.abs(b) < 1e-9) continue;
+			perProperty.push({ property: k, a, b, delta: b - a });
+		}
+		return { perNode, perProperty };
+	}
+);
+
+//The node that should be used for the summary readout
+export const selectSummaryLayoutID = createSelector(
+	selectHoveredLayoutID,
+	selectSelectedLayoutID,
+	selectAdjacencyMap,
+	(hoveredLayoutID, selectedLayoutID, map) => {
+		const valid = (id : LayoutID | undefined) : LayoutID | undefined => {
+			if (id === undefined || !map) return undefined;
+			try { map.layoutNode(id); return id; } catch { return undefined; }
+		};
+		return valid(hoveredLayoutID) || valid(selectedLayoutID);
 	}
 );
 
@@ -135,7 +241,17 @@ export const selectCurrentScenarioEditedNodes = createSelector(
 
 export const selectSelectedNodeID = createSelector(
 	selectSelectedLayoutID,
-	(layoutID) => nodeIDFromLayoutID(layoutID)
+	selectAdjacencyMap,
+	(layoutID, map) => {
+		if (layoutID === undefined) return undefined;
+		if (!map) return undefined;
+		try {
+			map.layoutNode(layoutID);
+		} catch {
+			return undefined;
+		}
+		return nodeIDFromLayoutID(layoutID);
+	}
 );
 
 export const selectSelectedNodeFieldsEdited = createSelector(
@@ -150,10 +266,24 @@ export const selectSelectedNodeFieldsEdited = createSelector(
 
 export const selectHashForCurrentState = createSelector(
 	selectScenarioName,
-	(scenarioName) => {
-		const pieces : URLHashArgs = {};
-		if (scenarioName != DEFAULT_SCENARIO_NAME) pieces.s = scenarioName;
-		return Object.entries(pieces).map(entry => entry[0] + '=' + entry[1]).join('&');
+	selectSelectedLayoutID,
+	selectCompareScenarioName,
+	selectAdjacencyMap,
+	(scenarioName, selectedLayoutID, compareScenarioName, map) => {
+		let validSelectedLayoutID : LayoutID | undefined;
+		if (selectedLayoutID && map) {
+			try {
+				map.layoutNode(selectedLayoutID);
+				validSelectedLayoutID = selectedLayoutID;
+			} catch {
+				validSelectedLayoutID = undefined;
+			}
+		}
+		return stringifyURLHashArgs({
+			s: scenarioName != DEFAULT_SCENARIO_NAME ? scenarioName : undefined,
+			n: validSelectedLayoutID,
+			c: compareScenarioName !== undefined ? compareScenarioName : undefined
+		});
 	}
 );
 
@@ -198,5 +328,26 @@ export const selectSummaryTags = createSelector(
 		if (nodeID === undefined) return map.tagsUnion;
 		const node = map.layoutNode(nodeID);
 		return node.tags;
+	}
+);
+
+export const selectHeadlineMetrics = createSelector(
+	selectAdjacencyMap,
+	(map) : {property: string, value: number}[] => {
+		if (!map) return [];
+		const result = map.result || {};
+		// Access the optional headlineMetrics config from the data's display block.
+		const configured = (map.data && (map.data as any).display && (map.data as any).display.headlineMetrics) as string[] | undefined;
+		const entries : {property: string, value: number}[] = [];
+		const candidates = configured && configured.length > 0
+			? configured
+			: Object.keys(result).filter(k => typeof (result as any)[k] === 'number' && Math.abs((result as any)[k] as number) > 1e-9);
+		for (const k of candidates) {
+			const v = (result as any)[k];
+			if (typeof v !== 'number') continue;
+			entries.push({ property: k, value: v });
+		}
+		if (!configured) entries.splice(6);
+		return entries;
 	}
 );
