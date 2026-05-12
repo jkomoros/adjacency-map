@@ -22,6 +22,7 @@ import {
 	setEditing,
 	setRenderGroups,
 	setShowEdges,
+	updateCompareScenarioName,
 	updateEditingScenarioDescription,
 	updateEditingScenarioName,
 	updateFilename,
@@ -51,7 +52,8 @@ import {
 	selectEditing,
 	selectEditableScenarios,
 	selectSelectedLayoutID,
-	selectRenderGroups
+	selectRenderGroups,
+	selectCompareScenarioName
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -184,6 +186,9 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 	_renderGroups : boolean;
 
 	@state()
+	_compareScenarioName : string | undefined = undefined;
+
+	@state()
 	_fileSaveAvailable = false;
 
 	static override get styles() {
@@ -279,6 +284,12 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName} .selected=${scenarioName == this._scenarioName}>${scenarioName || 'Default'}${this._editableScenarios[scenarioName] ? ' (*)' : ''}</option>`)}
 				</select>${this._adjacencyMap ? html`<button class='small' title='Fork the current scenario into a new editable copy' @click=${this._handleForkScenarioClicked}>Fork</button>` : ''}` : ''}
 				${this._editing ? html`<button class='small' title='Create a new scenario based on the current scenario' @click=${this._handleCreateScenarioClicked}>${PLUS_ICON}</button>${this._scenarioEditable ? html`<button class='small' title='Remove this scenario' @click=${this._handleRemoveScenarioClicked}>${CANCEL_ICON}</button><button class='small' title='Change scenario name' @click=${this._handleEditScenarioNameClicked}>${EDIT_ICON}</button>` : ''}` : ''}
+				${this._legalScenarioNames.length > 1 ? html`
+				<label for='compareScenarios'>Compare with</label>
+				<select id='compareScenarios' @change=${this._handleCompareScenarioChanged}>
+					<option .value=${'__off__'} .selected=${this._compareScenarioName === undefined}>(off)</option>
+					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName === '' ? '__base__' : scenarioName} .selected=${(scenarioName === '' ? '__base__' : scenarioName) === (this._compareScenarioName === undefined ? '__off__' : (this._compareScenarioName === '' ? '__base__' : this._compareScenarioName))}>${scenarioName || 'Default'}</option>`)}
+				</select>` : ''}
 				<div class='summary'>
 				${this._legalScenarioNames.length > 1 ? 
 		html`<div>
@@ -416,6 +427,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		this._summaryNodeEditableFields = selectSelectedNodeFieldsEdited(state);
 		this._scenariosOverlays = selectScenariosOverlays(state);
 		this._editedNodes = selectCurrentScenarioEditedNodes(state);
+		this._compareScenarioName = selectCompareScenarioName(state);
 	}
 
 	_handleControlsMouseMove() {
@@ -672,6 +684,14 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		const ele = e.composedPath()[0];
 		if (!(ele instanceof HTMLSelectElement)) throw new Error('not a select element');
 		store.dispatch(updateScenarioName(ele.value));
+	}
+
+	_handleCompareScenarioChanged(e : Event) {
+		const target = e.target as HTMLSelectElement;
+		const value = target.value;
+		if (value === '__off__') store.dispatch(updateCompareScenarioName(undefined));
+		else if (value === '__base__') store.dispatch(updateCompareScenarioName(''));
+		else store.dispatch(updateCompareScenarioName(value));
 	}
 
 }
