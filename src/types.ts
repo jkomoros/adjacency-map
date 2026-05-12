@@ -829,7 +829,8 @@ export type MapDefinition = {
 
 export type URLHashArgs = {
 	s? : ScenarioName,
-	n? : LayoutID
+	n? : LayoutID,
+	c? : ScenarioName
 };
 
 export type ScenariosOverlays = {
@@ -862,6 +863,7 @@ export type DataState = {
 	filename : DataFilename;
 	scale: number;
 	scenarioName : ScenarioName;
+	compareScenarioName?: ScenarioName;
 	editing : boolean;
 	hoveredLayoutID? : LayoutID;
 	selectedLayoutID? : LayoutID;

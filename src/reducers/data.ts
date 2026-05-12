@@ -18,6 +18,7 @@ import {
 	RESET_SCENARIOS_OVERLAYS,
 	SAVE_SCENARIOS_SUCCESS,
 	FORK_SCENARIO_SUCCESS,
+	UPDATE_COMPARE_SCENARIO_NAME,
 	BEGIN_EDITING_SCENARIO,
 	REMOVE_EDITING_SCENARIO,
 	UPDATE_EDITING_SCENARIO_DESCRIPTION,
@@ -59,6 +60,7 @@ const INITIAL_STATE : DataState = {
 	filename: DEFAULT_FILE_NAME,
 	scale: 1.0,
 	scenarioName: '',
+	compareScenarioName: undefined,
 	editing: true,
 	selectedLayoutID: undefined,
 	hoveredLayoutID: undefined,
@@ -266,6 +268,11 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			scenarioName: action.scenarioName
+		};
+	case UPDATE_COMPARE_SCENARIO_NAME:
+		return {
+			...state,
+			compareScenarioName: action.scenarioName
 		};
 	case UPDATE_HOVERED_NODE_ID:
 		return {

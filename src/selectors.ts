@@ -36,6 +36,7 @@ export const selectPageExtra = (state : RootState) => state.app ? state.app.page
 export const selectHash = (state : RootState) => state.app ? state.app.hash : '';
 export const selectScale = (state : RootState) => state.data ? state.data.scale : 1.0;
 export const selectScenarioName = (state : RootState) => state.data ? state.data.scenarioName : '';
+export const selectCompareScenarioName = (state : RootState) => state.data ? state.data.compareScenarioName : undefined;
 export const selectEditing = (state : RootState) => state.data ? state.data.editing : false;
 export const selectHoveredLayoutID = (state : RootState) => state.data ? state.data.hoveredLayoutID : undefined;
 export const selectHoveredEdgeID = (state : RootState) => state.data ? state.data.hoveredEdgeID : undefined;
@@ -179,8 +180,9 @@ export const selectSelectedNodeFieldsEdited = createSelector(
 export const selectHashForCurrentState = createSelector(
 	selectScenarioName,
 	selectSelectedLayoutID,
+	selectCompareScenarioName,
 	selectAdjacencyMap,
-	(scenarioName, selectedLayoutID, map) => {
+	(scenarioName, selectedLayoutID, compareScenarioName, map) => {
 		let validSelectedLayoutID : LayoutID | undefined;
 		if (selectedLayoutID && map) {
 			try {
@@ -192,7 +194,8 @@ export const selectHashForCurrentState = createSelector(
 		}
 		return stringifyURLHashArgs({
 			s: scenarioName != DEFAULT_SCENARIO_NAME ? scenarioName : undefined,
-			n: validSelectedLayoutID
+			n: validSelectedLayoutID,
+			c: compareScenarioName !== undefined ? compareScenarioName : undefined
 		});
 	}
 );

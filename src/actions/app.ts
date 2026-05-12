@@ -25,7 +25,8 @@ import {
 
 import {
 	updateScenarioName,
-	updateSelectedLayoutID
+	updateSelectedLayoutID,
+	updateCompareScenarioName
 } from './data.js';
 
 import {
@@ -66,6 +67,7 @@ const ingestHash = (hash : string) : ThunkAction<void, RootState, unknown, AnyAc
 
 	dispatch(updateScenarioName(pieces.s || DEFAULT_SCENARIO_NAME));
 	dispatch(updateSelectedLayoutID(pieces.n));
+	dispatch(updateCompareScenarioName(pieces.c || undefined));
 };
 
 export const updateHash = (hash : string, comesFromURL = false) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {

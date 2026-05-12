@@ -15,6 +15,7 @@ export const LOAD_SCENARIOS_OVERLAYS = 'LOAD_SCENARIOS_OVERLAYS';
 export const RESET_SCENARIOS_OVERLAYS = 'RESET_SCENARIOS_OVERLAYS';
 export const SAVE_SCENARIOS_SUCCESS = 'SAVE_SCENARIOS_SUCCESS';
 export const FORK_SCENARIO_SUCCESS = 'FORK_SCENARIO_SUCCESS';
+export const UPDATE_COMPARE_SCENARIO_NAME = 'UPDATE_COMPARE_SCENARIO_NAME';
 export const BEGIN_EDITING_SCENARIO = 'BEGIN_EDITING_SCENARIO';
 export const REMOVE_EDITING_SCENARIO = 'REMOVE_EDITING_SCENARIO';
 export const UPDATE_EDITING_SCENARIO_DESCRIPTION = 'UPDATE_EDITING_SCENARIO_DESCRIPTION';
@@ -147,6 +148,13 @@ export const updateScenarioName = (scenarioName : ScenarioName) : AnyAction => {
 	return {
 		type: UPDATE_SCENARIO_NAME,
 		scenarioName,
+	};
+};
+
+export const updateCompareScenarioName = (scenarioName : ScenarioName | undefined) : AnyAction => {
+	return {
+		type: UPDATE_COMPARE_SCENARIO_NAME,
+		scenarioName
 	};
 };
 

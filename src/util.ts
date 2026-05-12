@@ -151,6 +151,9 @@ export const parseURLHashArgs = (hash : string) : URLHashArgs => {
 		case 'n':
 			args.n = val;
 			break;
+		case 'c':
+			args.c = val;
+			break;
 		default:
 			console.warn('Unknown URL arg: ' + key);
 		}
