@@ -383,7 +383,73 @@ try {
 		if (hasReasoning) pass('reasoning field renders in scenario summary');
 		else fail('reasoning field not rendered');
 
-		// ---------- Section 15: console-errors summary ----------
+		// ---------- Section 15: search input dims non-matches ----------
+		await page.goto(`${BASE_URL}/main/default/`, { waitUntil: 'networkidle' });
+		await page.waitForTimeout(400);
+		// Type into the search field. It lives in the controls shadow root.
+		await page.evaluate(() => {
+			const app = document.querySelector('my-app');
+			const main = app?.shadowRoot?.querySelector('main-view');
+			const controls = main?.shadowRoot?.querySelector('adjacency-map-controls');
+			const input = controls?.shadowRoot?.querySelector('#nodeSearch');
+			if (input) {
+				input.value = 'extended';
+				input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+			}
+		});
+		await page.waitForTimeout(400);
+		const searchMissCount = await page.locator('svg.main circle.search-miss').count();
+		if (searchMissCount > 0) pass(`search dims ${searchMissCount} non-matching nodes`);
+		else fail('search did not dim any nodes when "extended" typed');
+
+		// Press Enter to jump to the first match.
+		await page.evaluate(() => {
+			const app = document.querySelector('my-app');
+			const main = app?.shadowRoot?.querySelector('main-view');
+			const controls = main?.shadowRoot?.querySelector('adjacency-map-controls');
+			const input = controls?.shadowRoot?.querySelector('#nodeSearch');
+			input && input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, composed: true }));
+		});
+		await page.waitForTimeout(400);
+		const hashAfterEnter = await page.evaluate(() => window.location.hash);
+		if (hashAfterEnter.includes('n=')) pass(`Enter in search jumped to first match (${hashAfterEnter})`);
+		else fail(`Enter did not select a node (hash=${hashAfterEnter})`);
+
+		// Clear search via the × button.
+		await page.evaluate(() => {
+			const app = document.querySelector('my-app');
+			const main = app?.shadowRoot?.querySelector('main-view');
+			const controls = main?.shadowRoot?.querySelector('adjacency-map-controls');
+			const clearBtn = controls?.shadowRoot?.querySelector('button[title="Clear search"]');
+			clearBtn && clearBtn.click();
+		});
+		await page.waitForTimeout(300);
+		const stillDimmed = await page.locator('svg.main circle.search-miss').count();
+		if (stillDimmed === 0) pass('clear-search removes dim');
+		else fail(`${stillDimmed} nodes still dimmed after clear`);
+
+		// ---------- Section 16: help modal via ? key ----------
+		await page.goto(`${BASE_URL}/main/default/`, { waitUntil: 'networkidle' });
+		await page.waitForTimeout(300);
+		// Dispatch the key event directly with key='?' to avoid keyboard-layout
+		// translation quirks in headless Chromium.
+		await page.evaluate(() => {
+			document.dispatchEvent(new KeyboardEvent('keydown', { key: '?', bubbles: true }));
+		});
+		await page.waitForTimeout(400);
+		const helpText = await page.evaluate(() => {
+			const app = document.querySelector('my-app');
+			const main = app?.shadowRoot?.querySelector('main-view');
+			const dialog = main?.shadowRoot?.querySelector('dialog-element');
+			return dialog?.textContent || '';
+		});
+		if (helpText.includes('Keyboard shortcuts') && helpText.includes('npm run inspect')) {
+			pass('help modal lists shortcuts and CLI commands');
+		} else {
+			fail(`help modal missing content (head: ${helpText.slice(0, 200)})`);
+		}
+
+		// ---------- Section 17: console-errors summary ----------
 		const newErrors = consoleErrors.filter(e => !e.includes('Unknown URL arg'));
 		if (newErrors.length === 0) pass('no unexpected console errors over full run');
 		else log(`console errors over run: ${newErrors.join(' | ')}`);
