@@ -17,6 +17,7 @@ import {
 	LOAD_SCENARIOS_OVERLAYS,
 	RESET_SCENARIOS_OVERLAYS,
 	SAVE_SCENARIOS_SUCCESS,
+	FORK_SCENARIO_SUCCESS,
 	BEGIN_EDITING_SCENARIO,
 	REMOVE_EDITING_SCENARIO,
 	UPDATE_EDITING_SCENARIO_DESCRIPTION,
@@ -323,7 +324,26 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 			scenarioName: action.scenarioName,
 			scenariosOverlays: addScenarioToScenariosOverlay(state.filename, state.scenarioName, action.scenarioName, state.scenariosOverlays)
 		};
-	case REMOVE_EDITING_SCENARIO: 
+	case FORK_SCENARIO_SUCCESS:
+	{
+		const filename = action.filename as DataFilename;
+		const existing = state.scenariosOverlays[filename] || {};
+		const newScenario : ScenarioWithExtends = {
+			description: `Forked from ${action.sourceName || '(base)'}`,
+			nodes: action.nodes
+		};
+		return {
+			...state,
+			scenariosOverlays: {
+				...state.scenariosOverlays,
+				[filename]: {
+					...existing,
+					[action.newName]: newScenario
+				}
+			}
+		};
+	}
+	case REMOVE_EDITING_SCENARIO:
 		return {
 			...state,
 			scenarioName: state.scenarioName == action.scenarioName ? action.nextScenarioName : state.scenarioName,
