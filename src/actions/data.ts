@@ -199,10 +199,11 @@ export const updateShowHiddenValues = (showHiddenValues = false) : AnyAction => 
 
 export const updateWithMainPageExtra = (pageExtra : string) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch) => {
 	const parts = pageExtra.split('/');
-	//The last piece is the trailing slash
+	//The last piece can be the canonical trailing slash.
+	if (parts[parts.length - 1] == '') parts.pop();
 	//TODO: handle malformed URLs better
 	if (parts.length != 1) return;
-	const filename = parts[0];
+	const filename = decodeURIComponent(parts[0]);
 
 	if (!DATA[filename as DataFilename]) throw new Error('Invalid filename: ' + filename);
 

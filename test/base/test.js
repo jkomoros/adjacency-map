@@ -25,6 +25,10 @@ import {
 import dataReducer from '../../src/reducers/data.js';
 
 import {
+	updateWithMainPageExtra
+} from '../../src/actions/data.js';
+
+import {
 	updateHash
 } from '../../src/actions/app.js';
 
@@ -7431,6 +7435,27 @@ describe('data reducer robustness', () => {
 			filename: 'default'
 		});
 		assert.deepStrictEqual(next.scenariosOverlays, {other: otherOverlay});
+	});
+
+});
+
+describe('path state', () => {
+
+	it('accepts canonical main page extras with a trailing slash', async () => {
+		const state = {data: {filename: 'default'}};
+		const actions = [];
+		const dispatch = action => {
+			if (typeof action == 'function') return action(dispatch, () => state);
+			actions.push(action);
+			return action;
+		};
+		assert.doesNotThrow(() => updateWithMainPageExtra('default/')(dispatch, () => state));
+		assert.deepStrictEqual(actions, []);
+	});
+
+	it('rejects invalid filenames even with a trailing slash', async () => {
+		const dispatch = () => {};
+		assert.throws(() => updateWithMainPageExtra('missing/')(dispatch), /Invalid filename: missing/);
 	});
 
 });
