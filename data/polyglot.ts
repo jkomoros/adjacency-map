@@ -31,6 +31,10 @@ import {
  *   - Time-decay (duplex Q3 window) is encoded via a map-level event
  *     (`q3_window_open`) referenced via `{event: ...}`. The scenario
  *     `duplex-q4-missed` flips it to absent. See AGENTS.md "Events".
+ *   - Probabilistic downside modeling (agent_framework_v1 might ship at
+ *     60% value with 60% probability) uses the scenario-level
+ *     `probability` + `branchOf` fields on `agent-framework-disappoints`.
+ *     See AGENTS.md "Probabilistic scenario branches".
  */
 
 const data : RawMapDefinition = {
@@ -523,11 +527,17 @@ const data : RawMapDefinition = {
 			}
 		},
 
-		// Uncertainty branch: agent_framework_v1 might ship at 60% value, 1.5x cost.
+		// Probabilistic branch off the base: agent_framework_v1 ships at 60%
+		// value (9 -> 5.4) and 1.5x cost (8 -> 12) with 60% probability. The
+		// remaining 40% is the implicit "base realized" weight, computed by
+		// the engine when ranking/inspecting branch-group expected values.
+		// See AGENTS.md "Probabilistic scenario branches".
 		'agent-framework-disappoints': {
-			description: 'Workaround: agent_framework_v1 ships at 60% value (9->5.4) and 1.5x cost (8->12). Represents the "real branch" implied by its 0.4 certainty.',
+			description: 'agent_framework_v1 ships at 60% value (9->5.4) and 1.5x cost (8->12). 60% probability branch off the base.',
 			decision: 'Risk-side comparator for the agent bet.',
-			reasoning: 'Schema certainty is a scalar; this scenario materializes the downside outcome explicitly.',
+			reasoning: 'Schema certainty is a scalar; the probability+branchOf primitive materializes the downside outcome explicitly, so inspect/rank can compute probability-weighted expected values across the branch group.',
+			probability: 0.6,
+			branchOf: '',
 			nodes: {
 				// Pick WhisperX as the default ASR. Required to satisfy the
 				// mutual-exclusion constraint declared on voice_in_whisperx.
