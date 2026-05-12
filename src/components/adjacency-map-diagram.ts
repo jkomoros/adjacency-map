@@ -55,6 +55,9 @@ class AdjacencyMapDiagram extends LitElement {
 		[id : NodeID] : ScenarioNode
 	}
 
+	@property({type: Object})
+	compareDelta : {perNode: {[id: string]: 'changed' | 'added' | 'removed'}} | null = null;
+
 	static override get styles() {
 		return [
 			SharedStyles,
@@ -133,6 +136,20 @@ class AdjacencyMapDiagram extends LitElement {
 					to {
 						stroke-dashoffset: 0;
 					}
+				}
+
+				circle.diff-changed {
+					stroke: #1e88e5;
+					stroke-width: 4px;
+				}
+				circle.diff-added {
+					stroke: #43a047;
+					stroke-width: 4px;
+				}
+				circle.diff-removed {
+					stroke: #e53935;
+					stroke-width: 4px;
+					opacity: 0.4 !important;
 				}
 
 			`
@@ -223,10 +240,15 @@ class AdjacencyMapDiagram extends LitElement {
 		const edited = this.editedNodes && (node instanceof AdjacencyMapNode) && this.editedNodes[node.id] != undefined;
 		const hasSelection = this.selectedLayoutID !== undefined && neighbors.size > 0;
 		const dim = hasSelection && !neighbors.has(node._layoutID);
+		const nodeID = (node instanceof AdjacencyMapNode) ? node.id : undefined;
+		const diffKind = (this.compareDelta && nodeID !== undefined) ? this.compareDelta.perNode[nodeID] : undefined;
 		const classes : ClassInfo = {
 			selected,
 			edited,
-			dim
+			dim,
+			'diff-changed': diffKind === 'changed',
+			'diff-added': diffKind === 'added',
+			'diff-removed': diffKind === 'removed'
 		};
 		const styles : StyleInfo = {
 			'--stroke-width': String(node.strokeWidth) + 'px'
