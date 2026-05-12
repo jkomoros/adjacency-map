@@ -116,6 +116,7 @@ const BASE_ALLOWED_VARIABLE_TYPES : AllowedValueDefinitionVariableTypes = {
 	parentValue: true,
 	resultValue: true,
 	rootValue: true,
+	nodeRef: true,
 	input: false,
 	hasTag: true,
 	tagConstant: true
@@ -143,6 +144,7 @@ const ALLOWED_VARIABLES_FOR_CONTEXT = {
 		parentValue: false,
 		resultValue: false,
 		rootValue: false,
+		nodeRef: true,
 		input: true,
 		hasTag: true,
 		tagConstant: true
@@ -845,7 +847,7 @@ const validateData = (data : MapDefinition) : void => {
 export type LayoutNode = AdjacencyMapNode | AdjacencyMapGroup;
 
 export class AdjacencyMap {
-	
+
 	_data : MapDefinition;
 	_nodes : {[id : NodeID] : AdjacencyMapNode};
 	_disableGroups : boolean;
@@ -862,6 +864,13 @@ export class AdjacencyMap {
 	_cachedPropertyNames : PropertyName[];
 	_cachedLayoutInfo : LayoutInfo;
 	_scenarioName : ScenarioName;
+	//Cycle-detection bookkeeping for nodeRef value-definition resolution. A
+	//node ID is added to this set immediately before computing its values
+	//and removed immediately after. If a nodeRef tries to resolve into a
+	//node that is already in this set, that is a real cycle and we throw
+	//rather than recurse forever. This is the dynamic equivalent of the
+	//topological-sort check the engine does for property-level dependencies.
+	_nodeValuesInFlight : Set<NodeID> = new Set<NodeID>();
 
 	constructor(rawData : RawMapDefinition, scenarioName : ScenarioName = DEFAULT_SCENARIO_NAME, disableGroups = false) {
 		//will throw if invalid library is included
@@ -895,6 +904,27 @@ export class AdjacencyMap {
 			}
 		}
 		return Object.fromEntries(Object.entries(children).map(entry => [entry[0], Object.keys(entry[1])]));
+	}
+
+	//NodeRefResolver: whether the given node is in the current scenario's
+	//effective node set (i.e. exists in data.nodes and is not removed:true
+	//in the current scenario).
+	isNodePresent(id : NodeID) : boolean {
+		if (id == ROOT_ID) return true;
+		if (!this._data.nodes[id]) return false;
+		return !this._removedNodeIDs.has(id);
+	}
+
+	//NodeRefResolver: returns the computed values of the named node, or
+	//undefined if the node is removed in the current scenario. Triggers
+	//computation of that node's values if not yet cached. Throws if a cycle
+	//is detected (the node is already mid-computation).
+	nodeValuesIfPresent(id : NodeID) : NodeValues | undefined {
+		if (!this.isNodePresent(id)) return undefined;
+		if (this._nodeValuesInFlight.has(id)) {
+			throw new Error('nodeRef cycle detected: node ' + id + ' is referenced (transitively) by its own value definition');
+		}
+		return this.node(id).values;
 	}
 
 	get _removedNodeIDs() : Set<NodeID> {
@@ -1509,6 +1539,26 @@ export class AdjacencyMapNode {
 	}
 
 	_computeValues() : NodeValues {
+		//Register this node as in-flight for nodeRef cycle detection. We do
+		//this on the AdjacencyMap (not on `this`) because the cycle question
+		//is "is this node already being computed elsewhere in the call
+		//stack". Root has no _data and is never referenced as a node by
+		//nodeRef, so we just guard with the actual id.
+		const inFlight = this._map._nodeValuesInFlight;
+		const myID = this.id;
+		const wasInFlight = inFlight.has(myID);
+		if (wasInFlight) {
+			throw new Error('nodeRef cycle detected while computing values for ' + myID);
+		}
+		inFlight.add(myID);
+		try {
+			return this._computeValuesInner();
+		} finally {
+			inFlight.delete(myID);
+		}
+	}
+
+	_computeValuesInner() : NodeValues {
 		const partialResult : NodeValues = {};
 		const edgeByType : {[type : PropertyName] : EdgeValue[]} = {};
 		for (const edge of this.edges) {
@@ -1531,16 +1581,17 @@ export class AdjacencyMapNode {
 				const edgeValueDefinition = typeDefinition.value;
 				const constants = typeDefinition.constants || {};
 				const defaultedEdges = rawEdges.map(edge => ({...constants, ...edge}));
-				//TODO: should we make it illegal to have an edge of same type and ref on a node? 
+				//TODO: should we make it illegal to have an edge of same type and ref on a node?
 				const refs = rawEdges.map(edge => this._map.node(edge.parent || '').values);
-				const args = {
+				const args : ValueDefinitionCalculationArgs = {
 					edges: defaultedEdges,
 					refs,
 					partialResult,
 					rootValue: this._map.rootValues,
 					tags: this.tags,
 					selfTags: this._data ? this._data.tags : {},
-					definition: this._map.data
+					definition: this._map.data,
+					resolver: this._map
 				};
 				const values = calculateValue(edgeValueDefinition, args);
 				if (values.length == 0) throw new Error('values was not at least of length 1');
@@ -1558,6 +1609,7 @@ export class AdjacencyMapNode {
 					tags: this.tags,
 					selfTags: this._data ? this._data.tags : {},
 					definition: this._map.data,
+					resolver: this._map,
 					input: [partialResult[type]]
 				};
 				partialResult[type] = calculateValue(this._data.values[type], overrideArgs)[0];
@@ -1573,6 +1625,7 @@ export class AdjacencyMapNode {
 					tags: this.tags,
 					selfTags: this._data ? this._data.tags : {},
 					definition: this._map.data,
+					resolver: this._map,
 					input: [partialResult[type]]
 				};
 				partialResult[type] = calculateValue(scenarioNodeValues[type], scenarioArgs)[0];

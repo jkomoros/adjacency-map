@@ -55,6 +55,30 @@ export type ValueDefinitionResultValue = {
 	result: PropertyName
 }
 
+/**
+ * Reads a property off a named node. The special property 'present' is
+ * synthetic: it returns 1 if the named node is in the current scenario's
+ * effective node set (i.e. not removed:true) and 0 otherwise. Other property
+ * names look up the node's final computed value for that property, exactly
+ * as if you'd asked the engine for `node.values[property]`. If the named
+ * node is removed in the current scenario, the property lookup returns 0
+ * (i.e. the absent node contributes nothing).
+ *
+ * This is the prototype `nodeRef` primitive (see
+ * docs/superpowers/notes/2026-05-12-primitives-elegance-critique.md, section
+ * "The tightened proposal" item A). It subsumes combinatorial uplift,
+ * sequencing bonus, time-decay (via a deadline-node convention), soft
+ * enablement, conditional value, and probabilistic-AND from the stress-test.
+ *
+ * Cycle warning: if node A's value reads from node B and B reads from A,
+ * the engine will detect the cycle at calculation time and throw. There is
+ * no static cycle detection in this prototype.
+ */
+export type ValueDefinitionNodeRef = {
+	node: NodeID,
+	property: PropertyName | 'present'
+}
+
 //Takes the singular child definition and runs the reducer on it, returning an
 //array of a single value.
 export type ValueDefinitionCombine = {
@@ -254,6 +278,7 @@ export type ValueDefinition = ValueDefinitionLeaf |
 	ValueDefinitionParentValue |
 	ValueDefinitionRootValue |
 	ValueDefinitionResultValue |
+	ValueDefinitionNodeRef |
 	ValueDefinitionCombine |
 	ValueDefinitionColor |
 	ValueDefinitionGradient |
@@ -280,20 +305,38 @@ export type AllowedValueDefinitionVariableTypes = {
 	parentValue: boolean,
 	rootValue: boolean,
 	resultValue: boolean,
+	nodeRef: boolean,
 	input: boolean,
 	hasTag: boolean,
 	tagConstant: boolean
 };
 
+/**
+ * The minimal interface a value-definition calculator needs to resolve a
+ * `nodeRef` against the live adjacency map. The full AdjacencyMap satisfies
+ * this. Declared as a structural type to avoid importing the class into
+ * types.ts (which has no other src imports).
+ */
+export type NodeRefResolver = {
+	//Whether the named node is present in the current scenario's effective
+	//node set (i.e. exists in data.nodes and is not removed:true in the
+	//current scenario).
+	isNodePresent(id : NodeID) : boolean;
+	//The computed values of the named node, or undefined if the node is
+	//removed in the current scenario. Triggering this may recursively
+	//compute that node's values.
+	nodeValuesIfPresent(id : NodeID) : NodeValues | undefined;
+}
+
 export type ValueDefinitionCalculationArgs = {
 	//All of the edges that are being calculated together, all of the same type
-	edges : EdgeValue[], 
+	edges : EdgeValue[],
 	//An array of nodeValues, one per parent ref
-	refs : NodeValues[], 
+	refs : NodeValues[],
 	//The results that are being calculated for this node. The only properties
 	//that are guaranteed to be there and in their final state are ones that the
 	//property enumerated in dependencies.
-	partialResult : NodeValues, 
+	partialResult : NodeValues,
 	//The values of root.
 	rootValue : NodeValues,
 	//The tags for the result node.
@@ -304,7 +347,13 @@ export type ValueDefinitionCalculationArgs = {
 	variables?: {[name : VariableName]: number[]},
 	//The input numbers, which will be returned by ValueDefinitionInput, if this
 	//is a context that does that.
-	input? : number[]
+	input? : number[],
+	//The live adjacency-map resolver used to satisfy ValueDefinitionNodeRef
+	//lookups. Optional because not every calculation context has a live map
+	//attached (e.g. root-value precomputation, override-only evaluations).
+	//If a value definition uses nodeRef and resolver is absent, evaluation
+	//will throw.
+	resolver? : NodeRefResolver
 };
 
 export type ValudeDefinitionValidationArgs = {

@@ -35,7 +35,8 @@ import {
 	ValueDefinitionVariable,
 	ValueDefinitionLog,
 	ValueDefinitionGradient,
-	ValueDefinitionParentValue
+	ValueDefinitionParentValue,
+	ValueDefinitionNodeRef
 } from './types.js';
 
 import {
@@ -148,6 +149,16 @@ const valueDefinitionIsResultValue = (definition : ValueDefinition) : definition
 	if (Array.isArray(definition)) return false;
 	return 'result' in definition;
 };
+
+const valueDefinitionIsNodeRef = (definition : ValueDefinition) : definition is ValueDefinitionNodeRef => {
+	if (!definition || typeof definition != 'object') return false;
+	if (Array.isArray(definition)) return false;
+	return 'node' in definition && 'property' in definition;
+};
+
+//Synthetic property name handled by ValueDefinitionNodeRef. Not a real
+//property on any node; resolved against the scenario's effective node set.
+export const NODE_REF_PRESENT_PROPERTY = 'present';
 
 const valueDefinitionIsCombine = (definition : ValueDefinition) : definition is ValueDefinitionCombine => {
 	if (!definition || typeof definition != 'object') return false;
@@ -265,6 +276,7 @@ const VALUE_DEFINITION_VARIABLE_TESTER : {[kind in keyof AllowedValueDefinitionV
 	parentValue: valueDefinitionIsParentValue,
 	rootValue: valueDefinitionIsRootValue,
 	resultValue: valueDefinitionIsResultValue,
+	nodeRef: valueDefinitionIsNodeRef,
 	input: valueDefinitionIsInput,
 	hasTag: valueDefinitionIsHasTag,
 	tagConstant: valueDefinitionIsTagConstant
@@ -285,6 +297,9 @@ const listNestedDefinitions = (definition : ValueDefinition) : ValueDefinition[]
 		return [definition];
 	}
 	if (valueDefinitionIsResultValue(definition)) {
+		return [definition];
+	}
+	if (valueDefinitionIsNodeRef(definition)) {
 		return [definition];
 	}
 
@@ -464,6 +479,24 @@ export const validateValueDefinition = (definition : ValueDefinition, args: Valu
 			const declaredDependencies = args.propertyDefinition.dependencies || [];
 			if (!declaredDependencies.some(dependency => dependency == definition.result)) throw new Error(definition.result + ' is used in a ResultValue definition but it is not declared in dependencies.');
 		}
+		return;
+	}
+
+	if (valueDefinitionIsNodeRef(definition)) {
+		//Validate the target node exists in the base graph. (Scenario-removal
+		//is a runtime concern: nodeRef returns 0 for removed nodes rather than
+		//failing validation.)
+		if (!args.data.nodes[definition.node]) throw new Error(definition.node + ' is referenced in a nodeRef but is not a defined node');
+		//Validate the property is either the synthetic 'present' or a real
+		//property defined on the map.
+		if (definition.property !== NODE_REF_PRESENT_PROPERTY) {
+			if (args.exampleValues[definition.property] == undefined) throw new Error(definition.property + ' is referenced in a nodeRef but is not a defined property');
+		}
+		//NOTE: no static cycle detection. If node A's selfValue reads B's
+		//selfValue and B's selfValue reads A's, evaluation will throw at
+		//runtime via the resolver's in-flight set. Documented as a known
+		//limitation of this prototype; see
+		//docs/superpowers/notes/2026-05-12-noderef-prototype-reflection.md.
 		return;
 	}
 
@@ -677,6 +710,23 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 	}
 	if (valueDefinitionIsResultValue(definition)) {
 		return [args.partialResult[definition.result]];
+	}
+	if (valueDefinitionIsNodeRef(definition)) {
+		if (!args.resolver) throw new Error('nodeRef used without a resolver in this calculation context (node: ' + definition.node + ', property: ' + definition.property + ')');
+		const present = args.resolver.isNodePresent(definition.node);
+		if (definition.property === NODE_REF_PRESENT_PROPERTY) {
+			return [present ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER];
+		}
+		if (!present) {
+			//Absent nodes contribute 0 for any value property. Matches the
+			//engine's existing "removed nodes don't contribute" convention.
+			return [0];
+		}
+		const otherValues = args.resolver.nodeValuesIfPresent(definition.node);
+		if (!otherValues) return [0];
+		const v = otherValues[definition.property];
+		if (v === undefined) throw new Error('nodeRef target ' + definition.node + ' has no computed value for property ' + definition.property);
+		return [v];
 	}
 	if (valueDefinitionIsCombine(definition)) {
 		const subValues = calculateValue(definition.value, args);

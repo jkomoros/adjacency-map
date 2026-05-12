@@ -19,6 +19,10 @@ import {
  *     that the published table matches the inspected values 1:1.
  *   - The "OR" branch in voice_full_duplex's prerequisite is encoded via a
  *     synthetic `voice_in_any` proxy node; see notes file.
+ *   - Cross-node conditional values (latency_cache uplift, duplex image
+ *     uplift, duplex time-decay) are encoded directly in the base-graph
+ *     selfValue expressions via the `nodeRef` ValueDefinition primitive.
+ *     See docs/superpowers/notes/2026-05-12-noderef-prototype-reflection.md.
  */
 
 const data : RawMapDefinition = {
@@ -158,7 +162,37 @@ const data : RawMapDefinition = {
 				{ type: 'engineering', parent: 'voice_in_any', cost: 0 }
 			],
 			values: {
-				selfValue: 9,
+				// PROTOTYPE: previously the base was a flat `selfValue: 9` and
+				// two workaround scenarios (duplex-with-image-uplift,
+				// duplex-q4-decay) overrode it. With nodeRef the expression
+				// is:
+				//
+				//   base 3
+				//   + 6 if q3_window_open is in the scenario        (decay if missed)
+				//   + 1 if image_understanding is in the scenario   (uplift)
+				//
+				// q3_window_open is a sentinel node, present in the base
+				// graph (and in all the strategy scenarios), and `removed:
+				// true` in the post-Q3 ("we missed the window") scenario.
+				// This is the "deadline-node convention" called out in the
+				// elegance critique: time-decay requires *some* node to
+				// anchor "the deadline has passed"; this prototype encodes
+				// the dual ("the window is still open") which composes more
+				// naturally with the existing scenario-overlay semantics
+				// (default = present; explicit removal = the event fired).
+				selfValue: {
+					operator: '+',
+					a: {
+						operator: '+',
+						a: 3,
+						b: {
+							operator: '*',
+							a: { node: 'q3_window_open', property: 'present' },
+							b: 6
+						}
+					},
+					b: { node: 'image_understanding', property: 'present' }
+				},
 				certainty: 0.5
 			}
 		},
@@ -263,7 +297,19 @@ const data : RawMapDefinition = {
 				{ type: 'engineering', cost: 4 }
 			],
 			values: {
-				selfValue: 7,
+				// PROTOTYPE: previously a flat `selfValue: 7` with a workaround
+				// scenario `latency-cache-boosted` that overrode it to 9 when
+				// voice_full_duplex was in the scenario. With nodeRef the
+				// conditional lives in the base graph: 7 + 2 * present(duplex).
+				selfValue: {
+					operator: '+',
+					a: 7,
+					b: {
+						operator: '*',
+						a: { node: 'voice_full_duplex', property: 'present' },
+						b: 2
+					}
+				},
 				certainty: 0.7
 			}
 		},
@@ -276,6 +322,39 @@ const data : RawMapDefinition = {
 			values: {
 				selfValue: 0,
 				certainty: 0.4
+			}
+		},
+
+		// -------- Sentinel / "marker" nodes --------
+		//
+		// A sentinel node carries no work and no value of its own; its sole
+		// purpose is to be toggled in/out of a scenario so that other nodes
+		// can reference it via nodeRef. This is the "deadline-node convention"
+		// from the nodeRef prototype: time-decay (and other event-shaped
+		// semantics) need *some* node to anchor "this thing has (not) happened
+		// yet".
+		//
+		// q3_window_open is present in the base graph and in every strategy
+		// scenario. A scenario that wants to model the post-Q3 world includes
+		// `q3_window_open: { removed: true }`, which causes the nodeRef in
+		// voice_full_duplex.selfValue to evaluate to 0 and drop the duplex
+		// value from 9 to 3 automatically.
+		//
+		// We use the "window-open" framing (default-present) rather than
+		// "deadline-missed" (default-absent) because the scenario overlay
+		// system models removal explicitly but does not model addition: a
+		// node either lives in the base graph or it doesn't. Encoding events
+		// as "the precondition is still true" lines up with this semantics.
+		// In a production design these would probably be a separate
+		// `events` or `flags` map-level field; encoding them as nodes is the
+		// minimum-invasive way to demonstrate nodeRef's reach.
+		q3_window_open: {
+			description: 'Sentinel: the Q3 ship window is still open. Default-present; mark `removed: true` in a scenario to model the post-Q3 world. Used by voice_full_duplex to implement time-decay (value drops 9->3 when this is removed).',
+			tags: [],
+			edges: [],
+			values: {
+				selfValue: 0,
+				certainty: 1.0
 			}
 		}
 	},
@@ -421,49 +500,37 @@ const data : RawMapDefinition = {
 			}
 		},
 
-		// --- Workaround scenarios for cross-cutting semantics ---
+		// --- Cross-cutting scenarios ---
+		//
+		// Three workaround scenarios were here previously
+		// (`latency-cache-boosted`, `duplex-with-image-uplift`,
+		// `duplex-q4-decay`). All three are now expressed directly in the
+		// base-graph value definitions via the nodeRef value-definition
+		// primitive (see voice_full_duplex.values.selfValue and
+		// latency_cache.values.selfValue above), so they no longer need to
+		// exist as separate scenarios. The two semantics that survived as
+		// scenarios:
+		//
+		//   - `duplex-q4-missed` below: toggles the q3_window_open sentinel
+		//     off, which drops voice_full_duplex's value 9 -> 3 (or 10 -> 4
+		//     when image_understanding is also present). This demonstrates
+		//     the deadline-node convention.
+		//   - The image-uplift case has no dedicated scenario at all: it
+		//     emerges automatically whenever a strategy scenario includes
+		//     both voice_full_duplex and image_understanding (e.g.
+		//     multimodal-core).
+		//   - The latency_cache uplift likewise emerges automatically
+		//     whenever a strategy scenario keeps voice_full_duplex.
 
-		// Combinatorial: latency_cache value rises 4->9 IF voice_full_duplex ships.
-		// We can't express this conditionally in the base graph, so it's
-		// expressed as an explicit scenario the planner can compare against.
-		'latency-cache-boosted': {
-			description: 'Workaround: latency_cache selfValue rises 7->9 when voice_full_duplex is shipping (combinatorial uplift not expressible in base graph).',
-			decision: 'Comparator only; not a real plan.',
-			reasoning: 'Apply this when modeling a world where voice_full_duplex ships, to see the latency_cache uplift in expected value.',
-			nodes: {
-				latency_cache: {
-					values: {
-						selfValue: 9
-					}
-				}
-			}
-		},
-
-		// Soft preference: image_understanding shipped first => voice_full_duplex +1 value.
-		'duplex-with-image-uplift': {
-			description: 'Workaround: voice_full_duplex selfValue rises 9->10 when image_understanding ships first (shared UX patterns).',
-			decision: 'Comparator only.',
-			reasoning: 'No native way to model soft preferences / sequencing bonuses; expressed as a separate scenario.',
-			nodes: {
-				voice_full_duplex: {
-					values: {
-						selfValue: 10
-					}
-				}
-			}
-		},
-
-		// Time-decay: voice_full_duplex worth 9 in Q3, 3 in Q4.
-		'duplex-q4-decay': {
-			description: 'Workaround: voice_full_duplex selfValue drops 9->3 in Q4 (competitor rumored to ship). Pure time-decay; not expressible without scenarios.',
+		// Time-decay demonstration: voice_full_duplex value drops once the
+		// Q3 ship window closes. The drop is automatic via nodeRef; the
+		// scenario's only job is to flip the sentinel.
+		'duplex-q4-missed': {
+			description: 'Q3 ship window closed before voice_full_duplex shipped. Demonstrates nodeRef-driven time-decay via the q3_window_open sentinel.',
 			decision: 'Use to motivate Q3 ship-or-cut decision.',
-			reasoning: 'Without time as a first-class concept, time-decay collapses into "two scenarios with different values".',
+			reasoning: 'When q3_window_open is removed, voice_full_duplex.selfValue auto-drops from 9 to 3 (or 10 to 4 if image_understanding is also present), because the nodeRef in its selfValue expression evaluates the q3_window_open present() check to 0.',
 			nodes: {
-				voice_full_duplex: {
-					values: {
-						selfValue: 3
-					}
-				}
+				q3_window_open: { removed: true }
 			}
 		},
 
