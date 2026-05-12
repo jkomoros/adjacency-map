@@ -2,6 +2,8 @@ import {
 	PropertyDefinition,
 	PropertyName,
 	EdgeValue,
+	EventDefinition,
+	EventID,
 	ExpandedEdgeValue,
 	LayoutInfo,
 	Library,
@@ -27,6 +29,7 @@ import {
 	ScenariosDefinition,
 	Scenario,
 	ScenarioName,
+	ScenarioEventOverride,
 	TagDefinition,
 	TagID,
 	TagMap,
@@ -628,10 +631,28 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 			nodes[id] = newNode;
 		}
 
+		//Compose events through the extends chain. Per-id, the raw scenario's
+		//`present` override (if set) wins over the extended scenario's. We
+		//merge per-id rather than per-scenario so a child scenario can override
+		//just one event and inherit the rest.
+		const composedEvents : {[id : EventID] : ScenarioEventOverride} = {};
+		if (scenarioToExtend.events) {
+			for (const [id, override] of Object.entries(scenarioToExtend.events)) {
+				composedEvents[id] = {...override};
+			}
+		}
+		if (rawScenario.events) {
+			for (const [id, override] of Object.entries(rawScenario.events)) {
+				const existing = composedEvents[id] || {};
+				composedEvents[id] = {...existing, ...override};
+			}
+		}
+
 		const scenario : Scenario = {
 			description: rawScenario.description || scenarioToExtend.description || '',
 			nodes
 		};
+		if (Object.keys(composedEvents).length > 0) scenario.events = composedEvents;
 		const effectiveDecision = rawScenario.decision !== undefined ? rawScenario.decision : scenarioToExtend.decision;
 		if (effectiveDecision !== undefined) scenario.decision = effectiveDecision;
 		const effectiveReasoning = rawScenario.reasoning !== undefined ? rawScenario.reasoning : scenarioToExtend.reasoning;
@@ -664,6 +685,15 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 			};
 		}
 	}
+	const events : {[id : EventID] : EventDefinition} = {};
+	if (data.events) {
+		for (const [eventID, rawEvent] of Object.entries(data.events)) {
+			events[eventID] = {
+				description: rawEvent.description || '',
+				defaultPresent: rawEvent.defaultPresent === undefined ? true : !!rawEvent.defaultPresent
+			};
+		}
+	}
 	const description = data.description || '';
 	return {
 		...data,
@@ -671,6 +701,7 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		root,
 		display,
 		tags,
+		events,
 		properties,
 		nodes,
 		groups,
@@ -816,6 +847,21 @@ const validateData = (data : MapDefinition) : void => {
 			//Skip validating remove which isn't actually edges
 			if (nodeDefinition.group && !data.groups[nodeDefinition.group]) throw new Error(nodeName + ' specifies group ' + nodeDefinition.group + ' but that group is not defined');
 		}
+		if (scenario.events) {
+			for (const [eventID, override] of Object.entries(scenario.events)) {
+				if (!data.events[eventID]) throw new Error(scenarioName + ' overrides event ' + eventID + ' which is not defined in the map-level events block');
+				if (override.present !== undefined && typeof override.present !== 'boolean') {
+					throw new Error(scenarioName + ' override of event ' + eventID + ' has non-boolean present: ' + JSON.stringify(override.present));
+				}
+			}
+		}
+	}
+
+	//Validate map-level events block.
+	for (const [eventID, eventDefinition] of Object.entries(data.events)) {
+		if (!eventID) throw new Error('Events must have a non-empty ID');
+		if (eventDefinition.description !== undefined && typeof eventDefinition.description !== 'string') throw new Error('Event ' + eventID + ' has a non-string description');
+		if (typeof eventDefinition.defaultPresent !== 'boolean') throw new Error('Event ' + eventID + ' has a non-boolean defaultPresent');
 	}
 
 	for (const displayKey of TypedObject.keys(data.display)) {
@@ -858,6 +904,7 @@ export class AdjacencyMap {
 	_groups : {[id : GroupID] : AdjacencyMapGroup};
 	_cachedChildren : {[id : NodeID] : NodeID[]};
 	_cachedRemovedNodeIDs : Set<NodeID> | undefined;
+	_cachedEventPresence : {[id : EventID] : boolean} | undefined;
 	_cachedEdges : ExpandedEdgeValue[];
 	_cachedRenderEdges : RenderEdgeValue[] | undefined;
 	_cachedLayoutNodes : {[id : LayoutID] : LayoutNode};
@@ -943,6 +990,36 @@ export class AdjacencyMap {
 			this._cachedRemovedNodeIDs = result;
 		}
 		return this._cachedRemovedNodeIDs;
+	}
+
+	//The effective event-presence map for the current scenario. For each
+	//event defined on the map, the value is the scenario override's `present`
+	//(if set), else the event's `defaultPresent`. Memoized per scenario.
+	get _eventPresence() : {[id : EventID] : boolean} {
+		if (!this._cachedEventPresence) {
+			const result : {[id : EventID] : boolean} = {};
+			const scenarioEvents = this._data.scenarios[this._scenarioName]?.events || {};
+			for (const [id, eventDef] of Object.entries(this._data.events)) {
+				const override = scenarioEvents[id];
+				if (override && override.present !== undefined) {
+					result[id] = override.present;
+				} else {
+					result[id] = eventDef.defaultPresent;
+				}
+			}
+			this._cachedEventPresence = result;
+		}
+		return this._cachedEventPresence;
+	}
+
+	//NodeRefResolver: whether the named event is present in the current
+	//scenario. Throws if the event isn't defined on the map (validation
+	//catches this at construction time, but the runtime check is a defense
+	//against misuse).
+	isEventPresent(id : EventID) : boolean {
+		const presence = this._eventPresence;
+		if (!(id in presence)) throw new Error('Unknown event: ' + id);
+		return presence[id];
 	}
 
 	//edgeTypes returns the types of edges. It's in topological order of any
@@ -1036,6 +1113,7 @@ export class AdjacencyMap {
 		this._fullGroupsData = undefined;
 		this._impliedNodeGroups = undefined;
 		this._cachedRemovedNodeIDs = undefined;
+		this._cachedEventPresence = undefined;
 		//The set of removed nodes can change across scenarios, which affects
 		//the children graph. Rebuild it here.
 		this._cachedChildren = this._buildCachedChildren();

@@ -56,28 +56,39 @@ export type ValueDefinitionResultValue = {
 }
 
 /**
- * Reads a property off a named node. The special property 'present' is
- * synthetic: it returns 1 if the named node is in the current scenario's
- * effective node set (i.e. not removed:true) and 0 otherwise. Other property
- * names look up the node's final computed value for that property, exactly
- * as if you'd asked the engine for `node.values[property]`. If the named
- * node is removed in the current scenario, the property lookup returns 0
- * (i.e. the absent node contributes nothing).
+ * Reads either a property off a named node, or the presence of a named
+ * event.
+ *
+ * Node variant (`{node, property}`):
+ *   The special property 'present' is synthetic: it returns 1 if the named
+ *   node is in the current scenario's effective node set (i.e. not
+ *   removed:true) and 0 otherwise. Other property names look up the node's
+ *   final computed value for that property, exactly as if you'd asked the
+ *   engine for `node.values[property]`. If the named node is removed in
+ *   the current scenario, the property lookup returns 0 (i.e. the absent
+ *   node contributes nothing).
+ *
+ * Event variant (`{event}`):
+ *   Returns 1 if the named event is "present" in the current scenario,
+ *   0 otherwise. Events are a map-level concept (see RawMapDefinition.events)
+ *   for modeling event-shaped semantics like "the deadline passed", "the
+ *   demo happened", or "the regulation cleared" — semantics that have no
+ *   natural anchor in the node graph. Events have no other properties:
+ *   the only thing you can ask is whether the event is present.
  *
  * This is the prototype `nodeRef` primitive (see
  * docs/superpowers/notes/2026-05-12-primitives-elegance-critique.md, section
  * "The tightened proposal" item A). It subsumes combinatorial uplift,
- * sequencing bonus, time-decay (via a deadline-node convention), soft
- * enablement, conditional value, and probabilistic-AND from the stress-test.
+ * sequencing bonus, time-decay (via events), soft enablement, conditional
+ * value, and probabilistic-AND from the stress-test.
  *
  * Cycle warning: if node A's value reads from node B and B reads from A,
  * the engine will detect the cycle at calculation time and throw. There is
  * no static cycle detection in this prototype.
  */
-export type ValueDefinitionNodeRef = {
-	node: NodeID,
-	property: PropertyName | 'present'
-}
+export type ValueDefinitionNodeRef =
+	| { node: NodeID, property: PropertyName | 'present' }
+	| { event: EventID };
 
 //Takes the singular child definition and runs the reducer on it, returning an
 //array of a single value.
@@ -326,6 +337,10 @@ export type NodeRefResolver = {
 	//removed in the current scenario. Triggering this may recursively
 	//compute that node's values.
 	nodeValuesIfPresent(id : NodeID) : NodeValues | undefined;
+	//Whether the named event is present in the current scenario. Resolves
+	//to the scenario override's `present` if set, else the event's
+	//`defaultPresent`, else true.
+	isEventPresent(id : EventID) : boolean;
 }
 
 export type ValueDefinitionCalculationArgs = {
@@ -733,13 +748,45 @@ export type TagMap = {
 	[id : TagID] : boolean
 };
 
+export type EventID = string;
+
+/**
+ * Definition of a map-level event: an event-shaped semantic that has no
+ * natural anchor in the node graph (e.g. "the deadline passed", "the demo
+ * happened", "the regulation cleared"). Events are referenced from value
+ * definitions via `{event: <id>}` (see ValueDefinitionNodeRef) and can be
+ * toggled per-scenario via scenarios.<name>.events.<id>.present.
+ */
+export type RawEventDefinition = {
+	/** Free-form description shown in inspect/diff output and (eventually) the UI. */
+	description? : string,
+	/**
+	 * Whether this event is considered to have fired by default (in the base
+	 * scenario). When true (the default), the event is "present" —
+	 * `{event: ...}` returns 1 for it. Scenarios can flip the default
+	 * per-event via scenarios.<name>.events.<id>.present.
+	 */
+	defaultPresent? : boolean
+};
+
+export type EventDefinition = {
+	description : string,
+	defaultPresent : boolean
+};
+
+/** Per-scenario override of an event's presence. */
+export type ScenarioEventOverride = {
+	present? : boolean
+};
+
 export type ScenarioName = string;
 
 /**
  * A scenario: a named overlay that modifies the base graph. Scenarios can
  * `extends` another scenario to compose modifications. Per-node overrides
  * adjust values, add/remove/modify edges, or mark a node `removed: true`
- * to omit it from the rendered graph entirely.
+ * to omit it from the rendered graph entirely. Per-event overrides flip the
+ * event's `present` flag.
  */
 export type RawScenario = {
 	description? : string,
@@ -772,6 +819,14 @@ export type RawScenario = {
 				}
 			}
 		}
+	},
+	/**
+	 * Per-event overrides. Each key must be an event id defined in the
+	 * map-level `events` block. Setting `present: false` (or true) flips
+	 * the event's default for this scenario.
+	 */
+	events? : {
+		[id : EventID] : ScenarioEventOverride
 	}
 }
 
@@ -807,6 +862,14 @@ export type Scenario = {
 	reasoning? : string,
 	nodes: {
 		[id : NodeID] : ScenarioNode
+	},
+	/**
+	 * Resolved per-event overrides. Each id must be defined in the
+	 * map-level `events` block. `present` (if set) overrides the event's
+	 * `defaultPresent` for this scenario.
+	 */
+	events? : {
+		[id : EventID] : ScenarioEventOverride
 	}
 }
 
@@ -843,6 +906,15 @@ export type RawMapDefinition = {
 	tags?: {
 		[id : TagID]: RawTagDefinition,
 	},
+	/**
+	 * Map-level events. An event is a first-class "did this happen yet?"
+	 * concept that has no anchor in the node graph. Reference an event from
+	 * a value definition via `{event: <id>}`. Toggle an event per-scenario
+	 * via scenarios.<name>.events.<id>.present.
+	 */
+	events?: {
+		[id : EventID] : RawEventDefinition
+	},
 	properties?: {
 		[type : PropertyName]: RawPropertyDefinition
 	}
@@ -868,6 +940,9 @@ export type MapDefinition = {
 	tags: {
 		[id : TagID]: TagDefinition
 	}
+	events: {
+		[id : EventID]: EventDefinition
+	},
 	display: MapDisplay,
 	root: NodeValues,
 	nodes: {

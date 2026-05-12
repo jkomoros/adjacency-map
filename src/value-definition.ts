@@ -153,7 +153,14 @@ const valueDefinitionIsResultValue = (definition : ValueDefinition) : definition
 const valueDefinitionIsNodeRef = (definition : ValueDefinition) : definition is ValueDefinitionNodeRef => {
 	if (!definition || typeof definition != 'object') return false;
 	if (Array.isArray(definition)) return false;
-	return 'node' in definition && 'property' in definition;
+	if ('node' in definition && 'property' in definition) return true;
+	if ('event' in definition) return true;
+	return false;
+};
+
+//Discriminator for the two variants of ValueDefinitionNodeRef.
+const valueDefinitionNodeRefIsEvent = (definition : ValueDefinitionNodeRef) : definition is { event: string } => {
+	return 'event' in definition;
 };
 
 //Synthetic property name handled by ValueDefinitionNodeRef. Not a real
@@ -483,6 +490,13 @@ export const validateValueDefinition = (definition : ValueDefinition, args: Valu
 	}
 
 	if (valueDefinitionIsNodeRef(definition)) {
+		if (valueDefinitionNodeRefIsEvent(definition)) {
+			//Validate the target event exists in the map-level events block.
+			const events = args.data.events;
+			if (!events) throw new Error(definition.event + ' is referenced in a nodeRef event but no events are defined on the map');
+			if (!events[definition.event]) throw new Error(definition.event + ' is referenced in a nodeRef event but is not a defined event');
+			return;
+		}
 		//Validate the target node exists in the base graph. (Scenario-removal
 		//is a runtime concern: nodeRef returns 0 for removed nodes rather than
 		//failing validation.)
@@ -714,6 +728,11 @@ export const calculateValue = (definition : ValueDefinition, args : ValueDefinit
 		return [args.partialResult[definition.result]];
 	}
 	if (valueDefinitionIsNodeRef(definition)) {
+		if (valueDefinitionNodeRefIsEvent(definition)) {
+			if (!args.resolver) throw new Error('nodeRef event used without a resolver in this calculation context (event: ' + definition.event + ')');
+			const present = args.resolver.isEventPresent(definition.event);
+			return [present ? DEFAULT_TRUE_NUMBER : FALSE_NUMBER];
+		}
 		if (!args.resolver) throw new Error('nodeRef used without a resolver in this calculation context (node: ' + definition.node + ', property: ' + definition.property + ')');
 		const present = args.resolver.isNodePresent(definition.node);
 		if (definition.property === NODE_REF_PRESENT_PROPERTY) {

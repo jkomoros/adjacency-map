@@ -118,6 +118,65 @@ scenarios: {
 }
 ```
 
+### Events
+
+Sometimes a roadmap or strategy hinges on something that isn't a node — "did the demo happen?", "did the deadline pass?", "did the regulator approve?". These are event-shaped semantics with no natural place in the node graph. The map has a top-level `events` field for exactly that.
+
+Define an event:
+
+```ts
+events: {
+	q3_window_open: {
+		description: 'Q3 ship window is still open.',
+		defaultPresent: true   // optional; defaults to true
+	}
+}
+```
+
+Reference it from a value definition via the `{event: ...}` form of `nodeRef`:
+
+```ts
+nodes: {
+	voice_full_duplex: {
+		description: 'Conversational voice.',
+		values: {
+			// 3 + 6 if the window is still open. When the event flips to
+			// absent, voice_full_duplex.selfValue drops 9 -> 3.
+			selfValue: {
+				operator: '+',
+				a: 3,
+				b: {
+					operator: '*',
+					a: { event: 'q3_window_open' },
+					b: 6
+				}
+			}
+		}
+	}
+}
+```
+
+Flip an event in a scenario via `events.<id>.present`:
+
+```ts
+scenarios: {
+	'duplex-q4-missed': {
+		description: 'Q3 window closed before we shipped.',
+		events: { q3_window_open: { present: false } },
+		nodes: {}
+	}
+}
+```
+
+Effective presence in a scenario = scenario override's `present` (if set), else event's `defaultPresent`, else `true`. `{event: ...}` returns 1 if present, 0 otherwise. Events have no other properties — the only thing you can ask is whether they're present.
+
+When to reach for events vs. nodes:
+
+- **Use a node** if the thing carries engineering cost, has a parent/child relationship, or is something you'd visualize in the diagram.
+- **Use an event** if it's a "did this happen yet?" flag with no work attached — a deadline, a partnership signing, a regulatory clearance, a competitor's announcement.
+
+Encoding events as sentinel nodes (an earlier prototype) made them appear in the rendered diagram as fake-looking capabilities. The dedicated `events` field keeps them out of the node namespace.
+
 ### Decision notes on scenarios
 
 A scenario can carry two optional free-form strings explaining *why* the user kept or rejected it:
