@@ -105,15 +105,33 @@ export function shuffleInPlace<T>(array : T[], rnd : RandomGenerator = Math.rand
 
 const SCENARIOS_OVERLAYS_LOCAL_STORAGE_KEY = 'scenarios';
 
+const isPlainObject = (value : unknown) : value is Record<string, unknown> => {
+	return typeof value == 'object' && value !== null && !Array.isArray(value);
+};
+
+const isScenariosOverlaysShape = (value : unknown) : value is ScenariosOverlays => {
+	if (!isPlainObject(value)) return false;
+	for (const fileOverlay of Object.values(value)) {
+		if (fileOverlay === undefined) continue;
+		if (!isPlainObject(fileOverlay)) return false;
+		for (const scenario of Object.values(fileOverlay)) {
+			if (!isPlainObject(scenario)) return false;
+		}
+	}
+	return true;
+};
+
 export const fetchOverlaysFromStorage = () : ScenariosOverlays => {
 	const rawObject = window.localStorage.getItem(SCENARIOS_OVERLAYS_LOCAL_STORAGE_KEY);
 	if (!rawObject) return {};
 	try {
-		return JSON.parse(rawObject) as ScenariosOverlays;
+		const parsed = JSON.parse(rawObject) as unknown;
+		if (isScenariosOverlaysShape(parsed)) return parsed;
+		console.warn('Invalid scenario overlays in localStorage, ignoring.');
 	} catch (err) {
 		console.warn('Corrupt scenario overlays in localStorage, ignoring:', err);
-		return {};
 	}
+	return {};
 };
 
 export const storeOverlaysToStorage = (overlays : ScenariosOverlays) => {

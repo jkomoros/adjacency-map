@@ -43,6 +43,7 @@ import {
 import {
 	deepCopy,
 	deepEqual,
+	fetchOverlaysFromStorage,
 	parseURLHashArgs,
 	stringifyURLHashArgs,
 	wrapArrays
@@ -7518,6 +7519,58 @@ describe('path state', () => {
 	it('rejects invalid filenames even with a trailing slash', async () => {
 		const dispatch = () => {};
 		assert.throws(() => updateWithMainPageExtra('missing/')(dispatch), /Invalid filename: missing/);
+	});
+
+});
+
+describe('localStorage overlay robustness', () => {
+
+	const withStoredScenarios = (rawValue, fn) => {
+		const oldWindow = global.window;
+		global.window = {
+			localStorage: {
+				getItem: key => key == 'scenarios' ? rawValue : null
+			}
+		};
+		try {
+			return fn();
+		} finally {
+			if (oldWindow === undefined) {
+				delete global.window;
+			} else {
+				global.window = oldWindow;
+			}
+		}
+	};
+
+	it('ignores parsed null scenario overlays', async () => {
+		const overlays = withStoredScenarios('null', () => fetchOverlaysFromStorage());
+		assert.deepStrictEqual(overlays, {});
+	});
+
+	it('ignores parsed array scenario overlays', async () => {
+		const overlays = withStoredScenarios('[]', () => fetchOverlaysFromStorage());
+		assert.deepStrictEqual(overlays, {});
+	});
+
+	it('accepts object-shaped scenario overlays', async () => {
+		const raw = JSON.stringify({
+			default: {
+				custom: {
+					description: 'Custom',
+					nodes: {}
+				}
+			}
+		});
+		const overlays = withStoredScenarios(raw, () => fetchOverlaysFromStorage());
+		assert.deepStrictEqual(overlays, {
+			default: {
+				custom: {
+					description: 'Custom',
+					nodes: {}
+				}
+			}
+		});
 	});
 
 });
