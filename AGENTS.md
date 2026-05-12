@@ -157,6 +157,23 @@ If the dev server is running (`npm run serve`), the watcher regenerates the mani
 
 The webapp has a "Save to file" button (visible only on Chromium browsers — Chrome, Edge, Brave, Arc). When the user clicks it, the webapp uses the File System Access API to write their inline-edited scenarios to `data/<name>.edits.json`. That file is then merged into the live data at runtime (sidecar JSON takes precedence over the base TS file's scenarios). You can read the JSON to see what edits the user has saved; if they ask you to "make these edits canonical", copy the scenarios from the JSON into the corresponding `data/<name>.ts` file's `scenarios:` block, then delete the entries from the JSON.
 
+## Webapp-state sidecar
+
+While `npm run serve` is running, the webapp publishes its current view to `/tmp/adjacency-state.json`. Shape:
+
+```json
+{
+  "filename": "default",
+  "scenarioName": "increased-certainty",
+  "compareScenarioName": null,
+  "selectedLayoutID": "node:base_pipeline",
+  "hoveredLayoutID": null,
+  "updatedAt": "2026-05-12T17:00:00Z"
+}
+```
+
+If this file exists and is recent, the user has the webapp open. Read it before asking what they're looking at — you'll often be able to start a useful conversation without making them describe their state. If the file is stale (`updatedAt` more than a few minutes old) or absent, the user is either not in the webapp or hasn't loaded a file yet.
+
 ## Pointers
 
 - Canonical schema: `src/types.ts`
@@ -167,3 +184,4 @@ The webapp has a "Save to file" button (visible only on Chromium browsers — Ch
 - Inspect a scenario: `npm run inspect -- <file> [scenario]`
 - Diff two scenarios: `npm run diff -- <file> <a> <b>`
 - Rank scenarios by a property: `npm run rank -- <file> <property> [--ascending]`
+- Current webapp view: `/tmp/adjacency-state.json` (when `npm run serve` is running)
