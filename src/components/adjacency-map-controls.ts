@@ -12,6 +12,7 @@ import {
 	beginEditingScenario,
 	editingUpdateNodeValue,
 	fileSaveAvailable,
+	forkScenario,
 	modifyEditingNodeEdge,
 	removeEditingNodeEdge,
 	removeEditingNodeValue,
@@ -276,7 +277,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 				<label for='scenarios'>Scenario</label>
 				<select id='scenarios' @change=${this._handleScenarioNameChanged}>
 					${this._legalScenarioNames.map(scenarioName => html`<option .value=${scenarioName} .selected=${scenarioName == this._scenarioName}>${scenarioName || 'Default'}${this._editableScenarios[scenarioName] ? ' (*)' : ''}</option>`)}
-				</select>` : ''}
+				</select>${this._adjacencyMap ? html`<button class='small' title='Fork the current scenario into a new editable copy' @click=${this._handleForkScenarioClicked}>Fork</button>` : ''}` : ''}
 				${this._editing ? html`<button class='small' title='Create a new scenario based on the current scenario' @click=${this._handleCreateScenarioClicked}>${PLUS_ICON}</button>${this._scenarioEditable ? html`<button class='small' title='Remove this scenario' @click=${this._handleRemoveScenarioClicked}>${CANCEL_ICON}</button><button class='small' title='Change scenario name' @click=${this._handleEditScenarioNameClicked}>${EDIT_ICON}</button>` : ''}` : ''}
 				<div class='summary'>
 				${this._legalScenarioNames.length > 1 ? 
@@ -642,6 +643,19 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 
 	_handleCreateScenarioClicked() {
 		store.dispatch(beginEditingScenario());
+	}
+
+	_handleForkScenarioClicked() {
+		const currentName = this._adjacencyMap?.scenarioName || '';
+		const suggested = currentName ? `${currentName}-fork` : 'fork';
+		const newName = window.prompt('New scenario name:', suggested);
+		if (newName === null) return;
+		try {
+			store.dispatch(forkScenario(currentName, newName));
+		} catch (err) {
+			const e = err as Error;
+			window.alert(`Fork failed: ${e.message}`);
+		}
 	}
 
 	_handleRemoveScenarioClicked() {
