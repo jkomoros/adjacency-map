@@ -298,7 +298,75 @@ try {
 			else fail(`rank CLI failed (status=${r.status}, stdout-head=${r.stdout?.slice(0, 200)})`);
 		}
 
-		// ---------- Section 13: decision/reasoning rendering ----------
+		// ---------- Section 13a: state sidecar ----------
+		await page.goto(`${BASE_URL}/main/default/#s=increased-certainty`, { waitUntil: 'networkidle' });
+		await page.waitForTimeout(700);  // debounce 250ms + POST + write
+		{
+			const sidecarPath = '/tmp/adjacency-state.json';
+			if (existsSync(sidecarPath)) {
+				const raw = await fs.readFile(sidecarPath, 'utf8');
+				const snap = JSON.parse(raw);
+				if (snap.filename === 'default' && snap.scenarioName === 'increased-certainty') {
+					pass('state sidecar reflects current scenario');
+				} else {
+					fail(`state sidecar wrong: ${JSON.stringify(snap)}`);
+				}
+			} else {
+				fail('state sidecar file not created');
+			}
+		}
+
+		// ---------- Section 13b: export dialog + downloads ----------
+		// Trigger the export dialog via the showExport action.
+		await page.evaluate(() => {
+			const app = document.querySelector('my-app');
+			const main = app?.shadowRoot?.querySelector('main-view');
+			const controls = main?.shadowRoot?.querySelector('adjacency-map-controls');
+			const btn = controls?.shadowRoot?.querySelector('button[title*="Export"]');
+			btn && btn.click();
+		});
+		await page.waitForTimeout(400);
+		const dialogText = await page.evaluate(() => {
+			const app = document.querySelector('my-app');
+			const main = app?.shadowRoot?.querySelector('main-view');
+			const dialog = main?.shadowRoot?.querySelector('dialog-element');
+			return dialog?.textContent || '';
+		});
+		if (dialogText.includes('# ') && dialogText.includes('## Decision') && dialogText.includes('Considered for Q3 planning round.')) {
+			pass('export dialog renders markdown with decision');
+		} else {
+			fail(`export dialog missing expected content (head: ${dialogText.slice(0, 200)})`);
+		}
+
+		// Click Download .png and capture the download.
+		const downloadPromise = page.waitForEvent('download', { timeout: 5000 }).catch(() => null);
+		await page.evaluate(() => {
+			const app = document.querySelector('my-app');
+			const main = app?.shadowRoot?.querySelector('main-view');
+			const buttons = main?.shadowRoot?.querySelectorAll('.export-actions button');
+			const pngBtn = buttons && buttons[1]; // second button is Download .png
+			pngBtn && pngBtn.click();
+		});
+		const dl = await downloadPromise;
+		if (dl) {
+			const downloadPath = await dl.path();
+			const stat = downloadPath ? (await fs.stat(downloadPath)).size : 0;
+			if (stat > 1000) pass(`PNG download captured (${stat} bytes)`);
+			else fail(`PNG too small (${stat} bytes)`);
+		} else {
+			fail('no PNG download event');
+		}
+
+		// Close the dialog before the next section
+		await page.evaluate(() => {
+			const app = document.querySelector('my-app');
+			const main = app?.shadowRoot?.querySelector('main-view');
+			const closeBtn = main?.shadowRoot?.querySelector('dialog-element button.round');
+			closeBtn && closeBtn.click();
+		});
+		await page.waitForTimeout(200);
+
+		// ---------- Section 14: decision/reasoning rendering ----------
 		await page.goto(`${BASE_URL}/main/default/#s=increased-certainty`, { waitUntil: 'networkidle' });
 		await page.waitForTimeout(500);
 		// Shadow DOM: three levels deep (my-app -> main-view -> adjacency-map-controls).
@@ -315,7 +383,7 @@ try {
 		if (hasReasoning) pass('reasoning field renders in scenario summary');
 		else fail('reasoning field not rendered');
 
-		// ---------- Section 14: console-errors summary ----------
+		// ---------- Section 15: console-errors summary ----------
 		const newErrors = consoleErrors.filter(e => !e.includes('Unknown URL arg'));
 		if (newErrors.length === 0) pass('no unexpected console errors over full run');
 		else log(`console errors over run: ${newErrors.join(' | ')}`);
