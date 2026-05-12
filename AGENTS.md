@@ -157,6 +157,12 @@ If the dev server is running (`npm run serve`), the watcher regenerates the mani
 
 The webapp has a "Save to file" button (visible only on Chromium browsers — Chrome, Edge, Brave, Arc). When the user clicks it, the webapp uses the File System Access API to write their inline-edited scenarios to `data/<name>.edits.json`. That file is then merged into the live data at runtime (sidecar JSON takes precedence over the base TS file's scenarios). You can read the JSON to see what edits the user has saved; if they ask you to "make these edits canonical", copy the scenarios from the JSON into the corresponding `data/<name>.ts` file's `scenarios:` block, then delete the entries from the JSON.
 
+## Private maps
+
+The user may keep confidential planning data in `data/private/` — a separately-cloned **private** git repo nested inside the gitignored path. The loader picks these up automatically when present; they appear in the webapp dropdown as `private__<name>` (double-underscore is the namespace separator). If you see `data/private/` files, treat them as confidential: don't paste their contents into commits or PRs that target the public repo. The directory itself is gitignored — `git add` from the public repo will refuse to track its contents unless `-f` is used.
+
+See `docs/superpowers/notes/2026-05-12-private-maps-workflow.md` for the full workflow.
+
 ## Webapp-state sidecar
 
 While `npm run serve` is running, the webapp publishes its current view to `/tmp/adjacency-state.json`. Shape:

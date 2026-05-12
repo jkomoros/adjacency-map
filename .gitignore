@@ -20,3 +20,8 @@ data/**/*.d.ts
 data/**/*.map
 data/**/*.js
 *.GENERATED.*
+
+# Private maps live in a separately-cloned private repo at data/private/.
+# Never tracked here. See docs/superpowers/notes/2026-05-12-private-maps-workflow.md.
+data/private/
+data/.private-disabled/
