@@ -49,6 +49,12 @@ store.addReducers({
 	app
 });
 
+// Publish the current view to /__state__ so agents reading
+// /tmp/adjacency-state.json can see what the user is viewing without asking.
+// No-op when the dev-server middleware isn't running.
+import { installSidecarSubscriber } from './state-sidecar.js';
+installSidecarSubscriber(store);
+
 export type ThunkResult = ThunkAction<void, RootState, undefined, AnyAction>;
 
 export type AppThunkDispatch = ThunkDispatch<RootState, undefined, AnyAction>;
