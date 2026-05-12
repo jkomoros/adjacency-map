@@ -8,6 +8,7 @@ import {
 	UPDATE_SCALE,
 	SET_EDITING,
 	UPDATE_SCENARIO_NAME,
+	UPDATE_SEARCH_QUERY,
 	UPDATE_HOVERED_NODE_ID,
 	UPDATE_HOVERED_EDGE_ID,
 	UPDATE_SELECTED_NODE_ID,
@@ -70,7 +71,8 @@ const INITIAL_STATE : DataState = {
 	showHiddenValues: false,
 	showEdges: false,
 	renderGroups: true,
-	scenariosOverlays: {}
+	scenariosOverlays: {},
+	searchQuery: ''
 };
 
 const addScenarioToScenariosOverlay = (filename: DataFilename, currentScenarioName : ScenarioName, newScenarioName: ScenarioName, currentOverlay : ScenariosOverlays) : ScenariosOverlays => {
@@ -286,6 +288,11 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			scenarioName: action.scenarioName
+		};
+	case UPDATE_SEARCH_QUERY:
+		return {
+			...state,
+			searchQuery: action.query
 		};
 	case UPDATE_COMPARE_SCENARIO_NAME:
 		return {

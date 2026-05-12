@@ -1,6 +1,7 @@
 export const UPDATE_FILENAME = 'UPDATE_FILENAME';
 export const UPDATE_SCALE = 'UPDATE_SCALE';
 export const UPDATE_SCENARIO_NAME = 'UPDATE_SCENARIO_NAME';
+export const UPDATE_SEARCH_QUERY = 'UPDATE_SEARCH_QUERY';
 
 export const SET_EDITING = 'SET_EDITING';
 
@@ -116,6 +117,13 @@ export const updateScale = (scale : number) : ThunkAction<void, RootState, unkno
 		type: UPDATE_SCALE,
 		scale,
 	});
+};
+
+export const updateSearchQuery = (query : string) : AnyAction => {
+	return {
+		type: UPDATE_SEARCH_QUERY,
+		query
+	};
 };
 
 export const nextScenarioName = () : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {

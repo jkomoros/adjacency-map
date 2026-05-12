@@ -876,6 +876,7 @@ export type DataState = {
 	showEdges: boolean;
 	renderGroups : boolean;
 	scenariosOverlays: ScenariosOverlays;
+	searchQuery: string;
 }
 
 export type DialogKind = '' | 'error' | 'readout' | 'export' | 'help';

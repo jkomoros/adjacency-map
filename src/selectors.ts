@@ -36,6 +36,7 @@ export const selectPageExtra = (state : RootState) => state.app ? state.app.page
 export const selectHash = (state : RootState) => state.app ? state.app.hash : '';
 export const selectScale = (state : RootState) => state.data ? state.data.scale : 1.0;
 export const selectScenarioName = (state : RootState) => state.data ? state.data.scenarioName : '';
+export const selectSearchQuery = (state : RootState) => state.data ? (state.data.searchQuery || '') : '';
 export const selectCompareScenarioName = (state : RootState) => state.data ? state.data.compareScenarioName : undefined;
 export const selectEditing = (state : RootState) => state.data ? state.data.editing : false;
 export const selectHoveredLayoutID = (state : RootState) => state.data ? state.data.hoveredLayoutID : undefined;
@@ -88,6 +89,31 @@ export const selectAdjacencyMap = createSelector(
 			console.warn(err);
 		}
 		return null;
+	}
+);
+
+export const selectSearchMatches = createSelector(
+	selectAdjacencyMap,
+	selectSearchQuery,
+	(map, query) : Set<string> | null => {
+		if (!map || !query) return null;
+		const q = query.toLowerCase().trim();
+		if (!q) return null;
+		const matches = new Set<string>();
+		for (const [nodeID, node] of Object.entries(map.nodes)) {
+			if (nodeID === '') continue;
+			const idMatch = nodeID.toLowerCase().includes(q);
+			const nameMatch = (node.displayName || '').toLowerCase().includes(q);
+			let tagMatch = false;
+			const tags = (node.tags || {}) as Record<string, unknown>;
+			for (const t of Object.keys(tags)) {
+				if (t.toLowerCase().includes(q)) { tagMatch = true; break; }
+			}
+			if (idMatch || nameMatch || tagMatch) {
+				matches.add('node:' + nodeID);
+			}
+		}
+		return matches;
 	}
 );
 
