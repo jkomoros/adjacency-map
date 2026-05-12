@@ -7323,6 +7323,12 @@ describe('scenario node removal (#26)', () => {
 		assert.strictEqual(map.edges.filter(e => e.parent === 'b').length, 0, 'edges to b should be dropped');
 	});
 
+	it('does not allow direct lookup of the removed node', async () => {
+		const map = new AdjacencyMap(deepCopy(baseInput), 'omit-b');
+		assert.throws(() => map.node('b'), /ID b is removed in this scenario/);
+		assert.throws(() => map.layoutNode('node:b'), /ID b is removed in this scenario/);
+	});
+
 	it('does not affect base scenario', async () => {
 		const map = new AdjacencyMap(deepCopy(baseInput));
 		const layoutKeys = Object.keys(map.layoutNodes);

@@ -1048,6 +1048,7 @@ export class AdjacencyMap {
 			if (id != ROOT_ID && !this._data.nodes[id]) throw new Error('ID ' + id + ' does not exist in input');
 			this._nodes[id] = new AdjacencyMapNode(id, this, this._data.nodes[id]);
 		}
+		if (id != ROOT_ID && this._removedNodeIDs.has(id)) throw new Error('ID ' + id + ' is removed in this scenario');
 		return this._nodes[id];
 	}
 
