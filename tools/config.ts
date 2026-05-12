@@ -1,9 +1,23 @@
-import { readdirSync, readFileSync, writeFileSync } from 'fs';
+import { readdirSync, readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs';
 import { basename, join } from 'path';
 import { camelCaseFilename } from '../src/util.js';
 
 const DYNAMIC_TYPES_FILE = 'src/data.GENERATED.ts';
 const DATA_DIRECTORY = 'data';
+
+// Stale compiled siblings of the generated file shadow the .ts at module-load
+// time under the ts-node ESM loader (see the modeling stress-test notes). Wipe
+// them on every regenerate so any iteration on the union types is consistent.
+const STALE_SIBLINGS = ['.js', '.js.map', '.d.ts', '.d.ts.map'];
+const stripStaleGenerated = () => {
+	const base = DYNAMIC_TYPES_FILE.replace(/\.ts$/, '');
+	for (const ext of STALE_SIBLINGS) {
+		const p = base + ext;
+		if (existsSync(p)) {
+			try { unlinkSync(p); } catch { /* best-effort cleanup */ }
+		}
+	}
+};
 
 const generateConfig = () => {
 	const datafiles : string[] = [];
@@ -56,6 +70,7 @@ ${sidecarEntries}
 };
 `;
 
+	stripStaleGenerated();
 	writeFileSync(DYNAMIC_TYPES_FILE, data);
 };
 
