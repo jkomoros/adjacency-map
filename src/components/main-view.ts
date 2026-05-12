@@ -31,7 +31,8 @@ import {
 	selectDialogMessage,
 	selectCurrentScenarioOverlay,
 	selectHoveredLayoutID,
-	selectSelectedLayoutID
+	selectSelectedLayoutID,
+	selectHeadlineMetrics
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -146,6 +147,9 @@ class MainView extends connect(store)(PageViewElement) {
 		[name : ScenarioName] : ScenarioWithExtends
 	};
 
+	@state()
+	_headlineMetrics : {property: string, value: number}[] = [];
+
 	static override get styles() {
 		return [
 			SharedStyles,
@@ -219,6 +223,40 @@ class MainView extends connect(store)(PageViewElement) {
 					text-decoration: underline;
 					cursor: pointer;
 				}
+
+				.metrics-strip {
+					position: absolute;
+					top: 0;
+					right: 0;
+					z-index: 50;
+					display: flex;
+					gap: 0.5em;
+					padding: 0.5em;
+					background: rgba(255, 255, 255, 0.85);
+					border-bottom-left-radius: 8px;
+					font-size: 0.85em;
+					box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+				}
+				.metric-tile {
+					display: flex;
+					flex-direction: column;
+					align-items: flex-start;
+					padding: 0.25em 0.5em;
+					border-right: 1px solid #ddd;
+				}
+				.metric-tile:last-child {
+					border-right: none;
+				}
+				.metric-label {
+					font-size: 0.75em;
+					color: #555;
+					text-transform: uppercase;
+					letter-spacing: 0.05em;
+				}
+				.metric-value {
+					font-weight: bold;
+					font-variant-numeric: tabular-nums;
+				}
 			`
 		];
 	}
@@ -231,6 +269,15 @@ class MainView extends connect(store)(PageViewElement) {
 							<strong>Data error in <code>${this._filename}</code></strong>
 							${this._dataError}
 							<div><a @click=${() => window.location.reload()}>Reload</a></div>
+						</div>` : ''}
+					${!this._dataError && this._headlineMetrics.length > 0 ? html`
+						<div class='metrics-strip'>
+							${this._headlineMetrics.map(m => html`
+								<div class='metric-tile'>
+									<span class='metric-label'>${m.property}</span>
+									<span class='metric-value'>${m.value.toFixed(2)}</span>
+								</div>
+							`)}
 						</div>` : ''}
 					<adjacency-map-controls></adjacency-map-controls>
 					<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .hoveredEdgeID=${this._hoveredEdgeID} .hoveredLayoutID=${this._hoveredLayoutID} .selectedLayoutID=${this._selectedLayoutID} .scale=${this._scale} .editedNodes=${this._editedNodes}></adjacency-map-diagram>
@@ -256,6 +303,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._dialogKind = selectDialogKind(state);
 		this._dialogMessage = selectDialogMessage(state);
 		this._currentScenarioOverlay = selectCurrentScenarioOverlay(state);
+		this._headlineMetrics = selectHeadlineMetrics(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {
