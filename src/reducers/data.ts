@@ -146,6 +146,8 @@ const editingUpdateNodeValueInOverlay = (state : DataState, propertyName : Prope
 };
 
 const scenarioNodeIsEmpty = (node: ScenarioNode) : boolean => {
+	if (node.removed !== undefined) return false;
+	if (node.group !== undefined) return false;
 	if (Object.keys(node.values).length > 0) return false;
 	if (node.edges.add.length > 0) return false;
 	if (Object.keys(node.edges.remove).length > 0) return false;

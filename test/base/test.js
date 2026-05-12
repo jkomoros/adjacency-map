@@ -7460,6 +7460,45 @@ describe('data reducer robustness', () => {
 		assert.deepStrictEqual(next.scenariosOverlays, {other: otherOverlay});
 	});
 
+	it('preserves removed node overrides when the last edited value is removed', async () => {
+		const state = {
+			...dataReducer(undefined, {type: '@@INIT'}),
+			scenarioName: 'custom',
+			selectedLayoutID: 'node:b',
+			scenariosOverlays: {
+				default: {
+					custom: {
+						description: 'Custom',
+						nodes: {
+							b: {
+								removed: true,
+								values: {engineering: 2},
+								edges: {
+									add: [],
+									remove: {},
+									modify: {}
+								}
+							}
+						}
+					}
+				}
+			}
+		};
+		const next = dataReducer(state, {
+			type: 'REMOVE_EDITING_NODE_VALUE',
+			propertyName: 'engineering'
+		});
+		assert.deepStrictEqual(next.scenariosOverlays.default.custom.nodes.b, {
+			removed: true,
+			values: {},
+			edges: {
+				add: [],
+				remove: {},
+				modify: {}
+			}
+		});
+	});
+
 });
 
 describe('path state', () => {
