@@ -124,8 +124,9 @@ Before claiming a change is done:
 
 1. **Edit the file.**
 2. **Run `npm run validate`.** If it fails, read the error, fix, re-run.
-3. **Don't touch `src/data.GENERATED.ts`** — it's auto-generated.
-4. **If a scenario name has spaces or special characters,** quote it: `'my scenario': {...}`.
+3. **Run `npm run inspect -- <file> <scenario>`** to see the numerical effect of your change (aggregate totals, top nodes by value, diff from base). If the numbers don't match what the user asked for, fix and re-run.
+4. **Don't touch `src/data.GENERATED.ts`** — it's auto-generated.
+5. **If a scenario name has spaces or special characters,** quote it: `'my scenario': {...}`.
 
 If the dev server is running (`npm run serve`), the watcher regenerates the manifest on save and the browser reloads automatically.
 
