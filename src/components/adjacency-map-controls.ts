@@ -30,6 +30,8 @@ import {
 	updateFilename,
 	updateHoveredEdgeID,
 	updateScenarioName,
+	updateSearchQuery,
+	updateSelectedLayoutID,
 	updateShowHiddenValues,
 } from "../actions/data.js";
 
@@ -55,7 +57,8 @@ import {
 	selectEditableScenarios,
 	selectSelectedLayoutID,
 	selectRenderGroups,
-	selectCompareScenarioName
+	selectCompareScenarioName,
+	selectSearchQuery
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -193,6 +196,9 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 	@state()
 	_fileSaveAvailable = false;
 
+	@state()
+	_searchQuery : string = '';
+
 	static override get styles() {
 		return [
 			SharedStyles,
@@ -280,6 +286,11 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 					<label for='groups'>Groups</label><input id='groups' type='checkbox' .checked=${this._renderGroups} @change=${this._handleRenderGroupsChanged}></input>
 					${this._editing && Object.keys(this._scenariosOverlays).length > 0 ? html`<button class='small' title='Remove all edits across all files' @click=${this._handleResetOverlaysClicked}>${DELETE_FOREVER_ICON}</button><button class='small' title='Readout changes' @click=${this._handleShowReadoutClicked}>${CODE_ICON}</button>${this._fileSaveAvailable ? html`<button class='small' title='Save edits to file' @click=${this._handleSaveToFileClicked}>Save</button>` : ''}` : ''}
 					${this._adjacencyMap ? html`<button class='small' title='Export the current scenario as Markdown + PNG' @click=${this._handleShowExportClicked}>Export</button>` : ''}
+				</div>
+				<div>
+					<label for='nodeSearch'>Search</label>
+					<input id='nodeSearch' type='search' placeholder='Search nodes…' .value=${this._searchQuery} @input=${this._handleSearchInput} @keydown=${this._handleSearchKeyDown}></input>
+					${this._searchQuery ? html`<button class='small' title='Clear search' @click=${this._handleClearSearch}>×</button>` : ''}
 				</div>
 				${this._legalScenarioNames.length > 1 || this._editing ? html`
 				<label for='scenarios'>Scenario</label>
@@ -437,6 +448,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		this._scenariosOverlays = selectScenariosOverlays(state);
 		this._editedNodes = selectCurrentScenarioEditedNodes(state);
 		this._compareScenarioName = selectCompareScenarioName(state);
+		this._searchQuery = selectSearchQuery(state);
 	}
 
 	_handleControlsMouseMove() {
@@ -715,6 +727,51 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 		if (value === '__off__') store.dispatch(updateCompareScenarioName(undefined));
 		else if (value === '__base__') store.dispatch(updateCompareScenarioName(''));
 		else store.dispatch(updateCompareScenarioName(value));
+	}
+
+	_handleSearchInput(e : Event) {
+		if (!(e.target instanceof HTMLInputElement)) return;
+		store.dispatch(updateSearchQuery(e.target.value));
+	}
+
+	_handleSearchKeyDown(e : KeyboardEvent) {
+		if (e.key === 'Escape') {
+			store.dispatch(updateSearchQuery(''));
+			(e.target as HTMLInputElement).blur();
+			return;
+		}
+		if (e.key === 'Enter') {
+			// Jump to the first match.
+			const matches = this._selectSearchMatchesArr();
+			if (matches.length > 0) {
+				store.dispatch(updateSelectedLayoutID(matches[0]));
+			}
+		}
+	}
+
+	_handleClearSearch() {
+		store.dispatch(updateSearchQuery(''));
+	}
+
+	_selectSearchMatchesArr() : string[] {
+		if (!this._adjacencyMap || !this._searchQuery) return [];
+		const q = this._searchQuery.toLowerCase().trim();
+		if (!q) return [];
+		const result : string[] = [];
+		for (const [nodeID, node] of Object.entries(this._adjacencyMap.nodes)) {
+			if (nodeID === '') continue;
+			const idMatch = nodeID.toLowerCase().includes(q);
+			const nameMatch = (node.displayName || '').toLowerCase().includes(q);
+			let tagMatch = false;
+			const tags = (node.tags || {}) as Record<string, unknown>;
+			for (const t of Object.keys(tags)) {
+				if (t.toLowerCase().includes(q)) { tagMatch = true; break; }
+			}
+			if (idMatch || nameMatch || tagMatch) {
+				result.push('node:' + nodeID);
+			}
+		}
+		return result;
 	}
 
 }
