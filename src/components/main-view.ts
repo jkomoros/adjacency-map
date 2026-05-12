@@ -36,6 +36,7 @@ import {
 	selectCompareScenarioName,
 	selectCompareAdjacencyMap,
 	selectComparisonDelta,
+	selectSearchMatches,
 } from "../selectors.js";
 
 // We are lazy loading its reducer.
@@ -168,6 +169,9 @@ class MainView extends connect(store)(PageViewElement) {
 
 	@state()
 	_comparisonDelta : { perNode: {[id: string]: 'changed' | 'added' | 'removed'}, perProperty: {property: string, a: number, b: number, delta: number}[] } | null = null;
+
+	@state()
+	_searchMatches : Set<string> | null = null;
 
 	static override get styles() {
 		return [
@@ -361,11 +365,11 @@ class MainView extends connect(store)(PageViewElement) {
 					<adjacency-map-controls></adjacency-map-controls>
 					${compareOn ? html`
 						<div class='diagram-pair'>
-							<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .compareDelta=${this._comparisonDelta} .hoveredEdgeID=${this._hoveredEdgeID} .hoveredLayoutID=${this._hoveredLayoutID} .selectedLayoutID=${this._selectedLayoutID} .scale=${this._scale * 0.5} .editedNodes=${this._editedNodes}></adjacency-map-diagram>
-							<adjacency-map-diagram .map=${this._compareAdjacencyMap} .compareDelta=${this._comparisonDelta} .scale=${this._scale * 0.5}></adjacency-map-diagram>
+							<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .compareDelta=${this._comparisonDelta} .hoveredEdgeID=${this._hoveredEdgeID} .hoveredLayoutID=${this._hoveredLayoutID} .selectedLayoutID=${this._selectedLayoutID} .scale=${this._scale * 0.5} .editedNodes=${this._editedNodes} .searchMatches=${this._searchMatches}></adjacency-map-diagram>
+							<adjacency-map-diagram .map=${this._compareAdjacencyMap} .compareDelta=${this._comparisonDelta} .scale=${this._scale * 0.5} .searchMatches=${this._searchMatches}></adjacency-map-diagram>
 						</div>
 					` : html`
-						<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .hoveredEdgeID=${this._hoveredEdgeID} .hoveredLayoutID=${this._hoveredLayoutID} .selectedLayoutID=${this._selectedLayoutID} .scale=${this._scale} .editedNodes=${this._editedNodes}></adjacency-map-diagram>
+						<adjacency-map-diagram @node-clicked=${this._handleNodeClicked} @node-hovered=${this._handleNodeHovered} .map=${this._adjacencyMap} .hoveredEdgeID=${this._hoveredEdgeID} .hoveredLayoutID=${this._hoveredLayoutID} .selectedLayoutID=${this._selectedLayoutID} .scale=${this._scale} .editedNodes=${this._editedNodes} .searchMatches=${this._searchMatches}></adjacency-map-diagram>
 					`}
 					<dialog-element .open=${this._dialogOpen} .title=${this._dialogTitle} @dialog-should-close=${this._handleDialogShouldClose} .hideClose=${true}>${this._dialogContent}</dialog-element>
 			</div>
@@ -393,6 +397,7 @@ class MainView extends connect(store)(PageViewElement) {
 		this._compareScenarioName = selectCompareScenarioName(state);
 		this._compareAdjacencyMap = selectCompareAdjacencyMap(state);
 		this._comparisonDelta = selectComparisonDelta(state);
+		this._searchMatches = selectSearchMatches(state);
 	}
 
 	override updated(changedProps : Map<string, MainView[keyof MainView]>) {

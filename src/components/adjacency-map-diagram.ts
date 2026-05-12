@@ -58,6 +58,9 @@ class AdjacencyMapDiagram extends LitElement {
 	@property({type: Object})
 	compareDelta : {perNode: {[id: string]: 'changed' | 'added' | 'removed'}} | null = null;
 
+	@property({type: Object})
+	searchMatches : Set<string> | null = null;
+
 	static override get styles() {
 		return [
 			SharedStyles,
@@ -152,6 +155,11 @@ class AdjacencyMapDiagram extends LitElement {
 					opacity: 0.4 !important;
 				}
 
+				circle.search-miss, path.search-miss {
+					opacity: 0.15 !important;
+					transition: opacity 200ms ease;
+				}
+
 			`
 		];
 	}
@@ -242,13 +250,16 @@ class AdjacencyMapDiagram extends LitElement {
 		const dim = hasSelection && !neighbors.has(node._layoutID);
 		const nodeID = (node instanceof AdjacencyMapNode) ? node.id : undefined;
 		const diffKind = (this.compareDelta && nodeID !== undefined) ? this.compareDelta.perNode[nodeID] : undefined;
+		const hasSearch = this.searchMatches !== null && this.searchMatches.size >= 0;
+		const searchMiss = hasSearch && this.searchMatches !== null && !this.searchMatches.has(node._layoutID);
 		const classes : ClassInfo = {
 			selected,
 			edited,
 			dim,
 			'diff-changed': diffKind === 'changed',
 			'diff-added': diffKind === 'added',
-			'diff-removed': diffKind === 'removed'
+			'diff-removed': diffKind === 'removed',
+			'search-miss': searchMiss
 		};
 		const styles : StyleInfo = {
 			'--stroke-width': String(node.strokeWidth) + 'px'
