@@ -628,6 +628,8 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 
 		const scenario : Scenario = {
 			description: rawScenario.description || scenarioToExtend.description || '',
+			decision: rawScenario.decision !== undefined ? rawScenario.decision : scenarioToExtend.decision,
+			reasoning: rawScenario.reasoning !== undefined ? rawScenario.reasoning : scenarioToExtend.reasoning,
 			nodes
 		};
 		scenarios[scenarioName] = scenario;

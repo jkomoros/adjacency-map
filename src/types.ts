@@ -694,6 +694,8 @@ export type ScenarioName = string;
  */
 export type RawScenario = {
 	description? : string,
+	decision? : string,
+	reasoning? : string,
 	//A scenario may extend another by using its ID here, which means it will
 	//overlay its definition. Cycles are not allowed.
 	extends? : ScenarioName,
@@ -752,6 +754,8 @@ export type ScenarioNode = {
 
 export type Scenario = {
 	description : string,
+	decision? : string,
+	reasoning? : string,
 	nodes: {
 		[id : NodeID] : ScenarioNode
 	}

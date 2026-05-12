@@ -19,6 +19,8 @@ export const UPDATE_COMPARE_SCENARIO_NAME = 'UPDATE_COMPARE_SCENARIO_NAME';
 export const BEGIN_EDITING_SCENARIO = 'BEGIN_EDITING_SCENARIO';
 export const REMOVE_EDITING_SCENARIO = 'REMOVE_EDITING_SCENARIO';
 export const UPDATE_EDITING_SCENARIO_DESCRIPTION = 'UPDATE_EDITING_SCENARIO_DESCRIPTION';
+export const UPDATE_EDITING_SCENARIO_DECISION = 'UPDATE_EDITING_SCENARIO_DECISION';
+export const UPDATE_EDITING_SCENARIO_REASONING = 'UPDATE_EDITING_SCENARIO_REASONING';
 export const UPDATE_EDITING_SCENARIO_NAME = 'UPDATE_EDITING_SCENARIO_NAME';
 export const BEGIN_EDITING_NODE_VALUE = 'BEGIN_EDITING_NODE_VALUE';
 export const EDITING_UPDATE_NODE_VALUE = 'EDITING_UPDATE_NODE_VALUE';
@@ -263,6 +265,24 @@ export const updateEditingScenarioDescription = (description : string) : ThunkAc
 	dispatch({
 		type: UPDATE_EDITING_SCENARIO_DESCRIPTION,
 		description
+	});
+};
+
+export const updateEditingScenarioDecision = (decision : string) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
+	const state = getState();
+	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
+	dispatch({
+		type: UPDATE_EDITING_SCENARIO_DECISION,
+		decision
+	});
+};
+
+export const updateEditingScenarioReasoning = (reasoning : string) : ThunkAction<void, RootState, unknown, AnyAction> => (dispatch, getState) => {
+	const state = getState();
+	if (!selectCurrentScenarioEditable(state)) throw new Error('Scenario not editable');
+	dispatch({
+		type: UPDATE_EDITING_SCENARIO_REASONING,
+		reasoning
 	});
 };
 

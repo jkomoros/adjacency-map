@@ -22,6 +22,8 @@ import {
 	BEGIN_EDITING_SCENARIO,
 	REMOVE_EDITING_SCENARIO,
 	UPDATE_EDITING_SCENARIO_DESCRIPTION,
+	UPDATE_EDITING_SCENARIO_DECISION,
+	UPDATE_EDITING_SCENARIO_REASONING,
 	UPDATE_EDITING_SCENARIO_NAME,
 	BEGIN_EDITING_NODE_VALUE,
 	EDITING_UPDATE_NODE_VALUE,
@@ -125,6 +127,22 @@ const updateEditingScenarioDescriptionInOverlay = (state : DataState, descriptio
 	const result = items[0];
 	const scenarioOverlay = items[4];
 	scenarioOverlay.description = description;
+	return result;
+};
+
+const updateEditingScenarioDecisionInOverlay = (state : DataState, decision : string) : ScenariosOverlays => {
+	const items = prepareToEditNodeInOverlay(state);
+	const result = items[0];
+	const scenarioOverlay = items[4];
+	scenarioOverlay.decision = decision;
+	return result;
+};
+
+const updateEditingScenarioReasoningInOverlay = (state : DataState, reasoning : string) : ScenariosOverlays => {
+	const items = prepareToEditNodeInOverlay(state);
+	const result = items[0];
+	const scenarioOverlay = items[4];
+	scenarioOverlay.reasoning = reasoning;
 	return result;
 };
 
@@ -360,6 +378,16 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 		return {
 			...state,
 			scenariosOverlays: updateEditingScenarioDescriptionInOverlay(state, action.description)
+		};
+	case UPDATE_EDITING_SCENARIO_DECISION:
+		return {
+			...state,
+			scenariosOverlays: updateEditingScenarioDecisionInOverlay(state, action.decision)
+		};
+	case UPDATE_EDITING_SCENARIO_REASONING:
+		return {
+			...state,
+			scenariosOverlays: updateEditingScenarioReasoningInOverlay(state, action.reasoning)
 		};
 	case UPDATE_EDITING_SCENARIO_NAME:
 		return {
