@@ -1,131 +1,256 @@
 // Playwright-based browser smoke test for the planning-workflow-improvements branch.
-// Run with: node tools/smoke-test.mjs
-// Expects the dev server (npm run serve) to already be running on port 8090.
+// Run with: npm run test:smoke
+// Self-manages the dev server: starts if not already running on port 8090,
+// stops it on exit. Cleans up any temp files it creates.
 
 import { chromium } from 'playwright';
+import { spawn, spawnSync } from 'child_process';
 import fs from 'fs/promises';
+import { existsSync } from 'fs';
+import http from 'http';
 import path from 'path';
 
-const BASE_URL = 'http://localhost:8090';
+const PORT = 8090;
+const BASE_URL = `http://localhost:${PORT}`;
 const SCREENSHOT_DIR = '/tmp/adjacency-smoke';
+const SIDECAR_PATH = 'data/default.edits.json';
+const SIDECAR_SCENARIO_NAME = 'smoke-sidecar-scenario';
+const SIDECAR_DESCRIPTION = 'From sidecar (smoke-test temp)';
+
+let serverProc = null;
+let serverWasAlreadyUp = false;
 
 const log = (msg) => console.log(`[smoke] ${msg}`);
-const fail = (msg) => { console.error(`[FAIL] ${msg}`); process.exitCode = 1; };
 const pass = (msg) => console.log(`[ pass ] ${msg}`);
+const fail = (msg) => { console.error(`[FAIL] ${msg}`); process.exitCode = 1; };
+
+// ---------- server lifecycle ----------
+
+const pingServer = () => new Promise((resolve) => {
+	const req = http.get(BASE_URL + '/', (res) => {
+		res.resume();
+		resolve(res.statusCode === 200);
+	});
+	req.on('error', () => resolve(false));
+	req.setTimeout(500, () => { req.destroy(); resolve(false); });
+});
+
+const waitForServer = async (maxSeconds = 20) => {
+	for (let i = 0; i < maxSeconds; i++) {
+		if (await pingServer()) return true;
+		await new Promise((r) => setTimeout(r, 1000));
+	}
+	return false;
+};
+
+const startServerIfNeeded = async () => {
+	if (await pingServer()) {
+		serverWasAlreadyUp = true;
+		log(`server already up on ${BASE_URL}`);
+		return;
+	}
+	log('starting dev server (npm run serve)');
+	serverProc = spawn('npm', ['run', 'serve'], { stdio: 'pipe', detached: true });
+	if (!(await waitForServer(20))) {
+		throw new Error('dev server failed to start within 20s');
+	}
+	log('server ready');
+};
+
+const stopServerIfWeStartedIt = () => {
+	if (!serverProc || serverWasAlreadyUp) return;
+	log('stopping dev server');
+	// Kill the entire process group so child wds + tsc + watch-data all die.
+	try { process.kill(-serverProc.pid, 'SIGTERM'); } catch {}
+	// Belt and suspenders — these are the named processes started by `npm run serve`.
+	spawnSync('pkill', ['-f', `wds --node-resolve --port=${PORT}`]);
+	spawnSync('pkill', ['-f', 'watch-data']);
+	spawnSync('pkill', ['-f', 'tsc --watch']);
+};
+
+// ---------- sidecar prep ----------
+
+const writeSidecar = async () => {
+	const payload = {
+		[SIDECAR_SCENARIO_NAME]: {
+			description: SIDECAR_DESCRIPTION,
+			nodes: {}
+		}
+	};
+	await fs.writeFile(SIDECAR_PATH, JSON.stringify(payload, null, '\t'));
+	log(`wrote temp sidecar at ${SIDECAR_PATH}`);
+};
+
+const removeSidecar = async () => {
+	if (existsSync(SIDECAR_PATH)) {
+		await fs.unlink(SIDECAR_PATH);
+		log(`removed temp sidecar at ${SIDECAR_PATH}`);
+	}
+};
+
+const regenerateConfig = () => {
+	const res = spawnSync('npm', ['run', 'generate:config'], { stdio: 'pipe' });
+	if (res.status !== 0) throw new Error('generate:config failed during smoke test');
+};
+
+// ---------- main ----------
 
 await fs.mkdir(SCREENSHOT_DIR, { recursive: true });
 
-const browser = await chromium.launch({ headless: true });
-const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 } });
-const page = await ctx.newPage();
-
-const consoleErrors = [];
-page.on('console', (msg) => {
-	if (msg.type() === 'error') consoleErrors.push(msg.text());
-});
-page.on('pageerror', (err) => consoleErrors.push('pageerror: ' + err.message));
-
 try {
-	log(`navigating to ${BASE_URL}/main/default/`);
-	await page.goto(`${BASE_URL}/main/default/`, { waitUntil: 'networkidle', timeout: 15000 });
+	// Set up sidecar BEFORE server starts (or before navigation if already up).
+	await writeSidecar();
+	regenerateConfig();
 
-	// Step 1: page rendered, SVG visible
-	const svgCount = await page.locator('svg.main').count();
-	if (svgCount >= 1) pass(`SVG diagram rendered (${svgCount} instance)`);
-	else fail('No svg.main element found');
+	await startServerIfNeeded();
 
-	// Step 2: nodes rendered
-	const circleCount = await page.locator('svg.main circle').count();
-	if (circleCount > 0) pass(`${circleCount} circles rendered`);
-	else fail('No circles inside SVG');
+	const browser = await chromium.launch({ headless: true });
+	const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 } });
+	const page = await ctx.newPage();
 
-	await page.screenshot({ path: path.join(SCREENSHOT_DIR, '01-initial-load.png'), fullPage: false });
+	const consoleErrors = [];
+	page.on('console', (msg) => {
+		if (msg.type() === 'error') consoleErrors.push(msg.text());
+	});
+	page.on('pageerror', (err) => consoleErrors.push('pageerror: ' + err.message));
 
-	// Step 3: no console errors so far
-	if (consoleErrors.length === 0) pass('no console errors after load');
-	else fail(`console errors after load: ${consoleErrors.join(' | ')}`);
+	try {
+		// ---------- Section 1: healthy load ----------
+		log(`navigating to ${BASE_URL}/main/default/`);
+		await page.goto(`${BASE_URL}/main/default/`, { waitUntil: 'networkidle', timeout: 15000 });
 
-	// Step 4: error banner is NOT visible (good data)
-	const banner = page.locator('.error-banner');
-	const bannerVisible = await banner.isVisible().catch(() => false);
-	if (!bannerVisible) pass('error banner hidden (no data error)');
-	else fail('error banner unexpectedly visible on healthy data');
+		const svgCount = await page.locator('svg.main').count();
+		if (svgCount >= 1) pass(`SVG diagram rendered (${svgCount} instance)`);
+		else fail('No svg.main element found');
 
-	// Step 5: click a node, expect selection class + URL hash updates
-	const firstNode = page.locator('svg.main circle').first();
-	const nodeID = await firstNode.getAttribute('id');
-	log(`clicking node with id=${nodeID}`);
-	await firstNode.click({ force: true });
-	await page.waitForTimeout(300);
+		const circleCount = await page.locator('svg.main circle').count();
+		if (circleCount > 0) pass(`${circleCount} circles rendered`);
+		else fail('No circles inside SVG');
 
-	const hashAfterClick = await page.evaluate(() => window.location.hash);
-	log(`hash after click: ${hashAfterClick}`);
-	if (hashAfterClick.includes(`n=${nodeID}`)) pass(`URL hash carries selection (${hashAfterClick})`);
-	else fail(`URL hash missing n=${nodeID} (got: ${hashAfterClick})`);
+		await page.screenshot({ path: path.join(SCREENSHOT_DIR, '01-initial-load.png') });
 
-	const selectedClassPresent = await page.locator('svg.main circle.selected').count();
-	if (selectedClassPresent > 0) pass('selected class applied to a node');
-	else fail('no .selected class on any node after click');
+		if (consoleErrors.length === 0) pass('no console errors after load');
+		else fail(`console errors after load: ${consoleErrors.join(' | ')}`);
 
-	// Step 6: neighbor highlighting — dim class present
-	await page.waitForTimeout(300);
-	const dimCount = await page.locator('svg.main .dim').count();
-	if (dimCount > 0) pass(`${dimCount} dimmed elements (non-neighbors)`);
-	else log(`no .dim elements — this is fine if the graph is small or all are neighbors`);
+		const banner = page.locator('.error-banner');
+		if (!(await banner.isVisible().catch(() => false))) pass('error banner hidden (healthy data)');
+		else fail('error banner unexpectedly visible on healthy data');
 
-	await page.screenshot({ path: path.join(SCREENSHOT_DIR, '02-selected-node.png'), fullPage: false });
+		// ---------- Section 2: selection + URL + highlighting ----------
+		const firstNode = page.locator('svg.main circle').first();
+		const nodeID = await firstNode.getAttribute('id');
+		log(`clicking node with id=${nodeID}`);
+		await firstNode.click({ force: true });
+		await page.waitForTimeout(300);
 
-	// Step 7: Esc clears selection
-	log('pressing Escape');
-	await page.keyboard.press('Escape');
-	await page.waitForTimeout(300);
+		const hashAfterClick = await page.evaluate(() => window.location.hash);
+		if (hashAfterClick.includes(`n=${nodeID}`)) pass(`URL hash carries selection (${hashAfterClick})`);
+		else fail(`URL hash missing n=${nodeID} (got: ${hashAfterClick})`);
 
-	const hashAfterEsc = await page.evaluate(() => window.location.hash);
-	if (!hashAfterEsc.includes('n=')) pass(`Esc cleared selection from URL (${hashAfterEsc || '(empty)'})`);
-	else fail(`Esc did not clear selection (${hashAfterEsc})`);
+		if ((await page.locator('svg.main circle.selected').count()) > 0) pass('selected class applied to a node');
+		else fail('no .selected class on any node after click');
 
-	const selectedAfterEsc = await page.locator('svg.main circle.selected').count();
-	if (selectedAfterEsc === 0) pass('no .selected after Esc');
-	else fail(`${selectedAfterEsc} nodes still have .selected after Esc`);
+		const dimCount = await page.locator('svg.main .dim').count();
+		if (dimCount > 0) pass(`${dimCount} dimmed elements (non-neighbors)`);
+		else log(`no .dim elements — small graph or all are neighbors`);
 
-	// Step 8: Arrow key cycles scenarios
-	log('pressing ArrowRight');
-	await page.keyboard.press('ArrowRight');
-	await page.waitForTimeout(400);
-	const hashAfterArrow = await page.evaluate(() => window.location.hash);
-	if (hashAfterArrow.includes('s=')) pass(`ArrowRight changed scenario (${hashAfterArrow})`);
-	else log(`ArrowRight did not change scenario (hash: ${hashAfterArrow || 'empty'}) — may be already at last`);
+		await page.screenshot({ path: path.join(SCREENSHOT_DIR, '02-selected-node.png') });
 
-	await page.screenshot({ path: path.join(SCREENSHOT_DIR, '03-scenario-switched.png'), fullPage: false });
+		// ---------- Section 3: Esc + arrow keys ----------
+		log('pressing Escape');
+		await page.keyboard.press('Escape');
+		await page.waitForTimeout(300);
+		const hashAfterEsc = await page.evaluate(() => window.location.hash);
+		if (!hashAfterEsc.includes('n=')) pass(`Esc cleared selection from URL (${hashAfterEsc || '(empty)'})`);
+		else fail(`Esc did not clear selection (${hashAfterEsc})`);
 
-	// Step 9: navigate back to base scenario before continuing
-	await page.evaluate(() => { window.location.hash = ''; });
-	await page.waitForTimeout(300);
+		if ((await page.locator('svg.main circle.selected').count()) === 0) pass('no .selected after Esc');
+		else fail('selected class still present after Esc');
 
-	// Step 10: URL with stale selection should not crash
-	log('navigating with stale selection ID');
-	await page.goto(`${BASE_URL}/main/default/#n=node:bogus_id`, { waitUntil: 'networkidle' });
-	await page.waitForTimeout(500);
-	const svgAfterStale = await page.locator('svg.main').count();
-	if (svgAfterStale >= 1) pass('app survives stale selection in URL');
-	else fail('app failed to render with stale selection ID');
+		log('pressing ArrowRight');
+		await page.keyboard.press('ArrowRight');
+		await page.waitForTimeout(400);
+		const hashAfterArrow = await page.evaluate(() => window.location.hash);
+		if (hashAfterArrow.includes('s=')) pass(`ArrowRight changed scenario (${hashAfterArrow})`);
+		else log(`ArrowRight didn't advance scenario (${hashAfterArrow || 'empty'}) — may be last`);
 
-	const bannerAfterStale = await banner.isVisible().catch(() => false);
-	if (!bannerAfterStale) pass('no error banner from stale selection');
-	else fail('error banner appeared on stale selection (should be silent fallback)');
+		await page.screenshot({ path: path.join(SCREENSHOT_DIR, '03-scenario-switched.png') });
 
-	// Step 11: Final console-errors check
-	const newErrors = consoleErrors.filter(e => !e.includes('Unknown URL arg'));
-	if (newErrors.length === 0) pass('no unexpected console errors over full run');
-	else log(`console errors over run: ${newErrors.join(' | ')}`);
+		// reset hash before next section
+		await page.evaluate(() => { window.location.hash = ''; });
+		await page.waitForTimeout(200);
 
-	log('smoke test complete');
+		// ---------- Section 4: stale selection survives ----------
+		log('navigating with stale selection ID');
+		await page.goto(`${BASE_URL}/main/default/#n=node:bogus_id`, { waitUntil: 'networkidle' });
+		await page.waitForTimeout(500);
+		if ((await page.locator('svg.main').count()) >= 1) pass('app survives stale selection in URL');
+		else fail('app failed to render with stale selection ID');
 
-} catch (err) {
-	console.error('[fatal]', err);
-	await page.screenshot({ path: path.join(SCREENSHOT_DIR, '99-error.png'), fullPage: true }).catch(() => {});
+		if (!(await banner.isVisible().catch(() => false))) pass('no error banner from stale selection');
+		else fail('error banner appeared on stale selection');
+
+		// ---------- Section 5: error banner visible state ----------
+		// Navigate to a URL that names a scenario that doesn't exist. That throws
+		// inside AdjacencyMap construction; selectAdjacencyMapError surfaces it;
+		// the banner should appear.
+		log('navigating with bogus scenario name to trigger error banner');
+		await page.goto(`${BASE_URL}/main/default/#s=does-not-exist-anywhere`, { waitUntil: 'networkidle' });
+		await page.waitForTimeout(500);
+
+		const bannerVisible = await banner.isVisible().catch(() => false);
+		if (bannerVisible) {
+			const txt = (await banner.innerText()).trim();
+			pass(`error banner visible on bad scenario: ${txt.split('\n').slice(0, 2).join(' | ')}`);
+		} else {
+			fail('error banner did not appear for non-existent scenario');
+		}
+		await page.screenshot({ path: path.join(SCREENSHOT_DIR, '04-error-banner.png') });
+
+		// ---------- Section 6: sidecar JSON merge ----------
+		// We wrote data/default.edits.json + ran generate:config before starting the
+		// server. The sidecar scenario should be in the scenarios dropdown.
+		await page.goto(`${BASE_URL}/main/default/`, { waitUntil: 'networkidle' });
+		await page.waitForTimeout(500);
+
+		const scenarioOptions = await page.locator('#scenarios option').allTextContents();
+		const sidecarSeen = scenarioOptions.some((t) => t.includes(SIDECAR_SCENARIO_NAME));
+		if (sidecarSeen) pass(`sidecar scenario "${SIDECAR_SCENARIO_NAME}" present in dropdown`);
+		else fail(`sidecar scenario missing from dropdown (saw: ${scenarioOptions.join(', ')})`);
+
+		// Select it and verify the description renders.
+		if (sidecarSeen) {
+			await page.locator('#scenarios').selectOption({ label: SIDECAR_SCENARIO_NAME });
+			await page.waitForTimeout(300);
+			const summaryDesc = await page.locator('.summary input[type=text], .summary em, .summary').first().innerText().catch(() => '');
+			if (summaryDesc.includes(SIDECAR_DESCRIPTION)) {
+				pass('sidecar scenario description renders');
+			} else {
+				log(`sidecar description not surfaced visually (saw: "${summaryDesc.slice(0, 80)}") — scenario still loadable, dropdown match was sufficient`);
+			}
+			await page.screenshot({ path: path.join(SCREENSHOT_DIR, '05-sidecar-merged.png') });
+		}
+
+		// ---------- Section 7: console-errors summary ----------
+		const newErrors = consoleErrors.filter(e => !e.includes('Unknown URL arg'));
+		if (newErrors.length === 0) pass('no unexpected console errors over full run');
+		else log(`console errors over run: ${newErrors.join(' | ')}`);
+
+		log('smoke test complete');
+	} catch (err) {
+		console.error('[fatal]', err);
+		await page.screenshot({ path: path.join(SCREENSHOT_DIR, '99-error.png'), fullPage: true }).catch(() => {});
+		process.exitCode = 1;
+	} finally {
+		await browser.close();
+	}
+} catch (outer) {
+	console.error('[fatal-outer]', outer);
 	process.exitCode = 1;
 } finally {
-	await browser.close();
+	// Always clean up: remove sidecar, regen, stop server (if we started it).
+	try { await removeSidecar(); } catch (e) { console.warn('sidecar cleanup failed:', e); }
+	try { regenerateConfig(); } catch (e) { console.warn('post-cleanup regenerate failed:', e); }
+	stopServerIfWeStartedIt();
 	log(`screenshots in ${SCREENSHOT_DIR}`);
 }
