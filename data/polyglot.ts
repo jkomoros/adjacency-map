@@ -17,8 +17,13 @@ import {
  *   - certainty is overridden per-node to match the roadmap (rather than
  *     letting it cascade as a product of parent * incrementalCertainty), so
  *     that the published table matches the inspected values 1:1.
- *   - The "OR" branch in voice_full_duplex's prerequisite is encoded via a
- *     synthetic `voice_in_any` proxy node; see notes file.
+ *   - The "OR" branch in voice_full_duplex's prerequisite is encoded
+ *     declaratively via the node-level `requires.any` clause. Mutual
+ *     exclusion between voice_in_whisperx and voice_in_inhouse is declared
+ *     once via `requires.none` on voice_in_whisperx (the constraint is
+ *     symmetric, so it applies regardless of which side declared it).
+ *     The previous workaround (a synthetic `voice_in_any` proxy node plus
+ *     per-scenario `removed:true` to enforce ASR exclusion) is gone.
  *   - Cross-node conditional values (latency_cache uplift, duplex image
  *     uplift) are encoded directly in the base-graph selfValue expressions
  *     via the `nodeRef` ValueDefinition primitive.
@@ -107,6 +112,14 @@ const data : RawMapDefinition = {
 		voice_in_whisperx: {
 			description: 'Speech-to-text via WhisperX hosted pipeline.',
 			tags: ['voice', 'infra'],
+			// Mutual exclusion with the in-house ASR: the two are
+			// alternatives, never shipped together. Declared once here;
+			// applies symmetrically. In the base graph this is a soft
+			// warning (the base is a pre-decision view); in any named
+			// scenario including both is a hard error.
+			requires: {
+				none: ['voice_in_inhouse']
+			},
 			edges: [
 				{ type: 'engineering', cost: 4 }
 			],
@@ -135,28 +148,6 @@ const data : RawMapDefinition = {
 			}
 		},
 
-		// Synthetic OR-gate node: see notes file. This node exists ONLY so that
-		// voice_full_duplex can depend on "either whisperx or inhouse". It
-		// claims both ASR nodes as parents; in scenarios where one ASR is cut,
-		// the corresponding parent edge is dropped (silently, per schema) but
-		// the OR-gate node itself survives as long as at least one ASR is
-		// still in the graph.
-		voice_in_any: {
-			description: 'Synthetic OR-gate: voice-input is available iff at least one ASR (WhisperX or in-house) ships. Cost 0; exists to express disjunction the schema cannot encode natively.',
-			tags: ['voice'],
-			edges: [
-				{ type: 'engineering', parent: 'voice_in_whisperx', cost: 0 },
-				{ type: 'engineering', parent: 'voice_in_inhouse', cost: 0 }
-			],
-			values: {
-				selfValue: 0,
-				// Pin certainty to 1.0 so the OR-gate doesn't drag down the
-				// effective certainty of its dependents; the certainty of the
-				// real ASR node will propagate via the engineering chain.
-				certainty: 1.0
-			}
-		},
-
 		// -------- Voice output / duplex --------
 		voice_out_tts: {
 			description: 'Streaming TTS with 3 voices; sub-400ms first-token.',
@@ -172,11 +163,16 @@ const data : RawMapDefinition = {
 		voice_full_duplex: {
 			description: 'Barge-in, interruption handling, true conversational. Needs voice_out_tts AND (voice_in_whisperx OR voice_in_inhouse).',
 			tags: ['voice'],
+			// Declarative prerequisite. The TTS dependency is also expressed
+			// as a cost-bearing edge below; declaring it in `requires.all`
+			// would be redundant. The OR-of-ASRs has no cost-bearing edge,
+			// so it lives only here. See AGENTS.md "Constraints (`requires`)".
+			requires: {
+				any: [['voice_in_whisperx', 'voice_in_inhouse']]
+			},
 			edges: [
 				// Primary edge (carries the cost) hangs off TTS.
-				{ type: 'engineering', parent: 'voice_out_tts', cost: 6 },
-				// Disjunction expressed via synthetic OR-gate node.
-				{ type: 'engineering', parent: 'voice_in_any', cost: 0 }
+				{ type: 'engineering', parent: 'voice_out_tts', cost: 6 }
 			],
 			values: {
 				// Previously the base was a flat `selfValue: 9` with two
@@ -348,7 +344,6 @@ const data : RawMapDefinition = {
 			nodes: {
 				voice_in_whisperx: { removed: true },
 				voice_in_inhouse: { removed: true },
-				voice_in_any: { removed: true },
 				voice_out_tts: { removed: true },
 				voice_full_duplex: { removed: true },
 				agent_framework_v1: {
@@ -368,8 +363,13 @@ const data : RawMapDefinition = {
 		'multimodal-core': {
 			description: 'Voice + image; defer all agentic work.',
 			decision: 'Front-runner for next-quarter roadmap.',
-			reasoning: 'Doubles down on the two highest-certainty modalities (voice + image) while parking the lower-certainty agent stack.',
+			reasoning: 'Doubles down on the two highest-certainty modalities (voice + image) while parking the lower-certainty agent stack. Picks WhisperX as the ASR (mutually exclusive with in-house).',
 			nodes: {
+				// Pick WhisperX as the default ASR (higher certainty, lower
+				// cost). The mutual-exclusion constraint on
+				// voice_in_whisperx.requires.none means scenarios MUST pick
+				// exactly one ASR.
+				voice_in_inhouse: { removed: true },
 				agent_framework_v1: { removed: true },
 				agent_browser: { removed: true },
 				code_interpreter: { removed: true },
@@ -427,8 +427,11 @@ const data : RawMapDefinition = {
 		'voice-only-wedge': {
 			description: 'Voice is the only modality. Everything else is cut.',
 			decision: 'Niche-but-defensible wedge play.',
-			reasoning: 'Bet the whole quarter on conversational voice. Cuts image, code, and agents.',
+			reasoning: 'Bet the whole quarter on conversational voice. Cuts image, code, and agents. Keeps WhisperX as the ASR (mutually exclusive with the in-house ASR via voice_in_whisperx.requires.none).',
 			nodes: {
+				// Pick the cheaper, higher-certainty ASR; in-house is excluded
+				// by mutual exclusion (declared on voice_in_whisperx).
+				voice_in_inhouse: { removed: true },
 				image_understanding: { removed: true },
 				image_generation: { removed: true },
 				partner_bfl_deal: { removed: true },
@@ -468,7 +471,6 @@ const data : RawMapDefinition = {
 				voice_in_whisperx: { removed: true },
 				voice_out_tts: { removed: true },
 				voice_full_duplex: { removed: true },
-				voice_in_any: { removed: true },
 				image_understanding: { removed: true },
 				image_generation: { removed: true },
 				partner_bfl_deal: { removed: true },
@@ -513,7 +515,12 @@ const data : RawMapDefinition = {
 			events: {
 				q3_window_open: { present: false }
 			},
-			nodes: {}
+			nodes: {
+				// Pick WhisperX as the default ASR (cheap, higher certainty).
+				// The mutual-exclusion constraint on voice_in_whisperx.requires.none
+				// means every named scenario must pick exactly one ASR.
+				voice_in_inhouse: { removed: true }
+			}
 		},
 
 		// Uncertainty branch: agent_framework_v1 might ship at 60% value, 1.5x cost.
@@ -522,6 +529,9 @@ const data : RawMapDefinition = {
 			decision: 'Risk-side comparator for the agent bet.',
 			reasoning: 'Schema certainty is a scalar; this scenario materializes the downside outcome explicitly.',
 			nodes: {
+				// Pick WhisperX as the default ASR. Required to satisfy the
+				// mutual-exclusion constraint declared on voice_in_whisperx.
+				voice_in_inhouse: { removed: true },
 				agent_framework_v1: {
 					values: {
 						selfValue: 5.4
@@ -540,14 +550,19 @@ const data : RawMapDefinition = {
 
 		// Carry-over: if defensive-moats built voice_in_inhouse, switching to
 		// multimodal-core saves 2 weeks on voice integration. Encoded as an
-		// extension of multimodal-core that just reduces voice_full_duplex's
-		// engineering cost by 2.
+		// extension of multimodal-core that flips the ASR choice (in-house
+		// already built) and shaves 2pw off voice_full_duplex's TTS edge.
 		'multimodal-core-after-moats': {
 			description: 'Workaround: multimodal-core, but assuming defensive-moats already shipped voice_in_inhouse (saves 2pw on voice integration).',
 			extends: 'multimodal-core',
 			decision: 'Path-dependent transition scenario.',
-			reasoning: 'Encodes the "scenario carry-over" semantic by extending the target scenario and shaving the cost off the integration node.',
+			reasoning: 'Encodes the "scenario carry-over" semantic by extending multimodal-core, swapping the ASR choice (in-house already paid for), and shaving cost off the integration node.',
 			nodes: {
+				// In-house was already built by defensive-moats; flip the ASR
+				// choice. (Mutual exclusion still satisfied — exactly one ASR
+				// is present.)
+				voice_in_whisperx: { removed: true },
+				voice_in_inhouse: { removed: false },
 				voice_full_duplex: {
 					edges: {
 						modify: {
