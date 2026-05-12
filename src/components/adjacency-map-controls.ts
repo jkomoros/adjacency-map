@@ -118,7 +118,7 @@ import {
 	edgeIdentifierEquivalent,
 	edgeIdentifierFromEdge
 } from '../util.js';
-import { showReadout } from '../actions/dialog.js';
+import { showReadout, showExport } from '../actions/dialog.js';
 
 
 @customElement('adjacency-map-controls')
@@ -279,6 +279,7 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 					<label for='editing'>Editing</label><input id='editing' type='checkbox' .checked=${this._editing} @change=${this._handleEditingChanged}></input>
 					<label for='groups'>Groups</label><input id='groups' type='checkbox' .checked=${this._renderGroups} @change=${this._handleRenderGroupsChanged}></input>
 					${this._editing && Object.keys(this._scenariosOverlays).length > 0 ? html`<button class='small' title='Remove all edits across all files' @click=${this._handleResetOverlaysClicked}>${DELETE_FOREVER_ICON}</button><button class='small' title='Readout changes' @click=${this._handleShowReadoutClicked}>${CODE_ICON}</button>${this._fileSaveAvailable ? html`<button class='small' title='Save edits to file' @click=${this._handleSaveToFileClicked}>Save</button>` : ''}` : ''}
+					${this._adjacencyMap ? html`<button class='small' title='Export the current scenario as Markdown + PNG' @click=${this._handleShowExportClicked}>Export</button>` : ''}
 				</div>
 				${this._legalScenarioNames.length > 1 || this._editing ? html`
 				<label for='scenarios'>Scenario</label>
@@ -492,6 +493,10 @@ class AdjacencyMapControls extends connect(store)(LitElement) {
 
 	_handleShowReadoutClicked() {
 		store.dispatch(showReadout());
+	}
+
+	_handleShowExportClicked() {
+		store.dispatch(showExport());
 	}
 
 	async _handleSaveToFileClicked() {

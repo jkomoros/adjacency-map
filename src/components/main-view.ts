@@ -72,6 +72,12 @@ import {
 } from '../adjacency-map.js';
 
 import {
+	generateMarkdownReport,
+	exportSVGToPNG,
+	downloadBlob
+} from '../export.js';
+
+import {
 	SVG_HEIGHT,
 	SVG_WIDTH
 } from '../constants.js';
@@ -308,6 +314,16 @@ class MainView extends connect(store)(PageViewElement) {
 					flex: 1 1 0;
 					min-width: 0;
 				}
+				.export-actions {
+					margin-top: 0.75em;
+					display: flex;
+					gap: 0.5em;
+					justify-content: flex-end;
+				}
+				.export-actions button {
+					padding: 0.4em 0.9em;
+					cursor: pointer;
+				}
 			`
 		];
 	}
@@ -475,6 +491,8 @@ class MainView extends connect(store)(PageViewElement) {
 		switch(this._dialogKind){
 		case 'readout':
 			return this._withButtons(this._dialogContentReadout);
+		case 'export':
+			return this._withButtons(this._dialogContentExport);
 		case 'error':
 			return this._withButtons(html`${this._dialogMessage}`);
 		case '':
@@ -482,6 +500,58 @@ class MainView extends connect(store)(PageViewElement) {
 		}
 
 		assertUnreachable(this._dialogKind);
+	}
+
+	get _dialogContentExport() : TemplateResult {
+		if (!this._adjacencyMap) return html`<em>No map loaded.</em>`;
+		const baseMap = this._adjacencyMap.scenarioName
+			? this._buildBaseMapForExport()
+			: null;
+		const markdown = generateMarkdownReport({
+			filename: this._filename || '',
+			scenarioName: this._adjacencyMap.scenarioName || '',
+			map: this._adjacencyMap,
+			baseMap,
+			headlineMetrics: this._headlineMetrics
+		});
+		return html`<div class='instructions'><em>Markdown report below is auto-selected — copy or download below.</em></div>
+<pre class='main'>${markdown}</pre>
+<div class='export-actions'>
+	<button @click=${() => this._handleDownloadMarkdown(markdown)}>Download .md</button>
+	<button @click=${this._handleDownloadPNG}>Download .png</button>
+</div>`;
+	}
+
+	_buildBaseMapForExport() : AdjacencyMap | null {
+		try {
+			const data = this._adjacencyMap?.data;
+			if (!data) return null;
+			return new AdjacencyMap(data, '');
+		} catch {
+			return null;
+		}
+	}
+
+	_handleDownloadMarkdown(markdown : string) {
+		const blob = new Blob([markdown], { type: 'text/markdown' });
+		const name = `${this._filename || 'map'}__${this._adjacencyMap?.scenarioName || 'base'}.md`;
+		downloadBlob(blob, name);
+	}
+
+	async _handleDownloadPNG() {
+		const diagram = this.shadowRoot?.querySelector('adjacency-map-diagram');
+		const svg = diagram?.shadowRoot?.querySelector('svg.main') as SVGSVGElement | null;
+		if (!svg) {
+			console.warn('No SVG found to export');
+			return;
+		}
+		try {
+			const blob = await exportSVGToPNG(svg, 2);
+			const name = `${this._filename || 'map'}__${this._adjacencyMap?.scenarioName || 'base'}.png`;
+			downloadBlob(blob, name);
+		} catch (err) {
+			console.warn('PNG export failed:', err);
+		}
 	}
 
 	get _dialogContentReadout() : TemplateResult {
@@ -504,6 +574,8 @@ class MainView extends connect(store)(PageViewElement) {
 		switch(this._dialogKind){
 		case 'readout':
 			return 'Changes';
+		case 'export':
+			return 'Export';
 		case 'error':
 		case '':
 			return 'Error';
@@ -516,11 +588,26 @@ class MainView extends connect(store)(PageViewElement) {
 		switch (this._dialogKind) {
 		case 'readout':
 			return this._dialogOpenedReadout();
+		case 'export':
+			return this._dialogOpenedExport();
 		case 'error':
 		case '':
 			return;
 		}
 		assertUnreachable(this._dialogKind);
+	}
+
+	_dialogOpenedExport() : void {
+		const root = this.shadowRoot;
+		if (!root) return;
+		const pre = root.querySelector('pre.main');
+		if (!pre) return;
+		const range = document.createRange();
+		const selection = window.getSelection();
+		if (!selection) return;
+		selection.removeAllRanges();
+		range.selectNodeContents(pre);
+		selection.addRange(range);
 	}
 
 	_dialogOpenedReadout() : void {

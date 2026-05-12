@@ -17,6 +17,10 @@ export const showReadout = () : AnyAction => {
 	return openDialog('readout');
 };
 
+export const showExport = () : AnyAction => {
+	return openDialog('export');
+};
+
 const openDialog = (kind : DialogKind = '', message = '') : AnyAction => {
 	return {
 		type: OPEN_DIALOG,
