@@ -658,6 +658,16 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 		if (effectiveDecision !== undefined) scenario.decision = effectiveDecision;
 		const effectiveReasoning = rawScenario.reasoning !== undefined ? rawScenario.reasoning : scenarioToExtend.reasoning;
 		if (effectiveReasoning !== undefined) scenario.reasoning = effectiveReasoning;
+		const effectiveProbability = rawScenario.probability !== undefined ? rawScenario.probability : scenarioToExtend.probability;
+		if (effectiveProbability !== undefined) scenario.probability = effectiveProbability;
+		//If branchOf was explicitly set in the raw scenario, use it. Otherwise
+		//inherit from the extended scenario. Note: if `probability` is set but
+		//`branchOf` is not (anywhere in the chain), it implicitly means
+		//"branch off the base" — we record `''` so downstream consumers
+		//don't have to special-case the undefined-but-probability-set form.
+		const effectiveBranchOf = rawScenario.branchOf !== undefined ? rawScenario.branchOf : scenarioToExtend.branchOf;
+		if (effectiveBranchOf !== undefined) scenario.branchOf = effectiveBranchOf;
+		else if (scenario.probability !== undefined) scenario.branchOf = '';
 		scenarios[scenarioName] = scenario;
 	}
 	//Put the scenarios back into original sorted (non topological) order
@@ -973,6 +983,43 @@ const validateData = (data : MapDefinition) : void => {
 				}
 			}
 		}
+		if (scenario.probability !== undefined) {
+			if (typeof scenario.probability !== 'number' || Number.isNaN(scenario.probability)) {
+				throw new Error('Scenario ' + scenarioName + ' has a non-numeric probability: ' + JSON.stringify(scenario.probability));
+			}
+			if (scenario.probability < 0 || scenario.probability > 1) {
+				throw new Error('Scenario ' + scenarioName + ' has probability out of range [0,1]: ' + scenario.probability);
+			}
+		}
+		if (scenario.branchOf !== undefined) {
+			//Empty string is the base scenario, which is always implicitly
+			//present; anything else must reference a defined scenario.
+			if (scenario.branchOf !== DEFAULT_SCENARIO_NAME && !data.scenarios[scenario.branchOf]) {
+				throw new Error('Scenario ' + scenarioName + ' has branchOf=' + JSON.stringify(scenario.branchOf) + ' but no such scenario exists');
+			}
+			if (scenario.branchOf === scenarioName) {
+				throw new Error('Scenario ' + scenarioName + ' has branchOf pointing to itself');
+			}
+		}
+	}
+
+	//Validate that the probabilities within a branch group sum to <= 1.0
+	//(with a small float-drift epsilon). The remainder (1 - sum) is the
+	//implicit "parent realized" weight, so a sum > 1 is unsatisfiable.
+	const branchSums : {[parent : ScenarioName] : {sum : number, members : ScenarioName[]}} = {};
+	for (const [scenarioName, scenario] of Object.entries(data.scenarios)) {
+		if (scenario.branchOf === undefined) continue;
+		if (scenario.probability === undefined) continue;
+		const parent = scenario.branchOf;
+		if (!branchSums[parent]) branchSums[parent] = {sum: 0, members: []};
+		branchSums[parent].sum += scenario.probability;
+		branchSums[parent].members.push(scenarioName);
+	}
+	const PROBABILITY_SUM_EPSILON = 1e-9;
+	for (const [parent, info] of Object.entries(branchSums)) {
+		if (info.sum > 1 + PROBABILITY_SUM_EPSILON) {
+			throw new Error('Branch-group probabilities sum > 1 for parent ' + JSON.stringify(parent || '(base)') + ' (sum=' + info.sum.toFixed(4) + ', members=[' + info.members.join(', ') + '])');
+		}
 	}
 
 	//Validate map-level events block.
@@ -1246,6 +1293,98 @@ export class AdjacencyMap {
 	resultDescription(includeHidden = false) : string {
 		const filter = includeHidden ? () => true : (entry : [PropertyName, number] ) => !this.data.properties[entry[0]].hide;
 		return Object.entries(this.result).filter(filter).map(entry => entry[0] + ': ' + entry[1]).join('\n');
+	}
+
+	/**
+	 * The names of all scenarios that are siblings in the same branch group
+	 * as the given parent scenario (i.e. all scenarios whose `branchOf`
+	 * field equals `parentName`). Returns an empty array if no scenarios
+	 * branch off the given parent. The parent itself is NOT included.
+	 *
+	 * `parentName` may be the empty string to find branches off the base
+	 * scenario.
+	 */
+	branchSiblings(parentName : ScenarioName) : ScenarioName[] {
+		const result : ScenarioName[] = [];
+		for (const [name, scenario] of Object.entries(this._data.scenarios)) {
+			if (scenario.branchOf === parentName) result.push(name);
+		}
+		return result;
+	}
+
+	/**
+	 * Returns the parent scenario name for the branch group that the given
+	 * scenario participates in, or undefined if the scenario is neither a
+	 * branch nor a parent that has branches off of it.
+	 *
+	 * - If `name` has a `branchOf`, returns that parent.
+	 * - Else if other scenarios reference `name` via `branchOf`, returns
+	 *   `name` (so the parent is a member of its own group).
+	 * - Else returns undefined.
+	 */
+	branchGroupParent(name : ScenarioName) : ScenarioName | undefined {
+		const scenario = this._data.scenarios[name];
+		if (scenario && scenario.branchOf !== undefined) return scenario.branchOf;
+		//If this is a parent that has branches off of it, return self.
+		if (this.branchSiblings(name).length > 0) return name;
+		return undefined;
+	}
+
+	/**
+	 * For each property of `result`, returns the probability-weighted
+	 * expected value across the branch group whose parent is `parentName`.
+	 *
+	 *   E[property] = sum(p_i * AdjacencyMap(branch_i).result[property])
+	 *               + (1 - sum(p_i)) * AdjacencyMap(parentName).result[property]
+	 *
+	 * The remainder `(1 - sum(p_i))` is the implicit "no branch fired" weight,
+	 * and uses the parent scenario's values. If no scenarios branch off
+	 * `parentName`, the result is identical to `AdjacencyMap(parentName).result`.
+	 *
+	 * `parentName` may be the empty string to compute expected values
+	 * across branches that share the base scenario as parent.
+	 */
+	expectedValueAcrossBranches(parentName : ScenarioName) : NodeValues {
+		const siblings = this.branchSiblings(parentName);
+		//Always include the parent's contribution: it owns the remainder
+		//weight (1 - sum(p_i)) up to a full 1.0 if there are no siblings.
+		const parentMap = new AdjacencyMap(this._data, parentName, this._disableGroups);
+		const parentResult = parentMap.result;
+		let probabilitySum = 0;
+		const accum : NodeValues = Object.fromEntries(Object.keys(parentResult).map(k => [k, 0]));
+		for (const siblingName of siblings) {
+			const sibling = this._data.scenarios[siblingName];
+			const p = sibling.probability === undefined ? 0 : sibling.probability;
+			probabilitySum += p;
+			if (p === 0) continue;
+			const siblingMap = new AdjacencyMap(this._data, siblingName, this._disableGroups);
+			const siblingResult = siblingMap.result;
+			for (const key of Object.keys(accum)) {
+				const v = siblingResult[key];
+				if (typeof v === 'number') accum[key] += p * v;
+			}
+		}
+		const remainder = Math.max(0, 1 - probabilitySum);
+		for (const key of Object.keys(accum)) {
+			const v = parentResult[key];
+			if (typeof v === 'number') accum[key] += remainder * v;
+		}
+		return accum;
+	}
+
+	/**
+	 * The total weight assigned to branches off `parentName`, i.e.
+	 * `sum(p_i)` across siblings. The implicit "parent realized" weight
+	 * is `1 - branchProbabilitySum(parentName)`. Returns 0 when there
+	 * are no branches off `parentName`.
+	 */
+	branchProbabilitySum(parentName : ScenarioName) : number {
+		let total = 0;
+		for (const siblingName of this.branchSiblings(parentName)) {
+			const sibling = this._data.scenarios[siblingName];
+			if (sibling.probability !== undefined) total += sibling.probability;
+		}
+		return total;
 	}
 
 	//An opportunity to throw out any caches that are now invalidated

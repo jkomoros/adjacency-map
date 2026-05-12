@@ -822,6 +822,26 @@ export type RawScenario = {
 	description? : string,
 	decision? : string,
 	reasoning? : string,
+	/**
+	 * Probability (0..1) that this branch realizes. Used together with
+	 * `branchOf` to model uncertain outcomes (e.g. "the agent framework
+	 * ships at 60% value and 1.5x cost with 60% probability"). Optional;
+	 * absent => 1.0 (deterministic scenario).
+	 *
+	 * See AGENTS.md "Probabilistic scenario branches".
+	 */
+	probability? : number,
+	/**
+	 * Name of another scenario this is a probabilistic alternative to.
+	 * Sibling branches share the same `branchOf` value. The remaining
+	 * `1 - sum(probabilities)` is the implicit "no branch fired" case
+	 * which uses the parent scenario's values. The empty string `''`
+	 * refers to the base scenario as parent (the common case).
+	 *
+	 * If `probability` is set but `branchOf` is omitted, `branchOf` is
+	 * implicitly `''` (a branch off the base scenario).
+	 */
+	branchOf? : ScenarioName,
 	//A scenario may extend another by using its ID here, which means it will
 	//overlay its definition. Cycles are not allowed.
 	extends? : ScenarioName,
@@ -890,6 +910,16 @@ export type Scenario = {
 	description : string,
 	decision? : string,
 	reasoning? : string,
+	/**
+	 * Resolved probability (0..1) that this branch realizes. Absent means
+	 * deterministic (effective probability 1.0). See RawScenario.probability.
+	 */
+	probability? : number,
+	/**
+	 * Resolved parent scenario for this branch. The empty string means
+	 * "branch off the base scenario". See RawScenario.branchOf.
+	 */
+	branchOf? : ScenarioName,
 	nodes: {
 		[id : NodeID] : ScenarioNode
 	},

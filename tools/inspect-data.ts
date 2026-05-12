@@ -122,6 +122,39 @@ const main = async () => {
 	}
 	out.push('');
 
+	// Probabilistic branch-group context. If this scenario participates in
+	// a branch group (either as a branch via `branchOf`, or as a parent that
+	// has siblings branching off of it), show the probability-weighted
+	// expected values across the group plus the per-branch list.
+	const scenarioObj = (map.scenario || {}) as any;
+	const parentName : string | undefined = (map as any).branchGroupParent(scenarioArg);
+	if (parentName !== undefined) {
+		const siblings : string[] = (map as any).branchSiblings(parentName);
+		const pSum : number = (map as any).branchProbabilitySum(parentName);
+		const pRemaining = Math.max(0, 1 - pSum);
+		out.push(`Branch group (parent: ${parentName || '(base)'}, p_remaining = ${pRemaining.toFixed(2)}):`);
+		// Self-contextualization: if this scenario IS a branch, surface its own probability.
+		if (scenarioObj.branchOf !== undefined && scenarioObj.probability !== undefined) {
+			out.push(`  this branch: probability=${(scenarioObj.probability as number).toFixed(2)}`);
+		}
+		if (siblings.length > 0) {
+			out.push(`  Siblings (${siblings.length}):`);
+			for (const sib of siblings) {
+				const sibScenario = (map.data.scenarios as any)[sib] || {};
+				const p = sibScenario.probability;
+				const tag = sib === scenarioArg ? ' <- this' : '';
+				out.push(`    ${sib.padEnd(36)} p=${typeof p === 'number' ? p.toFixed(2) : '?'}${tag}`);
+			}
+		}
+		const expected = (map as any).expectedValueAcrossBranches(parentName) as Record<string, number>;
+		out.push(`  Expected values (across ${siblings.length} branch${siblings.length === 1 ? '' : 'es'} + ${pRemaining.toFixed(2)} weight on parent):`);
+		for (const [k, v] of Object.entries(expected)) {
+			const num = typeof v === 'number' ? v.toFixed(2) : String(v);
+			out.push(`    ${k.padEnd(16)} ${num}`);
+		}
+		out.push('');
+	}
+
 	// Top 5 nodes by 'value' (or whatever property looks like a leaderboard candidate).
 	const candidateMetric = 'value' in result ? 'value' : Object.keys(result)[0];
 	if (candidateMetric) {

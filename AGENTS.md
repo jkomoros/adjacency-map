@@ -244,6 +244,59 @@ voice_in_whisperx: {
 
 Scenarios that explicitly want one of two mutually-exclusive nodes can still `removed:true` the other one — keeping the intent explicit at the scenario level is the recommended pattern. The constraint just means scenarios *can't accidentally* include both.
 
+### Probabilistic scenario branches
+
+Some outcomes are inherently uncertain: a capability ships, but at 60% of its planned value with 60% probability. Modeling that with a freestanding "workaround" scenario forces the reader to cross-reference it mentally with the base — the relationship lives in prose, not in the data.
+
+Two optional fields on a scenario express the relationship directly:
+
+- **`probability`** (`0..1`) — the probability that this branch realizes.
+- **`branchOf`** — the name of the parent scenario this is a probabilistic alternative to. `''` (empty string) means "branch off the base scenario", the common case.
+
+Sibling branches share the same `branchOf` value. The probabilities within a branch group must sum to `<= 1.0`; the remaining `1 - sum(p_i)` is the implicit "no branch fired" weight, applied to the parent's values.
+
+```ts
+scenarios: {
+	'agent-framework-disappoints': {
+		description: 'agent_framework_v1 ships at 60% value and 1.5x cost.',
+		probability: 0.6,
+		branchOf: '',                 // 60% chance this branch fires; 40% the base.
+		nodes: {
+			agent_framework_v1: {
+				values: { selfValue: 5.4 },
+				edges: { modify: { 'engineering+': { type: 'engineering', cost: 12 } } }
+			}
+		}
+	}
+}
+```
+
+#### Expected values
+
+`npm run inspect -- <file> <scenario>` adds a "Branch group" section when the inspected scenario participates in a branch group (either as a branch or as a parent). It lists each sibling with its probability and prints the probability-weighted expected value of each root aggregate across the group:
+
+```
+Branch group (parent: (base), p_remaining = 0.40):
+  Siblings (1):
+    agent-framework-disappoints  p=0.60  <- this
+  Expected values (across 1 branch + 0.40 weight on parent):
+    engineering      ...
+    value            ...
+    expectedValue    ...
+```
+
+`npm run rank -- <file> <property>` automatically substitutes the expected-value-across-branches for any scenario that has branches off of it. The freestanding branch scenarios are folded into their parent's row (and listed at the bottom of the output) so the same outcome isn't double-counted.
+
+#### Implicit `branchOf: ''`
+
+Setting `probability` without `branchOf` is treated as `branchOf: ''` (a branch off the base scenario). This keeps the common case ergonomic: most uncertainty branches are alternatives to the base.
+
+#### When to reach for it
+
+- A scenario where the *only* difference from the base is "this might not work out" — model it as a branch with a probability rather than as a parallel strategy.
+- A range-of-outcomes (best / expected / worst) can be three branches off the same parent with probabilities like `0.1 / 0.8 / 0.1`.
+- Don't use it for "strategy A vs strategy B" — those are alternatives the planner picks between, not probability-weighted realizations.
+
 ### Decision notes on scenarios
 
 A scenario can carry two optional free-form strings explaining *why* the user kept or rejected it:

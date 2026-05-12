@@ -7466,6 +7466,178 @@ describe('requires clause', () => {
 
 });
 
+describe('scenario probability + branchOf', () => {
+
+	const baseInput = {
+		properties: {
+			engineering: { value: 1 }
+		},
+		root: { engineering: 1.0 },
+		nodes: {
+			a: { description: 'a', edges: [{ type: 'engineering', cost: 10 }] }
+		}
+	};
+
+	it('rejects probability outside [0,1]', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'too-high': { description: 'p>1', probability: 1.5, nodes: {} }
+		};
+		assert.throws(() => new AdjacencyMap(input), /probability out of range/);
+	});
+
+	it('rejects negative probability', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'neg': { description: 'p<0', probability: -0.1, nodes: {} }
+		};
+		assert.throws(() => new AdjacencyMap(input), /probability out of range/);
+	});
+
+	it('rejects branchOf pointing to a non-existent scenario', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'b': { description: 'b', branchOf: 'no-such', nodes: {} }
+		};
+		assert.throws(() => new AdjacencyMap(input), /branchOf=/);
+	});
+
+	it('rejects branchOf pointing to itself', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'self': { description: 'self', branchOf: 'self', nodes: {} }
+		};
+		assert.throws(() => new AdjacencyMap(input), /branchOf pointing to itself/);
+	});
+
+	it('rejects when sibling probabilities sum to more than 1', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'a': { description: 'a', probability: 0.7, branchOf: '', nodes: {} },
+			'b': { description: 'b', probability: 0.5, branchOf: '', nodes: {} }
+		};
+		assert.throws(() => new AdjacencyMap(input), /probabilities sum > 1/);
+	});
+
+	it('accepts a probability without branchOf (implicit branch off base)', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'b': { description: 'b', probability: 0.5, nodes: {} }
+		};
+		const map = new AdjacencyMap(input);
+		assert.strictEqual(map.data.scenarios['b'].branchOf, '');
+	});
+
+	it('lists branch siblings off a parent', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'b1': { description: 'b1', probability: 0.3, branchOf: '', nodes: {} },
+			'b2': { description: 'b2', probability: 0.4, branchOf: '', nodes: {} },
+			'unrelated': { description: 'unrelated', nodes: {} }
+		};
+		const map = new AdjacencyMap(input);
+		const siblings = map.branchSiblings('').sort();
+		assert.deepStrictEqual(siblings, ['b1', 'b2']);
+	});
+
+	it('computes branchProbabilitySum across siblings', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'b1': { description: 'b1', probability: 0.3, branchOf: '', nodes: {} },
+			'b2': { description: 'b2', probability: 0.4, branchOf: '', nodes: {} }
+		};
+		const map = new AdjacencyMap(input);
+		assert.ok(Math.abs(map.branchProbabilitySum('') - 0.7) < 1e-9);
+	});
+
+	it('computes expected-value across branches with remainder applied to parent', () => {
+		const input = deepCopy(baseInput);
+		// Branch removes the only node, so engineering drops to 0 there. The
+		// base scenario keeps engineering at its full value. E = p*0 + (1-p)*base.
+		input.scenarios = {
+			'b': {
+				description: 'b',
+				probability: 0.5,
+				branchOf: '',
+				nodes: { a: { removed: true } }
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const baseE = map.result.engineering;
+		const branchMap = new AdjacencyMap(input, 'b');
+		const branchE = branchMap.result.engineering;
+		const expected = map.expectedValueAcrossBranches('');
+		// E[engineering] = 0.5*branchE + 0.5*baseE
+		const want = 0.5 * branchE + 0.5 * baseE;
+		assert.ok(Math.abs(expected.engineering - want) < 1e-9, 'expected ' + want + ' got ' + expected.engineering);
+	});
+
+	it('expectedValueAcrossBranches with no branches equals parent result', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'other': { description: 'other', nodes: {} }
+		};
+		const map = new AdjacencyMap(input);
+		const expected = map.expectedValueAcrossBranches('');
+		assert.ok(Math.abs(expected.engineering - map.result.engineering) < 1e-9);
+	});
+
+	it('expectedValueAcrossBranches uses the full branch weight when p sums to 1', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'b': {
+				description: 'b',
+				probability: 1.0,
+				branchOf: '',
+				nodes: { a: { removed: true } }
+			}
+		};
+		const map = new AdjacencyMap(input);
+		const branchMap = new AdjacencyMap(input, 'b');
+		const expected = map.expectedValueAcrossBranches('');
+		// p=1.0 means remainder is 0, so expected == branch result.
+		assert.ok(Math.abs(expected.engineering - branchMap.result.engineering) < 1e-9);
+	});
+
+	it('branchGroupParent returns the parent for a branch', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'b': { description: 'b', probability: 0.5, branchOf: '', nodes: {} }
+		};
+		const map = new AdjacencyMap(input);
+		assert.strictEqual(map.branchGroupParent('b'), '');
+	});
+
+	it('branchGroupParent returns self when a scenario has branches off it', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'parent': { description: 'p', nodes: {} },
+			'b': { description: 'b', probability: 0.5, branchOf: 'parent', nodes: {} }
+		};
+		const map = new AdjacencyMap(input);
+		assert.strictEqual(map.branchGroupParent('parent'), 'parent');
+	});
+
+	it('branchGroupParent returns undefined for non-branch scenarios', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'standalone': { description: 'standalone', nodes: {} }
+		};
+		const map = new AdjacencyMap(input);
+		assert.strictEqual(map.branchGroupParent('standalone'), undefined);
+	});
+
+	it('allows probability sum exactly equal to 1', () => {
+		const input = deepCopy(baseInput);
+		input.scenarios = {
+			'a': { description: 'a', probability: 0.6, branchOf: '', nodes: {} },
+			'b': { description: 'b', probability: 0.4, branchOf: '', nodes: {} }
+		};
+		assert.doesNotThrow(() => new AdjacencyMap(input));
+	});
+
+});
+
 describe('URL hash state', () => {
 
 	it('encodes scenario and selected layout IDs with URL-reserved characters', async () => {

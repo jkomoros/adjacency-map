@@ -45,18 +45,49 @@ const main = async () => {
 		}
 	}
 
-	type Row = { scenario : string, value : number, ok : boolean, err? : string };
+	type Row = { scenario : string, value : number, ok : boolean, err? : string, expected? : boolean };
 	const rows : Row[] = [];
+	// First pass: determine which scenarios are branches (have a `branchOf`).
+	// Branches are folded into their parent's row via expected-value rather
+	// than being ranked as freestanding scenarios — the parent's expected
+	// value already accounts for the branch's contribution.
+	const branchScenarios = new Set<string>();
+	for (const [name, def] of Object.entries(merged.scenarios || {}) as [string, any][]) {
+		const defs = Array.isArray(def) ? def : [def];
+		for (let i = 0; i < defs.length; i++) {
+			const d = defs[i];
+			if (d && d.branchOf !== undefined) {
+				branchScenarios.add(Array.isArray(def) ? `${name}_${i}` : name);
+			} else if (d && d.probability !== undefined) {
+				// probability without branchOf implies branchOf:'' (a branch
+				// off the base). Mirror the runtime semantic here.
+				branchScenarios.add(Array.isArray(def) ? `${name}_${i}` : name);
+			}
+		}
+	}
 	for (const s of allScenarios) {
+		if (branchScenarios.has(s)) continue;
 		try {
 			const map = new AdjacencyMap(merged, s);
-			const result = map.result || {};
-			const v = (result as any)[propArg];
+			let isExpected = false;
+			let v : any;
+			// If this scenario has branches off it, use the expected-value
+			// computation rather than its own result so the rank reflects
+			// probability-weighted reality.
+			const siblings = (map as any).branchSiblings(s) as string[];
+			if (siblings && siblings.length > 0) {
+				const expected = (map as any).expectedValueAcrossBranches(s) as Record<string, number>;
+				v = expected[propArg];
+				isExpected = true;
+			} else {
+				const result = map.result || {};
+				v = (result as any)[propArg];
+			}
 			if (typeof v !== 'number') {
 				rows.push({ scenario: s, value: NaN, ok: false, err: `property '${propArg}' is not numeric (got ${typeof v})` });
 				continue;
 			}
-			rows.push({ scenario: s, value: v, ok: true });
+			rows.push({ scenario: s, value: v, ok: true, expected: isExpected });
 		} catch (err) {
 			rows.push({ scenario: s, value: NaN, ok: false, err: (err as Error).message });
 		}
@@ -74,7 +105,16 @@ const main = async () => {
 		out.push(`No scenarios have a numeric '${propArg}' value.`);
 	}
 	for (const row of valid) {
-		out.push(`  ${(row.scenario || '(base)').padEnd(28)} ${row.value.toFixed(2).padStart(10)}`);
+		const marker = row.expected ? '  E' : '   ';
+		out.push(`  ${(row.scenario || '(base)').padEnd(28)} ${row.value.toFixed(2).padStart(10)}${marker}`);
+	}
+	if (valid.some(r => r.expected)) {
+		out.push('');
+		out.push('  E = expected value across probabilistic branch group');
+	}
+	if (branchScenarios.size > 0) {
+		out.push('');
+		out.push(`Folded into branch parents (${branchScenarios.size}): ${[...branchScenarios].join(', ')}`);
 	}
 	if (invalid.length > 0) {
 		out.push('');
