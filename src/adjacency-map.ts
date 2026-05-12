@@ -1124,7 +1124,10 @@ export class AdjacencyMap {
 
 	get edges() : ExpandedEdgeValue[] {
 		if (!this._cachedEdges) {
-			this._cachedEdges = Object.keys(this._data.nodes).map(id => this.node(id).edges).flat();
+			this._cachedEdges = Object.values(this.nodes)
+				.filter(node => node.id != ROOT_ID)
+				.map(node => node.edges)
+				.flat();
 		}
 		return this._cachedEdges;
 	}

@@ -7307,6 +7307,12 @@ describe('scenario node removal (#26)', () => {
 		assert.ok(layoutKeys.includes('d'), 'd should remain (orphaned)');
 	});
 
+	it('drops graph-level edges from or to the removed node', async () => {
+		const map = new AdjacencyMap(deepCopy(baseInput), 'omit-b');
+		assert.strictEqual(map.edges.filter(e => e.source === 'b').length, 0, 'edges from b should be dropped');
+		assert.strictEqual(map.edges.filter(e => e.parent === 'b').length, 0, 'edges to b should be dropped');
+	});
+
 	it('does not affect base scenario', async () => {
 		const map = new AdjacencyMap(deepCopy(baseInput));
 		const layoutKeys = Object.keys(map.layoutNodes);
