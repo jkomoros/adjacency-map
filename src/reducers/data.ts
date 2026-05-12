@@ -300,13 +300,14 @@ const data = (state : DataState = INITIAL_STATE, action : AnyAction) : DataState
 			scenariosOverlays: action.overlays
 		};
 	case SAVE_SCENARIOS_SUCCESS:
+	{
+		const scenariosOverlays = {...state.scenariosOverlays};
+		delete scenariosOverlays[action.filename as DataFilename];
 		return {
 			...state,
-			scenariosOverlays: {
-				...state.scenariosOverlays,
-				[action.filename]: {}
-			}
+			scenariosOverlays
 		};
+	}
 	case RESET_SCENARIOS_OVERLAYS:
 		return {
 			...state,

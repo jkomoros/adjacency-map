@@ -22,6 +22,8 @@ import {
 	unpackColor
 } from '../../src/color.js';
 
+import dataReducer from '../../src/reducers/data.js';
+
 import {
 	NULL_SENTINEL
 } from '../../src/constants.js';
@@ -7352,6 +7354,57 @@ describe('URL hash state', () => {
 			s: 'a scenario & branch=1',
 			n: 'node:feature & part=2'
 		});
+	});
+
+});
+
+describe('data reducer robustness', () => {
+
+	it('removes a file overlay entirely after successful save', async () => {
+		const state = dataReducer(undefined, {type: '@@INIT'});
+		const withOverlay = {
+			...state,
+			scenariosOverlays: {
+				default: {
+					custom: {
+						description: 'Unsaved',
+						nodes: {}
+					}
+				}
+			}
+		};
+		const next = dataReducer(withOverlay, {
+			type: 'SAVE_SCENARIOS_SUCCESS',
+			filename: 'default'
+		});
+		assert.deepStrictEqual(next.scenariosOverlays, {});
+	});
+
+	it('preserves other file overlays after successful save', async () => {
+		const state = dataReducer(undefined, {type: '@@INIT'});
+		const otherOverlay = {
+			custom: {
+				description: 'Other file unsaved',
+				nodes: {}
+			}
+		};
+		const withOverlay = {
+			...state,
+			scenariosOverlays: {
+				default: {
+					custom: {
+						description: 'Saved',
+						nodes: {}
+					}
+				},
+				other: otherOverlay
+			}
+		};
+		const next = dataReducer(withOverlay, {
+			type: 'SAVE_SCENARIOS_SUCCESS',
+			filename: 'default'
+		});
+		assert.deepStrictEqual(next.scenariosOverlays, {other: otherOverlay});
 	});
 
 });
