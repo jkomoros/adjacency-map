@@ -603,9 +603,11 @@ export const validateValueDefinition = (definition : ValueDefinition, args: Valu
 		//If there are no tags defined, then that's OK, we'll just return null.
 		//This happens e.g. if you include the 'product' library and don't have any tags.
 		if (tagNames.length == 0) return;
-		//All tags must have the same constant sets
-		const firstTagValues = args.data.tags[tagNames[0]];
-		if (firstTagValues.constants[definition.tagConstant] === undefined) throw new Error('Invalid tagConstant: ' + definition.tagConstant);
+		//Require the constant to be defined on AT LEAST ONE tag. This catches
+		//typos like tagConstant: 'velue' while not forcing every tag to declare
+		//every constant (the runtime handles missing constants via NULL_SENTINEL).
+		const definedSomewhere = tagNames.some(name => args.data.tags[name].constants[definition.tagConstant] !== undefined);
+		if (!definedSomewhere) throw new Error('Invalid tagConstant: ' + definition.tagConstant + ' (not defined on any tag)');
 		if (definition.default !== undefined) validateValueDefinition(definition.default, args);
 		return;
 	}

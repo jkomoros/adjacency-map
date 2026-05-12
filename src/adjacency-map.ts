@@ -630,10 +630,12 @@ export const processMapDefinition = (data : RawMapDefinition) : MapDefinition =>
 
 		const scenario : Scenario = {
 			description: rawScenario.description || scenarioToExtend.description || '',
-			decision: rawScenario.decision !== undefined ? rawScenario.decision : scenarioToExtend.decision,
-			reasoning: rawScenario.reasoning !== undefined ? rawScenario.reasoning : scenarioToExtend.reasoning,
 			nodes
 		};
+		const effectiveDecision = rawScenario.decision !== undefined ? rawScenario.decision : scenarioToExtend.decision;
+		if (effectiveDecision !== undefined) scenario.decision = effectiveDecision;
+		const effectiveReasoning = rawScenario.reasoning !== undefined ? rawScenario.reasoning : scenarioToExtend.reasoning;
+		if (effectiveReasoning !== undefined) scenario.reasoning = effectiveReasoning;
 		scenarios[scenarioName] = scenario;
 	}
 	//Put the scenarios back into original sorted (non topological) order
