@@ -89,7 +89,8 @@ import {
 } from '../actions/app.js';
 
 import {
-	closeDialog
+	closeDialog,
+	showHelp
 } from '../actions/dialog.js';
 
 import {
@@ -443,6 +444,8 @@ class MainView extends connect(store)(PageViewElement) {
 			store.dispatch(previousScenarioName());
 		} else if (e.key == 'Escape') {
 			store.dispatch(updateSelectedLayoutID(undefined));
+		} else if (e.key == '?') {
+			store.dispatch(showHelp());
 		}
 	}
 
@@ -493,6 +496,8 @@ class MainView extends connect(store)(PageViewElement) {
 			return this._withButtons(this._dialogContentReadout);
 		case 'export':
 			return this._withButtons(this._dialogContentExport);
+		case 'help':
+			return this._withButtons(this._dialogContentHelp);
 		case 'error':
 			return this._withButtons(html`${this._dialogMessage}`);
 		case '':
@@ -500,6 +505,33 @@ class MainView extends connect(store)(PageViewElement) {
 		}
 
 		assertUnreachable(this._dialogKind);
+	}
+
+	get _dialogContentHelp() : TemplateResult {
+		return html`
+<div class='help'>
+<h4>Keyboard shortcuts</h4>
+<ul>
+	<li><kbd>←</kbd> / <kbd>→</kbd> — Cycle scenarios</li>
+	<li><kbd>Esc</kbd> — Clear node selection (or close this dialog)</li>
+	<li><kbd>?</kbd> — Open this help</li>
+	<li><kbd>Enter</kbd> in the search box — Select the first matching node</li>
+</ul>
+<h4>CLI commands</h4>
+<ul>
+	<li><code>npm run serve</code> — Dev server (with data watcher and state sidecar)</li>
+	<li><code>npm run validate</code> — Verify every scenario in every data file constructs cleanly</li>
+	<li><code>npm run inspect -- &lt;file&gt; [scenario]</code> — Structured summary of aggregate values + top nodes</li>
+	<li><code>npm run diff -- &lt;file&gt; &lt;a&gt; &lt;b&gt;</code> — What's different between two scenarios</li>
+	<li><code>npm run rank -- &lt;file&gt; &lt;property&gt; [--ascending]</code> — Rank scenarios by an aggregate</li>
+	<li><code>npm run test:smoke</code> — End-to-end smoke test in a headless browser</li>
+</ul>
+<h4>Agent context</h4>
+<ul>
+	<li>While the dev server is running, <code>/tmp/adjacency-state.json</code> reflects the current view (file, scenario, selection, compare scenario, hover).</li>
+	<li>See <code>AGENTS.md</code> at the repo root for the full agent guide.</li>
+</ul>
+</div>`;
 	}
 
 	get _dialogContentExport() : TemplateResult {
@@ -576,6 +608,8 @@ class MainView extends connect(store)(PageViewElement) {
 			return 'Changes';
 		case 'export':
 			return 'Export';
+		case 'help':
+			return 'Keyboard shortcuts & CLI';
 		case 'error':
 		case '':
 			return 'Error';
@@ -590,6 +624,7 @@ class MainView extends connect(store)(PageViewElement) {
 			return this._dialogOpenedReadout();
 		case 'export':
 			return this._dialogOpenedExport();
+		case 'help':
 		case 'error':
 		case '':
 			return;
