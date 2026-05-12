@@ -91,6 +91,67 @@ export const selectAdjacencyMap = createSelector(
 	}
 );
 
+export const selectCompareAdjacencyMap = createSelector(
+	selectData,
+	selectCompareScenarioName,
+	selectRenderGroups,
+	(data, scenarioName, renderGroups) => {
+		if (!data || scenarioName === undefined) return null;
+		try {
+			return new AdjacencyMap(data, scenarioName, !renderGroups);
+		} catch {
+			return null;
+		}
+	}
+);
+
+type CompareDelta = {
+	perNode: {[id : string]: 'changed' | 'added' | 'removed'},
+	perProperty: {property: string, a: number, b: number, delta: number}[]
+};
+
+export const selectComparisonDelta = createSelector(
+	selectAdjacencyMap,
+	selectCompareAdjacencyMap,
+	(mapA, mapB) : CompareDelta | null => {
+		if (!mapA || !mapB) return null;
+		const perNode : {[id : string]: 'changed' | 'added' | 'removed'} = {};
+		const allIDs = new Set([...Object.keys(mapA.nodes), ...Object.keys(mapB.nodes)]);
+		for (const id of allIDs) {
+			if (id === '') continue;
+			const inA = id in mapA.nodes;
+			const inB = id in mapB.nodes;
+			if (inA && !inB) perNode[id] = 'removed';
+			else if (!inA && inB) perNode[id] = 'added';
+			else {
+				const av = mapA.node(id).values || {};
+				const bv = mapB.node(id).values || {};
+				let changed = false;
+				for (const k of new Set([...Object.keys(av), ...Object.keys(bv)])) {
+					const a = (av as any)[k];
+					const b = (bv as any)[k];
+					if (typeof a === 'number' && typeof b === 'number') {
+						if (Math.abs(a - b) > 1e-9) { changed = true; break; }
+					} else if (a !== b) {
+						changed = true; break;
+					}
+				}
+				if (changed) perNode[id] = 'changed';
+			}
+		}
+		const resA = (mapA.result || {}) as Record<string, any>;
+		const resB = (mapB.result || {}) as Record<string, any>;
+		const perProperty : CompareDelta['perProperty'] = [];
+		for (const k of new Set([...Object.keys(resA), ...Object.keys(resB)])) {
+			const a = typeof resA[k] === 'number' ? resA[k] as number : 0;
+			const b = typeof resB[k] === 'number' ? resB[k] as number : 0;
+			if (Math.abs(a) < 1e-9 && Math.abs(b) < 1e-9) continue;
+			perProperty.push({ property: k, a, b, delta: b - a });
+		}
+		return { perNode, perProperty };
+	}
+);
+
 //The node that should be used for the summary readout
 export const selectSummaryLayoutID = createSelector(
 	selectHoveredLayoutID,
