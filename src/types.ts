@@ -638,7 +638,13 @@ export type RawMapDisplay = {
 	node?: Partial<NodeDisplay>,
 	group?: Partial<GroupDisplay>,
 	edge?: Partial<EdgeDisplay>,
-	edgeCombiner? : Partial<EdgeCombinerDisplay>
+	edgeCombiner? : Partial<EdgeCombinerDisplay>,
+	/**
+	 * Properties to surface in the always-visible metrics strip above the
+	 * diagram. If omitted, all properties with a non-zero aggregate value at
+	 * the root are shown (capped at 6).
+	 */
+	headlineMetrics? : PropertyName[]
 };
 
 export type MapDisplay = {
