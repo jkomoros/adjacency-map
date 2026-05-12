@@ -232,7 +232,56 @@ try {
 			await page.screenshot({ path: path.join(SCREENSHOT_DIR, '05-sidecar-merged.png') });
 		}
 
-		// ---------- Section 7: console-errors summary ----------
+		// ---------- Section 7: metrics dashboard ----------
+		await page.goto(`${BASE_URL}/main/default/`, { waitUntil: 'networkidle' });
+		await page.waitForTimeout(400);
+		const metricsCount = await page.locator('.metrics-strip .metric-tile').count();
+		if (metricsCount > 0) pass(`metrics strip shows ${metricsCount} tile(s)`);
+		else fail('metrics strip empty or hidden on healthy load');
+
+		// ---------- Section 8: fork scenario ----------
+		// window.prompt is auto-accepted via page.on('dialog').
+		page.once('dialog', async (dialog) => {
+			await dialog.accept('smoke-fork-test');
+		});
+		const forkBtn = page.locator('button[title*="Fork"]').first();
+		const forkBtnCount = await forkBtn.count();
+		if (forkBtnCount > 0) {
+			await forkBtn.click();
+			await page.waitForTimeout(600);
+			const opts = await page.locator('#scenarios option').allTextContents();
+			if (opts.some(t => t.includes('smoke-fork-test'))) pass('fork created new scenario in dropdown');
+			else fail(`fork did not produce new scenario (saw: ${opts.join(', ')})`);
+		} else {
+			fail('Fork button not found in controls');
+		}
+
+		// ---------- Section 9: compare mode ----------
+		await page.goto(`${BASE_URL}/main/default/#c=increased-certainty`, { waitUntil: 'networkidle' });
+		await page.waitForTimeout(600);
+		const diagrams = await page.locator('adjacency-map-diagram').count();
+		if (diagrams === 2) pass('compare mode renders two diagrams');
+		else fail(`compare mode rendered ${diagrams} diagrams (expected 2)`);
+
+		const compareStripCount = await page.locator('.compare-strip').count();
+		if (compareStripCount > 0) pass('compare diff strip rendered');
+		else fail('compare diff strip missing');
+
+		// Check for at least one diff class on a node across the two SVGs.
+		const diffClassCount = await page.locator('circle.diff-changed, circle.diff-added, circle.diff-removed').count();
+		if (diffClassCount > 0) pass(`${diffClassCount} nodes flagged with diff class`);
+		else log('no diff classes — could be valid if scenarios are identical');
+
+		await page.screenshot({ path: path.join(SCREENSHOT_DIR, '06-compare-mode.png') });
+
+		// ---------- Section 10: inspect CLI ----------
+		{
+			const r = spawnSync('npm', ['run', 'inspect', '--', 'default', 'increased-certainty'], { encoding: 'utf8' });
+			if (r.status === 0 && r.stdout.includes('Root aggregate values')) pass('inspect CLI produces expected output');
+			else fail(`inspect CLI failed (status=${r.status}, stdout-head=${r.stdout?.slice(0, 200)})`);
+		}
+
+		// ---------- Section 11: console-errors summary ----------
 		const newErrors = consoleErrors.filter(e => !e.includes('Unknown URL arg'));
 		if (newErrors.length === 0) pass('no unexpected console errors over full run');
 		else log(`console errors over run: ${newErrors.join(' | ')}`);
