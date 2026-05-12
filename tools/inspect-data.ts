@@ -66,6 +66,22 @@ const main = async () => {
 	out.push(`Edges: ${map.edges.length}`);
 	out.push('');
 
+	// Events section: per-event presence for this scenario. Surfaced because
+	// events are a separately-addressable map-level concept (not nodes) and
+	// scenarios can override their `present` state.
+	const eventDefs = (map.data && map.data.events) || {};
+	const eventIDs = Object.keys(eventDefs);
+	if (eventIDs.length > 0) {
+		out.push(`Events (${eventIDs.length}):`);
+		for (const id of eventIDs) {
+			const present = (map as any).isEventPresent(id) as boolean;
+			const defaultPresent = eventDefs[id].defaultPresent;
+			const flag = present === defaultPresent ? '' : ' (overridden)';
+			out.push(`  ${id.padEnd(24)} present=${present}${flag}`);
+		}
+		out.push('');
+	}
+
 	out.push('Root aggregate values:');
 	const result = map.result;
 	for (const [k, v] of Object.entries(result)) {
@@ -110,6 +126,15 @@ const main = async () => {
 					out.push(`  ~ ${id}.${k}: ${JSON.stringify(a)} -> ${JSON.stringify(b)}`);
 					anyDiff = true;
 				}
+			}
+		}
+		// Event presence diffs from the base scenario.
+		for (const id of eventIDs) {
+			const a = (baseMap as any).isEventPresent(id) as boolean;
+			const b = (map as any).isEventPresent(id) as boolean;
+			if (a !== b) {
+				out.push(`  ~ event ${id}.present: ${a} -> ${b}`);
+				anyDiff = true;
 			}
 		}
 		if (!anyDiff) out.push('  (no value diffs from base)');

@@ -20,9 +20,12 @@ import {
  *   - The "OR" branch in voice_full_duplex's prerequisite is encoded via a
  *     synthetic `voice_in_any` proxy node; see notes file.
  *   - Cross-node conditional values (latency_cache uplift, duplex image
- *     uplift, duplex time-decay) are encoded directly in the base-graph
- *     selfValue expressions via the `nodeRef` ValueDefinition primitive.
+ *     uplift) are encoded directly in the base-graph selfValue expressions
+ *     via the `nodeRef` ValueDefinition primitive.
  *     See docs/superpowers/notes/2026-05-12-noderef-prototype-reflection.md.
+ *   - Time-decay (duplex Q3 window) is encoded via a map-level event
+ *     (`q3_window_open`) referenced via `{event: ...}`. The scenario
+ *     `duplex-q4-missed` flips it to absent. See AGENTS.md "Events".
  */
 
 const data : RawMapDefinition = {
@@ -83,6 +86,20 @@ const data : RawMapDefinition = {
 			color: '#444488',
 			description: 'Legal / licensing workstreams; value flows to children, not self.',
 			constants: { value: 0 }
+		}
+	},
+	events: {
+		// Map-level event for time-decay. Default-present: the Q3 window is
+		// still open in the base graph and in every strategy scenario except
+		// `duplex-q4-missed`, which flips it to `present: false`. Referenced
+		// from voice_full_duplex.selfValue via `{event: 'q3_window_open'}`.
+		// We use the "window-open" framing (default-present) rather than
+		// "deadline-missed" (default-absent) so that an unmodified scenario
+		// reflects the current "still on track" state and the override
+		// explicitly says "the window closed".
+		q3_window_open: {
+			description: 'Q3 ship window for voice_full_duplex is still open. Flip to present:false in a scenario to model the post-Q3 world (drops voice_full_duplex.selfValue 9 -> 3, or 10 -> 4 if image_understanding is also present).',
+			defaultPresent: true
 		}
 	},
 	nodes: {
@@ -162,24 +179,20 @@ const data : RawMapDefinition = {
 				{ type: 'engineering', parent: 'voice_in_any', cost: 0 }
 			],
 			values: {
-				// PROTOTYPE: previously the base was a flat `selfValue: 9` and
-				// two workaround scenarios (duplex-with-image-uplift,
-				// duplex-q4-decay) overrode it. With nodeRef the expression
-				// is:
+				// Previously the base was a flat `selfValue: 9` with two
+				// workaround scenarios (duplex-with-image-uplift,
+				// duplex-q4-decay). With nodeRef the expression is:
 				//
 				//   base 3
-				//   + 6 if q3_window_open is in the scenario        (decay if missed)
-				//   + 1 if image_understanding is in the scenario   (uplift)
+				//   + 6 if event q3_window_open is present      (decay if missed)
+				//   + 1 if image_understanding is in the scenario (uplift)
 				//
-				// q3_window_open is a sentinel node, present in the base
-				// graph (and in all the strategy scenarios), and `removed:
-				// true` in the post-Q3 ("we missed the window") scenario.
-				// This is the "deadline-node convention" called out in the
-				// elegance critique: time-decay requires *some* node to
-				// anchor "the deadline has passed"; this prototype encodes
-				// the dual ("the window is still open") which composes more
-				// naturally with the existing scenario-overlay semantics
-				// (default = present; explicit removal = the event fired).
+				// q3_window_open is a map-level *event* (see the `events`
+				// block above), not a node — events are the right anchor for
+				// "did this happen yet?" semantics, which have no natural
+				// place in the node graph. The scenario `duplex-q4-missed`
+				// flips it to `present: false`, dropping duplex.selfValue
+				// from 9 to 3 (or 10 to 4 if image_understanding survives).
 				selfValue: {
 					operator: '+',
 					a: {
@@ -187,7 +200,7 @@ const data : RawMapDefinition = {
 						a: 3,
 						b: {
 							operator: '*',
-							a: { node: 'q3_window_open', property: 'present' },
+							a: { event: 'q3_window_open' },
 							b: 6
 						}
 					},
@@ -322,39 +335,6 @@ const data : RawMapDefinition = {
 			values: {
 				selfValue: 0,
 				certainty: 0.4
-			}
-		},
-
-		// -------- Sentinel / "marker" nodes --------
-		//
-		// A sentinel node carries no work and no value of its own; its sole
-		// purpose is to be toggled in/out of a scenario so that other nodes
-		// can reference it via nodeRef. This is the "deadline-node convention"
-		// from the nodeRef prototype: time-decay (and other event-shaped
-		// semantics) need *some* node to anchor "this thing has (not) happened
-		// yet".
-		//
-		// q3_window_open is present in the base graph and in every strategy
-		// scenario. A scenario that wants to model the post-Q3 world includes
-		// `q3_window_open: { removed: true }`, which causes the nodeRef in
-		// voice_full_duplex.selfValue to evaluate to 0 and drop the duplex
-		// value from 9 to 3 automatically.
-		//
-		// We use the "window-open" framing (default-present) rather than
-		// "deadline-missed" (default-absent) because the scenario overlay
-		// system models removal explicitly but does not model addition: a
-		// node either lives in the base graph or it doesn't. Encoding events
-		// as "the precondition is still true" lines up with this semantics.
-		// In a production design these would probably be a separate
-		// `events` or `flags` map-level field; encoding them as nodes is the
-		// minimum-invasive way to demonstrate nodeRef's reach.
-		q3_window_open: {
-			description: 'Sentinel: the Q3 ship window is still open. Default-present; mark `removed: true` in a scenario to model the post-Q3 world. Used by voice_full_duplex to implement time-decay (value drops 9->3 when this is removed).',
-			tags: [],
-			edges: [],
-			values: {
-				selfValue: 0,
-				certainty: 1.0
 			}
 		}
 	},
@@ -511,10 +491,11 @@ const data : RawMapDefinition = {
 		// exist as separate scenarios. The two semantics that survived as
 		// scenarios:
 		//
-		//   - `duplex-q4-missed` below: toggles the q3_window_open sentinel
-		//     off, which drops voice_full_duplex's value 9 -> 3 (or 10 -> 4
-		//     when image_understanding is also present). This demonstrates
-		//     the deadline-node convention.
+		//   - `duplex-q4-missed` below: flips the map-level event
+		//     `q3_window_open` to `present: false`, which drops
+		//     voice_full_duplex's value 9 -> 3 (or 10 -> 4 when
+		//     image_understanding is also present). This demonstrates the
+		//     first-class events mechanism.
 		//   - The image-uplift case has no dedicated scenario at all: it
 		//     emerges automatically whenever a strategy scenario includes
 		//     both voice_full_duplex and image_understanding (e.g.
@@ -523,15 +504,16 @@ const data : RawMapDefinition = {
 		//     whenever a strategy scenario keeps voice_full_duplex.
 
 		// Time-decay demonstration: voice_full_duplex value drops once the
-		// Q3 ship window closes. The drop is automatic via nodeRef; the
-		// scenario's only job is to flip the sentinel.
+		// Q3 ship window closes. The drop is automatic via the event check;
+		// the scenario's only job is to flip the event to absent.
 		'duplex-q4-missed': {
-			description: 'Q3 ship window closed before voice_full_duplex shipped. Demonstrates nodeRef-driven time-decay via the q3_window_open sentinel.',
+			description: 'Q3 ship window closed before voice_full_duplex shipped. Demonstrates event-driven time-decay via the q3_window_open event.',
 			decision: 'Use to motivate Q3 ship-or-cut decision.',
-			reasoning: 'When q3_window_open is removed, voice_full_duplex.selfValue auto-drops from 9 to 3 (or 10 to 4 if image_understanding is also present), because the nodeRef in its selfValue expression evaluates the q3_window_open present() check to 0.',
-			nodes: {
-				q3_window_open: { removed: true }
-			}
+			reasoning: 'When q3_window_open is flipped to present:false, voice_full_duplex.selfValue auto-drops from 9 to 3 (or 10 to 4 if image_understanding is also present), because the {event: q3_window_open} check in its selfValue expression evaluates to 0.',
+			events: {
+				q3_window_open: { present: false }
+			},
+			nodes: {}
 		},
 
 		// Uncertainty branch: agent_framework_v1 might ship at 60% value, 1.5x cost.

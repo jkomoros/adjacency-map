@@ -114,6 +114,24 @@ const main = async () => {
 	}
 	if (!anyNodeDiff) out.push('  (no node-level diffs)');
 
+	// Events: per-event presence deltas across the two scenarios.
+	const eventDefs = (mapA.data && mapA.data.events) || {};
+	const eventIDs = Object.keys(eventDefs);
+	if (eventIDs.length > 0) {
+		out.push('');
+		out.push('Events:');
+		let anyEventDiff = false;
+		for (const id of eventIDs) {
+			const a = (mapA as any).isEventPresent(id) as boolean;
+			const b = (mapB as any).isEventPresent(id) as boolean;
+			if (a !== b) {
+				out.push(`  ~ ${id}.present: ${a} -> ${b}`);
+				anyEventDiff = true;
+			}
+		}
+		if (!anyEventDiff) out.push('  (no event-level diffs)');
+	}
+
 	console.log(out.join('\n'));
 };
 
