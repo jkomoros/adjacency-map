@@ -1,8 +1,8 @@
 import { writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
-import { join } from 'path';
 
-const STATE_SIDECAR_PATH = join(tmpdir(), 'adjacency-state.json');
+// We use /tmp directly (not os.tmpdir(), which on macOS resolves to
+// /var/folders/...) so agents have a single, predictable, documented path.
+const STATE_SIDECAR_PATH = '/tmp/adjacency-state.json';
 
 // Koa-style middleware that handles POST /__state__ by writing the request
 // body to /tmp/adjacency-state.json. Lets the webapp publish its current view
