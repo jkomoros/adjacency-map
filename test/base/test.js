@@ -25,6 +25,10 @@ import {
 import dataReducer from '../../src/reducers/data.js';
 
 import {
+	selectHashForCurrentState
+} from '../../src/selectors.js';
+
+import {
 	updateWithMainPageExtra
 } from '../../src/actions/data.js';
 
@@ -7390,6 +7394,19 @@ describe('URL hash state', () => {
 		assert.ok(actions.some(action => action.type == 'UPDATE_SCENARIO_NAME' && action.scenarioName == ''));
 		assert.ok(actions.some(action => action.type == 'UPDATE_SELECTED_NODE_ID' && action.nodeID === undefined));
 		assert.ok(actions.some(action => action.type == 'UPDATE_HASH' && action.hash == ''));
+	});
+
+	it('omits stale selected layout IDs from canonical hash', async () => {
+		const state = {
+			data: {
+				filename: 'default',
+				scenarioName: '',
+				selectedLayoutID: 'node:does-not-exist',
+				renderGroups: true,
+				scenariosOverlays: {}
+			}
+		};
+		assert.strictEqual(selectHashForCurrentState(state), '');
 	});
 
 });

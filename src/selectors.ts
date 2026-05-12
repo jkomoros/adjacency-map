@@ -179,10 +179,20 @@ export const selectSelectedNodeFieldsEdited = createSelector(
 export const selectHashForCurrentState = createSelector(
 	selectScenarioName,
 	selectSelectedLayoutID,
-	(scenarioName, selectedLayoutID) => {
+	selectAdjacencyMap,
+	(scenarioName, selectedLayoutID, map) => {
+		let validSelectedLayoutID : LayoutID | undefined;
+		if (selectedLayoutID && map) {
+			try {
+				map.layoutNode(selectedLayoutID);
+				validSelectedLayoutID = selectedLayoutID;
+			} catch {
+				validSelectedLayoutID = undefined;
+			}
+		}
 		return stringifyURLHashArgs({
 			s: scenarioName != DEFAULT_SCENARIO_NAME ? scenarioName : undefined,
-			n: selectedLayoutID
+			n: validSelectedLayoutID
 		});
 	}
 );
