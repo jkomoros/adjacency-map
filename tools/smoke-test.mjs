@@ -136,6 +136,27 @@ try {
 		if (!(await banner.isVisible().catch(() => false))) pass('error banner hidden (healthy data)');
 		else fail('error banner unexpectedly visible on healthy data');
 
+		// ---------- Section 1b: non-default filename URL is preserved (issue #31) ----------
+		// Regression: canonicalizePath used to fire in firstUpdated() before the
+		// store learned the URL's filename, replacing the URL with /main/default/.
+		log('navigating to /main/polyglot/ and checking URL is preserved');
+		await page.goto(`${BASE_URL}/main/polyglot/`, { waitUntil: 'networkidle' });
+		await page.waitForTimeout(500);
+		const pathAfterLoad = await page.evaluate(() => window.location.pathname);
+		if (pathAfterLoad === '/main/polyglot/') pass(`non-default URL preserved on load (${pathAfterLoad})`);
+		else fail(`URL rewritten on load: expected /main/polyglot/, got ${pathAfterLoad}`);
+
+		const firstNodeP = page.locator('svg.main circle').first();
+		await firstNodeP.click({ force: true });
+		await page.waitForTimeout(300);
+		const pathAfterClick = await page.evaluate(() => window.location.pathname);
+		if (pathAfterClick === '/main/polyglot/') pass('non-default URL preserved across node click');
+		else fail(`URL drifted on click: expected /main/polyglot/, got ${pathAfterClick}`);
+
+		// Return to default for the rest of the test
+		await page.goto(`${BASE_URL}/main/default/`, { waitUntil: 'networkidle' });
+		await page.waitForTimeout(300);
+
 		// ---------- Section 2: selection + URL + highlighting ----------
 		const firstNode = page.locator('svg.main circle').first();
 		const nodeID = await firstNode.getAttribute('id');
