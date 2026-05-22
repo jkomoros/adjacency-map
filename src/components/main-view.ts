@@ -96,7 +96,10 @@ import {
 
 import {
 	assertUnreachable,
+	displayFilename,
 	fetchOverlaysFromStorage,
+	filenameForDownload,
+	onDiskPathForFilename,
 	storeOverlaysToStorage
 } from '../util.js';
 
@@ -339,7 +342,7 @@ class MainView extends connect(store)(PageViewElement) {
 			<div class='container'>
 					${this._dataError ? html`
 						<div class='error-banner'>
-							<strong>Data error in <code>${this._filename}</code></strong>
+							<strong>Data error in <code>${displayFilename(this._filename || '')}</code></strong>
 							${this._dataError}
 							<div><a @click=${() => window.location.reload()}>Reload</a></div>
 						</div>` : ''}
@@ -579,7 +582,8 @@ class MainView extends connect(store)(PageViewElement) {
 
 	_handleDownloadMarkdown(markdown : string) {
 		const blob = new Blob([markdown], { type: 'text/markdown' });
-		const name = `${this._filename || 'map'}__${this._adjacencyMap?.scenarioName || 'base'}.md`;
+		const safeFilename = filenameForDownload(this._filename || 'map');
+		const name = `${safeFilename}__${this._adjacencyMap?.scenarioName || 'base'}.md`;
 		downloadBlob(blob, name);
 	}
 
@@ -592,7 +596,8 @@ class MainView extends connect(store)(PageViewElement) {
 		}
 		try {
 			const blob = await exportSVGToPNG(svg, 2);
-			const name = `${this._filename || 'map'}__${this._adjacencyMap?.scenarioName || 'base'}.png`;
+			const safeFilename = filenameForDownload(this._filename || 'map');
+			const name = `${safeFilename}__${this._adjacencyMap?.scenarioName || 'base'}.png`;
 			downloadBlob(blob, name);
 		} catch (err) {
 			console.warn('PNG export failed:', err);
@@ -604,7 +609,7 @@ class MainView extends connect(store)(PageViewElement) {
 		const content = JSON.stringify(this._currentScenarioOverlay, null, '\t');
 		const trimmedContent = content.slice(2, -2);
 		const tabbedContent = '\t' + trimmedContent.split('\n').join('\n\t');
-		return html`<div class='instructions'><em>Copy/paste the selected content into the end of the <code>scenarios</code> block of <code>data/${this._filename}.ts</code></em></div>
+		return html`<div class='instructions'><em>Copy/paste the selected content into the end of the <code>scenarios</code> block of <code>${onDiskPathForFilename(this._filename || '')}</code></em></div>
 <pre class='noselect'>const data : RawMapDefinition = {
 	//...
 	scenarios: {

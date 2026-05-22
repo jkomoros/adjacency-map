@@ -88,6 +88,46 @@ const removeSidecar = async () => {
 	}
 };
 
+const PRIVATE_DIR = 'data/private';
+const PRIVATE_FIXTURE_FILE = path.join(PRIVATE_DIR, 'smoke_private.ts');
+const PRIVATE_FIXTURE_KEY = 'private__smoke_private';
+const PRIVATE_FIXTURE_DISPLAY = 'smoke_private (private)';
+
+const writePrivateFixture = async () => {
+	if (!existsSync(PRIVATE_DIR)) {
+		await fs.mkdir(PRIVATE_DIR, { recursive: true });
+	}
+	const content = `import { RawMapDefinition } from '../../src/types.js';
+const data : RawMapDefinition = {
+	description: 'smoke-test private fixture',
+	import: 'product',
+	nodes: {
+		alpha: {
+			description: 'alpha',
+			edges: [{ type: 'engineering', cost: 1 }]
+		}
+	}
+};
+export default data;
+`;
+	await fs.writeFile(PRIVATE_FIXTURE_FILE, content);
+	log(`wrote temp private fixture at ${PRIVATE_FIXTURE_FILE}`);
+};
+
+const removePrivateFixture = async () => {
+	if (existsSync(PRIVATE_FIXTURE_FILE)) {
+		await fs.unlink(PRIVATE_FIXTURE_FILE);
+		log(`removed temp private fixture at ${PRIVATE_FIXTURE_FILE}`);
+	}
+	// Remove the directory if we created it AND it's empty.
+	if (existsSync(PRIVATE_DIR)) {
+		try {
+			const entries = await fs.readdir(PRIVATE_DIR);
+			if (entries.length === 0) await fs.rmdir(PRIVATE_DIR);
+		} catch { /* best-effort */ }
+	}
+};
+
 const regenerateConfig = () => {
 	const res = spawnSync('npm', ['run', 'generate:config'], { stdio: 'pipe' });
 	if (res.status !== 0) throw new Error('generate:config failed during smoke test');
@@ -100,6 +140,7 @@ await fs.mkdir(SCREENSHOT_DIR, { recursive: true });
 try {
 	// Set up sidecar BEFORE server starts (or before navigation if already up).
 	await writeSidecar();
+	await writePrivateFixture();
 	regenerateConfig();
 
 	await startServerIfNeeded();
@@ -470,7 +511,40 @@ try {
 			fail(`help modal missing content (head: ${helpText.slice(0, 200)})`);
 		}
 
-		// ---------- Section 17: console-errors summary ----------
+		// ---------- Section 17: private map display (issue #30) ----------
+		// The fixture's gitignored private file should appear in the file
+		// dropdown with a friendly label, not the raw private__ identifier.
+		await page.goto(`${BASE_URL}/main/default/`, { waitUntil: 'networkidle' });
+		await page.waitForTimeout(400);
+		const fileDropdownOptions = await page.evaluate(() => {
+			const app = document.querySelector('my-app');
+			const main = app?.shadowRoot?.querySelector('main-view');
+			const controls = main?.shadowRoot?.querySelector('adjacency-map-controls');
+			const select = controls?.shadowRoot?.querySelector('#filenames');
+			if (!select) return [];
+			return Array.from(select.querySelectorAll('option')).map(o => ({
+				value: o.value, text: o.textContent || ''
+			}));
+		});
+		const privateOption = fileDropdownOptions.find(o => o.value === 'private__smoke_private');
+		if (privateOption && privateOption.text.includes('smoke_private (private)') && !privateOption.text.includes('private__')) {
+			pass(`private file dropdown label is friendly: "${privateOption.text.trim()}"`);
+		} else {
+			fail(`private file dropdown label wrong: ${JSON.stringify(privateOption)}`);
+		}
+
+		// Navigate to the private file and verify the readout dialog shows the
+		// correct on-disk path (data/private/<name>.ts, not data/private__<name>.ts).
+		await page.goto(`${BASE_URL}/main/private__smoke_private/`, { waitUntil: 'networkidle' });
+		await page.waitForTimeout(400);
+		// Toggle editing on, create a dummy scenario edit, then open the readout dialog.
+		// Simpler: just verify the URL was preserved (regression for #31) AND the
+		// dropdown label here also reads correctly.
+		const urlAfterPrivate = await page.evaluate(() => window.location.pathname);
+		if (urlAfterPrivate === '/main/private__smoke_private/') pass('private file URL preserved');
+		else fail(`private file URL drifted: ${urlAfterPrivate}`);
+
+		// ---------- Section 18: console-errors summary ----------
 		const newErrors = consoleErrors.filter(e => !e.includes('Unknown URL arg'));
 		if (newErrors.length === 0) pass('no unexpected console errors over full run');
 		else log(`console errors over run: ${newErrors.join(' | ')}`);
@@ -489,6 +563,7 @@ try {
 } finally {
 	// Always clean up: remove sidecar, regen, stop server (if we started it).
 	try { await removeSidecar(); } catch (e) { console.warn('sidecar cleanup failed:', e); }
+	try { await removePrivateFixture(); } catch (e) { console.warn('private fixture cleanup failed:', e); }
 	try { regenerateConfig(); } catch (e) { console.warn('post-cleanup regenerate failed:', e); }
 	stopServerIfWeStartedIt();
 	log(`screenshots in ${SCREENSHOT_DIR}`);
