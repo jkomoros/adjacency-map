@@ -423,6 +423,14 @@ class MainView extends connect(store)(PageViewElement) {
 		document.addEventListener('keydown', e => this._handleKeyDown(e));
 		window.addEventListener('resize', () => this.resizeVisualization());
 		this.resizeVisualization();
+		//Sync the store's filename from the URL BEFORE canonicalizing the path.
+		//updated() also dispatches this, but on the first paint it runs AFTER
+		//firstUpdated — so without this dispatch canonicalizePath would read
+		//INITIAL_STATE's 'default' and replaceState the URL, dropping the actual
+		//filename the user navigated to. See issue #31.
+		if (this._pageExtra) {
+			store.dispatch(updateWithMainPageExtra(this._pageExtra));
+		}
 		store.dispatch(canonicalizePath());
 		window.addEventListener('hashchange', () => this._handleHashChange());
 		this._handleHashChange();
