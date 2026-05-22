@@ -1,5 +1,6 @@
 import { DataFilename } from './data.GENERATED.js';
 import { ScenariosDefinition } from './types.js';
+import { filenameForDownload } from './util.js';
 
 const DB_NAME = 'adjacency-map-file-handles';
 const DB_VERSION = 1;
@@ -62,7 +63,7 @@ const ensurePermission = async (handle : any) : Promise<boolean> => {
 const pickHandle = async (filename : DataFilename) : Promise<any> => {
 	// @ts-ignore - showSaveFilePicker is not yet in lib.dom for TS 4.7
 	const handle = await window.showSaveFilePicker({
-		suggestedName: `${filename}.edits.json`,
+		suggestedName: `${filenameForDownload(filename)}.edits.json`,
 		types: [{
 			description: 'Adjacency map scenario edits',
 			accept: { 'application/json': ['.json'] }

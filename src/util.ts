@@ -73,6 +73,38 @@ export const camelCaseFilename = (name : string) : string => {
 	return name.split('-').map((piece, index) => index == 0 ? piece : piece[0].toUpperCase() + piece.slice(1)).join('');
 };
 
+//Files under data/private/ get loaded with this namespace prefix so they
+//don't collide with top-level data files. See tools/config.ts.
+const PRIVATE_FILENAME_PREFIX = 'private__';
+
+//Human-readable label for a DataFilename. Strips the private__ namespace and
+//appends ' (private)' so the file dropdown / error banner / readout text show
+//something idiomatic instead of the raw identifier. See issue #30.
+export const displayFilename = (filename : string) : string => {
+	if (filename.startsWith(PRIVATE_FILENAME_PREFIX)) {
+		return filename.slice(PRIVATE_FILENAME_PREFIX.length) + ' (private)';
+	}
+	return filename;
+};
+
+//Maps a DataFilename to the on-disk path of its source .ts file. Used in the
+//readout dialog's "paste into <path>" instruction so the path is correct for
+//private maps as well as top-level ones.
+export const onDiskPathForFilename = (filename : string) : string => {
+	if (filename.startsWith(PRIVATE_FILENAME_PREFIX)) {
+		return 'data/private/' + filename.slice(PRIVATE_FILENAME_PREFIX.length) + '.ts';
+	}
+	return 'data/' + filename + '.ts';
+};
+
+//Filename-safe variant of a DataFilename used in download names (PNG/Markdown
+//export) and the FSA save-picker suggestion. Collapses the private__ namespace
+//to a single hyphen so we don't get triple-underscore collisions with the
+//export's own __scenario separator.
+export const filenameForDownload = (filename : string) : string => {
+	return filename.replace(/__/g, '-');
+};
+
 const randomCharSetNumbers = '0123456789';
 const randomCharSetLetters = 'abcdef';
 const randomCharSet = randomCharSetNumbers + randomCharSetLetters;
